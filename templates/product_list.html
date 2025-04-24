@@ -333,7 +333,7 @@
         @media (max-width: 768px) {
             .table-wrapper {
                 margin-left: 0;
-                margin-top: 150px !important;
+                margin-top: 90px !important;
                
                 padding: 20px; /* Add some padding for better appearance */
             }
@@ -369,15 +369,14 @@
     <div class="container-fluid" style="min-height: 100vh;">
         <div class="row">
             <div class="col-md-12 ">
-                <div class="col-12 ">
-                    <div class="table-wrapper" >
-                        <h1>Customer Details</h1>
-                        <!-- <nav class="navbar navbar-light bg-light" id="searchInput">
-                            <form class="form-inline" id="searchForm" action="/search" method="GET">
-                                <input class="form-control mr-sm-2" type="search" id="searchInput" name="q" placeholder="Search" aria-label="Search">
-                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="searchButton">Search</button>
-                            </form>
-                        </nav> -->
+                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+              
+                <div class="col-12">
+                    <div class="table-wrapper">
+                        <h3 class="text-center">Product Details</h3>
+                
+                        <!-- Filter Section -->
                         <div class="filter-container">
                             <label for="category-select">Filter by Category:</label>
                             <select id="category-select" onchange="filterByCategory()" style="width: 150px; padding:10px;">
@@ -387,12 +386,17 @@
                                 {% endfor %}
                             </select>
                         </div>
+                
+                        <!-- Table -->
+                        <div class="p mb-3">
+                            <p class="scroll-instruction">Scroll to view more content ➡️</p>
+                        </div>
                         <div class="container-table">
                             <table id="product-table" class="table table-bordered" style="border-top: 1px solid black !important;">
                                 <thead>
                                     <tr>
-                                        <th>Category</th>
                                         <th>Product ID</th>
+                                        <th>Category</th>
                                         <th>Product Name</th>
                                         <th>Delete</th>
                                     </tr>
@@ -400,57 +404,79 @@
                                 <tbody>
                                     {% for product in products %}
                                         <tr>
-                                            <td>{{ product.category }}</td>
                                             <td>{{ product.product_id }}</td>
+                                            <td>{{ product.category }}</td>
                                             <td>{{ product.product_name }}</td>
-                                            <!-- <td>{{ product.price }}</td> -->
-                                            <!-- <td class="{% if product.quantity == 0 %}no-quantity{% endif %}">{{ product.quantity }}</td> -->
                                             <td>
-                                                <form action="{% url 'delete_product' product.product_id %}" method="POST">
+                                                <form id="delete-form-{{ product.product_id }}" action="{% url 'delete_product' product.product_id %}" method="POST">
                                                     {% csrf_token %}
-                                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteModal('{{ product.product_id }}')">Delete</button>
                                                 </form>
                                             </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
-                            
+                        </div>
                 
-                            <!-- <div class="pagination">
-                                {% if page_obj.has_previous %}
-                                    <li><a href="?q={{ search_query }}&sort={{ sort_order }}&page=1">&laquo; First</a></li>
-                                    <li><a href="?q={{ search_query }}&sort={{ sort_order }}&page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
-                                {% endif %}
-                            
-                                <span class="current">{{ page_obj.number }}</span>
-                            
-                                {% if page_obj.has_next %}
-                                    <li><a href="?q={{ search_query }}&sort={{ sort_order }}&page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
-                                    <li><a href="?q={{ search_query }}&sort={{ sort_order }}&page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
-                                {% endif %}
-                            </div> -->
-                            
+                        <!-- Delete Confirmation Modal -->
+                        <div class="modal fade " id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                            <div class="modal-dialog  " style="margin-top: 300px;" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                       <h5 class="modal-title text-dark   " id="deleteModalLabel">Confirm Delete</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span>&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body text-info">
+                                        Are you sure you want to delete this product?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-danger" onclick="submitDelete()">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="p">
-                            <p class="scroll-instruction">Scroll to view more content</p>
-                        </div>
+                
+                        <!-- Pagination -->
                         <div class="pagination text-info">
                             <button id="prev-btn" disabled style="background-color: #007BFF; border-radius:2px; width:80px;border:none;">Previous</button>
                             <span id="page-info" style="border:none;">Page 1 of {{ total_pages }}</span>
                             <button id="next-btn" style="background-color: #007BFF; border-radius:2px; width:80px;border:none;">Next</button>
                         </div>
-                        
-                         <script>
-                            function filterByCategory() {
-                                const selectedCategory = document.getElementById('category-select').value;
-                                window.location.href = `/products/?category=${encodeURIComponent(selectedCategory)}`;
-                            }
-                        </script>
                         {% include 'buttons.html' %}
 
                     </div>
                 </div>
+                
+                <!-- Scripts -->
+                <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+                
+                <script>
+                    let formIdToDelete = null;
+                
+                    function confirmDeleteModal(productId) {
+                        formIdToDelete = `delete-form-${productId}`;
+                        $('#deleteModal').modal('show');
+                    }
+                
+                    function submitDelete() {
+                        if (formIdToDelete) {
+                            document.getElementById(formIdToDelete).submit();
+                        }
+                    }
+                
+                    function filterByCategory() {
+                        const selectedCategory = document.getElementById('category-select').value;
+                        window.location.href = `/products/?category=${encodeURIComponent(selectedCategory)}`;
+                    }
+                </script>
+                
+                
             </div>
         </div>
     </div>

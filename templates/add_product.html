@@ -41,7 +41,7 @@
 
         .form-container {
             background-color: #ffffff;
-            padding: 40px;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             max-width: 500px;
@@ -120,30 +120,35 @@
     
     {% include 'sidebar.html' %}
     
-    <div class="product-container">
-        <div class="form-container">
-            <h1 style="text-align: center;font-family: 'Playfair Display', serif;color: #1803d2;">Add New Product</h1>
+<div class="main">
+    <div class="product-container mt-5">
+        <div class="form-container mt-5">
+            <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+            <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+          
+            <h3 class="mt-5" style="text-align: center;font-family: 'Playfair Display', serif;color: #1803d2;">Add New Product</h3>
             <form method="post" style="text-align: center;">
                 {% csrf_token %}
                 
                 <div class="form-group">
-                    <label for="product_name">Product Name</label>
+                     <label for="product_name">Product Name<span class="star">*</span></label>
                     {{ form.product_name }}
                 </div>
                 
                 <div class="form-group">
-                    <label for="category">Select Category</label>
-                    
+                     <label for="category">Select Category<span class="star">*</span></label>
                     {{ form.category }}
                 </div>
     
-                <button class="add-button" type="submit">Add Product</button>
-                {% include 'buttons.html' %}
-
+                <button class="add-button mb-3" type="submit">Add Product</button>
+ 
             </form>
+            <a href="/products/" class="btn btn-outline-info   mt-3 leanking-buttons"  >View Product</a>
+
         </div>
     </div>
 
+</div>
     
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%;  ">
         <div class="row ">
