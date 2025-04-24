@@ -418,12 +418,7 @@
             }
 
         }
-        td a{
-            width:100px;
-            padding: 10px;
-            height: 30px;
-            text-align: center;
-         }
+    
     </style>
 </head>
 
@@ -515,19 +510,19 @@
                                         <td>{{ x.dispatched_date | date:"d/m/y" }}</td>
                                         <td>
                                             <a href="generate_invoice/invoice/pdf/{{ x.id }}/{{ 'download' }}"
-                                                class="btn btn-sm btn-primary" role="button">Download</a>
+                                                class="btn   btn-outline-primary" role="button" style="width: 100px;">Download</a>
                                         </td>
                                         <td>
                                             <a href="generate_invoice/invoice/pdf/{{ x.id }}/{{ 'view' }}"
-                                                class="btn btn-sm btn-secondary" role="button">View</a>
+                                                class="btn   btn-outline-secondary" role="button" style="width: 100px;">View</a>
                                         </td>
                                         <td>
-                                            <a href="/edit_invoice/{{ x.id }}" class="btn btn-outline-success "
-                                                role="button">Edit</a>
+                                            <a href="/edit_invoice/{{ x.id }}" class="btn btn-outline-success  "
+                                                role="button" style="width: 100px;">Edit</a>
                                         </td>
                                         <td>
                                             <a href="/delete_invoice/{{ x.id }}" class="btn btn-outline-danger  delete-link"
-                                                role="button">Delete</a>
+                                                role="button" style="width: 100px;">Delete</a>
                                         </td>
                                     </tr>
                                     {% endfor %}

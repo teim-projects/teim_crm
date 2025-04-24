@@ -272,7 +272,7 @@
                         <div class="col-md-6  ">
                             <div data-mdb-input-init class="form-outline">
                                 <label>Please Select Customer<span class="star">*</span></label>
-                                <select id="customer_id" class="form-control form-control-lg" name="customer_id"
+                                <select id="customer_id" class="form-control form-control-lg" name="customer_id" required
                                     onchange="updateCustomerDetails()">
                                     <option value="" disabled selected>Select Customer</option>
                                     {% for customer in customers %}
@@ -381,36 +381,35 @@
 
 
                         <label for="total_with_gst">Total Price (with GST):</label>
-                        <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" class="form-control"
+                        <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" class="form-control" 
                             readonly><br>
                     </div>
 
 
                     <label for="contract_type">Contract Type<span class="star">*</span></label>
 
-                    <select name="contract_type" class="form-control">
+                    <select name="contract_type" class="form-control" required>
                         <option value="One Time">One Time</option>
                         <option value="AMC">AMC</option>
                         <option value="Warranty">Warranty</option>
                     </select><br>
 
                     <label for="contract_status">Contract Status<span class="star">*</span></label>
-                    <select name="contract_status" class="form-control">
+                    <select name="contract_status" class="form-control" required>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
                     </select><br>
 
                     <label for="property_type">Property Type<span class="star">*</span></label>
-                    <textarea name="property_type" class="form-control"></textarea><br>
+                    <textarea name="property_type" class="form-control" required></textarea><br>
 
                     <label for="warranty_period">Warranty Period<span class="star">*</span></label>
-                    <input type="text" name="warranty_period" class="form-control"><br>
+                    <input type="text" name="warranty_period" class="form-control" required><br>
 
 
                     <div class="col-md-12">
-                    <label for="state">State<span class="star">*</span></label>
-                        <label  class="form-label">State:</label>
-                        <select id="state" name="state" class="form-control">
+                    <label for="state">Select State<span class="star">*</span></label>
+                         <select id="state" name="state" class="form-control" required>
                             <option value="">Select State</option>
                             <option value="Andhra Pradesh">Andhra Pradesh</option>
                             <option value="Arunachal Pradesh">Arunachal Pradesh</option>
@@ -452,27 +451,23 @@
                     </div>
 
 
-                    <label for="city">City:</label><br>
-                    <input type="text" name="city" class="form-control"><br>
+                    <label >City<span class="star">*</span></label>
+                     <input type="text" name="city" class="form-control" required><br>
 
+                    <label >Pincode<span class="star">*</span></label>
+                     <input type="text" name="pincode" maxlength="6" class="form-control" required><br>
 
-                    <label for="pincode">Pincode:</label>
-                    <input type="text" name="pincode" maxlength="6" class="form-control"><br>
+                    <label >Address<span class="star">*</span></label>
+                     <textarea name="address" class="form-control" required></textarea><br>
 
-
-                    <label for="address">Address:</label>
-                    <textarea name="address" class="form-control"></textarea><br>
-
-
-                    <label for="gps_location">GPS Location:</label>
-                    <input type="url" name="gps_location" class="form-control"><br>
+                     <label >GPS Location<span class="star">*</span></label>
+                     <input type="url" name="gps_location" class="form-control" required><br>
 
 
 
 
-
-                    <label for="frequency_count">Frequency Count:</label>
-                    <select name="frequency_count" class="form-control">
+                     <label >Select Frequency Count<span class="star">*</span></label>
+                     <select name="frequency_count" class="form-control">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -491,33 +486,31 @@
                     </select><br>
 
 
-                    <label for="payment_terms">Payment Terms:</label>
-                    <input class="form-control" type="text" name="payment_terms"
+                    <label >Payment Terms<span class="star">*</span></label>
+                     <input class="form-control" type="text" name="payment_terms"
                         value="100% Advance payment OR Whatever mutually Decided" readonly><br>
 
+                        <label >Sales Person Name<span class="star">*</span></label>
+                     <input type="text" name="sales_person_name" class="form-control"><br>
 
-                    <label for="sales_person_name">Sales Person Name:</label>
-                    <input type="text" name="sales_person_name" class="form-control"><br>
-
-
-                    <label for="sales_person_contact_no">Sales Person Contact No:</label>
-                    <input type="text" name="sales_person_contact_no" id="sales_person_contact_no" pattern="\d{10}"
+                    <label >Sales Person Contact No<span class="star">*</span></label>
+                     <input type="text" name="sales_person_contact_no" id="sales_person_contact_no" pattern="\d{10}"
                         title="Please enter a valid 10-digit phone number" required class="form-control"><br>
 
+                        <label >Delivery Time<span class="star">*</span></label>
+                     <input type="time" class="form-control" id="delivery_time" name="delivery_time" required>
 
-                    <label for="delivery_time">Delivery Time</label>
-                    <input type="time" class="form-control" id="delivery_time" name="delivery_time" required>
+                     <label >Lead Date<span class="star">*</span></label>
+                     <input type="date" name="lead_date" required class="form-control"><br>
 
-                    <label for="lead_date">Lead Date:</label><br>
-                    <input type="date" name="lead_date" required class="form-control"><br>
-
-                    <label for="service_date">Service Date:</label><br>
-                    <input type="date" name="service_date" required class="form-control"><br>
+                     <label >Service Date<span class="star">*</span></label>
+                     <input type="date" name="service_date" required class="form-control"><br>
 
                     <div class="mt-4 pt-2 text-center"
                         style="font-family: 'Playfair Display', serif;color:antiquewhite; font-weight: 900;">
                         <button class="btn btn-info btn-lg" type="submit" style="width:200px;">Submit</button>
                     </div>
+                    <a href="/display_customer" class="btn btn-outline-info   mt-5 leanking-buttons"  >View Customer Records</a>
 
 
 

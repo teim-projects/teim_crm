@@ -22,8 +22,9 @@
     <title>Sidebar</title>
     <style>
         body {
-            background-color: rgb(79, 77, 77) !important;
-            color: #F4F4F5 !important;
+            overflow-x: hidden;
+            background-color: #1d1d1d !important; /* dark for contrast */     
+           color: #F4F4F5 !important;
 
         }
 
@@ -501,8 +502,13 @@
         @media (max-width: 768px) {
 
 
-
-
+.leanking-buttons{
+    margin-left: 14px;
+}
+.leanking-buttons-Quotation
+{
+    margin-left: 5px;
+}
 
 
             .open-sidebar .pie-chart-container {
@@ -662,10 +668,85 @@
         .star{
             color: red;
         }
+       .click-burst {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color:rgb(4, 128, 193);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  animation: burstAnimation 600ms ease-out forwards;
+}
+
+@keyframes burstAnimation {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--x), var(--y)) scale(0.5);
+    opacity: 0;
+  }
+}
+#particles-js canvas {
+    position: absolute;
+    display: block;
+  }
+  #particles-js {
+    position: fixed;   /* Fixes it to the screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;      /* Ensures the canvas takes the full height of the screen */
+    z-index: -1;       /* Keeps it in the background */
+  }
+  
     </style>
 </head>
 
 <body>
+    <script>
+        document.addEventListener("click", function (e) {
+          const ripple = document.createElement("div");
+      
+          // Style through JS only
+          ripple.style.position = "absolute";
+          ripple.style.left = e.clientX + "px";
+          ripple.style.top = e.clientY + "px";
+          ripple.style.width = "10px";
+          ripple.style.height = "10px";
+          ripple.style.borderRadius = "50%";
+          ripple.style.backgroundColor = "#00c3ff";
+          ripple.style.pointerEvents = "none";
+          ripple.style.zIndex = "9999";
+          ripple.style.transform = "translate(-50%, -50%)";
+          ripple.style.animation = "ripple-effect 0.5s ease-out forwards";
+      
+          // Add animation via JS
+          const style = document.createElement("style");
+          style.innerHTML = `
+            @keyframes ripple-effect {
+              from {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.8;
+              }
+              to {
+                transform: translate(-50%, -50%) scale(6);
+                opacity: 0;
+              }
+            }
+          `;
+          document.head.appendChild(style);
+      
+          document.body.appendChild(ripple);
+          setTimeout(() => {
+            ripple.remove();
+            style.remove(); // Remove style after animation
+          }, 500);
+        });
+      </script>
+      
     <div class="header">
 
         <div class="hamburger" id="hamburger">
@@ -746,7 +827,7 @@
                     </ul>
                 </div>
             </li>
-            <li class="has-submenu"><i class="fas fa-folder-open"></i> transaction <span class="arrow-down"></span>
+            <li class="has-submenu"><i class="fas fa-folder-open"></i> Transaction <span class="arrow-down"></span>
                 <div class="submenu">
                     <ul>
                         <a href="/lead_management_create">
@@ -864,6 +945,46 @@
     </div>
 
     <div class="overlay" id="overlay"></div>
+<!-- Particles JS Container -->
+<div id="particles-js" style="position: fixed; width: 100%; height: 100%; top: 20; left: 0; z-index: -5;"></div>
+
+<!-- Load the Particles.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+<!-- Initialize Particles -->
+<script>
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 80 },
+        shape: { type: "circle" },
+        opacity: { value: 0.3 },
+        size: { value: 6, random: true },
+        color: { value: "#0097a7" },
+        line_linked: { color: "#0097a7" },
+        move: {
+          enable: true,
+          speed: 0.7,
+          direction: "none",
+          straight: false,
+          bounce: false
+        }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "grab" },
+          onclick: { enable: true, mode: "repulse" }  // 👈 Added this line
+        },
+        modes: {
+          grab: { distance: 120, line_linked: { opacity: 0.5 } },
+          repulse: { distance: 150, duration: 0.4 }  // 👈 Added this block
+        }
+      },
+      retina_detect: true
+    });
+  </script>
+  
+  
 
     <script>
         const hamburger = document.getElementById('hamburger');
@@ -889,6 +1010,7 @@
         function goBackAndRefresh() {
           window.location.href = document.referrer;
         }
+        
       </script>
 
 </body>

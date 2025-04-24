@@ -169,13 +169,14 @@
                 <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
                 <span onclick="window.history.back()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
               
-                <h3 style="  margin-top: 5px;font-weight: 600;" class="mt-5"> Quotation</h3>
+                <h3 style="  margin-top: 5px;font-weight: 600;" class="mt-5 mb-3"> Quotation</h3>
                 <form method="POST">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <select id="customer_id" class="form-control form-control-lg" name="customer_id">
+                                <label>Select Customer<span class="star">*</span></label>
+                                <select id="customer_id" class="form-control form-control-lg" name="customer_id" required>
                                     <option value="" disabled selected>Select Customer</option>
                                     {% for customer in customers %}
                                     <option value="{{ customer.id }}" data-fullname="{{ customer.firstname }} {{ customer.lastname }}">{{ customer.customerid }} - {{ customer.firstname }} {{ customer.lastname }}</option>
@@ -185,6 +186,7 @@
                           </div>
                           <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Service Type<span class="star">*</span></label>
                                 <textarea id="servicetype_q" class="form-control form-control-lg" placeholder="Service Type" name="servicetype_q" required></textarea>
                             </div>
                         </div>
@@ -193,12 +195,14 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label> Enter Quantity<span class="star">*</span></label>
                                 <input type="number" id="quantity" class="form-control form-control-lg" placeholder="Quantity" name="quantity" required />
                             </div>
                         </div>
 
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Price<span class="star">*</span></label>
                                 <input type="number" step="0.01" id="price" class="form-control form-control-lg" placeholder="Price" name="price" required />
                             </div>
                         </div>
@@ -207,11 +211,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Terms and Condition<span class="star">*</span></label>
                                 <input type="text" id="termsandcondition" class="form-control form-control-lg" placeholder="Terms and Condition" name="termsandcondition" required />
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Subject<span class="star">*</span></label>
                                 <input type="text" id="subject" class="form-control form-control-lg" placeholder="Subject" name="subject" required />
                             </div>
                         </div>
@@ -221,12 +227,14 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Company Name<span class="star">*</span></label>
                                 <input type="text" id="company_name" class="form-control form-control-lg" placeholder="Company Name" name="company_name" required />
                             </div>
                         </div>
 
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Company Email<span class="star">*</span></label>
                                 <input type="email" id="company_email" class="form-control form-control-lg" placeholder="Company Email" name="company_email" required />
                             </div>
                         </div>
@@ -235,7 +243,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Company Contact No</label>
+                                 <label>Company Contact No<span class="star">*</span></label>
 
                                 <input type="text" 
                                        id="company_contact_no" 
@@ -250,8 +258,7 @@
 
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Quotation Date </label>
-
+                                 <label>Select Quotation Date<span class="star">*</span></label>
                                 <input type="date" id="quotation_date" class="form-control form-control-lg" placeholder="Quotation Date" name="quotation_date" required />
                             </div>
                         </div>
@@ -260,15 +267,17 @@
                     <div class="row">
                         <div class="col-md-6 ">
                             <div data-mdb-input-init class="form-outline mt-3">
+                                <label>Enter Company Address<span class="star">*</span></label>
                                 <input type="text" id="company_address" class="form-control form-control-lg" placeholder="Company Address" name="company_address" required />
                             </div>
                         </div>
 
                         <div class="col-md-6  ">
                             <div data-mdb-input-init class="form-outline" >
+                                <label>  </label>
                                
-                               <div class="row">
-                                <div class="col-md-12 flaxxxx">
+                               <div class="row mt-4">
+                                <div class="col-md-12  ">
                                     <label class="switch">
                                         <input type="checkbox" id="gst_checkbox" class="form-check-input" name="gst_checkbox" />
                                         <span class="slider round "></span>
@@ -321,9 +330,12 @@
                     
 
                     <div class="mt-4 pt-2 text-center" style="font-family: 'Playfair Display', serif;color:antiquewhite;">
-                        <input class="btn btn-info btn-lg" type="submit" name="submit" value="Submit" / style="width: 200px;">
+                        <input class="btn btn-info btn-lg" type="submit" name="submit" value="Submit"  style="width: 200px;" />
                     </div>
-                     
+<div class="b">
+    <a href="/display_quotation" class="btn btn-outline-info   mt-3 leanking-buttons-Quotation  "  >View Quotation Records</a>
+
+</div>                     
  
                 </form>
             </div>

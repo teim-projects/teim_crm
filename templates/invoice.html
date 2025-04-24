@@ -171,12 +171,13 @@
                 <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
                 <span onclick="window.history.back()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
               
-                <h3 class="mt-5" style="  margin-top: 5px;font-weight: 600;">Invoice</h3>
+                <h3 class="mt-5 mb-3" style="  margin-top: 5px;font-weight: 600;">Invoice</h3>
                 <form method="POST">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Select Customer<span class="star">*</span></label>
                                 <select id="customer_id" class="form-control form-control-lg" name="customer_id">
                                     <option value="" disabled selected>Select Customer</option>
                                     {% for customer in customers %}
@@ -189,11 +190,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Mode Of Payment<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Mode Of Payment" name="modeofpayment" />
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Dispatched Through<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Dispatched Through" name="dispatchedthrough" />
                             </div>
                         </div>
@@ -201,11 +204,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Term Of Delivery<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Term Of Delivery" name="termofdelivery" />
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Terms and Condition<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Terms and Condition" name="termsandcondition" />
                             </div>
                         </div>
@@ -213,11 +218,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label> Enter Company Name<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Company Name" name="company_name" />
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Company Email<span class="star">*</span></label>
                                 <input type="email" class="form-control form-control-lg" placeholder="Company Email" name="company_email" />
                             </div>
                         </div>
@@ -225,6 +232,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Company Contact No<span class="star">*</span></label>
                                 <input type="text" 
                                        id="company_contact_no" 
                                        class="form-control form-control-lg" 
@@ -237,6 +245,7 @@
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Description of Goods<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Description of Goods" name="description_of_goods" />
                             </div>
                         </div>
@@ -244,11 +253,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Price<span class="star">*</span></label>
                                 <input type="number" step="0.01" class="form-control form-control-lg" placeholder="Price" name="price" id="id_price" />
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Quantity<span class="star">*</span></label>
                                 <input type="number" step="1" class="form-control form-control-lg" placeholder="Quantity" name="quantity" id="id_quantity" />
                             </div>
                         </div>
@@ -256,13 +267,17 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Discount</label>
                                 <input type="number" step="0.01" class="form-control form-control-lg" placeholder="Discount (%)" name="discount" id="id_discount" />
                             </div>
                         </div>
                         
                 <div class="col-md-6 mb-4">
                     <div data-mdb-input-init class="form-outline" style="margin-left: 10px;">
-                        <label class="switch">
+                       
+                        <label class="mt-5"> </label>
+                        <label class="switch mt-5">
+                            
                             <input type="checkbox" id="gst_checkbox" class="form-check-input" name="gst_checkbox"  />
                             <span class="slider round"></span>
                         </label>
@@ -273,11 +288,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter HSN/SAC Code<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="HSN/SAC Code" name="hsn_sac_code" />
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter PAN Card No<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="PAN Card No" name="pan_card_no" />
                             </div>
                         </div>
@@ -285,11 +302,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Account No<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Account No" name="account_no" />
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter Branch<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Branch" name="branch" />
                             </div>
                         </div>
@@ -297,26 +316,28 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Enter IFSC Code<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="IFSC Code" name="ifsc_code" />
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Select Delivery Date<span class="star">*</span></label>
                                 <input type="date" class="form-control form-control-lg" name="delivery_date" />
-                                <label for="delivery_date" style="font-size: 14px;">Delivery Date</label>
-
+ 
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Select Dispatched Date<span class="star">*</span></label>
                                 <input type="date" class="form-control form-control-lg" name="dispatched_date" />
-                                <label for="dispatched_date" style="font-size: 14px;">Dispatched Date</label>
-                            </div>
+                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label> Enter Designation<span class="star">*</span></label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Designation" name="designation" />
                             </div>
                         </div>
@@ -326,19 +347,22 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Total Amount </label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Total Amount" name="total_amount" id="id_total_amount" readonly />
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
+                                <label>Total Amount with GST </label>
                                 <input type="text" class="form-control form-control-lg" placeholder="Total Amount with GST" name="total_amount_with_gst" id="id_total_amount_with_gst" readonly />
                             </div>
                         </div>
                     </div>
                 
                     <div class="mt-4 pt-2 text-center" style="font-family: 'Playfair Display', serif;color:antiquewhite;">
-                        <input class="btn btn-info btn-lg" type="submit" name="submit" value="Submit" / style="width:200px">
+                        <input class="btn btn-info btn-lg" type="submit" name="submit" value="Submit"  style="width:200px" />
                     </div>
+                    <a href="/display_invoice" class="btn btn-outline-info   mt-3 leanking-buttons"  >View invoice Records</a>
  
                 </form>
             </div>
