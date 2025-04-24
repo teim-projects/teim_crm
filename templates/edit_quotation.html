@@ -1,0 +1,300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static '\css\bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static '\images' %}">
+    <link rel="stylesheet" href="{% static 'css\customer.css' %}">
+    <script src="{% static 'js/script.js' %}"></script>
+
+   
+    <title>Customer Details</title>
+    
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0fbff;
+            color: #333;
+        }
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+
+        }
+        .card-registration {
+            border-radius: 15px;
+            background-color: #ffffff;
+            box-shadow: 0 0px 10px rgba(255, 255, 255 );
+            width: 100%;
+            max-width: 800px;
+             margin-top: 80px;
+        }
+        h3 {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            color: #03AED2;
+            margin-bottom: 30px;
+        }
+        h6 {
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 20px;
+            color: #007a99;
+            text-align: center;
+        }
+        .form-outline input {
+            border-radius: 10px;
+            border: 1px solid #b2e4ef;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 12px;
+        }
+        .form-outline input:focus {
+            border-color: #03AED2;
+            outline: none;
+            box-shadow: 0 0 8px rgba(3, 174, 210, 0.2);
+        }
+        .btn-info {
+            background-color: #03AED2;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            width: 150px;
+        }
+        .btn-info:hover {
+            background-color: #027994;
+            box-shadow: 0 4px 15px rgba(3, 174, 210, 0.4);
+        }
+        .container {
+            margin-top: 30px;
+        }
+        .card-body {
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .main-container{
+                margin-top: 10px;
+            }
+            .card {
+                margin-left: 0;
+
+                max-width: 100%;
+                padding: 20px; /* Add some padding for better appearance */
+            }
+
+            .open-sidebar .card {
+                margin-left: 300px; /* Adjust content when sidebar is open */
+            }
+
+        }
+    </style>
+    
+</head>
+<body>
+    {% include 'sidebar.html' %}
+
+    <div class="main-container">
+        <div class="card shadow-2-strong card-registration">
+            <div class="card-body p-5">
+                <h3 style="font-size: 40px; margin-top: 5px; " class=" mb-5">Quotation</h3>
+                {% for x in data %}
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" id="ucustomer" class="form-control form-control-lg" placeholder="Customer Name" name="ucustomer" value="{{ x.customer }}" readonly/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="number" id="uquantity" class="form-control form-control-lg" placeholder="Quantity" name="uquantity" value="{{ x.quantity }}" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="number" step="0.01" id="uprice" class="form-control form-control-lg" placeholder="Price" name="uprice" value="{{ x.price }}" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" id="termsandcondition" class="form-control form-control-lg" placeholder="Terms and Conditions" name="utermsandcondition" value="{{ x.termsandcondition }}" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" id="servicetype_q" class="form-control form-control-lg" placeholder="Service Type" name="uservicetype_q" value="{{ x.servicetype_q }}" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="number" step="0.01" id="utotal_amount" class="form-control form-control-lg" placeholder="Total Amount" name="utotal_amount" value="{{ x.total_amount }}" readonly />
+                                        <input type="hidden" id="hidden_total_amount" name="hidden_total_amount" />
+                                        <label for="total_amount_with_gst">Total Amount</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="number" step="0.01" id="utotal_amount_with_gst" class="form-control form-control-lg" placeholder="Total Amount with GST" name="utotal_amount_with_gst" value="{{ x.total_amount_with_gst }}" readonly />
+                                        <input type="hidden" id="hidden_total_amount_with_gst" name="hidden_total_amount_with_gst" />
+                                        <label for="total_amount_with_gst">Total Amount with GST And Discount</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="number" step="0.01" id="discount" class="form-control form-control-lg" placeholder="Discount" name="udiscount" value="{{ x.discount }}" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" id="company_name" class="form-control form-control-lg" placeholder="Company Name" name="ucompany_name" value="{{ x.company_name }}" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="email" id="company_email" class="form-control form-control-lg" placeholder="Company Email" name="ucompany_email" value="{{ x.company_email }}" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" id="company_contact_no" class="form-control form-control-lg" placeholder="Company Contact No." name="ucompany_contact_no" value="{{ x.company_contact_no }}" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="date" id="quotation_date" class="form-control form-control-lg" placeholder="Quotation Date" name="uquotation_date" value="{{ x.quotation_date }}" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" id="company_address" class="form-control form-control-lg" placeholder="Company Address" name="ucompany_address" value="{{ x.company_address }}" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" id="subject" class="form-control form-control-lg" placeholder="Subject" name="usubject" value="{{ x.subject }}" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="gst" name="ugst" value="{{ x.gst }}">
+                                        <label for="gst">GST</label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            <div class="mt-4 pt-2 text-center" style="font-family: 'Playfair Display', serif;color:antiquewhite;">
+                                <input class="btn btn-info btn-lg" type="submit" name="quotation_submit" value="Submit" />
+                            </div>
+                        </form>
+            </div>
+        </div>
+    </div>            
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const submenu = this.querySelector('.submenu');
+                    const arrow = this.querySelector('.arrow-down');
+                    
+                    // Hide all other submenus
+                    menuItems.forEach(otherItem => {
+                        if (otherItem !== this) {
+                            const otherSubmenu = otherItem.querySelector('.submenu');
+                            const otherArrow = otherItem.querySelector('.arrow-down');
+                            if (otherSubmenu) {
+                                otherSubmenu.style.display = 'none';
+                                if (otherArrow.classList.contains('arrow-up')) {
+                                    otherArrow.classList.remove('arrow-up');
+                                }
+                            }
+                        }
+                    });
+
+                    // Toggle current submenu
+                    if (submenu) {
+                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+                        arrow.classList.toggle('arrow-up');
+                    }
+                });
+            });
+        });
+
+    $(document).ready(function() {
+        function calculateTotalAmount() {
+            var quantity = parseFloat($("#uquantity").val()) || 0;
+            var price = parseFloat($("#uprice").val()) || 0;
+            var discount = parseFloat($("#discount").val()) || 0;
+            var total_amount = quantity * price;
+            $("#utotal_amount").val(total_amount.toFixed(2));
+            $("#hidden_total_amount").val(total_amount.toFixed(2)); // Update hidden input
+            
+            if ($("#gst").is(":checked")) {
+                var gst = total_amount * 0.18;
+                var total_amount_with_gst = total_amount + gst - discount;
+                $("#utotal_amount_with_gst").val(total_amount_with_gst.toFixed(2));
+                $("#hidden_total_amount_with_gst").val(total_amount_with_gst.toFixed(2)); // Update hidden input
+            } else {
+                var total_amount_with_gst = total_amount - discount;
+                $("#utotal_amount_with_gst").val(total_amount_with_gst.toFixed(2));
+                $("#hidden_total_amount_with_gst").val(total_amount_with_gst.toFixed(2)); // Update hidden input
+            }
+        }
+
+        $("#uquantity, #uprice, #discount, #gst").on("input change", calculateTotalAmount);
+        calculateTotalAmount();
+    });
+
+
+</script>
+<div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:400px;">
+    <div class="row p-3">
+        <div class="col-md-12 text-center"> <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+            © 2025. Powered by
+            <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                style="height: 20px; vertical-align: middle;">
+            <a href="http://www.chronoanalytics.in/"
+                style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                Solution</a>
+            All Rights Reserved.
+        </p>
+      </div>
+        <div class="col-md-12 text-center">  <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+            © 2025. Marketed by
+            <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
+            <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+            All Rights Reserved.
+        </p></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,408 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <title>Complete Work</title>
+    <style>
+       
+        .hidden-input {
+            display: none !important; /* Hide the file input */
+        }
+       
+
+        
+
+        .new-container {
+             max-width: 700px;
+            width: 100%;
+             justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            /* height: 100vh; */
+            margin-top: 100px !important;
+            border-radius: 20px;
+        }
+
+
+      
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        form:hover{
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .form-control {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .img-fluid {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin: 10px 0;
+            transition: transform 0.3s;
+        }
+
+        .img-fluid:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-outline-success {
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        .logo {
+
+            text-align: center;
+            margin-bottom: 10px;
+            /* Reduced bottom margin */
+            padding: 0;
+            /* Remove any padding */
+        }
+
+        .logo img {
+            max-width: 70%;
+            /* Ensure the logo size is consistent */
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            /* Center the logo horizontally */
+        }
+
+        canvas {
+            width: 100%;
+            height: 200px;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .new-container {
+                margin-top: 30px;
+                margin-left: 0px;
+                max-width: 100%;
+            }
+        }
+
+        h3 {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            /* Gradient definition */
+            -webkit-background-clip: text;
+            /* Clip the gradient to the text boundaries */
+            -webkit-text-fill-color: transparent;
+            border-bottom: 1px solid rgb(80, 16, 177);
+            /*Script MT */
+            font-weight: 400;
+        }
+        
+</style>
+
+    
+</head>
+
+<body>
+    {% include 'sidebar.html' %}
+    
+    <div class="new-container container   "  style="margin-top: 100px !important;">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-8 bg-light mb-5" style="border-radius: 20px; ">
+                <h3 class="my-4 text-center">Complete Work for {{ tech_work.work.customer_fname }} {{ tech_work.work.customer_lname }}</h3>
+
+                <center>
+                    <form method="post" enctype="multipart/form-data"   style="width: 100%; margin-bottom: 40px !important; color:black !important">
+                        {% csrf_token %}
+            
+                        <!-- <div class="form-group">
+                            <label for="photos_before_service">Photo Before Service:</label>
+                            <input type="file" name="photos_before_service" id="photos_before_service" class="form-control"
+                                multiple>
+                        </div>
+                        <button type="button" class="btn btn-primary" style="width: 30%; margin-top: 10px; margin-left: 35%;"
+                            onclick="addFiles('photos_before_service', 'file-list-before')">Add Files</button>
+                        <div class="file-list" id="file-list-before"></div> -->
+            
+            
+                        <!-- <div class="form-group">
+                            <label for="photos_after_service">Photo After Service:</label>
+                            <input type="file" name="photos_after_service" id="photos_after_service" class="form-control" multiple>
+                        </div>
+                        <button type="button" class="btn btn-primary" style="width: 30%; margin-top: 10px; margin-left: 35%;"
+                            onclick="addFiles('photos_after_service', 'file-list-after')">Add Files</button>
+                        <div class="file-list" id="file-list-after"></div> -->
+            
+            
+            
+                        <div class="form-group">
+                            <label for="photos_before_service">Photo Before Service:</label>
+                            <input type="file" name="photos_before_service" id="photos_before_service" class="form-control hidden-input"
+                                multiple>
+                            <button type="button" class="btn btn-primary add-file-btn" id="add-photo-before"
+                                style="width: 30%; margin-top: 10px;margin-left: 100px;">
+                                <i class="fa fa-plus"></i> Add Files
+                            </button>
+                            <div class="file-list" id="file-list-before"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="photos_after_service">Photo After Service:</label>
+                            <input type="file" name="photos_after_service" id="photos_after_service" class="form-control hidden-input"
+                                multiple>
+                            <button type="button" class="btn btn-primary add-file-btn" id="add-photo-after"
+                                style="width: 30%; margin-top: 10px;margin-left: 110px;">
+                                <i class="fa fa-plus"></i> Add Files
+                            </button>
+                            <div class="file-list" id="file-list-after"></div>
+                        </div>
+                        
+                        
+                        
+                        
+            
+                        <div class="form-group">
+                            <label for="signature-pad">Customer Signature:</label>
+                            <canvas id="signature-pad" width="600" height="300"
+                                style="border: 2px solid #ddd; background-color: #f8f9fa;"></canvas>
+                            <button type="button" class="btn btn-outline-danger mt-2" id="clear-signature">Clear Signature</button>
+                            <input type="hidden" name="signature_data" id="signature_data">
+                            <!-- Hidden field to store signature data -->
+                        </div>
+            
+                        <!-- <div class="form-group">
+                            <label for="customer_signature_photo">Customer Signature Photo:</label>
+                            <input type="file" name="customer_signature_photo" id="customer_signature_photo" class="form-control">
+                        </div> -->
+            
+            
+                        <!-- <div class="form-group">
+                            <label for="payment_photos">Payment Photo:</label>
+                            <input type="file" name="payment_photos" id="payment_photos" class="form-control" multiple>
+                        </div>
+                        <button type="button" class="btn btn-primary" style="width: 30%; margin-top: 10px; margin-left: 35%;"
+                            onclick="addFiles('payment_photos', 'file-list-payment')">Add Files</button>
+                        <div class="file-list" id="file-list-payment"></div> -->
+            
+            
+                        <!-- <div class="form-group">
+                            <label for="payment_photos">Payment Photo:</label>
+                            <input type="file" name="payment_photos" id="payment_photos" class="form-control hidden-input" multiple>
+                            <button type="button" class="btn btn-primary add-file-btn" id="add-photo-payment"
+                                style="width: 30%; margin-top: 10px; margin-left: 35%;">
+                                <i class="fa fa-plus"></i> Add Files
+                            </button>
+                            <div class="file-list" id="file-list-payment"></div>
+                        </div> -->
+            
+            
+                        <div class="form-group">
+                            <label for="payment_photos">Payment Photo:</label>
+                            <input type="file" name="payment_photos" id="payment_photos" class="form-control hidden-input" multiple>
+                            <button type="button" class="btn btn-primary add-file-btn" id="add-photo-payment"
+                                style="width: 30%; margin-top: 10px;margin-left: 140px;">
+                                <i class="fa fa-plus"></i> Add Files
+                            </button>
+                            <div class="file-list" id="file-list-payment"></div>
+                        </div>
+                        
+            
+                        <div class="form-group">
+                            <label for="customer_payment_status">Customer Payment Mode:</label>
+                            <br>
+                            <img src="{% static 'images/payment_scanner.jpg' %}" alt="Google Payment Scanner" class="img-fluid">
+                            {% if tech_work.work.customer_payment_status == 'Pending' %}
+                            <select name="customer_payment_status" id="customer_payment_status" class="form-control">
+                                
+                                <option value="Online" {% if tech_work.work.customer_payment_status == 'Online' %} selected {% endif %}>Online</option>
+                                <option value="Cash" {% if tech_work.work.customer_payment_status == 'Cash' %} selected {% endif %}>Cash</option>
+                                <option value="Pending" {% if tech_work.work.customer_payment_status == 'Pending' %} selected {% endif %}>Pending</option>
+                            </select>
+                            {% elif tech_work.work.customer_payment_status == 'Online' %}
+                            <input type="text" id="customer_payment_status" class="form-control" value="Online" readonly>
+                            {% elif tech_work.work.customer_payment_status == 'Cash' %}
+                            <input type="text" id="customer_payment_status" class="form-control" value="Cash" readonly>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-outline-success">Submit Completion</button>
+                    </form>
+                </center>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+
+    </div>
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:400px;">
+        <div class="row p-3">
+            <div class="col-md-12 text-center"> <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+                © 2025. Powered by
+                <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                    style="height: 20px; vertical-align: middle;">
+                <a href="http://www.chronoanalytics.in/"
+                    style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                    Solution</a>
+                All Rights Reserved.
+            </p>
+          </div>
+            <div class="col-md-12 text-center">  <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                © 2025. Marketed by
+                <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
+                <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+        -webkit-background-clip: text; 
+        -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+                All Rights Reserved.
+            </p></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <script>
+        // Initialize SignaturePad
+        const canvas = document.getElementById('signature-pad');
+        const signaturePad = new SignaturePad(canvas);
+
+        // Clear button functionality
+        document.getElementById('clear-signature').addEventListener('click', function () {
+            signaturePad.clear();
+        });
+
+        // Capture the signature data before submitting the form
+        document.querySelector('form').addEventListener('submit', function (e) {
+            if (!signaturePad.isEmpty()) {
+                document.getElementById('signature_data').value = signaturePad.toDataURL(); // Convert to base64
+            } else {
+                e.preventDefault(); // Prevent form submission if signature is empty
+                alert("Please provide a signature.");
+            }
+        });
+
+
+        // function addFiles(inputId, listId) {
+        //     const input = document.getElementById(inputId);
+        //     const fileList = document.getElementById(listId);
+
+        //     if (input && input.files) {
+        //         for (const file of input.files) {
+        //             const fileItem = document.createElement('div');
+        //             fileItem.className = 'file-item';
+        //             fileItem.textContent = File: ${file.name};
+        //             fileList.appendChild(fileItem);
+        //         }
+        //         // Clear the input so more files can be added
+        //         input.value = '';
+        //     }
+        // }
+
+
+        // Function to manage adding files dynamically
+    // function handleFileAddition(inputId, listId) {
+    //     const inputElement = document.getElementById(inputId);
+    //     const fileListElement = document.getElementById(listId);
+    //     const dt = new DataTransfer(); // Holds all selected files
+
+    //     // Add previously selected files back into DataTransfer
+    //     Array.from(inputElement.files).forEach(file => dt.items.add(file));
+
+    //     // Trigger file input click for new file selection
+    //     inputElement.click();
+
+    //     // When new files are selected, update DataTransfer
+    //     inputElement.addEventListener('change', function () {
+    //         Array.from(inputElement.files).forEach(file => dt.items.add(file));
+
+    //         // Update input's files with DataTransfer
+    //         inputElement.files = dt.files;
+
+    //         // Update file list UI
+    //         fileListElement.innerHTML = ''; // Clear previous list
+    //         Array.from(dt.files).forEach(file => {
+    //             const fileItem = document.createElement('div');
+    //             fileItem.textContent = File: ${file.name};
+    //             fileListElement.appendChild(fileItem);
+    //         });
+    //     }, { once: true }); 
+    // }
+
+    //     // Attach event listeners for all file addition buttons
+    //     document.getElementById('add-photo-before').addEventListener('click', () => {
+    //         handleFileAddition('photos_before_service', 'file-list-before');
+    //     });
+
+    //     document.getElementById('add-photo-after').addEventListener('click', () => {
+    //         handleFileAddition('photos_after_service', 'file-list-after');
+    //     });
+
+    //     document.getElementById('add-photo-payment').addEventListener('click', () => {
+    //         handleFileAddition('payment_photos', 'file-list-payment');
+    //     });
+
+    function handleFileAddition(inputId, listId) {
+    const inputElement = document.getElementById(inputId);
+    const fileListElement = document.getElementById(listId);
+    const dt = new DataTransfer(); // Holds all selected files
+
+    // Add previously selected files back into DataTransfer
+    Array.from(inputElement.files).forEach(file => dt.items.add(file));
+
+    // Trigger file input click for new file selection
+    inputElement.click();
+
+    // When new files are selected, update DataTransfer
+    inputElement.addEventListener('change', function () {
+        Array.from(inputElement.files).forEach(file => dt.items.add(file));
+
+        // Update input's files with DataTransfer
+        inputElement.files = dt.files;
+
+        // Update file list UI
+        fileListElement.innerHTML = ''; // Clear previous list
+        Array.from(dt.files).forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.textContent = `File: ${file.name}`;
+            fileListElement.appendChild(fileItem);
+        });
+    }, { once: true });
+}
+
+    // Attach event listeners for all file addition buttons
+    document.getElementById('add-photo-before').addEventListener('click', () => {
+        handleFileAddition('photos_before_service', 'file-list-before');
+    });
+
+    document.getElementById('add-photo-after').addEventListener('click', () => {
+        handleFileAddition('photos_after_service', 'file-list-after');
+    });
+
+    document.getElementById('add-photo-payment').addEventListener('click', () => {
+        handleFileAddition('payment_photos', 'file-list-payment');
+    });
+
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,192 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allocate Work</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css\customer.css' %}">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            /* Gradient definition */
+            -webkit-background-clip: text;
+            /* Clip the gradient to the text boundaries */
+            -webkit-text-fill-color: transparent;
+            border-bottom: 1px solid rgb(80, 16, 177);
+            /*Script MT */
+            font-weight: 400;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin-top: 90px;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+        .card h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        .form-group button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .row {
+            margin-bottom: 20px;
+        }
+        .col-md-6 {
+            padding: 0 15px;
+        }
+    </style>
+</head>
+<body>
+    
+    {% include 'sidebar.html' %}
+
+    <div class="container">
+        <div class="card">
+            <h2>Allocate Work to Technician</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="technician">Select Technician:</label>
+                        <select name="technician" id="technician">
+                            {% for technician in technicians %}
+                                <option value="{{ technician.id }}">{{ technician }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="customer_name">Customer Name:</label>
+                        <input type="text" name="customer_name" id="customer_name" value="{{ customer_fname }} {{customer_lname}}" required readonly>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="customer_phone_number">Customer Phone Number:</label>
+                        <input type="text" name="customer_phone_number" id="customer_phone_number" value="{{ customer_contact }}" required readonly>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="customer_address">Customer Address:</label>
+                        <input type="text" name="customer_address" id="customer_address" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="work_description">Work Description:</label>
+                        <textarea name="work_description" id="work_description" required></textarea>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="customer_payment_status">Payment Status:</label>
+                        <select name="customer_payment_status" id="customer_payment_status">
+                            <option value="Completed">Completed</option>
+                            <option value="Pending">Pending</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="payment_amount">Payment Amount:</label>
+                        <input type="number" name="payment_amount" id="payment_amount" value="{{ payment_amount }}" step="0.01" required readonly>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="gps_location">GPS Location:</label>
+                        <input type="url" name="gps_location" id="gps_location" value="{{ gps_location }}" step="0.01" required readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Allocate Work</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const submenu = this.querySelector('.submenu');
+                    const arrow = this.querySelector('.arrow-down');
+                    
+                    // Hide all other submenus
+                    menuItems.forEach(otherItem => {
+                        if (otherItem !== this) {
+                            const otherSubmenu = otherItem.querySelector('.submenu');
+                            const otherArrow = otherItem.querySelector('.arrow-down');
+                            if (otherSubmenu) {
+                                otherSubmenu.style.display = 'none';
+                                if (otherArrow.classList.contains('arrow-up')) {
+                                    otherArrow.classList.remove('arrow-up');
+                                }
+                            }
+                        }
+                    });
+
+                    // Toggle current submenu
+                    if (submenu) {
+                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+                        arrow.classList.toggle('arrow-up');
+                    }
+                });
+            });
+        });
+
+
+    </script>
+</body>
+
+</html>
