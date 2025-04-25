@@ -32,9 +32,9 @@
 
         .container {
             max-width: 280px; /* Limit the form width */
-            margin: 90px auto;
+            margin: 70px auto;
             background-color: #ffffff;
-            padding: 50px 40px;
+            padding: 4px 40px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             border-radius: 12px;
         }
@@ -86,7 +86,10 @@
 
 <div class="main-container">
     <div class="container" style="max-width: 700px;">
-        <h3 class="text-center">Meeting Details</h3>
+        <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+        <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+      
+        <h3 class="text-center mt-5">Meeting Details</h3>
         <form method="POST">
             {% csrf_token %}
             <div class="form-group">
@@ -118,7 +121,7 @@
                 <label for="minutes_of_meeting">Minutes of Meeting</label>
                 <textarea class="form-control" id="minutes_of_meeting" name="minutes_of_meeting" placeholder="Enter Minutes of the Meeting" rows="4" required></textarea>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg">Save Meeting</button>
+            <button type="submit" class="btn btn-primary btn-lg mb-5">Save Meeting</button>
         </form>
     </div>
 </div>    

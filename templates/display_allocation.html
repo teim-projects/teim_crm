@@ -56,7 +56,7 @@
             border: 1px solid black;
             padding: 20px;
             /* border: 1px solid black ; */
-            margin-top: 90px !important;
+            margin-top: 80px !important;
             border-radius: 15px;
             box-shadow: 0px 0px 10px rgb(125, 93, 93);
             box-shadow: inset 0px 0px 3px rgb(28, 17, 239);
@@ -334,7 +334,7 @@
         @media (max-width: 768px) {
             .table-wrapper {
                 margin-left: 0;
-                margin-top: 150px !important;
+                margin-top: 100px !important;
                
                 padding: 20px; /* Add some padding for better appearance */
             }
@@ -367,17 +367,21 @@
 <body>
     {% include 'sidebar.html' %}
 
-    <div class="container-fluid">
+    <div class="container-fluid" style="min-height: 100vh;">
         <div class="row">
             <div class="col-md-12 ">
                 <div class="col-12 ">
                     <div class="table-wrapper">
+                        
                         <h1> Technician Work Allocation</h1>
                         <div class="navbar">
                             <form class="form-inline" method="get">
                                 <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search by Cust.ID/Phone no." aria-label="Search" value="{{ request.GET.search }}">
                                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit" style="width: 150px;">Search</button>
                             </form>
+                        </div>
+                        <div class="p mb-3">
+                            <p class="scroll-instruction">Scroll to view more content ➡️ </p>
                         </div>
                         <div class="container-table">
                             <table class="table table-bordered">
@@ -445,9 +449,7 @@
                         
                             
                         </div>
-                        <div class="p">
-                            <p class="scroll-instruction">Scroll to view more content</p>
-                        </div>
+ 
                         <div class="pagination">
 
                             {% if page_obj.has_previous %}

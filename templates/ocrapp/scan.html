@@ -1,6 +1,7 @@
 {% load static%}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,24 +10,27 @@
         /* General Styling */
         body {
             font-family: 'Arial', sans-serif;
-           
-          
-        min-height: 100%;
+
+
+            min-height: 100%;
             margin: 0;
             box-sizing: border-box;
         }
-        html{
+
+        html {
             height: 100%;
         }
-.row{
-   
-box-sizing: inherit;
-    border-radius: 10px;
-}
+
+        .row {
+
+            box-sizing: inherit;
+            border-radius: 10px;
+        }
+
         .container-fluid {
-          
+
             margin-top: 120px;
-          
+
         }
 
         h2 {
@@ -38,7 +42,7 @@ box-sizing: inherit;
             border-bottom: 3px solid rgb(80, 16, 177);
         }
 
-       
+
 
         /* Styling the file input */
         input[type="file"] {
@@ -83,22 +87,42 @@ box-sizing: inherit;
 
         /* Responsive Design */
         @media (min-width: 500px) {
-           
-.spann{
-    margin-left: 100px;
-}
-          
+
+            .spann {
+                margin-left: 100px;
+            }
+
+            .col-md-6.col-10.col-sm-8.bg-light.mainnn.p-5.container-flud {
+                padding: 1rem !important;
+            }
+
         }
-        .mainnn{
+        @media (max-width: 500px) {
+
+           
+
+            .col-md-6.col-10.col-sm-8.bg-light.mainnn.p-5.container-flud {
+                padding: 1rem !important;
+            }
+            h2.text-center.mt-3 {
+                margin-top: 35px !important;
+            }
+
+        }
+input{
+    color: #000000;
+}
+
+        .mainnn {
             border-radius: 10px;
             padding: 30px;
             box-shadow: inset 0px 0px 5px blue !important;
-            box-shadow:  0px 0px 5px rgb(255, 255, 255) !important;
-           
+            box-shadow: 0px 0px 5px rgb(255, 255, 255) !important;
+
         }
-        
     </style>
 </head>
+
 <body>
 
     {% include 'sidebar.html' %}
@@ -111,123 +135,134 @@ box-sizing: inherit;
         </form>
         <p class="supported-formats">Supported formats: JPG, PNG, PDF</p>
     </div> -->
-<div style="min-height: 100vh !important;">
-    <div class="container-fluid" >
-        <div class="row">
-            <div class="col-md-3 col-1 col-sm-2 "></div>
-            <div class="col-md-6 col-10 col-sm-8 bg-light mainnn p-5 container-flud">
-               
-                    <h2 class="text-center">Scan Visiting Card</h2>
+    <div style="min-height: 100vh !important;">
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="col-md-3 col-1 col-sm-2 "></div>
+                <div class="col-md-6 col-10 col-sm-8 bg-light mainnn p-5 container-flud">
+                    <span onclick="window.location.href='/index'"
+                        style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i
+                            class="fas fa-house-chimney"></i></span>
+                    <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;"
+                        class="mb-4">X</span>
+
+                    <h2 class="text-center mt-3">Scan Visiting Card</h2>
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ form.as_p }}
                         <button type="submit">Upload & Scan</button>
                     </form>
                     <p class="supported-formats">Supported formats: JPG, PNG, PDF</p>
-<div class="spann  mt-5"  >                        {% include 'buttons.html' %}
-</div>
+                    <div class="spann  mt-5">
+                    </div>
+                </div>
+                <div class="col-md-3 col-1 col-sm-2"></div>
+
             </div>
-            <div class="col-md-3 col-1 col-sm-2"></div>
-            
         </div>
     </div>
-</div>
 
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
         <div class="row p-3">
-            <div class="col-md-12 text-center"> <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
-                © 2025. Powered by
-                <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
-                    style="height: 20px; vertical-align: middle;">
-                <a href="http://www.chronoanalytics.in/"
-                    style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
-                    Solution</a>
-                All Rights Reserved.
-            </p>
-          </div>
-            <div class="col-md-12 text-center">  <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
-                © 2025. Marketed by
-                <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
-                <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+            <div class="col-md-12 text-center">
+                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+                    © 2025. Powered by
+                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://www.chronoanalytics.in/"
+                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                        Solution</a>
+                    All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                    © 2025. Marketed by
+                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
         -webkit-background-clip: text; 
         -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
-                All Rights Reserved.
-            </p></div>
+                    All Rights Reserved.
+                </p>
+            </div>
         </div>
-</div>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-             const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
-             menuItems.forEach(item => {
-                 item.addEventListener('click', function() {
-                     const submenu = this.querySelector('.submenu');
-                     const arrow = this.querySelector('.arrow-down');
-                     
-                     // Hide all other submenus
-                     menuItems.forEach(otherItem => {
-                         if (otherItem !== this) {
-                             const otherSubmenu = otherItem.querySelector('.submenu');
-                             const otherArrow = otherItem.querySelector('.arrow-down');
-                             if (otherSubmenu) {
-                                 otherSubmenu.style.display = 'none';
-                                 if (otherArrow.classList.contains('arrow-up')) {
-                                     otherArrow.classList.remove('arrow-up');
-                                 }
-                             }
-                         }
-                     });
- 
-                     // Toggle current submenu
-                     if (submenu) {
-                         submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
-                         arrow.classList.toggle('arrow-up');
-                     }
-                 });
-             });
-         });
-     const deleteLinks = document.querySelectorAll('.delete-link');
-         const confirmationModal = document.getElementById('confirmationModal');
-         const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-         const cancelDeleteButton = document.getElementById('cancelDeleteButton');
-         let deleteUrl = '';
- 
-         deleteLinks.forEach(link => {
-             link.addEventListener('click', function(event) {
-                 event.preventDefault();
-                 deleteUrl = this.getAttribute('href');
-                 confirmationModal.style.display = 'block';
-             });
-         });
- 
-         confirmDeleteButton.addEventListener('click', function() {
-             if (deleteUrl) {
-                 window.location.href = deleteUrl;
-             }
-         });
- 
-         cancelDeleteButton.addEventListener('click', function() {
-             confirmationModal.style.display = 'none';
-         });
- 
-         window.addEventListener('click', function(event) {
-             if (event.target == confirmationModal) {
-                 confirmationModal.style.display = 'none';
-             }
-         });
- 
-         function openModal(service_id) {
-             fetch(`/get_service_details/${service_id}/`)
-                 .then(response => response.text())
-                 .then(html => {
-                     document.getElementById('modal-content').innerHTML = html;
-                     document.getElementById('modal').classList.add('active');
-                 });
-   
-         }
- 
-         function closeModal() {
-             document.getElementById('modal').classList.remove('active');
-         }
- </script>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const submenu = this.querySelector('.submenu');
+                    const arrow = this.querySelector('.arrow-down');
+
+                    // Hide all other submenus
+                    menuItems.forEach(otherItem => {
+                        if (otherItem !== this) {
+                            const otherSubmenu = otherItem.querySelector('.submenu');
+                            const otherArrow = otherItem.querySelector('.arrow-down');
+                            if (otherSubmenu) {
+                                otherSubmenu.style.display = 'none';
+                                if (otherArrow.classList.contains('arrow-up')) {
+                                    otherArrow.classList.remove('arrow-up');
+                                }
+                            }
+                        }
+                    });
+
+                    // Toggle current submenu
+                    if (submenu) {
+                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+                        arrow.classList.toggle('arrow-up');
+                    }
+                });
+            });
+        });
+        const deleteLinks = document.querySelectorAll('.delete-link');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+        let deleteUrl = '';
+
+        deleteLinks.forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                deleteUrl = this.getAttribute('href');
+                confirmationModal.style.display = 'block';
+            });
+        });
+
+        confirmDeleteButton.addEventListener('click', function () {
+            if (deleteUrl) {
+                window.location.href = deleteUrl;
+            }
+        });
+
+        cancelDeleteButton.addEventListener('click', function () {
+            confirmationModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function (event) {
+            if (event.target == confirmationModal) {
+                confirmationModal.style.display = 'none';
+            }
+        });
+
+        function openModal(service_id) {
+            fetch(`/get_service_details/${service_id}/`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('modal-content').innerHTML = html;
+                    document.getElementById('modal').classList.add('active');
+                });
+
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+    </script>
 </body>
+
 </html>

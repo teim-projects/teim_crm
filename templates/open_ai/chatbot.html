@@ -123,9 +123,14 @@
 
     <div class="ddd mt-2"
         style="padding-top: 40px;background-color: rgb(46, 50, 50) !important; min-height: 100vh !important;">
+        
         <div class="chat-container text-dark mt-5 " style="margin-top: 100px ;">
-
-            <h2 class="text-center mt-5">Gemini AI Model - Chatbot</h2>
+          <div class="hhh">
+            <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+            <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+          
+          </div>
+            <h2 class="text-center mt-3">Gemini AI Model - Chatbot</h2>
 
             <div class="conversation-history ">
                 {% for entry in conversation_history %}
