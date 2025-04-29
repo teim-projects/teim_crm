@@ -108,19 +108,22 @@
     <div class="main-container">
         <div class="card shadow-2-strong card-registration">
             <div class="card-body">
-                <h3 style="font-size: 40px; margin-top: 5px;font-weight: 600;">Second Follow up form</h3>
+                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+              
+                <h3 class="mt-5" style="margin-top: 5px;font-weight: 600;">Fourth Follow up form</h3>
                 <form method="POST">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Fourth followup Remark</label>
+                                <label  style="font-size: 14px;">Fourth followup Remark <span class="star">*</span></label>
                                 <textarea id="fourthremark" class="form-control form-control-lg" placeholder="Follow-up Remark" name="fourthremark"></textarea>
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Final Status</label>
+                                <label  style="font-size: 14px;">Final Status <span class="star">*</span></label>
                                 <select id="finalstatus" class="form-control form-control-lg" name="finalstatus" placeholder="Please Select">
                                     <option value="" disabled selected>Please Select</option>
                                     <option value="Decision Pending">Decision Pending</option>
@@ -135,7 +138,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Contract Type </label>
+                                <label  style="font-size: 14px;">Contract Type <span class="star">*</span></label>
                                 <select id="contracttype" class="form-control form-control-lg" name="contracttype" placeholder="Please Select">
                                     <option value="" disabled selected>Please Select</option>
                                     <option value="AMC">AMC</option>
@@ -145,7 +148,7 @@
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                              <label  style="font-size: 14px;">Booking Amount </label>
+                              <label  style="font-size: 14px;">Booking Amount <span class="star">*</span></label>
                               <input type="text" class="form-control form-control-lg" placeholder="Quotation Amount" name="bookingamount" id="bookingamount" />
                             </div>
                         </div>

@@ -97,10 +97,7 @@
             }
 
         }
-        label{
-            color:black !important;
-
-        }
+        
     </style>
     
 </head>
@@ -117,7 +114,7 @@
                     <div class="row">
                         <div class="col-md-12 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Lead Type</label>
+                                <label  style="font-size: 14px;">Lead Type <span class="star">*</span></label>
                                 <input type="text" name="leadstatus" id="leadstatus" value="{{ lead.typeoflead }}" required>
                             </div>
                         </div>
@@ -125,7 +122,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Have Done Pest Control Earlier? </label>
+                                <label  style="font-size: 14px;">Have Done Pest Control Earlier? <span class="star">*</span></label>
                                 <select id="havedonepestcontrolearlier" class="form-control form-control-lg" name="havedonepestcontrolearlier" placeholder="Please Select">
                                     <option value="" disabled selected>Please Select</option>
                                     <option value="Yes">Yes</option>
@@ -136,7 +133,7 @@
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">If yes, What is the name of the Agency? </label>
+                                <label  style="font-size: 14px;">If yes, What is the name of the Agency? <span class="star">*</span> </label>
                                 <input type="text" id="agency" class="form-control form-control-lg" placeholder="Agency" name="agency"/>
                             </div>
                         </div>
@@ -145,7 +142,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Inspection onsite Done? </label>
+                                <label  style="font-size: 14px;">Inspection onsite Done? <span class="star">*</span></label>
                                 <select id="inspectiononsite" class="form-control form-control-lg" name="inspectiononsite" placeholder="Please Select">
                                     <option value="" disabled selected>Please Select</option>
                                     <option value="Yes">Yes</option>
@@ -156,7 +153,7 @@
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Level of Inspection </label>
+                                <label  style="font-size: 14px;">Level of Inspection <span class="star">*</span> </label>
                                 <select id="levelofinspection" class="form-control form-control-lg" name="levelofinspection" placeholder="Please Select">
                                     <option value="" disabled selected>Please Select</option>
                                     <option value="Low">Low</option>
@@ -170,7 +167,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Quotation Given? </label>
+                                <label  style="font-size: 14px;">Quotation Given? <span class="star">*</span></label>
                                 <select id="quotationgiven" class="form-control form-control-lg" name="quotationgiven" placeholder="Please Select">
                                     <option value="" disabled selected>Please Select</option>
                                     <option value="Yes">Yes</option>
@@ -181,7 +178,7 @@
                         </div>
                         <div class="col-md-6 mb-4">
                           <div data-mdb-input-init class="form-outline">
-                            <label  style="font-size: 14px;">Quotation Amount </label>
+                            <label  style="font-size: 14px;">Quotation Amount <span class="star">*</span></label>
                             <input type="text" class="form-control form-control-lg" placeholder="Quotation Amount" name="quotationamount" id="quotationamount" />
                           </div>
                       </div>
@@ -190,7 +187,7 @@
                     <div class="row">
                       <div class="col-md-6 mb-4">
                           <div data-mdb-input-init class="form-outline">
-                            <label  style="font-size: 14px;">Standard Introduction Mail Sent? </label>
+                            <label  style="font-size: 14px;">Standard Introduction Mail Sent? <span class="star">*</span></label>
                                 <select id="mailsent" class="form-control form-control-lg" name="mailsent" placeholder="Please Select">
                                     <option value="" disabled selected>Please Select</option>
                                     <option value="Yes">Yes</option>
@@ -201,7 +198,7 @@
                       </div>
                         <div class="col-md-6 mb-4">
                           <div data-mdb-input-init class="form-outline">
-                            <label  style="font-size: 14px;">Customer Meeting </label>
+                            <label  style="font-size: 14px;">Customer Meeting <span class="star">*</span></label>
                             <select id="customermeeting" class="form-control form-control-lg" name="customermeeting" placeholder="Please Select">
                                 <option value="" disabled selected>Please Select</option>
                                 <option value="Yes">Yes</option>
@@ -215,13 +212,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">First followup Remark</label>
+                                <label  style="font-size: 14px;">First followup Remark <span class="star">*</span></label>
                                 <textarea id="firstremark" class="form-control form-control-lg" placeholder="Follow-up Remark" name="firstremark"></textarea>
                             </div>
                         </div>
                       <div class="col-md-6 mb-4">
                           <div data-mdb-input-init class="form-outline">
-                            <label  style="font-size: 14px;">Second followup Date</label>
+                            <label  style="font-size: 14px;">Second followup Date <span class="star">*</span></label>
                             <input type="date" id="secondfollowupdate" class="form-control form-control-lg" name="secondfollowupdate"  />
                           </div>
                       </div>

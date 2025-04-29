@@ -62,6 +62,7 @@
             border-color: #03AED2;
             outline: none;
             box-shadow: 0 0 8px rgba(3, 174, 210, 0.2);
+             
         }
         .btn-info {
             background-color: #03AED2;
@@ -78,7 +79,7 @@
             margin-top: 30px;
         }
         .card-body {
-            padding: 40px;
+            padding: 20px;
         }
 
         @media (max-width: 768px) {
@@ -107,13 +108,16 @@
     <div class="main-container">
         <div class="card shadow-2-strong card-registration">
             <div class="card-body">
-                <h3 style="font-size: 40px; margin-top: 5px;font-weight: 600;">Second Follow up form</h3>
+                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+              
+                <h3 style="margin-top: 5px;font-weight: 600;" class="mt-4">Second Follow up form</h3>
                 <form method="POST">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Negotitation Stage</label>
+                                <label  style="font-size: 14px;">Negotitation Stage <span class="star">*</span></label>
                                 <select id="negotiationstage" class="form-control form-control-lg" name="negotiationstage" placeholder="Please Select">
                                     <option value="" disabled selected>Please Select</option>
                                     <option value="Decision Pending">Decision Pending</option>
@@ -124,7 +128,7 @@
                         </div>
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Second Mail sent? </label>
+                                <label  style="font-size: 14px;">Second Mail sent? <span class="star">*</span> </label>
                                 <select id="mailsent2" class="form-control form-control-lg" name="mailsent2" placeholder="Please Select">
                                     <option value="" disabled selected>Please Select</option>
                                     <option value="Yes">Yes</option>
@@ -138,26 +142,26 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
-                                <label  style="font-size: 14px;">Second followup Remark</label>
+                                <label  style="font-size: 14px;">Second followup Remark <span class="star">*</span></label>
                                 <textarea id="secondremark" class="form-control form-control-lg" placeholder="Follow-up Remark" name="secondremark"></textarea>
                             </div>
                         </div>
                       <div class="col-md-6 mb-4">
                           <div data-mdb-input-init class="form-outline">
-                            <label  style="font-size: 14px;">Third followup Date</label>
+                            <label  style="font-size: 14px;">Third followup Date <span class="star">*</span></label>
                             <input type="date" id="thirdfollowupdate" class="form-control form-control-lg" name="thirdfollowupdate"  />
                           </div>
-                      </div>
-                    
+                      </div>                    
                     </div>
-
+                
                     <div class="mt-4 pt-2 text-center" style="font-family: 'Playfair Display', serif;color:antiquewhite;">
                       <input class="btn btn-info btn-lg" type="submit" name="submit" value="Submit" />
                     </div>
                 </form>
             </div>
         </div>        
-    </div>    
+    </div>
+    
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:400px;">
         <div class="row p-3">
             <div class="col-md-12 text-center"> <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
@@ -180,6 +184,7 @@
             </p></div>
         </div>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
             const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
