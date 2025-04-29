@@ -30,6 +30,9 @@ urlpatterns = [
     path('payment_cancel/', views.payment_cancel, name='payment_cancel'),
     # path('display_inventory', views.display_inventory),
     path('display_lead_management', views.display_lead_management, name='display_lead_management'),
+    path('export-leads-excel/', views.export_leads_excel, name='export_leads_excel'), 
+     # Make sure this line exists
+
     path('edit_customer/<rid>', views.edit_customer),
     path('edit_service_management/<rid>', views.edit_service_management, name='edit_service_management'),
     path('edit_quotation/<rid>', views.edit_quotation),

@@ -1007,6 +1007,7 @@ def finalfollowup_create(request,lead_id,next_stage):
 #         m.save()
 #         return redirect( '/index')
     
+    
 def lead_management_create(request):
     if request.method == 'GET':
         return render(request, 'lead_management.html')
@@ -1359,16 +1360,11 @@ from django.db.models import Q
 
 def display_lead_management(request):
     search_query = request.GET.get('type_of_lead', '').replace('_', ' ').lower()
-    sort_by = request.GET.get('sort', 'customername')  # Default sort by 'customername'
-    order = request.GET.get('order', 'asc')  # Default order is 'asc'
+    sort_by = request.GET.get('sort', 'customername')
+    order = request.GET.get('order', 'asc')
 
-    # Determine the sorting order
-    if order == 'desc':
-        order_by = '-' + sort_by  # If order is descending, prepend with a minus sign
-    else:
-        order_by = sort_by  # Ascending order
+    order_by = '-' + sort_by if order == 'desc' else sort_by
 
-    # Filter based on search query
     if search_query:
         m = lead_management.objects.filter(
             Q(typeoflead__icontains=search_query) | Q(primarycontact__icontains=search_query)
@@ -1381,16 +1377,53 @@ def display_lead_management(request):
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
 
+    # Get distinct phone numbers for auto-suggest
+    phone_numbers = lead_management.objects.values_list('primarycontact', flat=True).distinct()
+
     context = {
         'data': m,
         'search_query': search_query,
         'page_obj': page_obj,
         'start_index': start_index,
         'current_sort': sort_by,
-        'current_order': order
+        'current_order': order,
+        'phone_numbers': phone_numbers
     }
 
     return render(request, 'display_lead_management.html', context)
+
+
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import HttpResponse
+import xlwt
+
+def export_leads_excel(request):
+    from .models import lead_management
+
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="leads_full.xls"'
+
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet('Leads')
+
+    # Get all model field names
+    model_fields = [field.name for field in lead_management._meta.fields]
+
+    # Write header
+    for col_num, field_name in enumerate(model_fields):
+        ws.write(0, col_num, field_name.replace('_', ' ').title())
+
+    # Write data rows
+    data = lead_management.objects.all().values_list(*model_fields)
+    for row_num, row in enumerate(data, start=1):
+        for col_num, cell_value in enumerate(row):
+            ws.write(row_num, col_num, str(cell_value))
+
+    wb.save(response)
+    return response
+
 
 
 
