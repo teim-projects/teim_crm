@@ -95,8 +95,13 @@
             .open-sidebar .card {
                 margin-left: 300px; /* Adjust content when sidebar is open */
             }
+            .card-registration {
+         
+               margin-top: 50px !important;
+          }
 
         }
+        
     </style>
     
 </head>
@@ -106,7 +111,10 @@
   <div class="main-container">
     <div class="card shadow-2-strong card-registration">
         <div class="card-body p-4">
-            <h3 style="font-size: 40px; margin-top: 5px;" class="mb-4">Customer Details</h3>
+          <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+          <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+        
+            <h3  style="  margin-top: 5px;" class="mb-4 mt-3">Customer Details</h3>
             {% for x in data %}
                   <form method="POST">
                     {% csrf_token %}
@@ -114,6 +122,7 @@
                       <div class="col-md-6 mb-4">
       
                         <div data-mdb-input-init class="form-outline">
+                          <label>First Name <span class="star">*</span></label>
                             <input type="text" id="firstName" class="form-control form-control-lg" placeholder="First Name" name="ufirstname" value="{{ x.firstname }}" />
                         </div>
                         
@@ -123,6 +132,7 @@
                       <div class="col-md-6 mb-4">
       
                         <div data-mdb-input-init class="form-outline">
+                          <label>Last Name <span class="star">*</span></label>
                             <input type="text" id="firstName" class="form-control form-control-lg" placeholder="Last Name" name="ulastname" value="{{ x.lastname }}" />
                         </div>
                         
@@ -135,6 +145,8 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Primary Email <span class="star">*</span></label>
+
                               <input type="email" id="firstName" class="form-control form-control-lg" placeholder="Primary Email" name="uprimaryemail" value="{{ x.primaryemail }}"/>
                           </div>
         
@@ -143,6 +155,8 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Secondary Email <span class="star">*</span></label>
+
                               <input type="email" id="firstName" class="form-control form-control-lg" placeholder="Secondary Email" name="usecondaryemail" value="{{ x.secondaryemail }}"/>
                           </div>
                           
@@ -158,6 +172,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Primary Contact No <span class="star">*</span></label>
                               <input type="number" id="firstName" class="form-control form-control-lg" placeholder="Primary Contact No" name="uprimarycontact" value="{{ x.primarycontact }}"/>
                           </div>
         
@@ -166,6 +181,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Secondary Contact No<span class="star">*</span></label>
                               <input type="number" id="firstName" class="form-control form-control-lg" placeholder="Secondary Contact No" name="usecondarycontact" value="{{ x.secondarycontact }}" />
                           </div>
                           
@@ -181,6 +197,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Contact Person Name<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder=" Contact person name" name="ucontactperson" value="{{ x.contactperson }}"/>
                           </div>
         
@@ -189,6 +206,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Designation<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder="Designation" name="ucustomersegment" value="{{ x.customersegment }}" />
                           </div>
                           
@@ -207,6 +225,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Shift To Party Address<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder=" Shift To Party Address" name="ushifttopartyaddress" value="{{ shifttopartyaddress }}"/>
                           </div>
         
@@ -215,6 +234,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>City<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder="City" name="ushifttopartycity" value="{{ x.shifttopartycity }}" />
                           </div>
                           
@@ -230,6 +250,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>State / Province<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder="State / Province" name="ushifttopartystate" value="{{ x.shifttopartystate }}"/>
                           </div>
         
@@ -238,6 +259,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Postal / Zip Code<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder="Postal / Zip Code" name="ushifttopartypostal" value="{{ x.shifttopartypostal }}" />
                           </div>
                           
@@ -255,6 +277,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Sold To Party Address<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder=" Sold To Party Address" name="usoldtopartyaddress" value="{{ x.soldtopartyaddress }}"/>
                           </div>
         
@@ -263,6 +286,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>City<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder="City" name="usoldtopartycity" value="{{ x.soldtopartycity }}" />
                           </div>
                           
@@ -278,6 +302,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>State / Province<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder="State / Province" name="usoldtopartystate" value="{{ x.soldtopartystate }}"/>
                           </div>
         
@@ -286,6 +311,7 @@
                         <div class="col-md-6 mb-4">
         
                           <div data-mdb-input-init class="form-outline">
+                          <label>Postal / Zip Code<span class="star">*</span></label>
                               <input type="text" id="firstName" class="form-control form-control-lg" placeholder="Postal / Zip Code" name="usoldtopartypostal" value="{{ x.soldtopartypostal }}" />
                           </div>
                           
