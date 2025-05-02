@@ -60,6 +60,12 @@
         .btn:hover{
             box-shadow: 0px 0px 10px rgb(0, 255, 234);
         }
+        @media (max-width: 768px) {
+        
+        .subbtn{
+            margin-left: 45px;
+        }
+    }
     </style>
 
 </head>
@@ -68,20 +74,23 @@
     {% include 'sidebar.html' %}
 
 <div class="k" style="min-height: 100vh;">
-    <div class="  container bg-light p-5" style="margin-top: 90px !important; border-radius: 10px;box-shadow: 0px 0px 10px white;
- " >
+    <div class=" cnt container bg-light p-2 pb-5" style="margin-top: 150px !important; border-radius: 10px;box-shadow: 0px 0px 10px white;
+ " > <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+ <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+
+
    <h1 style="text-align: center;font-family: 'Playfair Display', serif;font-weight: 700; ">Product added successfully...!</h1>
  
     <div class="row mt-5"> 
         <div class="col-md-3"></div>
        <div class="col-md-3 col-12"> 
-<button class="btn btn-outline-info mt-3 mb-3" style="width: 250px;">
+<button class="btn btn-outline-info mt-3 mb-3 subbtn" style="width: 250px;">
     <a style="font-family: 'Outfit', sans-serif;" class="mt-5 mbm" href="{% url 'add_product' %}">Add Another Product</a>
 
 </button>
     </div>
        <div class="col-md-3 col-12">    
-<button class="btn btn-outline-info mt-3 mb-3" style="width: 250px;">
+<button class="btn btn-outline-info mt-3 mb-3 subbtn" style="width: 250px;">
     <a style="font-family: 'Outfit', sans-serif;" class="mt-5 mbm" href="{% url 'update_product' %}">Update Product</a></div>
 
 </button>

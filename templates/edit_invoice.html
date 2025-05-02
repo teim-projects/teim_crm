@@ -105,18 +105,23 @@
     <div class="main-container " style="min-height: 100vh !important;">
         <div class="card shadow-2-strong card-registration">
             <div class="card-body">
-                <h3 style="font-size: 40px; margin-top: 5px;">Invoice</h3>
+                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+              
+                <h3 style="  margin-top: 20px;" class="mb-4">Invoice</h3>
                 {% for x in data %}
                         <form method="POST">
                             {% csrf_token %}
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Mode Of Payment</label>
                                         <input type="text" id="umodeofpayment" class="form-control form-control-lg" placeholder="Mode Of Payment" name="umodeofpayment" value="{{ x.modeofpayment }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Dispatched Through</label>
                                         <input type="text" id="udispatchedthrough" class="form-control form-control-lg" placeholder="Dispatched Through" name="udispatchedthrough" value="{{ x.dispatchedthrough }}" />
                                     </div>
                                 </div>
@@ -124,11 +129,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Terms of Delivery</label>
                                         <input type="text" id="utermofdelivery" class="form-control form-control-lg" placeholder="Terms of Delivery" name="utermofdelivery" value="{{ x.termofdelivery }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Terms and Conditions</label>
                                         <input type="text" id="utermsandcondition" class="form-control form-control-lg" placeholder="Terms and Conditions" name="utermsandcondition" value="{{ x.termsandcondition }}" />
                                     </div>
                                 </div>
@@ -136,11 +143,14 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Company Name</label>
+
                                         <input type="text" id="ucompany_name" class="form-control form-control-lg" placeholder="Company Name" name="ucompany_name" value="{{ x.company_name }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Company Email</label>
                                         <input type="email" id="ucompany_email" class="form-control form-control-lg" placeholder="Company Email" name="ucompany_email" value="{{ x.company_email }}" />
                                     </div>
                                 </div>
@@ -148,11 +158,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Company Contact No</label>
                                         <input type="text" id="ucompany_contact_no" class="form-control form-control-lg" placeholder="Company Contact No." name="ucompany_contact_no" value="{{ x.company_contact_no }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Invoice No</label>
                                         <input type="text" id="uinvoice_no" class="form-control form-control-lg" placeholder="Invoice No." name="uinvoice_no" value="{{ x.invoice_no }}" readonly />
                                     </div>
                                 </div>
@@ -160,27 +172,31 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Dispatched Date</label>
                                         <input type="date" id="udispatched_date" class="form-control form-control-lg" placeholder="Date" name="udispatched_date" value="{{ x.dispatched_date }}" />
-                                        <label for="dispatched_date" style="font-size: 14px;">Dispatched Date</label>
-                                    </div>
+                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Description Of Goods</label>
+
                                         <textarea id="udescription_of_goods" class="form-control form-control-lg" placeholder="Description Of Goods" name="udescription_of_goods">{{ x.description_of_goods }}</textarea>
                                     </div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-4">
-                                    <div data-mdb-input-init class="form-outline">
+                                    <div data-mdb-input-init class="form-outline">      
+                                    <label for="delivery_date"  >Delivery Date</label>
+
                                         <input type="date" id="udelivery_date" class="form-control form-control-lg" placeholder="Delivery Date" name="udelivery_date" value="{{ x.delivery_date }}" />
-                                        <label for="delivery_date" style="font-size: 14px;">Delivery Date</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                    <label for="delivery_date"  >HSN/SAC Code</label>
                                         <input type="text" id="uhsn_sac_code" class="form-control form-control-lg" placeholder="HSN/SAC Code" name="uhsn_sac_code" value="{{ x.hsn_sac_code }}" />
                                     </div>
                                 </div>

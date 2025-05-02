@@ -7,11 +7,8 @@
     <link rel="stylesheet" href="{% static '\css\bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static '\images' %}">
     <link rel="stylesheet" href="{% static 'css\customer.css' %}">
-    <script src="{% static 'js/script.js' %}"></script>
-
-   
-    <title>Customer Details</title>
-    
+    <script src="{% static 'js/script.js' %}"></script>   
+    <title>Customer Details</title>  
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -105,14 +102,18 @@
 
     <div class="main-container">
         <div class="card shadow-2-strong card-registration">
-            <div class="card-body p-5">
-                <h3 style="font-size: 40px; margin-top: 5px; " class=" mb-5">Quotation</h3>
+            <div class="card-body p-3">
+                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+              
+                <h3 style="  margin-top: 20px; " class=" mb-5">Quotation</h3>
                 {% for x in data %}
                         <form method="POST">
                             {% csrf_token %}
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Customer Name</label>
                                         <input type="text" id="ucustomer" class="form-control form-control-lg" placeholder="Customer Name" name="ucustomer" value="{{ x.customer }}" readonly/>
                                     </div>
                                 </div>
@@ -120,11 +121,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Quantity</label>
                                         <input type="number" id="uquantity" class="form-control form-control-lg" placeholder="Quantity" name="uquantity" value="{{ x.quantity }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Price</label>
                                         <input type="number" step="0.01" id="uprice" class="form-control form-control-lg" placeholder="Price" name="uprice" value="{{ x.price }}" />
                                     </div>
                                 </div>
@@ -132,11 +135,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Terms and Conditions</label>
                                         <input type="text" id="termsandcondition" class="form-control form-control-lg" placeholder="Terms and Conditions" name="utermsandcondition" value="{{ x.termsandcondition }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Service Type</label>
                                         <input type="text" id="servicetype_q" class="form-control form-control-lg" placeholder="Service Type" name="uservicetype_q" value="{{ x.servicetype_q }}" />
                                     </div>
                                 </div>
@@ -144,27 +149,29 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label for="total_amount_with_gst">Total Amount</label>
                                         <input type="number" step="0.01" id="utotal_amount" class="form-control form-control-lg" placeholder="Total Amount" name="utotal_amount" value="{{ x.total_amount }}" readonly />
                                         <input type="hidden" id="hidden_total_amount" name="hidden_total_amount" />
-                                        <label for="total_amount_with_gst">Total Amount</label>
-                                    </div>
+                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label for="total_amount_with_gst">Total Amount with GST And Discount </label>
                                         <input type="number" step="0.01" id="utotal_amount_with_gst" class="form-control form-control-lg" placeholder="Total Amount with GST" name="utotal_amount_with_gst" value="{{ x.total_amount_with_gst }}" readonly />
                                         <input type="hidden" id="hidden_total_amount_with_gst" name="hidden_total_amount_with_gst" />
-                                        <label for="total_amount_with_gst">Total Amount with GST And Discount</label>
-                                    </div>
+                                     </div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Discount</label>
                                         <input type="number" step="0.01" id="discount" class="form-control form-control-lg" placeholder="Discount" name="udiscount" value="{{ x.discount }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Company Name</label>
                                         <input type="text" id="company_name" class="form-control form-control-lg" placeholder="Company Name" name="ucompany_name" value="{{ x.company_name }}" />
                                     </div>
                                 </div>
@@ -172,11 +179,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Company Email</label>
                                         <input type="email" id="company_email" class="form-control form-control-lg" placeholder="Company Email" name="ucompany_email" value="{{ x.company_email }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Company Contact No</label>
                                         <input type="text" id="company_contact_no" class="form-control form-control-lg" placeholder="Company Contact No." name="ucompany_contact_no" value="{{ x.company_contact_no }}" />
                                     </div>
                                 </div>
@@ -184,11 +193,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Quotation Date</label>
                                         <input type="date" id="quotation_date" class="form-control form-control-lg" placeholder="Quotation Date" name="uquotation_date" value="{{ x.quotation_date }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Company Address</label>
                                         <input type="text" id="company_address" class="form-control form-control-lg" placeholder="Company Address" name="ucompany_address" value="{{ x.company_address }}" />
                                     </div>
                                 </div>
@@ -196,14 +207,16 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                <label>Subject</label>
                                         <input type="text" id="subject" class="form-control form-control-lg" placeholder="Subject" name="usubject" value="{{ x.subject }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" id="gst" name="ugst" value="{{ x.gst }}">
-                                        <label for="gst">GST</label>
-                                    </div>
+                                    <div class="form-check mt-5">
+                                        <input type="checkbox" class="form-check-input mt-3" id="gst" name="ugst" value="{{ x.gst }}">
+                                        <label for="gst" >GSTSubject</label>
+
+                                     </div>
                                 </div>
                             </div>
                             {% endfor %}
