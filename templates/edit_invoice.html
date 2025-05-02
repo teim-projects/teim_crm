@@ -206,6 +206,7 @@
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                    <label for="delivery_date"  >Uquantity</label>
                                         <input type="number" id="uquantity" class="form-control form-control-lg" placeholder="Quantity" name="uquantity" value="{{ x.quantity }}" />
                                     </div>
                                 </div>
@@ -213,11 +214,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                    <label >Price</label>
                                         <input type="text" id="uprice" class="form-control form-control-lg" placeholder="Price" name="uprice" value="{{ x.price }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                    <label for="delivery_date"  >Uquantity</label>
                                         <input type="text" id="udiscount" class="form-control form-control-lg" placeholder="Discount" name="udiscount" value="{{ x.discount }}" />
                                     </div>
                                 </div>
@@ -225,12 +228,15 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div class="form-check">
-                                        <input type="checkbox" id="ugst_checkbox" class="form-check-input" name="ugst_checkbox" {% if x.gst_checkbox %}checked{% endif %} />
                                         <label class="form-check-label" for="ugst_checkbox">GST Checkbox</label>
+
+                                        <input type="checkbox" id="ugst_checkbox" class="form-check-input" name="ugst_checkbox" {% if x.gst_checkbox %}checked{% endif %} />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+
+                                        <label >Total Amount</label>
                                         <input type="text" id="utotal_amount" class="form-control form-control-lg" placeholder="Total Amount" name="utotal_amount" value="{{ x.total_amount }}" readonly />
                                     </div>
                                 </div>
@@ -238,11 +244,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                        <label >Total Amount with GST</label>
                                         <input type="text" id="utotal_amount_with_gst" class="form-control form-control-lg" placeholder="Total Amount with GST" name="utotal_amount_with_gst" value="{{ x.total_amount_with_gst }}" readonly />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                        <label >Total Amount in Words</label>
                                         <input type="text" id="utotal_amount_in_words" class="form-control form-control-lg" placeholder="Total Amount in Words" name="utotal_amount_in_words" value="{{ x.total_amount_in_words }}" />
                                     </div>
                                 </div>
@@ -250,11 +258,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                        <label >PAN Card No</label>
                                         <input type="text" id="upan_card_no" class="form-control form-control-lg" placeholder="PAN Card No." name="upan_card_no" value="{{ x.pan_card_no }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                        <label >PAN Card No</label>
                                         <input type="text" id="uaccount_no" class="form-control form-control-lg" placeholder="Account No." name="uaccount_no" value="{{ x.account_no }}" />
                                     </div>
                                 </div>
@@ -262,11 +272,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                        <label >Branch</label>
                                         <input type="text" id="ubranch" class="form-control form-control-lg" placeholder="Branch" name="ubranch" value="{{ x.branch }}" />
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                        <label >IFSC</label>
                                         <input type="text" id="uifsc" class="form-control form-control-lg" placeholder="IFSC" name="uifsc_code" value="{{ x.ifsc_code }}" />
                                     </div>
                                 </div>
@@ -274,6 +286,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <div data-mdb-input-init class="form-outline">
+                                        <label >Company Address</label>
                                         <input type="text" id="ucompanyaddress" class="form-control form-control-lg" placeholder="Company Address" name="ucompanyaddress" value="{{ x.companyaddress }}" />
                                     </div>
                                 </div>
