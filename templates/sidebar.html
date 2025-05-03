@@ -702,7 +702,19 @@
     z-index: -1; 
     color: #00e5ff;      /* Keeps it in the background */
   }
-  
+ 
+    .sidebar ul li.active {
+        background-color: #000000;
+        color: #fff;
+        font-weight: bold;
+        border-radius: 5px;
+        padding: 10px;
+    }
+    .sidebar ul .has-submenu.active a {
+        color: #fff;
+    }
+ 
+   
     </style>
 </head>
 
@@ -788,162 +800,117 @@
         <div class="close-button" id="closeButton">
             <i class="fas fa-times"></i>
         </div>
-
+    
         <div class="logo">
             <img src="{% static 'images/Logo.webp' %}" alt="Logo">
         </div>
+    
         <ul>
             <a href="/index" style="text-decoration: none;">
-                <li><i class="fas fa-home"></i> Dashboard</li>
+                <li data-link="/index"><i class="fas fa-home"></i> Dashboard</li>
             </a>
-            <li class="has-submenu"><i class="fas fa-info-circle"></i>View Records<span class="arrow-down"></span>
+    
+            <li class="has-submenu"><i class="fas fa-info-circle"></i> View Records <span class="arrow-down"></span>
                 <div class="submenu">
                     <ul>
-                        <a href="/display_lead_management">
-                            <li>1. Lead Management</li>
-                        </a>
-
-                        <a href="/display_customer">
-                            <li>2. Customer Details</li>
-                        </a>
-                        <a href="/display_followup">
-                            <li>3. List of Follow ups</li>
-                        </a>
-
-                        <a href="/display_service_management">
-                            <li>4. Service Management</li>
-                        </a>
-                        <a href="/display_quotation">
-                            <li>5. Quotation</li>
-                        </a>
-                        <a href="/display_invoice">
-                            <li>6. Invoice</li>
-                        </a>
-                        <a href="/display_reschedule">
-                            <li>7. Reschedule log</li>
-                        </a>
-                        <a href="/schedule_meetings/display_meeting">
-                            <li>8. Meeting Records Log</li>
-                        </a>
+                        <a href="/display_lead_management"><li data-link="/display_lead_management">1. Lead Management</li></a>
+                        <a href="/display_customer"><li data-link="/display_customer">2. Customer Details</li></a>
+                        <a href="/display_followup"><li data-link="/display_followup">3. List of Follow ups</li></a>
+                        <a href="/display_service_management"><li data-link="/display_service_management">4. Service Management</li></a>
+                        <a href="/display_quotation"><li data-link="/display_quotation">5. Quotation</li></a>
+                        <a href="/display_invoice"><li data-link="/display_invoice">6. Invoice</li></a>
+                        <a href="/display_reschedule"><li data-link="/display_reschedule">7. Reschedule log</li></a>
+                        <a href="/schedule_meetings/display_meeting"><li data-link="/schedule_meetings/display_meeting">8. Meeting Records Log</li></a>
                     </ul>
                 </div>
             </li>
+    
             <li class="has-submenu"><i class="fas fa-folder-open"></i> Transaction <span class="arrow-down"></span>
                 <div class="submenu">
                     <ul>
-                        <a href="/lead_management_create">
-                            <li>1. Lead Management</li>
-                        </a>
-                        <a href="/customer_details_create">
-                            <li>2. Customer Details</li>
-                        </a>
-                        <a href="/service_management_create">
-                            <li>3. Service Management</li>
-                        </a>
-                        <a href="/quotation_create">
-                            <li>4. Quotation</li>
-                        </a>
-                        <a href="/invoice_create">
-                            <li>5. Invoice</li>
-                        </a>
-                       
+                        <a href="/lead_management_create"><li data-link="/lead_management_create">1. Lead Management</li></a>
+                        <a href="/customer_details_create"><li data-link="/customer_details_create">2. Customer Details</li></a>
+                        <a href="/service_management_create"><li data-link="/service_management_create">3. Service Management</li></a>
+                        <a href="/quotation_create"><li data-link="/quotation_create">4. Quotation</li></a>
+                        <a href="/invoice_create"><li data-link="/invoice_create">5. Invoice</li></a>
                     </ul>
                 </div>
             </li>
-            <li class="has-submenu"><i class="fas fa-box"></i> Products<span class="arrow-down"></span>
+    
+            <li class="has-submenu"><i class="fas fa-box"></i> Products <span class="arrow-down"></span>
                 <div class="submenu">
                     <ul>
-                        <a href="/add_product">
-                            <li>1. Add Products</li>
-                        </a>
-                        <a href="/update_product">
-                            <li>2. Update Products</li>
-                        </a>
-                        <a href="/products">
-                            <li>3. All Products</li>
-                        </a>
+                        <a href="/add_product"><li data-link="/add_product">1. Add Products</li></a>
+                        <a href="/update_product"><li data-link="/update_product">2. Update Products</li></a>
+                        <a href="/products"><li data-link="/products">3. All Products</li></a>
                     </ul>
                 </div>
             </li>
-            <!-- <li class="has-submenu"><i class="fas fa-cogs"></i> Services<span class="arrow-down"></span>
+    
+            <li class="has-submenu"><i class="fas fa-user-cog"></i> Technicians <span class="arrow-down"></span>
                 <div class="submenu">
                     <ul>
-                        <a href="/inventory_service"><li>1. Inventory Service</li></a>
-                        <a href="/inventory_summary"><li>2. Inventory Summary / History</li></a>
-                    </ul>
-                </div>
-            </li> -->
-            <li class="has-submenu"><i class="fas fa-user-cog"></i> Technicians<span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/create">
-                            <li>1. Create Technician</li>
-                        </a>
-                        <a href="/technician_work_list">
-                            <li>2. Work History</li>
-                        </a>
-                        <a href="/completed_work">
-                            <li>3. Completed Work List</li>
-                        </a>
+                        <a href="/create"><li data-link="/create">1. Create Technician</li></a>
+                        <a href="/technician_work_list"><li data-link="/technician_work_list">2. Work History</li></a>
+                        <a href="/completed_work"><li data-link="/completed_work">3. Completed Work List</li></a>
                     </ul>
                 </div>
             </li>
-            <li class="has-submenu" onclick="window.location.href='/display_allocation'"><i class="fas fa-tasks"></i>
-                Allocate Work</li>
-            <li class="has-submenu" onclick="window.location.href='/ocrapp/scan/'"><i class="fas fa-id-card"></i> Scan
-                Card</li>
-            <li class="has-submenu" onclick="window.location.href='/schedule_meetings/schedule/'"><i
-                    class="fas fa-calendar-plus"></i> Schedule Meet</li>
-            <li class="has-submenu" onclick="window.location.href='/schedule_meetings/meeting_list/'"><i
-                    class="fas fa-book"></i> Meet Notes</li>
-            <li class="has-submenu" onclick="window.location.href='/open_ai/chatbot/'"><i
-                    class="fa-solid fa-comments"></i> Chat Bot</li>
+    
+            <a href="/display_allocation" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/display_allocation"><i class="fas fa-tasks"></i> Allocate Work</li>
+            </a>
+    
+            <a href="/ocrapp/scan/" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/ocrapp/scan/"><i class="fas fa-id-card"></i> Scan Card</li>
+            </a>
+    
+            <a href="/schedule_meetings/schedule/" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/schedule_meetings/schedule/"><i class="fas fa-calendar-plus"></i> Schedule Meet</li>
+            </a>
+    
+            <a href="/schedule_meetings/meeting_list/" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/schedule_meetings/meeting_list/"><i class="fas fa-book"></i> Meet Notes</li>
+            </a>
+    
+            <a href="/open_ai/chatbot/" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/open_ai/chatbot/"><i class="fa-solid fa-comments"></i> Chat Bot</li>
+            </a>
         </ul>
-
-        <!-- <div class="button-container">
-            <button class="btn-custom" onclick="window.location.href='/ocrapp/scan/'">
-                <i class="fas fa-id-card"></i> Scan Card
-            </button>
-            <button class="btn-custom" onclick="window.location.href='/schedule_meetings/schedule/'">
-                <i class="fas fa-calendar-plus"></i> Schedule Meet
-            </button>
-            <button class="btn-custom" onclick="window.location.href='/schedule_meetings/meeting_list/'">
-                <i class="fas fa-book"></i> Meet Notes
-            </button>
-        </div> -->
-
+    
         <div class="notification" id="notification">
             Meeting successfully scheduled!
         </div>
-
-
+    
+        <center>
+            <button class="mb-5 mt-3 logoutbtn">
+                <a href="/logout">Logout</a>
+                <div class="arrow-wrapper"><div class="arrow"></div></div>
+            </button>
+        </center>
+    
         <script>
-            // Check if the URL contains the schedule_success parameter
+            // Highlight current page link
+            const path = window.location.pathname;
+            const allLinks = document.querySelectorAll('li[data-link]');
+            allLinks.forEach(link => {
+                if (link.getAttribute('data-link') === path) {
+                    link.classList.add('active');
+                }
+            });
+    
+            // Show notification if scheduled
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('schedule_success') === '1') {
-                // Show the notification for 3 seconds
                 const notification = document.getElementById('notification');
                 notification.style.display = 'block';
                 setTimeout(() => {
                     notification.style.display = 'none';
-                }, 3000); // Hide after 3 seconds
+                }, 3000);
             }
         </script>
-
-        <!-- 
-        
-        
-        -->
-        <center> <button class="mb-5 mt-3 logoutbtn">
-                <a href="/logout">Logout</a>
-                <div class="arrow-wrapper">
-                    <div class="arrow"></div>
-
-                </div>
-            </button></center>
-
-
     </div>
+    
 
     <div class="overlay" id="overlay"></div>
 <!-- Particles JS Container -->
@@ -974,12 +941,10 @@
         detect_on: "canvas",
         events: {
           onhover: { enable: true, mode: "grab" },
-          onclick: { enable: true, mode: "repulse" }  // 👈 Added this line
-        },
+         },
         modes: {
           grab: { distance: 80, line_linked: { opacity: 0.5 } },
-          repulse: { distance: 100, duration: 0.7 }  // 👈 Added this block
-        }
+         }
       },
       retina_detect: true
     });
