@@ -40,7 +40,10 @@
 <body>
     {% include 'sidebar.html' %}
     <div class="work-allocation-container">
-        <h1>Handle Work Allocation</h1>
+        <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+        <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+      
+        <h1 class="text-center">Handle Work Allocation</h1>
         <p><strong>Customer Name:</strong> {{ work_allocation.customer_name }}</p>
         <p><strong>Description:</strong> {{ work_allocation.work_description }}</p>
         <p><strong>Address:</strong> {{ work_allocation.customer_address }}</p>
