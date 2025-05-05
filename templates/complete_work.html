@@ -106,6 +106,10 @@
                 margin-left: 0px;
                 max-width: 100%;
             }
+            .add-file-btn{
+                width: 100% !important;
+                margin-left: 0% !important;
+            }
         }
 
         h3 {
@@ -125,12 +129,15 @@
 </head>
 
 <body>
-    {% include 'sidebar.html' %}
+    {% include 'techsidebar.html' %}
     
     <div class="new-container container   "  style="margin-top: 100px !important;">
         <div class="row">
             <div class="col-md-2"></div>
             <div class="col-md-8 bg-light mb-5" style="border-radius: 20px; ">
+                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4 mt-2"><i class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4 mt-2">X</span>
+        
                 <h3 class="my-4 text-center">Complete Work for {{ tech_work.work.customer_fname }} {{ tech_work.work.customer_lname }}</h3>
 
                 <center>

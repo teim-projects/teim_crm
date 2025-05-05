@@ -144,16 +144,19 @@
     {% include 'techsidebar.html' %}
     <div style=" min-height: 100vh !important;">
     <div class="work1-container container bg-light">
+        <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+        <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+
         <h1 class="my-4 text-center">Completed Work List</h1>
     
         <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd;">
             <table class="table table-striped">
                 <thead class="thead-dark" style="position: sticky; top: 0; background: white; z-index: 100;">
                     <tr>
-                        <th>Work ID</th>
-                        <th>Customer Name</th>
-                        <th>Completion Date & Time</th>
-                        <th>Action</th>
+                        <th class="text-center">Work ID</th>
+                        <th class="text-center">Customer Name</th>
+                        <th class="text-center">Completion Date & Time</th>
+                        <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>

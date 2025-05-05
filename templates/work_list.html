@@ -333,7 +333,7 @@
         @media (max-width: 768px) {
             .table-wrapper {
                 margin-left: 0;
-                margin-top: 150px !important;
+                margin-top: 100px !important;
                
                 padding: 20px; /* Add some padding for better appearance */
             }
@@ -498,12 +498,15 @@
             <div class="col-md-12 ">
                 <div class="col-12 ">
                     <div class="table-wrapper">
+                        <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+                        <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+                      
                         <h1>Technician Work List</h1>
                     
                         <div class="navbar">
                             <form class="form-inline" method="get">
                                 <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search by Phone no." aria-label="Search" value="{{ request.GET.search }}">
-                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" style="width: 150px;">Search</button>
+                                <button class="btn btn-outline-success my-2 my-sm-0 ml-2" type="submit" style="width: 220px;">Search</button>
                             </form>
                         </div>
                         <div class="container-table">

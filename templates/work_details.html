@@ -228,10 +228,13 @@
     {% include 'techsidebar.html' %}
 <div style=" min-height: 100vh !important;">
     <div class="new1-container  container">
-        <div class="row">
+        <div class="row " style="margin: 10px !important;">
             <div class="col-md-2"></div>
-            <div class="col-md-8 bg-light p-5" style="border-radius: 10px;">
-                <h3 class="my-4 text-center" style="font-size: 45px; ">Work Details for Work ID: {{work.id }}</h3>
+            <div class="col-md-8 bg-light p-3" style="border-radius: 10px;">
+                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+              
+                <h3 class="text-center mt-4 mb-4"  >Work Details for Work ID: {{work.id }}</h3>
                 <div class="text-center mt-4 row">
                     <div class="col-md-4 col-12 c12 mt-3 mb-3 ">
                         <a href="{% url 'view_work_pdf' work.id %}" class="btn btn-outline-primary" style="width: 100%;">View as PDF</a>
@@ -265,8 +268,7 @@
                         <h2>Work Details</h2>
                     </div>
                     <div class="card-body">
-                        <p><strong>Technician Name:</strong> {{ work.technician.first_name }} {{
-                            work.technician.last_name }}</p>
+                        <p><strong>Technician Name:</strong> {{ work.technician.first_name }} {{work.technician.last_name }}</p>
                         <p><strong>Work Description:</strong> {{ work.work.work_description }}</p>
                         <p><strong>Payment Status:</strong> {{ work.work.customer_payment_status }}</p>
                         <p><strong>Payment Amount:</strong> {{ work.work.payment_amount }}</p>
@@ -343,7 +345,7 @@
                     </div>
                 </div>
                 <center>
-                    <button class="btn btninfo   mt-4">
+                    <button class="btn btninfo   mt-4 mb-5">
                         <a href="{% url 'completed_work_list' %}">Back to Completed Work List</a>
 
                     </button>
