@@ -228,6 +228,15 @@ class invoice(models.Model):
 #         return self.sourceoflead
 
 class lead_management(models.Model):
+    BRANCH_CHOICES = [
+        ('B1', 'B1'),
+        ('B2', 'B2'),
+        ('B3', 'B3'),
+        ('B4', 'B4'),
+        ('B5', 'B5'),
+    ]
+    branch = models.CharField(max_length=10, choices=BRANCH_CHOICES, default='NA')
+
     sourceoflead = models.CharField(max_length=200, choices=[('Google', 'Google'), ('Justdial', 'Justdial'), ('Indiamart', 'Indiamart'), ('Customer Reference', 'Customer Reference'), ('BNI', 'BNI'),('Lineclub', 'Lineclub'),('Employee Reference', 'Employee Reference'),('Others', 'Others')], default="NOT SELECTED")
     salesperson = models.CharField(max_length=100)
     customername = models.CharField(max_length=100, null=True, blank= True)

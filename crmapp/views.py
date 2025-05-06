@@ -1007,6 +1007,17 @@ def finalfollowup_create(request,lead_id,next_stage):
 #         m.save()
 #         return redirect( '/index')
     
+
+
+from django.http import JsonResponse
+from .models import lead_management
+
+def check_phone_number(request):
+    phone = request.GET.get('primarycontact', None)
+    exists = lead_management.objects.filter(primarycontact=phone).exists()
+    return JsonResponse({'exists': exists})
+
+from datetime import datetime
     
 def lead_management_create(request):
     if request.method == 'GET':
@@ -1016,7 +1027,7 @@ def lead_management_create(request):
         salesperson = request.POST['salesperson']
         customername = request.POST['customername']
         customersegment = request.POST['customersegment']
-        enquirydate = request.POST['enquirydate']
+        enquirydate = datetime.strptime(request.POST['enquirydate'], '%Y-%m-%d').date()
         contactedby = request.POST['contactedby']
         maincategory = request.POST['maincategory']
         subcategory = request.POST['subcategory']
@@ -1027,7 +1038,9 @@ def lead_management_create(request):
         location = request.POST.get('location', '')  # Allow empty value
         city=request.POST.get('city', 'Null')
         typeoflead = request.POST['typeoflead']
-        firstfollowupdate = request.POST['firstfollowupdate']
+        firstfollowupdate = datetime.strptime(request.POST['firstfollowupdate'], '%Y-%m-%d').date()
+        branch = request.POST.get('branch')
+
         
 
         m = lead_management.objects.create(
@@ -1047,6 +1060,8 @@ def lead_management_create(request):
             customeremail=customeremail,
             customeraddress=customeraddress,
             firstfollowupdate=firstfollowupdate,
+            branch=branch,
+
         )
 
         m.save()

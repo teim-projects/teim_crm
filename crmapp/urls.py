@@ -16,6 +16,8 @@ urlpatterns = [
     path('invoice_create',views.invoice_create),
     # path('inventory_create',views.inventory_create),
     path('lead_management_create', views.lead_management_create),
+    path('check_phone_number/', views.check_phone_number, name='check_phone_number'),
+
     path('signup', views.signup),
     path('user_login', views.user_login),
     path('logout', views.user_logout),

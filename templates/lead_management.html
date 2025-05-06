@@ -100,7 +100,8 @@
 
         }
     </style>
-    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 </head>
 <body>
 
@@ -117,6 +118,22 @@
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-md-6 mb-4">
+                            <div class="form-outline">
+                              <label for="branch">Select Branch<span class="star">*</span></label>
+                              <select class="form-control form-control-lg" name="branch" id="branch" required>
+                                <option value="">-- Select Branch --</option>
+                                <option value="B1">B1</option>
+                                <option value="B2">B2</option>
+                                <option value="B3">B3</option>
+                                <option value="B4">B4</option>
+                                <option value="B5">B5</option>
+                              </select>
+                            </div>
+                          </div>
+                          
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
                             <div data-mdb-input-init class="form-outline">
                                 <label>Please Select Source of Lead<span class="star">*</span></label>
                                 
@@ -127,7 +144,7 @@
                                     <option value="Indianmart">Indianmart</option>
                                     <option value="Customer Reference">Customer Reference</option>
                                     <option value="BNI">BNI</option>
-                                    <option value="Lineclub">Lineclub</option>
+                                    <option value="Lineclub">Lionclub</option>
                                     <option value="Employee Reference">Employee Reference</option>
                                     <option value="Others">Others</option>
                                 
@@ -236,20 +253,62 @@
                           </div>
                       </div>
                       <div class="col-md-6 mb-4">
-                          <div data-mdb-input-init class="form-outline">
-                            <label>Phone Number<span class="star">*</span></label>
-
-                             <input type="text" 
-                                   id="primarycontact" 
-                                   class="form-control form-control-lg" 
-                                   required placeholder="Contact No." 
-                                   name="primarycontact" 
-                                   pattern="\d{10}" 
-                                   title="Please enter a valid 10-digit phone number" 
-                                   required />
-                          </div>
+                        <div data-mdb-input-init class="form-outline">
+                          <label>Phone Number<span class="star">*</span></label>
+                          <input type="text" 
+                                 id="primarycontact" 
+                                 class="form-control form-control-lg" 
+                                 required 
+                                 placeholder="Contact No." 
+                                 name="primarycontact" 
+                                 pattern="\d{10}" 
+                                 title="Please enter a valid 10-digit phone number" />
+                          <div id="phone-error" style="color:red; font-size:14px;"></div>
+                        </div>
                       </div>
+                      
                     </div>
+
+                    <script>
+                        let phoneValid = false;
+                      
+                        $(document).ready(function(){
+                          // Validate on blur
+                          $("#primarycontact").on("blur", function(){
+                            var phone = $(this).val();
+                            if(phone.length === 10){
+                              $.ajax({
+                                url: "/check_phone_number/",
+                                data: { 'primarycontact': phone },
+                                dataType: 'json',
+                                success: function(data){
+                                  if(data.exists){
+                                    $("#phone-error").text("Phone number already exists.");
+                                    phoneValid = false;
+                                  } else {
+                                    $("#phone-error").text("");
+                                    phoneValid = true;
+                                  }
+                                }
+                              });
+                            } else {
+                              $("#phone-error").text("Please enter a valid 10-digit phone number.");
+                              phoneValid = false;
+                            }
+                          });
+                      
+                          // Intercept form submission
+                          $("#leadForm").on("submit", function(e){
+                            var phone = $("#primarycontact").val();
+                            
+                            // Synchronous check before submission
+                            if (!phoneValid) {
+                              e.preventDefault();
+                              $("#phone-error").text("Please fix the phone number before submitting.");
+                            }
+                          });
+                        });
+                      </script>
 
                     <div class="row">
                         <div class="col-md-6 mb-4">
