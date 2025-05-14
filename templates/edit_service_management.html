@@ -294,7 +294,18 @@
                 margin-left: 300px; /* Adjust content when sidebar is open */
             }
 
-        }       
+        }   
+        
+        
+        .hand{
+            display: flex;
+        justify-content: space-between;
+        padding: 10px;
+   
+
+
+        }
+    
     </style>
 </head>
 <body>
@@ -321,6 +332,11 @@
 
         
         <div class="card shadow-2-strong card-registration">
+       <div class="hand">
+        <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+        <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+      
+       </div>
             <button class="collapsible">View Previous Reschedules</button>
         <div class="collapsible-content">
             <div class="card card-body">
@@ -337,9 +353,7 @@
         </div>
 
             <div class="card-body">
-                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
-                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
-              
+               
                 <h3 class="mt-3 mb-3" style="  font-weight: 600; margin: 10px;">Reschedule Service</h3>             
                 {% for x in data %}
                 <form method="POST" id="service-management-form">      

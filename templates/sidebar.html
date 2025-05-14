@@ -580,8 +580,8 @@
             color: #3498db;
 
         }
-
-        /* From Uiverse.io by satyamchaudharydev */
+ 
+        /* From Uiverse.<njeljkjehdjjdksjljjdjlslsjsdsio by satyamchaudharydev */
         /* From Uiverse.io by satyamchaudharydev */
         .logoutbtn {
             --primary-color: #b4b4b8;
@@ -610,12 +610,18 @@
             color: white;
         }
 
+
+
+        
         .logoutbtn .arrow-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
         }
+        .hand span:hover{
+            text-shadow: 0px 0px 10px red;
 
+        }
         .logoutbtn .arrow {
             margin-top: 1px;
             width: var(--arrow-width);
@@ -719,46 +725,7 @@
 </head>
 
 <body>
-    <script>
-        document.addEventListener("click", function (e) {
-          const ripple = document.createElement("div");
-      
-          // Style through JS only
-          ripple.style.position = "absolute";
-          ripple.style.left = e.clientX + "px";
-          ripple.style.top = e.clientY + "px";
-          ripple.style.width = "10px";
-          ripple.style.height = "10px";
-          ripple.style.borderRadius = "50%";
-          ripple.style.backgroundColor = "#00c3ff";
-          ripple.style.pointerEvents = "none";
-          ripple.style.zIndex = "9999";
-          ripple.style.transform = "translate(-50%, -50%)";
-          ripple.style.animation = "ripple-effect 0.5s ease-out forwards";
-      
-          // Add animation via JS
-          const style = document.createElement("style");
-          style.innerHTML = `
-            @keyframes ripple-effect {
-              from {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 0.8;
-              }
-              to {
-                transform: translate(-50%, -50%) scale(6);
-                opacity: 0;
-              }
-            }
-          `;
-          document.head.appendChild(style);
-      
-          document.body.appendChild(ripple);
-          setTimeout(() => {
-            ripple.remove();
-            style.remove(); // Remove style after animation
-          }, 500);
-        });
-      </script>
+  
       
     <div class="header">
 
@@ -787,7 +754,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>                        
             </button> -->
-            <a class="navbar-brand " href="https://chronoanalytics.in/">
+            <a class="navbar-brand " href="https://chronoanalytics.in/" target="_blank" >
                 <img src="{% static 'images/crono.png' %}" alt="Logo" class="imgg"
                     style="height: 50px;   margin-bottom: 8px; ">
             </a>
@@ -802,7 +769,10 @@
         </div>
     
         <div class="logo">
-            <img src="{% static 'images/Logo.webp' %}" alt="Logo">
+            <a href="https://sevafacility.com/">
+                <img src="{% static 'images/Logo.webp' %}" alt="Logo">
+
+            </a>
         </div>
     
         <ul>

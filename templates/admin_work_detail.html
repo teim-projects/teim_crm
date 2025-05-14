@@ -110,7 +110,6 @@
 <body>
     {% include 'sidebar.html' %}
 
-
     <div class="container  p-5 bg-light " style="margin-top: 100px !important;">
         <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
         <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
@@ -145,6 +144,8 @@
                         </p>
                     </div>
                     <div>
+                        
+       
                         <p><strong>Photo After Service:</strong><br>
                             {% if work.photos_after_service.exists %}
                             {% for photo in work.photos_after_service.all %}
