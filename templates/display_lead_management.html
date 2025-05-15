@@ -438,26 +438,30 @@
             <div class="col-md-12">
                 <div class="col-12">
                     <div class="table-wrapper">
-                        <h1> Lead Management Information</h1>
+                        <h1>Lead Management Records</h1>
                         <div class="search-form">
                             <form method="GET" action="{% url 'display_lead_management' %}">
                                 <input class="mt-4 ml-2" type="text" name="type_of_lead" value="{{ search_query }}"
-                                       list="phone_suggestions"
-                                       placeholder="Search by Lead Type/Phone no." style="width: 100%;">
-                        
+                                    list="phone_suggestions" placeholder="Search by Lead Type/Phone no."
+                                     >
+
                                 <datalist id="phone_suggestions">
                                     {% for phone in phone_numbers %}
-                                        <option value="{{ phone }}">
-                                    {% endfor %}
+                                    <option value="{{ phone }}">
+                                        {% endfor %}
                                 </datalist>
-                        
-                                <button type="submit" class="btn btn-outline-primary mt-2 ml-3" style="width:200px;">Search</button>
-                        
-                                <a href="{% url 'display_lead_management' %}" class="btn btn-outline-danger mt-2 ml-3" style="width:200px;">Reset</a>
-                                <a href="{% url 'import_leads' %}" class="btn btn-outline-success mt-2 ml-3" style="width:200px;">Import Leads</a>
-                                <a href="{% url 'export_leads_excel' %}" class="btn btn-outline-warning mt-2 ml-3" style="width:200px;">Export Excel</a>
-                                <a href="/lead_management_create" class="btn btn-outline-info ml-sm-2 mt-2 ml-3" style=" width:200px;">Add
-                                    leads</a>
+
+                                <button type="submit" class="btn btn-outline-primary mt-2 ml-3"
+                                    style="width:100px;">Search</button>
+                                <a href="/lead_management_create" class="btn btn-outline-info ml-sm-2 mt-2 ml-3"
+                                    style=" width:100px;">Add Leads</a>
+                                <a href="{% url 'export_leads_excel' %}" class="btn btn-outline-warning mt-2 ml-3"
+                                    style="width:100px;">Export Excel</a>
+                                <a href="{% url 'import_leads' %}" class="btn btn-outline-success mt-2 ml-3"
+                                    style="width:100px;">Import Leads</a>
+                                <a href="{% url 'display_lead_management' %}" class="btn btn-outline-danger mt-2 ml-3"
+                                    style="width:100px;">Reset</a>
+
                             </form>
                         </div>
 
@@ -549,7 +553,7 @@
 
                             </table>
                         </div>
-                      
+
                         <div class="pagination">
 
                             {% if page_obj.has_previous %}
