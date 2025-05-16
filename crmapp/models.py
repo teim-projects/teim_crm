@@ -229,11 +229,14 @@ class invoice(models.Model):
 
 class lead_management(models.Model):
     BRANCH_CHOICES = [
-        ('B1', 'B1'),
-        ('B2', 'B2'),
-        ('B3', 'B3'),
-        ('B4', 'B4'),
-        ('B5', 'B5'),
+        ('Bhiwandi', 'Bhiwandi'),
+        ('Indore', 'Indore'),
+        ('Hyderabad', 'Hyderabad'),
+        ('Nagpur', 'Nagpur'),
+        ('Amravti', 'Amravti'),
+        ('Aurangabad', 'Aurangabad'),
+        ('Baramati', 'Baramati'),
+        ('Pune', 'Pune'),
     ]
     branch = models.CharField(max_length=10, choices=BRANCH_CHOICES, default='NA')
 

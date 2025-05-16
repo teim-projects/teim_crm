@@ -98,8 +98,8 @@
 
     .card-body {
       padding: 40px;
-    min-height: 510px;
-      }
+      min-height: 510px;
+    }
 
     @media (max-width: 768px) {
 
@@ -144,14 +144,71 @@
           <div class="form-step active">
             <div class="row">
               <div class="col-md-6 mb-4">
+                <label>Phone Number<span class="star">*</span></label>
+                <input type="text" name="primarycontact" class="form-control" pattern="\d{10}" required />
+              </div>
+              <div class="col-md-6 mb-4">
+
+                <label>Customer Name<span class="star">*</span></label>
+                <input type="text" name="customername" class="form-control" required />
+              </div>
+
+              <div class="col-md-6 mb-4">
+                <label>Secondary Phone Number</label>
+                <input type="text" name="secondarycontact" class="form-control" pattern="\d{10}" />
+              </div>
+              <div class="col-md-6 mb-4">
+                <label>Customer Email<span class="star">*</span></label>
+                <input type="email" name="customeremail" class="form-control" required />
+              </div>
+              <div class="col-md-6 mb-4">
+                <label> Select State<span class="star">*</span></label>
+                <select class="form-control" name="branch" required>
+                  <option value="">Select State</option>
+                  <option>Maharashtra</option>
+                  <option>Karnataka</option>
+                  <option>Tamil Nadu</option>
+                  <option>Rajasthan</option>
+ 
+                </select>
+              </div>
+              <div class="col-md-6 mb-4">
+                <label>City<span class="star">*</span></label>
+                <input type="text" name="city" class="form-control" required />
+              </div>
+              <div class="col-md-6 mb-4">
+                <label>Address<span class="star">*</span></label>
+                <textarea name="customeraddress" class="form-control" rows="1" required></textarea>
+              </div>
+              <div class="col-md-6 mb-4">
+                <label>Location (Google Maps Link)<span class="star">*</span></label>
+                <input type="url" name="location" class="form-control" required />
+              </div>
+
+              <div class="col-md-6 mb-4">
+                <label>Enquiry Date<span class="star">*</span></label>
+                <input type="date" name="enquirydate" class="form-control" required />
+              </div>
+
+
+            </div>
+          </div>
+
+          <!-- Step 2: Customer Details -->
+          <div class="form-step">
+            <div class="row">
+              <div class="col-md-6 mb-4">
                 <label for="branch">Select Branch<span class="star">*</span></label>
                 <select class="form-control" name="branch" required>
-                  <option value="">-- Select Branch --</option>
-                  <option value="B1">B1</option>
-                  <option value="B2">B2</option>
-                  <option value="B3">B3</option>
-                  <option value="B4">B4</option>
-                  <option value="B5">B5</option>
+                  <option value="">Select Branch</option>
+                  <option value="Bhiwandi">Bhiwandi</option>
+                  <option value="Indore">Indore</option>
+                  <option value="Hyderabad">Hyderabad</option>
+                  <option value="Nagpur">Nagpur</option>
+                  <option value="Amravti">Amravti</option>
+                  <option value="Aurangabad">Aurangabad</option>
+                  <option value="Baramati">Baramati</option>
+                  <option value="Pune">Pune</option>
                 </select>
               </div>
               <div class="col-md-6 mb-4">
@@ -168,31 +225,8 @@
                   <option value="Others">Others</option>
                 </select>
               </div>
-              <div class="col-md-6 mb-4">
-                <label>Salesperson<span class="star">*</span></label>
-                <input type="text" name="salesperson" class="form-control" required />
-              </div>
-            </div>
-          </div>
 
-          <!-- Step 2: Customer Details -->
-          <div class="form-step">
-            <div class="row">
-              <div class="col-md-6 mb-4">
-                <label>Customer Name<span class="star">*</span></label>
-                <input type="text" name="customername" class="form-control" required />
-              </div>
-              <div class="col-md-6 mb-4">
-                <label>Customer Segment<span class="star">*</span></label>
-                <select name="customersegment" class="form-control" required>
-                  <option value="">Customer Segment</option>
-                  <option value="Resedential">Resedential</option>
-                  <option value="Industrial">Industrial</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Institutional">Institutional</option>
-                  <option value="Irrelevant Lead">Irrelevant Lead</option>
-                </select>
-              </div>
+
               <div class="col-md-6 mb-4">
                 <label>Type of Lead<span class="star">*</span></label>
                 <select name="typeoflead" class="form-control" required>
@@ -205,50 +239,26 @@
                 </select>
               </div>
               <div class="col-md-6 mb-4">
-                <label>Enquiry Date<span class="star">*</span></label>
-                <input type="date" name="enquirydate" class="form-control" required />
+                <label>Customer Segment<span class="star">*</span></label>
+                <select name="customersegment" class="form-control" required>
+                  <option value="">Customer Segment</option>
+                  <option value="Resedential">Resedential</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Institutional">Institutional</option>
+                  <option value="Irrelevant Lead">Irrelevant Lead</option>
+                </select>
               </div>
-              <div class="col-md-6 mb-4">
-                <label>Phone Number<span class="star">*</span></label>
-                <input type="text" name="primarycontact" class="form-control" pattern="\d{10}" required />
-              </div>
-              <div class="col-md-6 mb-4">
-                <label>Secondary Phone Number</label>
-                <input type="text" name="secondarycontact" class="form-control" pattern="\d{10}" />
-              </div>
-              
-            </div>
-          </div>
 
-            <!-- Step 3: Follow-up Info -->
-          <div class="form-step">
-            <div class="row">
               <div class="col-md-6 mb-4">
-                  <label>Customer Email<span class="star">*</span></label>
-                <input type="email" name="customeremail" class="form-control" required />
+                <label>Salesperson<span class="star">*</span></label>
+                <input type="text" name="salesperson" class="form-control" required />
               </div>
-              <div class="col-md-6 mb-4">
-                 <label>Address<span class="star">*</span></label>
-                <textarea name="customeraddress" class="form-control" required></textarea>
-              </div>
-              <div class="col-md-6 mb-4">
-                 <label>Location (Google Maps Link)<span class="star">*</span></label>
-                <input type="url" name="location" class="form-control" required />
-              </div>
-              <div class="col-md-6 mb-4">
-                 <label>City<span class="star">*</span></label>
-                <input type="text" name="city" class="form-control" required />
-              </div>
-            </div>
-          </div>
-          <!-- Step 3: Follow-up Info -->
-          <div class="form-step">
-            <div class="row">
               <div class="col-md-6 mb-4">
                 <label>Contacted By<span class="star">*</span></label>
                 <input type="text" name="contactedby" class="form-control" required />
               </div>
-              <div class="col-md-6 mb-4">
+                    <div class="col-md-6 mb-4">
                 <label>Main Category<span class="star">*</span></label>
                 <input type="text" name="maincategory" class="form-control" required />
               </div>
@@ -256,18 +266,25 @@
                 <label>Sub Category<span class="star">*</span></label>
                 <input type="text" name="subcategory" class="form-control" required />
               </div>
-              <div class="col-md-6 mb-4">
+                <div class="col-md-6 mb-4">
                 <label>First Follow-up Date<span class="star">*</span></label>
                 <input type="date" name="firstfollowupdate" class="form-control" required />
               </div>
             </div>
+
           </div>
 
+       
+       
+
           <!-- Navigation Buttons -->
-          <div class="text-center mt-4" style="position: absolute;bottom:10px; left:38%;">
-            <button type="button" class="btn btn-outline-secondary mt-2" id="prevBtn" style="width: 150px;">Previous</button>
-            <button type="button" class="btn btn-outline-info ml-2 mt-2" id="nextBtn" style="width: 150px;">Next</button>
-            <input type="submit" class="btn btn-success d-none ml-2 mt-2" id="submitBtn" style="width: 150px;" value="Submit" />
+          <div class="text-center mt-4 mb-3">
+            <button type="button" class="btn btn-secondary mt-2" id="prevBtn"
+              style="width: 150px;">Previous</button>
+            <button type="button" class="btn btn-primary ml-2 mt-2" id="nextBtn"
+              style="width: 150px;">Next</button>
+            <input type="submit" class="btn btn-success d-none ml-2 mt-2" id="submitBtn" style="width: 150px;"
+              value="Submit" />
           </div>
         </form>
       </div>
@@ -349,7 +366,7 @@
     });
   </script>
 
-  <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+  <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:100px;">
     <div class="row p-3">
       <div class="col-md-12 text-center">
         <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
