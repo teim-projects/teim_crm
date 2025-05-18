@@ -1017,12 +1017,53 @@ def check_phone_number(request):
     exists = lead_management.objects.filter(primarycontact=phone).exists()
     return JsonResponse({'exists': exists})
 
+
+
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from .models import lead_management
 from datetime import datetime
-    
+from django.utils import timezone
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from .models import lead_management
+from datetime import datetime
+
 def lead_management_create(request):
     if request.method == 'GET':
+        # Handle AJAX GET for mobile number lookup
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'primarycontact' in request.GET:
+            primarycontact = request.GET.get('primarycontact')
+            lead = lead_management.objects.filter(primarycontact=primarycontact).order_by('enquirydate').first()
+
+            if lead:
+                data = {
+                    'sourceoflead': lead.sourceoflead,
+                    'salesperson': lead.salesperson,
+                    'customername': lead.customername,
+                    'customersegment': lead.customersegment,
+                    'enquirydate': lead.enquirydate.strftime('%Y-%m-%d') if lead.enquirydate else '',
+                    'contactedby': lead.contactedby,
+                    'maincategory': lead.maincategory,
+                    'subcategory': lead.subcategory,
+                    'secondarycontact': lead.secondarycontact,
+                    'customeremail': lead.customeremail,
+                    'customeraddress': lead.customeraddress,
+                    'location': lead.location,
+                    'city': lead.city,
+                    'typeoflead': lead.typeoflead,
+                    'firstfollowupdate': lead.firstfollowupdate.strftime('%Y-%m-%d') if lead.firstfollowupdate else '',
+                    'branch': lead.branch,
+                }
+                return JsonResponse({'status': 'exists', 'data': data})
+            else:
+                return JsonResponse({'status': 'not_found'})
+
+        # Render form normally
         return render(request, 'lead_management.html')
+
     else:
+        # Handle form submission (POST)
         sourceoflead = request.POST['sourceoflead']
         salesperson = request.POST['salesperson']
         customername = request.POST['customername']
@@ -1035,13 +1076,11 @@ def lead_management_create(request):
         secondarycontact = request.POST.get('secondarycontact')
         customeremail = request.POST.get('customeremail')
         customeraddress = request.POST.get('customeraddress')
-        location = request.POST.get('location', '')  # Allow empty value
-        city=request.POST.get('city', 'Null')
+        location = request.POST.get('location', '')
+        city = request.POST.get('city', 'Null')
         typeoflead = request.POST['typeoflead']
         firstfollowupdate = datetime.strptime(request.POST['firstfollowupdate'], '%Y-%m-%d').date()
         branch = request.POST.get('branch')
-
-        
 
         m = lead_management.objects.create(
             sourceoflead=sourceoflead,
@@ -1054,14 +1093,13 @@ def lead_management_create(request):
             subcategory=subcategory,
             primarycontact=primarycontact,
             secondarycontact=secondarycontact,
-            location=location if location else None,  # Store None if empty
-            city=city,
-            typeoflead=typeoflead,
             customeremail=customeremail,
             customeraddress=customeraddress,
+            location=location if location else None,
+            city=city,
+            typeoflead=typeoflead,
             firstfollowupdate=firstfollowupdate,
             branch=branch,
-
         )
 
         m.save()

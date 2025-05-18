@@ -162,19 +162,26 @@
                 <input type="email" name="customeremail" class="form-control" required />
               </div>
               <div class="col-md-6 mb-4">
-                <label> Select State<span class="star">*</span></label>
-                <select class="form-control" name="branch" required>
-                  <option value="">Select State</option>
-                  <option>Maharashtra</option>
-                  <option>Karnataka</option>
-                  <option>Tamil Nadu</option>
-                  <option>Rajasthan</option>
- 
-                </select>
+                    <label>Select State <span class="star">*</span></label>
+                      <select id="state" name="branch" class="form-control" required>
+                        <option value="">Select State</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="West Bengal">West Bengal</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <!-- Add all Indian states here -->
+                      </select> 
               </div>
               <div class="col-md-6 mb-4">
-                <label>City<span class="star">*</span></label>
-                <input type="text" name="city" class="form-control" required />
+                <label>City <span class="star">*</span></label>
+                  <select id="city" name="city" class="form-control" required>
+                    <option value="">Please select a state first</option>
+                  </select>
               </div>
               <div class="col-md-6 mb-4">
                 <label>Address<span class="star">*</span></label>
@@ -283,14 +290,92 @@
               style="width: 150px;">Previous</button>
             <button type="button" class="btn btn-primary ml-2 mt-2" id="nextBtn"
               style="width: 150px;">Next</button>
-            <input type="submit" class="btn btn-success d-none ml-2 mt-2" id="submitBtn" style="width: 150px;"
-              value="Submit" />
+          <input type="submit" class="btn btn-success ml-2 mt-2" id="submitBtn" style="width: 150px;" value="Submit" />
+
           </div>
         </form>
       </div>
     </div>
   </div>
 
+
+<script>
+const stateCityMap = {
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad"],
+  "Karnataka": ["Bengaluru", "Mysuru", "Hubballi", "Mangaluru"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli"],
+  "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota"],
+  "Delhi": ["New Delhi", "North Delhi", "South Delhi", "East Delhi"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Noida", "Ghaziabad"],
+  "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot"],
+  "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol"],
+  "Madhya Pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior"],
+  // Add more states and their cities as needed
+};
+
+document.getElementById('state').addEventListener('change', function () {
+  const selectedState = this.value;
+  const citySelect = document.getElementById('city');
+
+  citySelect.innerHTML = ""; // Clear old options
+
+  if (selectedState && stateCityMap[selectedState]) {
+    const cities = stateCityMap[selectedState];
+    cities.forEach(city => {
+      const option = document.createElement("option");
+      option.value = city;
+      option.textContent = city;
+      citySelect.appendChild(option);
+    });
+  } else {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Please select a state first";
+    citySelect.appendChild(option);
+  }
+});
+</script>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $("input[name='primarycontact']").on("blur", function () {
+      var primarycontact = $(this).val();
+      if (primarycontact.length === 10) {
+        $.ajax({
+          url: "",  // same URL, so keep it blank
+          data: {
+            'primarycontact': primarycontact
+          },
+          dataType: 'json',
+          success: function (response) {
+            if (response.status === 'exists') {
+              const data = response.data;
+              $("select[name='sourceoflead']").val(data.sourceoflead);
+              $("input[name='salesperson']").val(data.salesperson);
+              $("input[name='customername']").val(data.customername);
+              $("select[name='customersegment']").val(data.customersegment);
+              $("input[name='enquirydate']").val(data.enquirydate);
+              $("input[name='contactedby']").val(data.contactedby);
+              $("input[name='maincategory']").val(data.maincategory);
+              $("input[name='subcategory']").val(data.subcategory);
+              $("input[name='secondarycontact']").val(data.secondarycontact);
+              $("input[name='customeremail']").val(data.customeremail);
+              $("input[name='customeraddress']").val(data.customeraddress);
+              $("input[name='location']").val(data.location);
+              $("input[name='city']").val(data.city);
+              $("select[name='typeoflead']").val(data.typeoflead);
+              $("input[name='firstfollowupdate']").val(data.firstfollowupdate);
+              $("select[name='branch']").val(data.branch);
+            }
+          }
+        });
+      }
+    });
+  });
+</script>
 
 
   <script>
