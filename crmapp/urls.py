@@ -10,6 +10,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('index', views.index),
     path('', views.landing_page),
+    path('add-sales-person/', views.add_sales_person, name='add_sales_person'),
+    path('sales-persons/', views.sales_person_list, name='sales_person_list'),
+    path('edit-sales-person/<int:pk>/', views.edit_sales_person, name='edit_sales_person'),
+    path('delete-sales-person/<int:pk>/', views.delete_sales_person, name='delete_sales_person'),
     path('customer_details_create',views.customer_details_create),
     path('service_management_create',views.service_management_create),
     path('quotation_create',views.quotation_create, name='quotation_create'),

@@ -519,6 +519,73 @@ def user_logout(request):
 
 
 
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import SalesPerson
+from django.utils.dateparse import parse_date
+
+# Add Sales Person
+def add_sales_person(request):
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        mobile_no = request.POST.get('mobile_no')
+        email = request.POST.get('email')
+        date_of_birth = parse_date(request.POST.get('date_of_birth'))
+
+        SalesPerson.objects.create(
+            full_name=full_name,
+            date_of_joining=date_of_joining,
+            mobile_no=mobile_no,
+            email=email,
+            date_of_birth=date_of_birth
+        )
+        return redirect('sales_person_list')
+
+    return render(request, 'add_sales_person.html')
+
+
+# List Sales Persons
+def sales_person_list(request):
+    sales_persons = SalesPerson.objects.all()
+    return render(request, 'sales_person_list.html', {'sales_persons': sales_persons})
+
+
+# Edit Sales Person
+def edit_sales_person(request, pk):
+    person = get_object_or_404(SalesPerson, pk=pk)
+
+    if request.method == 'POST':
+        person.full_name = request.POST.get('full_name')
+        person.date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        person.mobile_no = request.POST.get('mobile_no')
+        person.email = request.POST.get('email')
+        person.date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        person.save()
+        return redirect('sales_person_list')
+
+    return render(request, 'edit_sales_person.html', {'person': person})
+
+
+# Delete Sales Person
+def delete_sales_person(request, pk):
+    person = get_object_or_404(SalesPerson, pk=pk)
+
+    if request.method == 'POST':
+        person.delete()
+        return redirect('sales_person_list')
+
+    return render(request, 'delete_sales_person.html', {'person': person})
+
+
+
+
+
+
+
 from django.http import JsonResponse
 from .models import customer_details, lead_management
 

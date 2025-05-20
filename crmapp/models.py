@@ -11,6 +11,23 @@ def generate_customerid():
     return f"DEFAULT{random_number}"
 
 
+
+
+from django.db import models
+
+class SalesPerson(models.Model):
+    full_name = models.CharField(max_length=100)
+    date_of_joining = models.DateField()
+    mobile_no = models.CharField(max_length=15)
+    email = models.EmailField(unique=True)
+    date_of_birth = models.DateField()
+
+    def __str__(self):
+        return self.full_name
+
+
+
+
 class customer_details(models.Model):
    
     fullname = models.CharField(max_length=100)
