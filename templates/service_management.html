@@ -248,8 +248,23 @@
             }
 
         }
+
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step:not(.d-none) {
+            display: block;
+        }
+
+        .step-indicator.fw-bold {
+            font-weight: bold;
+            color: #0d6efd;
+        }
     </style>
 </head>
+
 
 <body>
     {% include 'sidebar.html' %}
@@ -268,11 +283,16 @@
                 <h3 style="  font-weight: 600; margin: 10px;" class="mt-5">Service Management Record</h3>
                 <form method="POST" id="service-management-form">
                     {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6  ">
-                            <div data-mdb-input-init class="form-outline">
-                                <label>Please Select Customer<span class="star">*</span></label>
-                                <select id="customer_id" class="form-control form-control-lg" name="customer_id" required
+
+
+
+                    <!-- STEP 1: Customer & Services -->
+                    <div class="form-step">
+                        <!-- Customer Selection -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Select Customer<span class="star">*</span></label>
+                                <select id="customer_id" class="form-control" name="customer_id" required
                                     onchange="updateCustomerDetails()">
                                     <option value="" disabled selected>Select Customer</option>
                                     {% for customer in customers %}
@@ -284,126 +304,93 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6  ">
-                            <div data-mdb-input-init class="form-outline">
+
+                        <div class="row">
+                            <div class="col-md-6">
                                 <label>Customer Contact<span class="star">*</span></label>
-
-                                <input type="text" id="customer_contact" name="customer_contact" value="" required
-                                    readonly class="form-control"><br>
+                                <input type="text" id="customer_contact" name="customer_contact" readonly required
+                                    class="form-control">
                             </div>
-                        </div>
-                        <div class="col-md-6  ">
-                            <div data-mdb-input-init class="form-outline">
+                            <div class="col-md-6">
                                 <label>Customer Email<span class="star">*</span></label>
-
-                                <input type="text" id="customer_email" name="customer_email" class="form-control"
-                                    value="" required readonly><br>
+                                <input type="text" id="customer_email" name="customer_email" readonly required
+                                    class="form-control">
                             </div>
                         </div>
-                    </div>
 
+                        <!-- Service Type -->
+                        <label>Service Type<span class="star">*</span></label>
+                        <select id="servicetype" name="servicetype" class="form-control" onchange="fetchProducts(this)">
+                            <option value="">Select service types</option>
+                            {% for category, display_name in category_choices %}
+                            <option value="{{ category }}">{{ display_name }}</option>
+                            {% endfor %}
+                        </select>
 
-                    <label>Service Type<span class="star">*</span></label>
+                        <!-- Product Selection -->
+                        <label>Select Products</label>
+                        <div id="products-container">
+                            <!-- Dynamically loaded via AJAX -->
+                        </div>
 
-                    <select id="servicetype" name="servicetype" onchange="fetchProducts(this)" class="form-control">
-                        <option value="">Select service types</option>
-                        {% for category, display_name in category_choices %}
-                        <option value="{{ category }}">{{ display_name }}</option>
-                        {% endfor %}
-                    </select><br>
+                        <!-- Selected Services List -->
+                        <label>Selected Services</label>
+                        <ul id="selected_services" class="selected-products-list"></ul>
+                        <input type="hidden" id="selected_services_names" name="selected_services_names">
 
+                        <!-- Price Fields -->
+                        <label>Total Price (without GST)<span class="star">*</span></label>
+                        <input type="number" id="total_price" name="total_price" step="0.01" readonly
+                            class="form-control">
 
-                    <label>Select Products </label>
-                    <br>
-                    <div id="products-container">
-                        <!-- Products will be loaded here via AJAX -->
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="apply_gst" name="apply_gst"
+                                onchange="toggleGST()">
+                            <label for="apply_gst" class="form-check-label">Apply GST (18%)</label>
+                        </div>
 
-                        <!-- {% for product in products %}
-                        <div>
-                            <label>
-                                <input type="checkbox" name="selected_services" value="{{ product.id }}" class="product-checkbox">
-                                {{ product.product_name }}
-                            </label>
-                             -->
-                        <!-- Price text box (editable) -->
-                        <!-- <input type="text" name="price_{{ product.id }}" value="{{ product.price }}" class="price-field" readonly> -->
-
-                        <!-- Quantity text box with a data-max attribute for validation -->
-                        <!-- <input type="number" name="quantity_{{ product.id }}" value="{{ product.available_quantity }}"  -->
-                        <!-- class="quantity-field" data-max="{{ product.available_quantity }}" min="1"> -->
-                        <!-- </div>
-                    {% endfor %} -->
-                        <!-- <p id="error-message" style="color: red; display: none;">Not enough product, reduce quantity</p> -->
-
-                    </div>
-
-
-                    <!-- The selected services list -->
-                    <label>Selected Services </label>
-
-                    <ul id="selected_services" name="selected_services" class="selected-products-list">
-                        <!-- Dynamically updated list of selected products -->
-                    </ul><br>
-
-
-                    <!-- New hidden input to hold the names of selected services (products) -->
-                    <input type="hidden" id="selected_services_names" name="selected_services_names">
-
-                    <label>Total Price (without GST)<span class="star">*</span></label>
-                    <input type="number" id="total_price" name="total_price" step="0.01" readonly><br>
-
-
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input mt-4" id="apply_gst" name="apply_gst"
-                            onchange="toggleGST()">
-                        <label class="form-check-label" for="apply_gst">Apply GST (18%)</label>
-                    </div>
-                    <div id="gst-number-container">
+                        <!-- GST Details -->
                         <div id="gst_fields" style="display: none;">
                             <input type="text" name="gst_number" placeholder="Enter GST Number" class="form-control">
                         </div>
 
-                        <script>
-                            document.getElementById('apply_gst').addEventListener('change', function () {
-                                const gstFields = document.getElementById('gst_fields');
-                                gstFields.style.display = this.checked ? 'block' : 'none';
-                            });
-                        </script>
+                        <label>GST (18%)</label>
+                        <input type="number" id="gst_price" name="gst_price" step="0.01" readonly class="form-control">
+
+                        <label>Total Price (with GST)</label>
+                        <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" readonly
+                            class="form-control">
+
+                        <div class="row">
+                            <div class="col-md-12 text-center col-12">
+                                <button type="button" class="btn btn-primary next-step mt-3"
+                                    style="width: 150px;">Next</button>
+                                <a href="/display_customer" class="btn btn-info mt-3" style="width: 150px;">View
+                                    Records</a>
+
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- STEP 2: Contract & Property Details -->
+                    <div class="form-step d-none">
+                        <label>Contract Type<span class="star">*</span></label>
+                        <select name="contract_type" class="form-control" required>
+                            <option value="One Time">One Time</option>
+                            <option value="AMC">AMC</option>
+                            <option value="Warranty">Warranty</option>
+                        </select>
 
-                    <div id="gst-price-container">
-                        <label for="gst_price">GST (18%):</label>
-                        <input type="number" id="gst_price" name="gst_price" step="0.01" readonly
-                            class="form-control"><br>
+                        <label>Contract Status<span class="star">*</span></label>
+                        <select name="contract_status" class="form-control" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
 
+                        <label>Property Type<span class="star">*</span></label>
+                        <textarea name="property_type" class="form-control" required></textarea>
 
-                        <label for="total_with_gst">Total Price (with GST):</label>
-                        <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" class="form-control" 
-                            readonly><br>
-                    </div>
-
-
-                    <label for="contract_type">Contract Type<span class="star">*</span></label>
-
-                    <select name="contract_type" class="form-control" required>
-                        <option value="One Time">One Time</option>
-                        <option value="AMC">AMC</option>
-                        <option value="Warranty">Warranty</option>
-                    </select><br>
-
-                    <label for="contract_status">Contract Status<span class="star">*</span></label>
-                    <select name="contract_status" class="form-control" required>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                    </select><br>
-
-                    <label for="property_type">Property Type<span class="star">*</span></label>
-                    <textarea name="property_type" class="form-control" required></textarea><br>
-
-                    <label for="warranty_period">Warranty Period<span class="star">*</span></label>
+                  <label for="warranty_period">Warranty Period<span class="star">*</span></label>
                     <input type="text" name="warranty_period" class="form-control" required><br>
 
 
@@ -453,68 +440,76 @@
 
                     <label >City<span class="star">*</span></label>
                      <input type="text" name="city" class="form-control" required><br>
+                        <label>Pincode<span class="star">*</span></label>
+                        <input type="text" name="pincode" maxlength="6" class="form-control" required>
 
-                    <label >Pincode<span class="star">*</span></label>
-                     <input type="text" name="pincode" maxlength="6" class="form-control" required><br>
+                        <label>Address<span class="star">*</span></label>
+                        <textarea name="address" class="form-control" required></textarea>
 
-                    <label >Address<span class="star">*</span></label>
-                     <textarea name="address" class="form-control" required></textarea><br>
-
-                     <label >GPS Location<span class="star">*</span></label>
-                     <input type="url" name="gps_location" class="form-control" required><br>
-
+                        <label>GPS Location<span class="star">*</span></label>
+                        <input type="url" name="gps_location" class="form-control" required>
 
 
+                        <div class="row">
+                            <div class="col-md-12 text-center col-12">
+                                <button type="button" class="btn btn-secondary prev-step mt-3"
+                                    style="width: 150px;">Previous</button>
 
-                     <label >Select Frequency Count<span class="star">*</span></label>
-                     <select name="frequency_count" class="form-control">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                        <option value="Fortnight">Fortnight</option>
-                        <option value="Weekly">Weekly</option>
-                        <option value="Daily">Daily</option>
-                    </select><br>
+                                <button type="button" class="btn btn-primary next-step mt-3"
+                                    style="width: 150px;">Next</button>
 
-
-                    <label >Payment Terms<span class="star">*</span></label>
-                     <input class="form-control" type="text" name="payment_terms"
-                        value="100% Advance payment OR Whatever mutually Decided" readonly><br>
-
-                        <label >Sales Person Name<span class="star">*</span></label>
-                     <input type="text" name="sales_person_name" class="form-control"><br>
-
-                    <label >Sales Person Contact No<span class="star">*</span></label>
-                     <input type="text" name="sales_person_contact_no" id="sales_person_contact_no" pattern="\d{10}"
-                        title="Please enter a valid 10-digit phone number" required class="form-control"><br>
-
-                        <label >Delivery Time<span class="star">*</span></label>
-                     <input type="time" class="form-control" id="delivery_time" name="delivery_time" required>
-
-                     <label >Lead Date<span class="star">*</span></label>
-                     <input type="date" name="lead_date" required class="form-control"><br>
-
-                     <label >Service Date<span class="star">*</span></label>
-                     <input type="date" name="service_date" required class="form-control"><br>
-
-                    <div class="mt-4 pt-2 text-center"
-                        style="font-family: 'Playfair Display', serif;color:antiquewhite; font-weight: 900;">
-                        <button class="btn btn-info btn-lg" type="submit" style="width:200px;">Submit</button>
+                            </div>
+                        </div>
                     </div>
-                    <a href="/display_customer" class="btn btn-outline-info   mt-5 leanking-buttons"  >View Customer Records</a>
+
+                    <!-- STEP 3: Sales & Delivery -->
+                    <div class="form-step d-none">
+                        <label>Select Frequency Count<span class="star">*</span></label>
+                        <select name="frequency_count" class="form-control">
+                            <option value="1">1</option>
+                            <option value="2">2</option> <!-- up to 12 -->
+                            <option value="Fortnight">Fortnight</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Daily">Daily</option>
+                        </select>
+
+                        <label>Payment Terms<span class="star">*</span></label>
+                        <input class="form-control" type="text" name="payment_terms"
+                            value="100% Advance payment OR Whatever mutually Decided" readonly>
+                        <label>Sales Person Name<span class="star">*</span></label>
+                        <input type="text" name="sales_person_name" class="form-control" required>
+
+                        <label>Sales Person Contact No<span class="star">*</span></label>
+                        <input type="text" name="sales_person_contact_no" pattern="\d{10}"
+                            title="Please enter a valid 10-digit phone number" class="form-control" required>
+
+                        <label>Delivery Time<span class="star">*</span></label>
+                        <input type="time" class="form-control" name="delivery_time" required>
+
+                        <label>Lead Date<span class="star">*</span></label>
+                        <input type="date" name="lead_date" class="form-control" required>
+
+                        <label>Service Date<span class="star">*</span></label>
+                        <input type="date" name="service_date" class="form-control" required>
+
+                        <div class="row">
+                            <div class="col-md-12 text-center col-12">
+                                <button type="button" class="btn btn-secondary prev-step mt-3"
+                                    style="width: 150px;">Previous</button>
 
 
+                                <button class="btn btn-info mt-3" type="submit" style="width:150px;">Submit</button>
+                            </div>
 
+                        </div>
+                        <div class="mt-4 pt-2 text-center">
+                        </div>
+
+                    </div>
                 </form>
+
+
+
             </div>
         </div>
     </div>
@@ -781,6 +776,46 @@
             </div>
         </div>
     </div>
+
+<script>
+const steps = document.querySelectorAll(".form-step");
+const nextBtns = document.querySelectorAll(".next-step");
+const prevBtns = document.querySelectorAll(".prev-step");
+const indicators = document.querySelectorAll(".step-indicator"); // If you added step indicators
+
+let currentStep = 0;
+
+function showStep(index) {
+    steps.forEach((step, i) => {
+        step.classList.toggle("d-none", i !== index);
+    });
+    indicators.forEach((indicator, i) => {
+        indicator.classList.toggle("active", i === index);
+    });
+}
+
+nextBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        if (currentStep < steps.length - 1) {
+            currentStep++;
+            showStep(currentStep);
+        }
+    });
+});
+
+prevBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        if (currentStep > 0) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    });
+});
+
+// Init on load
+showStep(currentStep);
+</script>
+
 </body>
 
 </html>
