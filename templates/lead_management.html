@@ -257,10 +257,16 @@
                 </select>
               </div>
 
-              <div class="col-md-6 mb-4">
-                <label>Salesperson<span class="star">*</span></label>
-                <input type="text" name="salesperson" class="form-control" required />
-              </div>
+             <div class="col-md-6 mb-4">
+  <label>Salesperson<span class="star">*</span></label>
+  <select name="salesperson" class="form-control" required>
+    <option value="">-- Select Sales Person --</option>
+    {% for person in salespersons %}
+      <option value="{{ person.full_name }}">{{ person.full_name }}</option>
+    {% endfor %}
+  </select>
+</div>
+
               <div class="col-md-6 mb-4">
                 <label>Contacted By<span class="star">*</span></label>
                 <input type="text" name="contactedby" class="form-control" required />

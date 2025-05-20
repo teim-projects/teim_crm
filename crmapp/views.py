@@ -1140,6 +1140,8 @@ from .models import lead_management
 from datetime import datetime
 
 def lead_management_create(request):
+    salespersons = SalesPerson.objects.all()
+
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'primarycontact' in request.GET:
@@ -1171,7 +1173,7 @@ def lead_management_create(request):
                 return JsonResponse({'status': 'not_found'})
 
         # Render form normally
-        return render(request, 'lead_management.html')
+        return render(request, 'lead_management.html', {'salespersons': salespersons})
 
     else:
         # Handle form submission (POST)
