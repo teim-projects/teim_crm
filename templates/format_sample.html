@@ -1,334 +1,191 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>TEIMCRM</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/style.css" rel="stylesheet">
+  <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
 <style>
-    .step-indicator {
-        display: inline-block;
-        margin: 0 10px;
-        padding: 6px 12px;
-        border-radius: 50%;
-        background-color: #e0e0e0;
-    }
+  .form-rowsales{
+  margin: 85px 10px 10px 10px !important;
+/* top | right | bottom | left */
 
-    .step-indicator.fw-bold {
-        background-color: #0d6efd;
-        color: white;
-    }
+  }
 </style>
+</head>
+
+<body>
+      {% include 'sidebar.html' %}
+<div class="main">
+  
+ <div class="container">
+  <div class="row form-rowsales">
 
 
+    <div class="col-md-8 offset-md-2 shadow bg-white  rounded  p-2">
+           <span onclick="window.location.href='/index'"
+                    style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i
+                        class="fas fa-house-chimney ml-2 mt-1"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;"
+                    class="mb-4 mr-2 mt-1">X</span>
+      <form method="post" class="p-3">
+        {% csrf_token %}
+        
+        <div class="row">
+              <div class="col-md-12">
+      <h2 class="text-center text-dark ">Add Sales Person</h2>
+    </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="full_name" class="form-control" value="{{ person.full_name }}" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Date of Joining</label>
+            <input type="date" name="date_of_joining" class="form-control" value="{{ person.date_of_joining }}" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Mobile No</label>
+            <input type="text" name="mobile_no" class="form-control" value="{{ person.mobile_no }}" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ person.email }}" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" name="date_of_birth" class="form-control" value="{{ person.date_of_birth }}" required>
+          </div>
+          <div class="col-md-6"></div>
 
-<script>
-    const steps = document.querySelectorAll('.form-step');
-    const nextBtns = document.querySelectorAll('.next-step');
-    const prevBtns = document.querySelectorAll('.prev-step');
-    const stepIndicators = document.querySelectorAll('.step-indicator');
-    let currentStep = 0;
+          <div class="col-md-6 mt-3 mb-3  ">
+  <a href="{% url 'sales_person_list' %}" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">
+    <i class="bi bi-arrow-left-circle me-2"></i> Back to List
+  </a>
+</div>
 
-    function updateFormSteps() {
-        steps.forEach((step, index) => {
-            step.classList.toggle('d-none', index !== currentStep);
-            stepIndicators[index].classList.toggle('fw-bold', index === currentStep);
+<div class="col-md-6 mt-3 mb-3">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save"></i> Update
+            </button>
+</div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</div>
+
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+        <div class="row p-3">
+            <div class="col-md-12 text-center">
+                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+                    © 2025. Powered by
+                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://www.chronoanalytics.in/"
+                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                        Solution</a>
+                    All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                    © 2025. Marketed by
+                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+                    All Rights Reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const submenu = this.querySelector('.submenu');
+                    const arrow = this.querySelector('.arrow-down');
+
+                    // Hide all other submenus
+                    menuItems.forEach(otherItem => {
+                        if (otherItem !== this) {
+                            const otherSubmenu = otherItem.querySelector('.submenu');
+                            const otherArrow = otherItem.querySelector('.arrow-down');
+                            if (otherSubmenu) {
+                                otherSubmenu.style.display = 'none';
+                                if (otherArrow.classList.contains('arrow-up')) {
+                                    otherArrow.classList.remove('arrow-up');
+                                }
+                            }
+                        }
+                    });
+
+                    // Toggle current submenu
+                    if (submenu) {
+                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+                        arrow.classList.toggle('arrow-up');
+                    }
+                });
+            });
         });
-    }
+        const deleteLinks = document.querySelectorAll('.delete-link');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+        let deleteUrl = '';
 
-    nextBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (currentStep < steps.length - 1) {
-                currentStep++;
-                updateFormSteps();
+        deleteLinks.forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                deleteUrl = this.getAttribute('href');
+                confirmationModal.style.display = 'block';
+            });
+        });
+
+        confirmDeleteButton.addEventListener('click', function () {
+            if (deleteUrl) {
+                window.location.href = deleteUrl;
             }
         });
-    });
 
-    prevBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (currentStep > 0) {
-                currentStep--;
-                updateFormSteps();
+        cancelDeleteButton.addEventListener('click', function () {
+            confirmationModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function (event) {
+            if (event.target == confirmationModal) {
+                confirmationModal.style.display = 'none';
             }
         });
-    });
 
-    updateFormSteps();
-</script>
+        function openModal(service_id) {
+            fetch(`/get_service_details/${service_id}/`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('modal-content').innerHTML = html;
+                    document.getElementById('modal').classList.add('active');
+                });
 
+        }
 
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+    </script>
+</body>
 
-
-<form method="POST" id="service-management-form">
-    {% csrf_token %}
-
-    <!-- Step Indicators -->
-    <div class="text-center mb-4">
-        <span class="step-indicator">Step 1</span>
-        <span class="step-indicator">Step 2</span>
-        <span class="step-indicator">Step 3</span>
-    </div>
-
-    <!-- STEP 1 -->
-    <div class="form-step">
-          <div class="row">
-                        <div class="col-md-6  ">
-                            <div data-mdb-input-init class="form-outline">
-                                <label>Please Select Customer<span class="star">*</span></label>
-                                <select id="customer_id" class="form-control form-control-lg" name="customer_id" required
-                                    onchange="updateCustomerDetails()">
-                                    <option value="" disabled selected>Select Customer</option>
-                                    {% for customer in customers %}
-                                    <option value="{{ customer.id }}" data-contact="{{ customer.primarycontact }}"
-                                        data-email="{{ customer.primaryemail }}">
-                                        {{ customer.customerid }} - {{ customer.firstname }} {{ customer.lastname }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6  ">
-                            <div data-mdb-input-init class="form-outline">
-                                <label>Customer Contact<span class="star">*</span></label>
-
-                                <input type="text" id="customer_contact" name="customer_contact" value="" required
-                                    readonly class="form-control"><br>
-                            </div>
-                        </div>
-                        <div class="col-md-6  ">
-                            <div data-mdb-input-init class="form-outline">
-                                <label>Customer Email<span class="star">*</span></label>
-
-                                <input type="text" id="customer_email" name="customer_email" class="form-control"
-                                    value="" required readonly><br>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    
-                    <label>Service Type<span class="star">*</span></label>
-
-                    <select id="servicetype" name="servicetype" onchange="fetchProducts(this)" class="form-control">
-                        <option value="">Select service types</option>
-                        {% for category, display_name in category_choices %}
-                        <option value="{{ category }}">{{ display_name }}</option>
-                        {% endfor %}
-                    </select><br>
-
-
-                    <label>Select Products </label>
-                    <br>
-                    <div id="products-container">
-                        <!-- Products will be loaded here via AJAX -->
-
-                        <!-- {% for product in products %}
-                        <div>
-                            <label>
-                                <input type="checkbox" name="selected_services" value="{{ product.id }}" class="product-checkbox">
-                                {{ product.product_name }}
-                            </label>
-                             -->
-                        <!-- Price text box (editable) -->
-                        <!-- <input type="text" name="price_{{ product.id }}" value="{{ product.price }}" class="price-field" readonly> -->
-
-                        <!-- Quantity text box with a data-max attribute for validation -->
-                        <!-- <input type="number" name="quantity_{{ product.id }}" value="{{ product.available_quantity }}"  -->
-                        <!-- class="quantity-field" data-max="{{ product.available_quantity }}" min="1"> -->
-                        <!-- </div>
-                    {% endfor %} -->
-                        <!-- <p id="error-message" style="color: red; display: none;">Not enough product, reduce quantity</p> -->
-
-                    </div>
-
-
-                    <!-- The selected services list -->
-                    <label>Selected Services </label>
-
-                    <ul id="selected_services" name="selected_services" class="selected-products-list">
-                        <!-- Dynamically updated list of selected products -->
-                    </ul><br>
-
-
-                    <!-- New hidden input to hold the names of selected services (products) -->
-                    <input type="hidden" id="selected_services_names" name="selected_services_names">
-
-                    <label>Total Price (without GST)<span class="star">*</span></label>
-                    <input type="number" id="total_price" name="total_price" step="0.01" readonly><br>
-
-
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input mt-4" id="apply_gst" name="apply_gst"
-                            onchange="toggleGST()">
-                        <label class="form-check-label" for="apply_gst">Apply GST (18%)</label>
-                    </div>
-                    <div id="gst-number-container">
-                        <div id="gst_fields" style="display: none;">
-                            <input type="text" name="gst_number" placeholder="Enter GST Number" class="form-control">
-                        </div>
-
-                        <script>
-                            document.getElementById('apply_gst').addEventListener('change', function () {
-                                const gstFields = document.getElementById('gst_fields');
-                                gstFields.style.display = this.checked ? 'block' : 'none';
-                            });
-                        </script>
-                    </div>
-
-
-                    <div id="gst-price-container">
-                        <label for="gst_price">GST (18%):</label>
-                        <input type="number" id="gst_price" name="gst_price" step="0.01" readonly
-                            class="form-control"><br>
-
-
-                        <label for="total_with_gst">Total Price (with GST):</label>
-                        <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" class="form-control" 
-                            readonly><br>
-                    </div>
-
-                                        <label for="contract_type">Contract Type<span class="star">*</span></label>
-
-                    <select name="contract_type" class="form-control" required>
-                        <option value="One Time">One Time</option>
-                        <option value="AMC">AMC</option>
-                        <option value="Warranty">Warranty</option>
-                    </select><br>
-
-                    <label for="contract_status">Contract Status<span class="star">*</span></label>
-                    <select name="contract_status" class="form-control" required>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                    </select><br>
-
-                    <label for="property_type">Property Type<span class="star">*</span></label>
-                    <textarea name="property_type" class="form-control" required></textarea><br>
-
-                    <label for="warranty_period">Warranty Period<span class="star">*</span></label>
-                    <input type="text" name="warranty_period" class="form-control" required><br>
-
-
-        <!-- Service Type & Products -->
-        <!-- Total Price + GST Toggle -->
-
-        <button type="button" class="btn btn-primary next-step">Next</button>
-    </div>
-
-    <!-- STEP 2 -->
-    <div class="form-step d-none">
-        <!-- Contract Type, Status, Warranty, Property Type -->
-
-
-                    <div class="col-md-12">
-                    <label for="state">Select State<span class="star">*</span></label>
-                         <select id="state" name="state" class="form-control" required>
-                            <option value="">Select State</option>
-                            <option value="Andhra Pradesh">Andhra Pradesh</option>
-                            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                            <option value="Assam">Assam</option>
-                            <option value="Bihar">Bihar</option>
-                            <option value="Chhattisgarh">Chhattisgarh</option>
-                            <option value="Goa">Goa</option>
-                            <option value="Gujarat">Gujarat</option>
-                            <option value="Haryana">Haryana</option>
-                            <option value="Himachal Pradesh">Himachal Pradesh</option>
-                            <option value="Jharkhand">Jharkhand</option>
-                            <option value="Karnataka">Karnataka</option>
-                            <option value="Kerala">Kerala</option>
-                            <option value="Madhya Pradesh">Madhya Pradesh</option>
-                            <option value="Maharashtra">Maharashtra</option>
-                            <option value="Manipur">Manipur</option>
-                            <option value="Meghalaya">Meghalaya</option>
-                            <option value="Mizoram">Mizoram</option>
-                            <option value="Nagaland">Nagaland</option>
-                            <option value="Odisha">Odisha</option>
-                            <option value="Punjab">Punjab</option>
-                            <option value="Rajasthan">Rajasthan</option>
-                            <option value="Sikkim">Sikkim</option>
-                            <option value="Tamil Nadu">Tamil Nadu</option>
-                            <option value="Telangana">Telangana</option>
-                            <option value="Tripura">Tripura</option>
-                            <option value="Uttar Pradesh">Uttar Pradesh</option>
-                            <option value="Uttarakhand">Uttarakhand</option>
-                            <option value="West Bengal">West Bengal</option>
-                            <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-                            <option value="Chandigarh">Chandigarh</option>
-                            <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman
-                                and Diu</option>
-                            <option value="Lakshadweep">Lakshadweep</option>
-                            <option value="Puducherry">Puducherry</option>
-                            <option value="Ladakh">Ladakh</option>
-                            <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-                        </select>
-                    </div>
-
-
-                    <label >City<span class="star">*</span></label>
-                     <input type="text" name="city" class="form-control" required><br>
-
-                    <label >Pincode<span class="star">*</span></label>
-                     <input type="text" name="pincode" maxlength="6" class="form-control" required><br>
-
-                    <label >Address<span class="star">*</span></label>
-                     <textarea name="address" class="form-control" required></textarea><br>
-
-                     <label >GPS Location<span class="star">*</span></label>
-                     <input type="url" name="gps_location" class="form-control" required><br>
-
-                     <label >Select Frequency Count<span class="star">*</span></label>
-                     <select name="frequency_count" class="form-control">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                        <option value="Fortnight">Fortnight</option>
-                        <option value="Weekly">Weekly</option>
-                        <option value="Daily">Daily</option>
-                    </select><br>
-
-                    <label >Payment Terms<span class="star">*</span></label>
-                     <input class="form-control" type="text" name="payment_terms"
-                        value="100% Advance payment OR Whatever mutually Decided" readonly><br>
-
-                        <label >Sales Person Name<span class="star">*</span></label>
-                     <input type="text" name="sales_person_name" class="form-control"><br>
-
-                    <label >Sales Person Contact No<span class="star">*</span></label>
-                     <input type="text" name="sales_person_contact_no" id="sales_person_contact_no" pattern="\d{10}"
-                        title="Please enter a valid 10-digit phone number" required class="form-control"><br>
-
-                        <label >Delivery Time<span class="star">*</span></label>
-                     <input type="time" class="form-control" id="delivery_time" name="delivery_time" required>
-
-                     <label >Lead Date<span class="star">*</span></label>
-                     <input type="date" name="lead_date" required class="form-control"><br>
-
-                     <label >Service Date<span class="star">*</span></label>
-                     <input type="date" name="service_date" required class="form-control"><br>
-
-        <!-- State, City, Pincode, Address, GPS -->
-
-        <button type="button" class="btn btn-secondary prev-step">Previous</button>
-        <button type="button" class="btn btn-primary next-step">Next</button>
-    </div>
-
-    <!-- STEP 3 -->
-    <div class="form-step d-none">
-        <!-- Frequency Count, Payment Terms -->
-
-        <!-- Sales Person Details -->
-        <!-- Delivery Time, Lead Date, Service Date -->
-
-        <button type="button" class="btn btn-secondary prev-step">Previous</button>
-       <div class="mt-4 pt-2 text-center"
-                        style="font-family: 'Playfair Display', serif;color:antiquewhite; font-weight: 900;">
-                        <button class="btn btn-info btn-lg" type="submit" style="width:200px;">Submit</button>
-                    </div>
-                    <a href="/display_customer" class="btn btn-outline-info   mt-5 leanking-buttons"  >View Customer Records</a>
-
-    </div>
-</form>
+</html>
+ 
