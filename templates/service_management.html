@@ -298,7 +298,7 @@
                                     {% for customer in customers %}
                                     <option value="{{ customer.id }}" data-contact="{{ customer.primarycontact }}"
                                         data-email="{{ customer.primaryemail }}">
-                                        {{ customer.customerid }} - {{ customer.firstname }} {{ customer.lastname }}
+                                        {{ customer.customerid }} - {{ customer.fullname }}
                                     </option>
                                     {% endfor %}
                                 </select>
