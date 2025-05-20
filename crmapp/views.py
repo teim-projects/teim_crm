@@ -1445,18 +1445,7 @@ def get_invoice_details(request, invoice_id):
     return render(request, 'invoice_details_modal.html', {'invoice_var': invoice_var})
 
 
-# Display Inventory
 
-# def display_inventory(request):
-#     m=inventory.objects.all()
-
-#     context={}
-#     context['data'] =m
-#     return render(request , 'display_inventory.html' , context)
-
-
-
-# Display Lead Management
 
 
 
