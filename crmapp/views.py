@@ -251,11 +251,24 @@ def index(request):
 # def popup(request):
 #     return render(request,'popup.html')
 
-def generate_customerid(firstname, lastname):
-    first_part = firstname[:3].upper()
-    last_part = lastname[:3].upper()
+import random
+
+def generate_customerid(fullname):
+    names = fullname.strip().split()
+
+    # Extract first and last name safely
+    firstname = names[0] if names else ''
+    lastname = names[-1] if len(names) > 1 else ''
+
+    # Get first 3 letters (or less if name is short)
+    first_part = firstname[:3].upper().ljust(3, 'X')
+    last_part = lastname[:3].upper().ljust(3, 'X')
+
+    # Generate 4-digit random number
     random_number = str(random.randint(1000, 9999))
+
     return first_part + last_part + random_number
+
 
 
 from django.http import JsonResponse
@@ -506,46 +519,71 @@ def user_logout(request):
 
 
 
+from django.http import JsonResponse
+from .models import customer_details, lead_management
+
 def customer_details_create(request):
-    if request.method=='GET':
-        return render(request ,'customer_details.html')
-    
-   
-    
+    if request.method == 'GET':
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            primarycontact = request.GET.get('primarycontact')
+            lead = lead_management.objects.filter(primarycontact=primarycontact).order_by('-enquirydate').first()
+            if lead:
+                data = {
+                    'fullname': lead.customername or '',
+                    'primaryemail': lead.customeremail or '',
+                    'secondarycontact': lead.secondarycontact or '',
+                    'contactperson': lead.contactedby or '',
+                    'customersegment': lead.customersegment or '',
+                    'shifttopartyaddress': lead.customeraddress or '',
+                    'shifttopartycity': lead.city or '',
+                    'soldtopartyaddress': lead.customeraddress or '',
+                    'soldtopartycity': lead.city or '',
+                }
+                return JsonResponse({'status': 'exists', 'data': data})
+            return JsonResponse({'status': 'not_found'})
+        return render(request, 'customer_details.html')
+
     else:
-        firstname=request.POST['firstname']
-        lastname=request.POST['lastname']
-        primaryemail=request.POST['primaryemail']
-        secondaryemail=request.POST['secondaryemail']
-        primarycontact=request.POST['primarycontact']
-        secondarycontact=request.POST['secondarycontact']
-        if not secondarycontact:
-            secondarycontact = None
-        contactperson=request.POST['contactperson']
-        customersegment=request.POST['customersegment']
-        shifttopartyaddress=request.POST['shifttopartyaddress']
-        shifttopartycity=request.POST['shifttopartycity']
-        shifttopartystate=request.POST['shifttopartystate']
-        shifttopartypostal=request.POST['shifttopartypostal']
-        soldtopartyaddress=request.POST['soldtopartyaddress']
-        soldtopartycity=request.POST['soldtopartycity']
-        soldtopartystate=request.POST['soldtopartystate']
-        soldtopartypostal=request.POST['soldtopartypostal']
+        fullname = request.POST['fullname']
+        primaryemail = request.POST['primaryemail']
+        secondaryemail = request.POST['secondaryemail']
+        primarycontact = request.POST['primarycontact']
+        secondarycontact = request.POST['secondarycontact'] or None
+        contactperson = request.POST['contactperson']
+        customersegment = request.POST['customersegment']
+        shifttopartyaddress = request.POST['shifttopartyaddress']
+        shifttopartycity = request.POST['shifttopartycity']
+        shifttopartystate = request.POST['shifttopartystate']
+        shifttopartypostal = request.POST['shifttopartypostal']
+        soldtopartyaddress = request.POST['soldtopartyaddress']
+        soldtopartycity = request.POST['soldtopartycity']
+        soldtopartystate = request.POST['soldtopartystate']
+        soldtopartypostal = request.POST['soldtopartypostal']
 
-        customerid = generate_customerid(firstname, lastname)
+        if not fullname or not primaryemail or not primarycontact:
+            return render(request, "customer_details.html", {'msg1': 'Field cannot be empty'})
 
-        
-        if firstname =="" or lastname == "" or primaryemail == "" or primarycontact == "":
+        customerid = generate_customerid(fullname)
 
-            context ={}
-            context ['msg1'] ='Field can not be empty'
-            return render(request , "customer_details.html" , context)
-       
-        else:
-            m=customer_details.objects.create(firstname=firstname, lastname=lastname , primaryemail=primaryemail,  secondaryemail=secondaryemail , primarycontact=primarycontact , secondarycontact=secondarycontact , contactperson=contactperson , customersegment=customersegment , shifttopartyaddress=shifttopartyaddress , shifttopartycity=shifttopartycity , shifttopartystate=shifttopartystate , shifttopartypostal=shifttopartypostal , soldtopartyaddress=soldtopartyaddress , soldtopartycity=soldtopartycity , soldtopartystate=soldtopartystate , soldtopartypostal=soldtopartypostal , customerid=customerid)
-
-            m.save()
-            return redirect( '/display_customer')
+        customer_details.objects.create(
+            fullname=fullname,
+            primaryemail=primaryemail,
+            secondaryemail=secondaryemail,
+            primarycontact=primarycontact,
+            secondarycontact=secondarycontact,
+            contactperson=contactperson,
+            customersegment=customersegment,
+            shifttopartyaddress=shifttopartyaddress,
+            shifttopartycity=shifttopartycity,
+            shifttopartystate=shifttopartystate,
+            shifttopartypostal=shifttopartypostal,
+            soldtopartyaddress=soldtopartyaddress,
+            soldtopartycity=soldtopartycity,
+            soldtopartystate=soldtopartystate,
+            soldtopartypostal=soldtopartypostal,
+            customerid=customerid
+        )
+        return redirect('/display_customer')
 
 
 from django.shortcuts import render
@@ -1029,6 +1067,11 @@ from django.http import JsonResponse
 from .models import lead_management
 from datetime import datetime
 
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from .models import lead_management
+from datetime import datetime
+
 def lead_management_create(request):
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
@@ -1050,10 +1093,11 @@ def lead_management_create(request):
                     'customeremail': lead.customeremail,
                     'customeraddress': lead.customeraddress,
                     'location': lead.location,
+                    'state': lead.state,
                     'city': lead.city,
+                    'branch': lead.branch,
                     'typeoflead': lead.typeoflead,
                     'firstfollowupdate': lead.firstfollowupdate.strftime('%Y-%m-%d') if lead.firstfollowupdate else '',
-                    'branch': lead.branch,
                 }
                 return JsonResponse({'status': 'exists', 'data': data})
             else:
@@ -1064,25 +1108,32 @@ def lead_management_create(request):
 
     else:
         # Handle form submission (POST)
-        sourceoflead = request.POST['sourceoflead']
-        salesperson = request.POST['salesperson']
-        customername = request.POST['customername']
-        customersegment = request.POST['customersegment']
-        enquirydate = datetime.strptime(request.POST['enquirydate'], '%Y-%m-%d').date()
-        contactedby = request.POST['contactedby']
-        maincategory = request.POST['maincategory']
-        subcategory = request.POST['subcategory']
-        primarycontact = request.POST.get('primarycontact')
-        secondarycontact = request.POST.get('secondarycontact')
+        sourceoflead = request.POST.get('sourceoflead')
+        salesperson = request.POST.get('salesperson')
+        customername = request.POST.get('customername')
+        customersegment = request.POST.get('customersegment')
+        enquirydate = datetime.strptime(request.POST.get('enquirydate'), '%Y-%m-%d').date() if request.POST.get('enquirydate') else None
+        contactedby = request.POST.get('contactedby')
+        maincategory = request.POST.get('maincategory')
+        subcategory = request.POST.get('subcategory')
+
+        primarycontact = request.POST.get('primarycontact') or None
+        primarycontact = int(primarycontact) if primarycontact else None
+
+        secondarycontact = request.POST.get('secondarycontact') or None
+        secondarycontact = int(secondarycontact) if secondarycontact else None
+
         customeremail = request.POST.get('customeremail')
         customeraddress = request.POST.get('customeraddress')
-        location = request.POST.get('location', '')
-        city = request.POST.get('city', 'Null')
-        typeoflead = request.POST['typeoflead']
-        firstfollowupdate = datetime.strptime(request.POST['firstfollowupdate'], '%Y-%m-%d').date()
+        location = request.POST.get('location') or None
+        city = request.POST.get('city') or 'Unknown City'
+        state = request.POST.get('state') or None
+        typeoflead = request.POST.get('typeoflead')
+        firstfollowupdate = datetime.strptime(request.POST.get('firstfollowupdate'), '%Y-%m-%d').date() if request.POST.get('firstfollowupdate') else None
         branch = request.POST.get('branch')
 
-        m = lead_management.objects.create(
+        # Create the lead entry
+        lead = lead_management.objects.create(
             sourceoflead=sourceoflead,
             salesperson=salesperson,
             customername=customername,
@@ -1095,14 +1146,14 @@ def lead_management_create(request):
             secondarycontact=secondarycontact,
             customeremail=customeremail,
             customeraddress=customeraddress,
-            location=location if location else None,
+            location=location,
+            state=state,
             city=city,
+            branch=branch,
             typeoflead=typeoflead,
             firstfollowupdate=firstfollowupdate,
-            branch=branch,
         )
 
-        m.save()
         return redirect('/display_lead_management')
 
 # In crmapp/views.py

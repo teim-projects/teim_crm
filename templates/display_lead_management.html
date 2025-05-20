@@ -521,9 +521,11 @@
                                             </a>
                                         </th>
                                         <th>Lead Type</th>
+                                        <th>Branch</th>
                                         <th>Enquiry Date</th>
                                         <th>Contact No.</th>
                                         <th>Address</th>
+                                        <th>Follow up date </th>
                                         <th>Follow Up</th>
                                         <th>Edit</th>
                                         <th>Delete</th>
@@ -545,11 +547,15 @@
                                         </td>
                                         <td>{{x.sourceoflead}}</td>
                                         <td>{{x.salesperson}}</td>
+                                        
                                         <td>{{x.customername}}</td>
                                         <td>{{x.typeoflead}}</td>
+                                        <td>{{x.branch}}</td>
+
                                         <td>{{x.enquirydate}}</td>
                                         <td>{{x.primarycontact}}</td>
                                         <td>{{x.customeraddress}}</td>
+                                        <td>{{x.firstfollowupdate}}</td>
                                         <td>
 
                                             {% if x.stage == 1 %}

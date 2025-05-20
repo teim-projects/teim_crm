@@ -13,8 +13,7 @@ def generate_customerid():
 
 class customer_details(models.Model):
    
-    firstname=models.CharField(max_length=100)
-    lastname=models.CharField(max_length=100)
+    fullname = models.CharField(max_length=100)
     primaryemail=models.EmailField()
     secondaryemail=models.EmailField(null=True , blank=True)
     primarycontact=models.BigIntegerField()
@@ -228,6 +227,21 @@ class invoice(models.Model):
 #         return self.sourceoflead
 
 class lead_management(models.Model):
+
+    STATE_CHOICES = [
+        ('Maharashtra', 'Maharashtra'),
+        ('Karnataka', 'Karnataka'),
+        ('Tamil Nadu', 'Tamil Nadu'),
+        ('Rajasthan', 'Rajasthan'),
+        ('Delhi', 'Delhi'),
+        ('Uttar Pradesh', 'Uttar Pradesh'),
+        ('Gujarat', 'Gujarat'),
+        ('West Bengal', 'West Bengal'),
+        ('Madhya Pradesh', 'Madhya Pradesh'),
+        # Add all other states here...
+    ]
+
+
     BRANCH_CHOICES = [
         ('Bhiwandi', 'Bhiwandi'),
         ('Indore', 'Indore'),
@@ -238,6 +252,7 @@ class lead_management(models.Model):
         ('Baramati', 'Baramati'),
         ('Pune', 'Pune'),
     ]
+    state = models.CharField(max_length=100, choices=STATE_CHOICES, default="Maharashtra")
     branch = models.CharField(max_length=10, choices=BRANCH_CHOICES, default='NA')
 
     sourceoflead = models.CharField(max_length=200, choices=[('Google', 'Google'), ('Justdial', 'Justdial'), ('Indiamart', 'Indiamart'), ('Customer Reference', 'Customer Reference'), ('BNI', 'BNI'),('Lineclub', 'Lineclub'),('Employee Reference', 'Employee Reference'),('Others', 'Others')], default="NOT SELECTED")

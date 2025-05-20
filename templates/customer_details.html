@@ -123,6 +123,45 @@
 
     {% include 'sidebar.html' %}
 
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+    $('input[name="primarycontact"]').on('change', function () {
+        const mobile = $(this).val();
+        if (mobile.length === 10) {
+            $.ajax({
+                url: "",
+                data: {
+                    'primarycontact': mobile
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status === 'exists') {
+                        const data = response.data;
+                        $('input[name="fullname"]').val(data.fullname);
+                        $('input[name="primaryemail"]').val(data.primaryemail);
+                        $('input[name="secondarycontact"]').val(data.secondarycontact);
+                        $('input[name="contactperson"]').val(data.contactperson);
+                        $('input[name="customersegment"]').val(data.customersegment);
+                        $('input[name="shifttopartyaddress"]').val(data.shifttopartyaddress);
+                        $('input[name="shifttopartycity"]').val(data.shifttopartycity);
+                        $('input[name="soldtopartyaddress"]').val(data.soldtopartyaddress);
+                        $('input[name="soldtopartycity"]').val(data.soldtopartycity);
+                    } else {
+                        alert("No lead data found for this number.");
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+
+
+
     <div class="main-container">
         <div class="card shadow-2-strong card-registration">
             <div class="card-body">
@@ -153,15 +192,10 @@
                                     readonly required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="firstname" placeholder="First Name"
-                                    required>
+                                <label>Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="fullname" placeholder="Full Name" required><br>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Last Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="lastname" placeholder="Last Name"
-                                    required>
-                            </div>
+                           
                             <div class="col-md-6 mb-3">
                                 <label>Primary Email <span class="text-danger">*</span></label>
                                 <input type="email" class="form-control" name="primaryemail" placeholder="Primary Email"
