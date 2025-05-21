@@ -1,0 +1,6 @@
+<h2>Edit Term & Condition</h2>
+<form method="POST">
+  {% csrf_token %}
+  <textarea name="description" rows="6" class="form-control" required>{{ term.description }}</textarea><br>
+  <button type="submit">Update</button>
+</form>

@@ -16,6 +16,18 @@ urlpatterns = [
     path('delete-sales-person/<int:pk>/', views.delete_sales_person, name='delete_sales_person'),
     path('customer_details_create',views.customer_details_create),
     path('service_management_create',views.service_management_create),
+
+     # Quotation Terms
+    path('add_quotation_term/', views.add_quotation_term, name='add_quotation_term'),
+    path('edit_quotation_term/<int:id>/', views.edit_quotation_term, name='edit_quotation_term'),
+    path('view_quotation_terms/', views.view_quotation_terms, name='view_quotation_terms'),
+    path('delete_quotation_term/<int:id>/', views.delete_quotation_term, name='delete_quotation_term'),
+
+    # Invoice Terms
+    path('add_invoice_term/', views.add_invoice_term, name='add_invoice_term'),
+    path('edit_invoice_term/<int:id>/', views.edit_invoice_term, name='edit_invoice_term'),
+    path('view_invoice_terms/', views.view_invoice_terms, name='view_invoice_terms'),
+    path('delete_invoice_term/<int:id>/', views.delete_invoice_term, name='delete_invoice_term'),
     path('quotation_create',views.quotation_create, name='quotation_create'),
     path('invoice_create',views.invoice_create),
     # path('inventory_create',views.inventory_create),

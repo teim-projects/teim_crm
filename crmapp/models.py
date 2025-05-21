@@ -26,6 +26,15 @@ class SalesPerson(models.Model):
         return self.full_name
 
 
+from django.db import models
+
+class QuotationTerm(models.Model):
+    description = models.TextField()
+
+class InvoiceTerm(models.Model):
+    description = models.TextField()
+
+
 
 
 class customer_details(models.Model):

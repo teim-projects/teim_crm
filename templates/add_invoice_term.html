@@ -1,0 +1,6 @@
+<h2>Add Term & Condition</h2>
+<form method="POST">
+  {% csrf_token %}
+  <textarea name="description" rows="6" class="form-control" placeholder="Enter term (supports emoji 😊)" required></textarea><br>
+  <button type="submit">Add</button>
+</form>

@@ -812,6 +812,61 @@ def get_customer_fullname(request, customer_id):
   
 
 
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import QuotationTerm, InvoiceTerm
+
+# --- QUOTATION ---
+def add_quotation_term(request):
+    if request.method == 'POST':
+        QuotationTerm.objects.create(description=request.POST.get('description'))
+        return redirect('view_quotation_terms')
+    return render(request, 'add_quotation_term.html')
+
+def edit_quotation_term(request, id):
+    term = get_object_or_404(QuotationTerm, id=id)
+    if request.method == 'POST':
+        term.description = request.POST.get('description')
+        term.save()
+        return redirect('view_quotation_terms')
+    return render(request, 'edit_quotation_term.html', {'term': term})
+
+def view_quotation_terms(request):
+    terms = QuotationTerm.objects.all()
+    return render(request, 'view_quotation_terms.html', {'terms': terms})
+
+def delete_quotation_term(request, id):
+    term = get_object_or_404(QuotationTerm, id=id)
+    term.delete()
+    return redirect('view_quotation_terms')
+
+
+# --- INVOICE ---
+def add_invoice_term(request):
+    if request.method == 'POST':
+        InvoiceTerm.objects.create(description=request.POST.get('description'))
+        return redirect('view_invoice_terms')
+    return render(request, 'add_invoice_term.html')
+
+def edit_invoice_term(request, id):
+    term = get_object_or_404(InvoiceTerm, id=id)
+    if request.method == 'POST':
+        term.description = request.POST.get('description')
+        term.save()
+        return redirect('view_invoice_terms')
+    return render(request, 'edit_invoice_term.html', {'term': term})
+
+def view_invoice_terms(request):
+    terms = InvoiceTerm.objects.all()
+    return render(request, 'view_invoice_terms.html', {'terms': terms})
+
+def delete_invoice_term(request, id):
+    term = get_object_or_404(InvoiceTerm, id=id)
+    term.delete()
+    return redirect('view_invoice_terms')
+
+
+
 def quotation_create(request):
     customers = customer_details.objects.all()
 
