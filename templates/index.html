@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/customer.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -272,11 +274,96 @@
         h3{
             text-align: center;
         }
+          /* Modal animation */
+  #resolutionModal .modal-dialog {
+    animation: slideDown 0.6s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-50px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Modal header background */
+  #resolutionModal .modal-header {
+    background-color: #007bff; /* TeimCRM Blue */
+    color: white;
+    border-bottom: none;
+  }
+
+  /* Modal title */
+  #resolutionModal .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+  }
+
+  /* Modal body styling */
+  #resolutionModal .modal-body {
+    font-size: 1rem;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
+  }
+
+  /* Modal footer */
+  #resolutionModal .modal-footer {
+    background-color: #f8f9fa;
+    border-top: none;
+  }
+
+  /* Button styling */
+  #resolutionModal .btn-primary {
+    background-color: #1f7e9b;
+    border-color: #1f7e9b;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+
+  #resolutionModal .btn-primary:hover {
+    background-color: #156476;
+    border-color: #156476;
+  }
+
+  /* Close button color */
+  #resolutionModal .btn-close {
+    filter: invert(1);
+  }
     </style>
 </head>
 
 <body>
     {% include 'sidebar.html' %}
+<!-- Screen Resolution Modal -->
+<div class="modal fade" id="resolutionModal" tabindex="-1" aria-labelledby="resolutionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title" id="resolutionModalLabel">Important Display Note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        For the best experience, please set your screen zoom to <strong>90%</strong> in your browser.
+        <br><br>
+        <small>(Press <kbd>Ctrl</kbd> + <kbd>-</kbd> to reduce zoom or <kbd>Ctrl</kbd> + <kbd>0</kbd> to reset)</small>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const resolutionModal = new bootstrap.Modal(document.getElementById('resolutionModal'));
+        resolutionModal.show();
+    });
+</script>
 
 
     </div>
