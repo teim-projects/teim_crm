@@ -360,10 +360,17 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const resolutionModal = new bootstrap.Modal(document.getElementById('resolutionModal'));
-        resolutionModal.show();
+        // Check if the modal was already shown before
+        if (!localStorage.getItem('resolutionModalShown')) {
+            const resolutionModal = new bootstrap.Modal(document.getElementById('resolutionModal'));
+            resolutionModal.show();
+
+            // Set flag in localStorage so it doesn't show again
+            localStorage.setItem('resolutionModalShown', 'true');
+        }
     });
 </script>
+
 
 
     </div>
