@@ -93,6 +93,29 @@
           </button>
         <button class="go-Home-btn mt-3" onclick="window.location.href='/index'"><i class="fas fa-house-chimney"></i>Home</button>
     </div>
+<script>
+function goBackAndRefresh() {
+    let count = 0;
+    const maxSteps = 20; // prevent infinite loop
+    const delay = 300;
+
+    const interval = setInterval(() => {
+        // Stop condition
+        if (count >= maxSteps || !document.referrer.includes(location.hostname)) {
+            clearInterval(interval);
+            location.reload(); // 🔄 Refresh the final page
+            return;
+        }
+
+        history.back(); // ⬅️ Go back one page
+        count++;
+    }, delay);
+}
+</script>
+
+
+
+
 
   </body>
 
