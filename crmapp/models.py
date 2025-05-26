@@ -446,6 +446,39 @@ class service_management(models.Model):
         selected_services = ', '.join([str(service) for service in self.selected_services.all()])
         return f'Service Management - {self.customer} ({selected_services})'
 
+
+
+
+
+class quotation_management(models.Model):
+    customer_full_name = models.CharField(max_length=255, null=True, blank=True)
+    contact_no = models.CharField(max_length=15, null=True, blank=True)
+    secondary_contact_no = models.CharField(max_length=15, null=True, blank=True)
+    customer_email = models.EmailField(null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    gps_location = models.URLField(null=True, blank=True)
+    selected_services = models.ManyToManyField(Product, related_name="quotation_services")
+    apply_gst = models.BooleanField(default=False)
+    gst_status = models.CharField(max_length=10, default='NON-GST')
+    total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    total_price_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    pincode = models.CharField(max_length=6, default="000000")
+    gst_number = models.CharField(max_length=15, null=True, blank=True)
+    subject = models.CharField(max_length=1000, null=True, blank=True)
+    quotation_date = models.DateField(default=timezone.now)
+    terms_and_conditions = models.ManyToManyField(QuotationTerm, blank=True)
+
+    def __str__(self):
+        selected_services = ', '.join([str(service) for service in self.selected_services.all()])
+        return f'Quotation Management - {self.customer_full_name} ({selected_services})'
+
+
+
+
+
 class WorkAllocation(models.Model):
     technician = models.ForeignKey(TechnicianProfile, on_delete=models.CASCADE)
     customer_fname = models.CharField(max_length=100,null=True, blank=True)

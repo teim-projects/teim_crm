@@ -28,6 +28,8 @@ urlpatterns = [
     path('edit_invoice_term/<int:id>/', views.edit_invoice_term, name='edit_invoice_term'),
     path('view_invoice_terms/', views.view_invoice_terms, name='view_invoice_terms'),
     path('delete_invoice_term/<int:id>/', views.delete_invoice_term, name='delete_invoice_term'),
+    path('create_quotation/', views.quotation_management_create, name='create_quotation'),
+
     path('quotation_create',views.quotation_create, name='quotation_create'),
     path('invoice_create',views.invoice_create),
     # path('inventory_create',views.inventory_create),

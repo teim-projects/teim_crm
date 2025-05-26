@@ -794,6 +794,128 @@ def service_management_create(request):
 
     return render(request, 'service_management.html', {'category_choices': category_choices, 'products': products,'customers' : customers})
 
+
+
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.utils import timezone
+from datetime import datetime
+from .models import quotation_management, customer_details, Product, QuotationTerm
+
+def quotation_management_create(request):
+    category_choices = Product.CATEGORY_CHOICES
+    products = Product.objects.all()
+    terms = QuotationTerm.objects.all()
+
+    # AJAX: Get customer details by contact_no
+    if request.method == 'GET' and 'contact_no' in request.GET:
+        contact_no = request.GET.get('contact_no')
+        try:
+            customer = customer_details.objects.get(primarycontact=contact_no)
+            data = {
+                'customer_full_name': customer.fullname,
+                'customer_email': customer.primaryemail,
+                'address': customer.soldtopartyaddress,
+                'city': customer.soldtopartycity,
+                'state': customer.soldtopartystate,
+            }
+            return JsonResponse(data)
+        except customer_details.DoesNotExist:
+            return JsonResponse({'error': 'Customer not found'}, status=404)
+
+    if request.method == 'POST':
+        try:
+            customer_full_name = request.POST.get('customer_full_name')
+            contact_no = request.POST.get('contact_no')
+            secondary_contact_no = request.POST.get('secondary_contact_no')
+            customer_email = request.POST.get('customer_email')
+            address = request.POST.get('address')
+            city = request.POST.get('city')
+            state = request.POST.get('state')
+            gps_location = request.POST.get('gps_location')
+            pincode = request.POST.get('pincode', '000000')
+            gst_number = request.POST.get('gst_number')
+            subject = request.POST.get('subject')
+
+            # Parse quotation_date from string or use today
+            date_str = request.POST.get('quotation_date')
+            if date_str:
+                try:
+                    quotation_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    quotation_date = timezone.now().date()
+            else:
+                quotation_date = timezone.now().date()
+
+            # selected_services is sent as a comma-separated string, parse it here:
+            selected_services_name = request.POST.get('selected_services_name', '')
+            if selected_services_name:
+                selected_service_ids = selected_services_name.split(',')
+            else:
+                selected_service_ids = []
+
+            # Assuming Product model's PK is 'product_id'
+            selected_services = Product.objects.filter(product_id__in=selected_service_ids)
+
+            apply_gst = request.POST.get('apply_gst') == 'on'
+            gst_status = 'GST' if apply_gst else 'NON-GST'
+
+            # Calculate total price from selected services (assuming Product has 'price' field)
+            total_price = sum(service.price for service in selected_services)
+            if apply_gst:
+                gst_rate = 0.18  # example GST rate 18%
+                total_price_with_gst = total_price + (total_price * gst_rate)
+            else:
+                total_price_with_gst = total_price
+
+            total_charges = total_price_with_gst
+
+            # Create quotation_management instance
+            quotation = quotation_management.objects.create(
+                customer_full_name=customer_full_name,
+                contact_no=contact_no,
+                secondary_contact_no=secondary_contact_no,
+                customer_email=customer_email,
+                address=address,
+                city=city,
+                state=state,
+                gps_location=gps_location,
+                pincode=pincode,
+                gst_number=gst_number,
+                subject=subject,
+                quotation_date=quotation_date,
+                apply_gst=apply_gst,
+                gst_status=gst_status,
+                total_charges=total_charges,
+                total_price=total_price,
+                total_price_with_gst=total_price_with_gst,
+            )
+
+            # Set ManyToMany fields
+            quotation.selected_services.set(selected_services)
+
+            selected_term_ids = request.POST.getlist('terms_and_conditions')
+            quotation.terms_and_conditions.set(selected_term_ids)
+
+            return redirect('display_quotation')  # Replace with your actual URL name
+
+        except Exception as e:
+            print(f"Error saving quotation: {e}")
+            return render(request, 'quotation_create_new.html', {
+                'error': str(e),
+                'products': products,
+                'category_choices': category_choices,
+                'terms': terms,
+            })
+
+    # GET request — render form
+    return render(request, 'quotation_create_new.html', {
+        'products': products,
+        'category_choices': category_choices,
+        'terms': terms,
+    })
+
+
 def get_products_by_category(request):
     categories = request.GET.get('categories', '')
     category_list = categories.split(',') if categories else []
@@ -1489,28 +1611,32 @@ def display_allocation(request):
 def get_allocation_details(request, service_id):
     allocation = get_object_or_404(service_management, id=service_id)
     return render(request, 'allocation_details_modal.html', {'allocation': allocation})
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from .models import quotation_management
 
 def display_quotation(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
-    sort_by = request.GET.get('sort_by', 'customerid')  
+    sort_by = request.GET.get('sort_by', 'customer_full_name')  # default sort field
 
+    # Initial queryset
     if query:
-        m = quotation.objects.filter(customer__customerid__icontains=query, status='active')
+        m = quotation_management.objects.filter(customer_full_name__icontains=query)
     else:
-        m = quotation.objects.filter(status='active')
+        m = quotation_management.objects.all()
 
-    if sort_by == 'firstname':
+    # Apply sorting
+    valid_sort_fields = ['customer_full_name', 'quotation_date', 'total_price', 'total_price_with_gst']
+    if sort_by in valid_sort_fields:
         if sort_order == 'desc':
-            m = m.order_by('-customer__firstname')  
+            m = m.order_by(f'-{sort_by}')
         else:
-            m = m.order_by('customer__firstname')  
+            m = m.order_by(sort_by)
     else:
-        if sort_order == 'desc':
-            m = m.order_by('-customer__customerid')  
-        else:
-            m = m.order_by('customer__customerid')
+        m = m.order_by('customer_full_name')  # fallback
 
+    # Pagination
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
