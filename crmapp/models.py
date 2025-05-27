@@ -31,6 +31,9 @@ from django.db import models
 class QuotationTerm(models.Model):
     description = models.TextField()
 
+    def __str__(self):
+        return self.description[:50]
+
 class InvoiceTerm(models.Model):
     description = models.TextField()
 

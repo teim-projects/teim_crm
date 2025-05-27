@@ -460,7 +460,6 @@
             <th>Selected Services</th>
             <th>Apply GST</th>
             <th>GST Status</th>
-            <th>GST Number</th>
             <th>Total Charges</th>
             <th>Total Price</th>
             <th>Total Price (with GST)</th>
@@ -492,28 +491,30 @@
                     -
                 {% endif %}
             </td>
-            <td>
-                {% for service in x.selected_services.all %}
-                    {{ service.name }}{% if not forloop.last %}, {% endif %}
-                {% empty %}
-                    No services selected
-                {% endfor %}
-            </td>
+          <td>
+    {% for service in x.selected_services.all %}
+        {{ service.product_name }}{% if not forloop.last %}, {% endif %}
+    {% empty %}
+        No services selected
+    {% endfor %}
+</td>
+
+
             <td>{{ x.apply_gst|yesno:"Yes,No" }}</td>
             <td>{{ x.gst_status }}</td>
-            <td>{{ x.gst_number }}</td>
             <td>{{ x.total_charges }}</td>
             <td>{{ x.total_price }}</td>
             <td>{{ x.total_price_with_gst }}</td>
             <td>{{ x.subject }}</td>
             <td>{{ x.quotation_date }}</td>
-            <td>
-                {% for term in x.terms_and_conditions.all %}
-                    {{ term.term }}{% if not forloop.last %}, {% endif %}
-                {% empty %}
-                    -
-                {% endfor %}
-            </td>
+           <td>
+    {% for term in x.terms_and_conditions.all %}
+        {{ term.description }}{% if not forloop.last %}, {% endif %}
+    {% empty %}
+        -
+    {% endfor %}
+</td>
+
             <td>
                 <a href="generate_quotation/quotation/pdf/{{ x.id }}/download"
                    class="btn linarbtn"
