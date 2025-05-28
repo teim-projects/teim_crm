@@ -1716,39 +1716,101 @@ def get_invoice_details(request, invoice_id):
 
 
 
-
+from django.core.paginator import Paginator
 from django.db.models import Q
+from django.shortcuts import render
+from django.db.models.functions import Lower
+from .models import lead_management, SalesPerson
 
 def display_lead_management(request):
-    search_query = request.GET.get('type_of_lead', '').replace('_', ' ').lower()
+    leads = lead_management.objects.all()
+
+    # Search and filter parameters
+    search_query = request.GET.get('search', '').strip()
+    typeoflead_filter = request.GET.get('typeoflead')
+    source_filter = request.GET.get('sourceoflead')
+    salesperson_filter = request.GET.get('salesperson')
+    branch_filter = request.GET.get('branch')
+    enquiry_from = request.GET.get('enquiry_from')
+    enquiry_to = request.GET.get('enquiry_to')
+    followup_from = request.GET.get('followup_from')
+    followup_to = request.GET.get('followup_to')
     sort_by = request.GET.get('sort', 'customername')
     order = request.GET.get('order', 'asc')
 
-    order_by = '-' + sort_by if order == 'desc' else sort_by
-
+    # Search by phone number or type of lead
     if search_query:
-        m = lead_management.objects.filter(
-            Q(typeoflead__icontains=search_query) | Q(primarycontact__icontains=search_query)
-        ).order_by(order_by)
-    else:
-        m = lead_management.objects.all().order_by(order_by)
+        leads = leads.filter(
+            Q(primarycontact__icontains=search_query) |
+            Q(typeoflead__icontains=search_query)
+        )
 
-    paginator = Paginator(m, 10)
+    # Apply filters
+    if typeoflead_filter:
+        leads = leads.filter(typeoflead=typeoflead_filter)
+    if source_filter:
+        leads = leads.filter(sourceoflead=source_filter)
+    if salesperson_filter:
+        leads = leads.filter(salesperson=salesperson_filter)
+    if branch_filter:
+        leads = leads.filter(branch=branch_filter)
+    if enquiry_from and enquiry_to:
+        leads = leads.filter(enquirydate__range=[enquiry_from, enquiry_to])
+    if followup_from and followup_to:
+        leads = leads.filter(firstfollowupdate__range=[followup_from, followup_to])
+
+    # Sorting
+    order_prefix = '-' if order == 'desc' else ''
+    leads = leads.order_by(f'{order_prefix}{sort_by}')
+
+    # Pagination
+    paginator = Paginator(leads, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
 
-    # Get distinct phone numbers for auto-suggest
-    phone_numbers = lead_management.objects.values_list('primarycontact', flat=True).distinct()
+    # Dropdown values: combine choices + actual values
+    typeoflead_choices = [choice[0] for choice in lead_management._meta.get_field('typeoflead').choices if choice[0]]
+    typeoflead_used = lead_management.objects.values_list('typeoflead', flat=True).distinct()
+    lead_types = sorted(set(typeoflead_choices + list(typeoflead_used)))
+
+    source_choices = [choice[0] for choice in lead_management._meta.get_field('sourceoflead').choices if choice[0]]
+    source_used = lead_management.objects.values_list('sourceoflead', flat=True).distinct()
+    sources = sorted(set(source_choices + list(source_used)))
+
+    branch_choices = [choice[0] for choice in lead_management._meta.get_field('branch').choices if choice[0]]
+    branch_used = lead_management.objects.values_list('branch', flat=True).distinct()
+    branches = sorted(set(branch_choices + list(branch_used)))
+
+    salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
+
+    # No-data message
+    no_data_message = ""
+    if not leads.exists():
+        if search_query:
+            no_data_message = f"No data found for search: {search_query}"
+        elif typeoflead_filter:
+            no_data_message = f"No data found for Type of Lead: {typeoflead_filter}"
+        elif source_filter:
+            no_data_message = f"No data found for Source of Lead: {source_filter}"
+        elif salesperson_filter:
+            no_data_message = f"No data found for Salesperson: {salesperson_filter}"
+        elif branch_filter:
+            no_data_message = f"No data found for Branch: {branch_filter}"
+        else:
+            no_data_message = "No data found for the selected filters."
 
     context = {
-        'data': m,
-        'search_query': search_query,
         'page_obj': page_obj,
         'start_index': start_index,
+        'lead_types': lead_types,
+        'sources': sources,
+        'branches': branches,
+        'salespersons': salespersons,
+        'search_query': search_query,
         'current_sort': sort_by,
         'current_order': order,
-        'phone_numbers': phone_numbers
+        'no_data_message': no_data_message,
     }
 
     return render(request, 'display_lead_management.html', context)
