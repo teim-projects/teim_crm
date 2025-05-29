@@ -533,15 +533,19 @@
     </div>
 
     <!-- Branch -->
-    <div class="col">
-        <label>Branch</label>
-        <select name="branch" class="form-control">
-            <option value="">All Branches</option>
-            {% for b in branches %}
-                <option value="{{ b }}" {% if request.GET.branch == b %}selected{% endif %}>{{ b }}</option>
-            {% endfor %}
-        </select>
-    </div>
+   <div class="col">
+    <label>Branch</label>
+    <select name="branch" class="form-control">
+        <option value="">All Branches</option>
+        {% for b in branches %}
+            <option value="{{ b }}" {% if request.GET.branch == b %}selected{% endif %}>{{ b }}</option>
+        {% endfor %}
+    </select>
+    {% if branch_count %}
+        <small class="text-muted">Total leads in this branch: {{ branch_count }}</small>
+    {% endif %}
+</div>
+
 
     <!-- Enquiry Date -->
     <div class="col">

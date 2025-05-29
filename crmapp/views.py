@@ -1721,11 +1721,16 @@ from django.db.models import Q
 from django.shortcuts import render
 from django.db.models.functions import Lower
 from .models import lead_management, SalesPerson
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.shortcuts import render
+from .models import lead_management, SalesPerson
 
 def display_lead_management(request):
-    leads = lead_management.objects.all()
+    # Start with all leads
+    filtered_leads = lead_management.objects.all()
 
-    # Search and filter parameters
+    # Get filters from GET request
     search_query = request.GET.get('search', '').strip()
     typeoflead_filter = request.GET.get('typeoflead')
     source_filter = request.GET.get('sourceoflead')
@@ -1738,30 +1743,33 @@ def display_lead_management(request):
     sort_by = request.GET.get('sort', 'customername')
     order = request.GET.get('order', 'asc')
 
-    # Search by phone number or type of lead
+    # Apply search
     if search_query:
-        leads = leads.filter(
+        filtered_leads = filtered_leads.filter(
             Q(primarycontact__icontains=search_query) |
             Q(typeoflead__icontains=search_query)
         )
 
     # Apply filters
     if typeoflead_filter:
-        leads = leads.filter(typeoflead=typeoflead_filter)
+        filtered_leads = filtered_leads.filter(typeoflead=typeoflead_filter)
     if source_filter:
-        leads = leads.filter(sourceoflead=source_filter)
+        filtered_leads = filtered_leads.filter(sourceoflead=source_filter)
     if salesperson_filter:
-        leads = leads.filter(salesperson=salesperson_filter)
+        filtered_leads = filtered_leads.filter(salesperson=salesperson_filter)
     if branch_filter:
-        leads = leads.filter(branch=branch_filter)
+        filtered_leads = filtered_leads.filter(branch=branch_filter)
     if enquiry_from and enquiry_to:
-        leads = leads.filter(enquirydate__range=[enquiry_from, enquiry_to])
+        filtered_leads = filtered_leads.filter(enquirydate__range=[enquiry_from, enquiry_to])
     if followup_from and followup_to:
-        leads = leads.filter(firstfollowupdate__range=[followup_from, followup_to])
+        filtered_leads = filtered_leads.filter(firstfollowupdate__range=[followup_from, followup_to])
+
+    # Count of leads (filtered total count)
+    branch_count = filtered_leads.count()
 
     # Sorting
     order_prefix = '-' if order == 'desc' else ''
-    leads = leads.order_by(f'{order_prefix}{sort_by}')
+    leads = filtered_leads.order_by(f'{order_prefix}{sort_by}')
 
     # Pagination
     paginator = Paginator(leads, 10)
@@ -1769,7 +1777,7 @@ def display_lead_management(request):
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
 
-    # Dropdown values: combine choices + actual values
+    # Dropdown options
     typeoflead_choices = [choice[0] for choice in lead_management._meta.get_field('typeoflead').choices if choice[0]]
     typeoflead_used = lead_management.objects.values_list('typeoflead', flat=True).distinct()
     lead_types = sorted(set(typeoflead_choices + list(typeoflead_used)))
@@ -1811,9 +1819,11 @@ def display_lead_management(request):
         'current_sort': sort_by,
         'current_order': order,
         'no_data_message': no_data_message,
+        'branch_count': branch_count,  # Will always be total of filtered results
     }
 
     return render(request, 'display_lead_management.html', context)
+
 
 
 from django.shortcuts import render
