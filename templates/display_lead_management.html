@@ -426,6 +426,61 @@
             outline: 0;
             box-shadow: 0 0 0 .2rem rgba(0, 123, 255, .25);
         }
+       
+    /* Background and border styling */
+    .form-control.custom-select {
+        background-color: #f0f4ff; /* soft blue shade */
+        border: 1px solid #ccd9ff;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        color: #333;
+    }
+
+    /* Hover effect */
+    .form-control.custom-select:hover {
+        background-color: #e3ebff;
+        border-color: #4b7bec; /* TeimCRM primary */
+    }
+
+    /* On focus */
+    .form-control.custom-select:focus {
+        border-color: #4b7bec;
+        box-shadow: 0 0 5px rgba(75, 123, 236, 0.5);
+    }
+
+    /* Labels styling */
+    label {
+        font-weight: 600;
+        color: #34495e;
+    }
+    .datehid{
+         
+             color: #3498db !important;
+ 
+    }
+
+    /* Overall background for filter row */
+    #filterForm {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 1rem;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Small text below filters */
+    .text-muted {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+ 
+
+    .date-box{
+        box-shadow: 0px 0px 1px cyan;
+         border-radius: 5px;
+
+        margin: 10px !important;
+         
+    }
         
     </style>
 </head>
@@ -502,99 +557,127 @@
 
                             </form>
 
+<hr class="text-dark">
+                     
 
-                            <form method="get" id="filterForm" class="row mb-4" style="gap: 10px;">
-                                <!-- Type of Lead -->
-                                 <div class="row">
-                                <div class="col-md-2">
-                                    <label>Type of Lead</label>
-                                    <select name="typeoflead" class="form-control">
-                                        <option value="">All Lead Types</option>
-                                        {% for type in lead_types %}
-                                            <option value="{{ type }}" {% if request.GET.typeoflead == type %}selected{% endif%}>{{ type }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
 
-                                <!-- Source of Lead -->
-                                <div class="col-md-2">
-                                    <label>Source of Lead</label>
-                                    <select name="sourceoflead" class="form-control">
-                                   <option value="">All Sources</option>
-                                   {% for source in sources %}
-                                         <option value="{{ source }}" {% if request.GET.sourceoflead == source %}selected{% endif %}>{{ source }}</option>
-                                   {% endfor %}
-                               </select>
 
-                                </div>
+<!-- Button to toggle the filter form -->
+<button id="toggleFilterBtn" class="btn btn-primary mb-3">Show Filters</button>
 
-                                <!-- Salesperson -->
-                                <div class="col-md-2">
-                                    <label>Salesperson</label>
-                                    <select name="salesperson" class="form-control">
-                                        <option value="">All Salespersons</option>
-                                        {% for sp in salespersons %}
-                                        <option value="{{ sp }}" {% if request.GET.salesperson == sp %}selected{% endif%}>{{ sp }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+<!-- Container to hold the filter form -->
+<div id="filterContainer" style="max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; opacity: 0;">
+ <form method="get" id="filterForm" class="row mb-4" style="gap: 10px;">
+    <div class="row ">
+        <!-- Type of Lead -->
+        <div class="col-md-3">
+            <label>Type of Lead</label>
+            <select name="typeoflead" class="form-control custom-select">
+                <option value="">All Lead Types</option>
+                {% for type in lead_types %}
+                <option value="{{ type }}" {% if request.GET.typeoflead == type %}selected{% endif %}>{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-                                <!-- Branch -->
-                                <div class="col-md-2">
-                                    <label>Branch</label>
-                                    <select name="branch" class="form-control">
-                                        <option value="">All Branches</option>
-                                        {% for b in branches %}
-                                        <option value="{{ b }}" {% if request.GET.branch == b %}selected{% endif %}>{{ b }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    {% if branch_count %}
-                                    <small class="text-muted">Total leads in this branch: {{ branch_count }}</small>
-                                    {% endif %}
-                                </div>
-<!-- Enquiry Date -->
-                                <div class="col-md-2">
-                                    <label>Enquiry Date From</label>
-                                    <input type="date" name="enquiry_from" class="form-control mb-1"
-                                        value="{{ request.GET.enquiry_from }}">
-                                    
-                                </div>
-                                <div class="col-md-2">
-                                      <label>Enquiry Date To</label>
+        <!-- Source of Lead -->
+        <div class="col-md-3">
+            <label>Source of Lead</label>
+            <select name="sourceoflead" class="form-control custom-select">
+                <option value="">All Sources</option>
+                {% for source in sources %}
+                <option value="{{ source }}" {% if request.GET.sourceoflead == source %}selected{% endif %}>{{ source }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-                                    <input type="date" name="enquiry_to" class="form-control"
-                                        value="{{ request.GET.enquiry_to }}">
-                                    </div>
-                                 </div>
-                               <div class="row">
-   
+        <!-- Salesperson -->
+        <div class="col-md-3">
+            <label>Salesperson</label>
+            <select name="salesperson" class="form-control custom-select">
+                <option value="">All Salespersons</option>
+                {% for sp in salespersons %}
+                <option value="{{ sp }}" {% if request.GET.salesperson == sp %}selected{% endif %}>{{ sp }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-                                <!-- Follow-up Date -->
-                                <div class="col-md-2">
-                                    <label>Follow-up Date From:</label>
-                                    <input type="date" name="followup_from" class="form-control mb-1"
-                                        value="{{ request.GET.followup_from }}">
-                                    
-                                </div>
-                                <div class="col-md-2">
-                               <label>Follow-up Date To:</label>
+        <!-- Branch -->
+        <div class="col-md-3">
+            <label>Branch</label>
+            <select name="branch" class="form-control custom-select">
+                <option value="">All Branches</option>
+                {% for b in branches %}
+                <option value="{{ b }}" {% if request.GET.branch == b %}selected{% endif %}>{{ b }}</option>
+                {% endfor %}
+            </select>
+            {% if branch_count %}
+            <small class="text-muted">Total leads in this branch: {{ branch_count }}</small>
+            {% endif %}
+        </div>
 
-                                    <input type="date" name="followup_to" class="form-control"
-                                        value="{{ request.GET.followup_to }}">
-                                </div>
-                                <div class="col-md-2"></div>
-                                <div class="col-md-2"></div>
-                                <div class="col-md-2"></div>
-                                <div class="col-md-2"></div>
-                               </div>
+       
+    </div>
 
-                             
+    <div class="row mt-3">
+    <!-- Enquiry Date Section -->
+    <div class="col-md-6 ">
+        <div class="row date-box p-2">
+                    <h6 class="text-center datehid">Enquiry Date</h6>
 
-                                <!-- You can remove the button since we submit on change -->
-                                <!-- <div class="col align-self-end">
-        <button type="submit" class="btn btn-primary">Filter</button>
-    </div> -->
-                            </form>
+            <div class="col-md-6">
+                <label class="text-center">From</label>
+                <input type="date" name="enquiry_from" class="form-control custom-select mb-1"
+                    value="{{ request.GET.enquiry_from }}">
+            </div>
+            <div class="col-md-6 ">
+                <label class="text-center">To</label>
+                <input type="date" name="enquiry_to" class="form-control custom-select"
+                    value="{{ request.GET.enquiry_to }}">
+            </div>
+        </div>
+    </div>
+
+    <!-- Follow-up Date Section -->
+    <div class="col-md-6 ">
+        <div class="row date-box p-2">
+                    <h6 class="text-center datehid">Follow-up Date</h6>
+
+            <div class="col-md-6">
+                <label class="text-center">From</label>
+                <input type="date" name="followup_from" class="form-control custom-select mb-1"
+                    value="{{ request.GET.followup_from }}">
+            </div>
+            <div class="col-md-6">
+                <label class="text-center">To</label>
+                <input type="date" name="followup_to" class="form-control custom-select"
+                    value="{{ request.GET.followup_to }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+</form>
+</div>
+
+<script>
+  const toggleBtn = document.getElementById('toggleFilterBtn');
+  const filterContainer = document.getElementById('filterContainer');
+  
+  toggleBtn.addEventListener('click', () => {
+    if (filterContainer.style.maxHeight && filterContainer.style.maxHeight !== '0px') {
+      // Hide form
+      filterContainer.style.maxHeight = '0';
+      filterContainer.style.opacity = '0';
+      toggleBtn.textContent = 'Show Filters';
+    } else {
+      // Show form
+      filterContainer.style.maxHeight = filterContainer.scrollHeight + 'px';
+      filterContainer.style.opacity = '1';
+      toggleBtn.textContent = 'Hide Filters';
+    }
+  });
+</script>
 
                             <script>
                                 document.addEventListener('DOMContentLoaded', () => {
