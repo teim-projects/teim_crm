@@ -426,6 +426,7 @@
             outline: 0;
             box-shadow: 0 0 0 .2rem rgba(0, 123, 255, .25);
         }
+        
     </style>
 </head>
 
@@ -433,7 +434,7 @@
     {% include 'sidebar.html' %}
 
 
-    <div class="container-fluid" style="min-height: 100vh !important;">
+    <div class="container-fluid" style="min-height: 100vh !important; margin:0px">
         <div class="row">
             <div class="col-md-12">
                 <div class="col-12">
@@ -481,12 +482,14 @@
                                                 </a>
                                             </div>
 
-                                            <div class="col-md-4 col-12 mt-4"><a href="{% url 'export_leads_excel' %}"
-                                                    class="buttonback">📤 &nbsp;Export Excel</a>
+                                            <div class="col-md-4 col-12 mt-4">
+                                                <a href="{% url 'export_leads_excel' %}">
+                                              <button type="button" class="buttonback">📤 &nbsp;Export Excel</button>
+                                                </a>
                                             </div>
-                                            <div class=" col-md-4 col-12 mt-4"><a href="{% url 'import_leads' %}"
-                                                    class="buttonback">📥 &nbsp;Import Leads</a>
-
+                                            <div class=" col-md-4 col-12 mt-4"><a href="{% url 'import_leads' %}">
+                                                    <button type="button" class="buttonback">📥 &nbsp;Import Leads</button>
+                                              </a>
                                             </div>
                                         </div>
 
@@ -502,7 +505,8 @@
 
                             <form method="get" id="filterForm" class="row mb-4" style="gap: 10px;">
                                 <!-- Type of Lead -->
-                                <div class="col">
+                                 <div class="row">
+                                <div class="col-md-2">
                                     <label>Type of Lead</label>
                                     <select name="typeoflead" class="form-control">
                                         <option value="">All Lead Types</option>
@@ -513,18 +517,19 @@
                                 </div>
 
                                 <!-- Source of Lead -->
-                                <div class="col">
+                                <div class="col-md-2">
                                     <label>Source of Lead</label>
                                     <select name="sourceoflead" class="form-control">
-                                        <option value="">All Sources</option>
-                                        {% for source in sources %}
-                                        <option value="{{ source }}" {% if request.GET.sourceoflead == source %}selected{%endif %}>{{ source }}</option>
-                                        {% endfor %}
-                                    </select>
+                                   <option value="">All Sources</option>
+                                   {% for source in sources %}
+                                         <option value="{{ source }}" {% if request.GET.sourceoflead == source %}selected{% endif %}>{{ source }}</option>
+                                   {% endfor %}
+                               </select>
+
                                 </div>
 
                                 <!-- Salesperson -->
-                                <div class="col">
+                                <div class="col-md-2">
                                     <label>Salesperson</label>
                                     <select name="salesperson" class="form-control">
                                         <option value="">All Salespersons</option>
@@ -535,7 +540,7 @@
                                 </div>
 
                                 <!-- Branch -->
-                                <div class="col">
+                                <div class="col-md-2">
                                     <label>Branch</label>
                                     <select name="branch" class="form-control">
                                         <option value="">All Branches</option>
@@ -547,25 +552,43 @@
                                     <small class="text-muted">Total leads in this branch: {{ branch_count }}</small>
                                     {% endif %}
                                 </div>
-
-
-                                <!-- Enquiry Date -->
-                                <div class="col">
-                                    <label>Enquiry Date:</label>
+<!-- Enquiry Date -->
+                                <div class="col-md-2">
+                                    <label>Enquiry Date From</label>
                                     <input type="date" name="enquiry_from" class="form-control mb-1"
                                         value="{{ request.GET.enquiry_from }}">
+                                    
+                                </div>
+                                <div class="col-md-2">
+                                      <label>Enquiry Date To</label>
+
                                     <input type="date" name="enquiry_to" class="form-control"
                                         value="{{ request.GET.enquiry_to }}">
-                                </div>
+                                    </div>
+                                 </div>
+                               <div class="row">
+   
 
                                 <!-- Follow-up Date -->
-                                <div class="col">
-                                    <label>Follow-up Date:</label>
+                                <div class="col-md-2">
+                                    <label>Follow-up Date From:</label>
                                     <input type="date" name="followup_from" class="form-control mb-1"
                                         value="{{ request.GET.followup_from }}">
+                                    
+                                </div>
+                                <div class="col-md-2">
+                               <label>Follow-up Date To:</label>
+
                                     <input type="date" name="followup_to" class="form-control"
                                         value="{{ request.GET.followup_to }}">
                                 </div>
+                                <div class="col-md-2"></div>
+                                <div class="col-md-2"></div>
+                                <div class="col-md-2"></div>
+                                <div class="col-md-2"></div>
+                               </div>
+
+                             
 
                                 <!-- You can remove the button since we submit on change -->
                                 <!-- <div class="col align-self-end">
