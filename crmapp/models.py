@@ -450,29 +450,72 @@ class service_management(models.Model):
         return f'Service Management - {self.customer} ({selected_services})'
 
 
+from django.db import models
+
+class Branch(models.Model):
+    branch_name = models.CharField(max_length=100)
+    contact_1 = models.CharField(max_length=15)
+    contact_2 = models.CharField(max_length=15, blank=True, null=True)
+    email_1 = models.EmailField()
+    email_2 = models.EmailField(blank=True, null=True)
+    gst_number = models.CharField(max_length=20)
+    pan_number = models.CharField(max_length=20)
+    full_address = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.branch_name
 
 
+
+from django.db import models
+from django.utils import timezone
+from .models import Product
+from crmapp.models import Branch
+from .models import QuotationTerm  # adjust path if needed
 
 class quotation_management(models.Model):
     customer_full_name = models.CharField(max_length=255, null=True, blank=True)
     contact_no = models.CharField(max_length=15, null=True, blank=True)
     secondary_contact_no = models.CharField(max_length=15, null=True, blank=True)
     customer_email = models.EmailField(null=True, blank=True)
+    secondary_email = models.EmailField(null=True, blank=True)  # ✅ Added
+
     address = models.TextField(null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
+    pincode = models.CharField(max_length=6, default="000000")
     gps_location = models.URLField(null=True, blank=True)
+
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)  # ✅ Used for shipping
+
     selected_services = models.ManyToManyField(Product, related_name="quotation_services")
+
     apply_gst = models.BooleanField(default=False)
     gst_status = models.CharField(max_length=10, default='NON-GST')
+
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
+    igst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Optional, if interstate
+    gst_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
+
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    pincode = models.CharField(max_length=6, default="000000")
-    gst_number = models.CharField(max_length=15, null=True, blank=True)
+
     subject = models.CharField(max_length=1000, null=True, blank=True)
     quotation_date = models.DateField(default=timezone.now)
+
     terms_and_conditions = models.ManyToManyField(QuotationTerm, blank=True)
+    gst_number = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True,
+        help_text="Enter 15-digit GSTIN (optional)"
+    )
+
+    def __str__(self):
+        return f"Quotation for {self.customer_full_name}"
 
     def __str__(self):
         selected_services = ', '.join([str(service) for service in self.selected_services.all()])
@@ -534,4 +577,5 @@ class TechWorkList(models.Model):
     def _str_(self):
         return f"Work {self.work.id} by {self.technician.username}"
     
+
 

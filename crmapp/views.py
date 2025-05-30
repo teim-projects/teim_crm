@@ -807,12 +807,21 @@ from datetime import datetime
 from django.utils import timezone
 from .models import Product, QuotationTerm, quotation_management, customer_details
 
+from django.shortcuts import render
+from django.utils import timezone
+from django.http import JsonResponse
+from datetime import datetime
+from .models import quotation_management, QuotationTerm
+from .models import Product
+from .models import customer_details
+from .models import Branch  # ✅ Import branch model
+
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
     terms = QuotationTerm.objects.all()
+    branches = Branch.objects.all()  # ✅ Add for form display
 
-    # AJAX: Get customer details by contact_no
     if request.method == 'GET' and 'contact_no' in request.GET:
         contact_no = request.GET.get('contact_no')
         try:
@@ -828,21 +837,22 @@ def quotation_management_create(request):
         except customer_details.DoesNotExist:
             return JsonResponse({'error': 'Customer not found'}, status=404)
 
-    # Handle form submission
     if request.method == 'POST':
         try:
-            # Collect form data
+            # Core data
             customer_full_name = request.POST.get('customer_full_name')
             contact_no = request.POST.get('contact_no')
             secondary_contact_no = request.POST.get('secondary_contact_no')
             customer_email = request.POST.get('customer_email')
+            secondary_email = request.POST.get('secondary_email')  # ✅ New
             address = request.POST.get('address')
             city = request.POST.get('city')
             state = request.POST.get('state')
             gps_location = request.POST.get('gps_location')
             pincode = request.POST.get('pincode', '000000')
-            gst_number = request.POST.get('gst_number')
+            # gst_number = request.POST.get('gst_number')
             subject = request.POST.get('subject')
+            branch_id = request.POST.get('branch_id')  # ✅ New
 
             # Handle quotation date
             date_str = request.POST.get('quotation_date')
@@ -854,47 +864,43 @@ def quotation_management_create(request):
             else:
                 quotation_date = timezone.now().date()
 
-            # ✅ Get selected product names as list
             selected_service_names_list = request.POST.get('selected_services_names', '').split(',')
             selected_service_names_list = list(set(name.strip() for name in selected_service_names_list if name.strip()))
-
-
-            print("Raw selected_services_names_list:", selected_service_names_list)
-
             if not selected_service_names_list:
                 raise ValueError("No services selected. Please select at least one service.")
 
             selected_services = Product.objects.filter(product_name__in=selected_service_names_list).distinct()
-            print("Filtered products:", list(selected_services.values_list('product_name', flat=True)))
-
             if not selected_services.exists():
                 raise ValueError("Selected services are invalid or not found.")
 
-            # Handle total price fields
+            # Prices and GST
             total_price = request.POST.get('total_price', '').strip()
             total_price_with_gst = request.POST.get('total_price_with_gst', '').strip()
-
             if not total_price or not total_price.replace('.', '', 1).isdigit():
-                raise ValueError("Invalid total price. Please provide a valid number.")
+                raise ValueError("Invalid total price.")
             if total_price_with_gst and not total_price_with_gst.replace('.', '', 1).isdigit():
-                raise ValueError("Invalid total price with GST. Please provide a valid number.")
+                raise ValueError("Invalid total price with GST.")
 
             total_price = float(total_price)
             total_price_with_gst = float(total_price_with_gst) if total_price_with_gst else None
 
-            # Handle GST option
             apply_gst = request.POST.get('apply_gst') == 'on'
-            gst_number = request.POST.get('gst_number', '') if apply_gst else ''
             gst_status = 'GST' if apply_gst else 'NON-GST'
             if not apply_gst:
                 total_price_with_gst = total_price
 
-            # Create quotation instance
+            cgst = request.POST.get('cgst') or 0  # ✅ New
+            sgst = request.POST.get('sgst') or 0  # ✅ New
+            igst = request.POST.get('igst') or 0  # ✅ New
+            gst_total = request.POST.get('gst_total') or 0  # ✅ New
+
+            # Create the quotation
             quotation = quotation_management.objects.create(
                 customer_full_name=customer_full_name,
                 contact_no=contact_no,
                 secondary_contact_no=secondary_contact_no,
                 customer_email=customer_email,
+                secondary_email=secondary_email,  # ✅ New
                 address=address,
                 city=city,
                 state=state,
@@ -908,14 +914,18 @@ def quotation_management_create(request):
                 total_charges=total_price,
                 total_price=total_price,
                 total_price_with_gst=total_price_with_gst,
+                cgst=cgst,  # ✅ New
+                sgst=sgst,  # ✅ New
+                igst=igst,  # ✅ New
+                gst_total=gst_total,  # ✅ New
+                branch_id=branch_id if branch_id else None  # ✅ New
             )
 
-            # Set selected products and terms
             quotation.selected_services.set(selected_services)
             selected_term_ids = request.POST.getlist('terms_and_conditions')
             quotation.terms_and_conditions.set(selected_term_ids)
 
-            return render(request, 'display_quotation.html')  # Redirect to the quotations list page
+            return render(request, 'display_quotation.html')
 
         except Exception as e:
             print(f"Error saving quotation: {e}")
@@ -924,14 +934,54 @@ def quotation_management_create(request):
                 'products': products,
                 'category_choices': category_choices,
                 'terms': terms,
+                'branches': branches  # ✅ ensure branch select is preserved
             })
 
-    # GET request — show form
     return render(request, 'quotation_create_new.html', {
         'products': products,
         'category_choices': category_choices,
         'terms': terms,
+        'branches': branches  # ✅ show branch list in the form
     })
+
+
+
+
+
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from .models import quotation_management
+
+def generate_quotation_pdf_download(request, id):
+    quotation = quotation_management.objects.get(id=id)
+    template_path = 'pdf_template.html'
+    context = {'quotation': quotation}
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="quotation_{quotation.id}.pdf"'
+    template = get_template(template_path)
+    html = template.render(context)
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Error generating PDF', status=500)
+    return response
+
+def generate_quotation_pdf_view(request, id):
+    quotation = quotation_management.objects.get(id=id)
+    template_path = 'pdf_template.html'
+    context = {'quotation': quotation}
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="quotation.pdf"'
+    template = get_template(template_path)
+    html = template.render(context)
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Error generating PDF', status=500)
+    return response
+
 
 
 def get_products_by_category(request):
@@ -1629,32 +1679,33 @@ def display_allocation(request):
 def get_allocation_details(request, service_id):
     allocation = get_object_or_404(service_management, id=service_id)
     return render(request, 'allocation_details_modal.html', {'allocation': allocation})
+
+
+
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from .models import quotation_management
 
+from django.core.paginator import Paginator
+
 def display_quotation(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
-    sort_by = request.GET.get('sort_by', 'customer_full_name')  # default sort field
+    sort_order = sort_order if sort_order in ['asc', 'desc'] else 'asc'
+    sort_by = request.GET.get('sort_by', 'customer_full_name')
 
-    # Initial queryset
-    if query:
-        m = quotation_management.objects.filter(customer_full_name__icontains=query)
-    else:
-        m = quotation_management.objects.all()
-
-    # Apply sorting
     valid_sort_fields = ['customer_full_name', 'quotation_date', 'total_price', 'total_price_with_gst']
-    if sort_by in valid_sort_fields:
-        if sort_order == 'desc':
-            m = m.order_by(f'-{sort_by}')
-        else:
-            m = m.order_by(sort_by)
-    else:
-        m = m.order_by('customer_full_name')  # fallback
 
-    # Pagination
+    m = quotation_management.objects.all()
+    if query:
+        m = m.filter(customer_full_name__icontains=query)
+
+    if sort_by in valid_sort_fields:
+        order_prefix = '-' if sort_order == 'desc' else ''
+        m = m.order_by(f'{order_prefix}{sort_by}')
+    else:
+        m = m.order_by('customer_full_name')
+
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -1665,8 +1716,10 @@ def display_quotation(request):
         'current_sort_by': sort_by,
         'page_obj': page_obj,
         'start_index': start_index,
+        'search_query': query,
     }
     return render(request, 'display_quotation.html', context)
+
 
 def get_quotation_details(request, quotation_id):
     quotation_var = get_object_or_404(quotation, id=quotation_id)
@@ -3869,3 +3922,37 @@ def generate_pdf_link(request, work_id):
     whatsapp_url = f"https://wa.me/{work.work.customer_contact}?text={encoded_message}"
     return redirect(whatsapp_url)
 
+
+
+
+from django.shortcuts import render, redirect
+from .models import Branch
+
+def create_branch(request):
+    if request.method == 'POST':
+        branch_name = request.POST.get('branch_name')
+        contact_1 = request.POST.get('contact_1')
+        contact_2 = request.POST.get('contact_2') or None
+        email_1 = request.POST.get('email_1')
+        email_2 = request.POST.get('email_2') or None
+        gst_number = request.POST.get('gst_number')
+        pan_number = request.POST.get('pan_number')
+        full_address = request.POST.get('full_address')
+
+        Branch.objects.create(
+            branch_name=branch_name,
+            contact_1=contact_1,
+            contact_2=contact_2,
+            email_1=email_1,
+            email_2=email_2,
+            gst_number=gst_number,
+            pan_number=pan_number,
+            full_address=full_address
+        )
+        return redirect('branch_list')  # Replace with your desired redirect view
+    return render(request, 'create_branch.html')
+from .models import Branch
+
+def branch_list(request):
+    branches = Branch.objects.all().order_by('-created_at')
+    return render(request, 'branch_list.html', {'branches': branches})

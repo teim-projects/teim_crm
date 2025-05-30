@@ -1,0 +1,49 @@
+
+<div class="container mt-5">
+  <h2>Create New Branch</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label>Branch Name</label>
+      <input type="text" name="branch_name" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label>Contact 1</label>
+      <input type="text" name="contact_1" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label>Contact 2</label>
+      <input type="text" name="contact_2" class="form-control">
+    </div>
+
+    <div class="mb-3">
+      <label>Email 1</label>
+      <input type="email" name="email_1" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label>Email 2</label>
+      <input type="email" name="email_2" class="form-control">
+    </div>
+
+    <div class="mb-3">
+      <label>GST Number</label>
+      <input type="text" name="gst_number" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label>PAN Number</label>
+      <input type="text" name="pan_number" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label>Full Address</label>
+      <textarea name="full_address" class="form-control" rows="3" required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Branch</button>
+  </form>
+</div>
+

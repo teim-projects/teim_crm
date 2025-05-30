@@ -275,218 +275,286 @@
             max-height: 100px;
             overflow-y: auto;
         }
-#products-container {
-    max-height: 300px; /* Set your desired scroll height */
-    overflow-y: auto;  /* or use 'scroll' for always-visible scrollbar */
-      border-radius: 8px;
-    background-color: #f8f9fa;
-}
 
+        #products-container {
+            max-height: 300px;
+            /* Set your desired scroll height */
+            overflow-y: auto;
+            /* or use 'scroll' for always-visible scrollbar */
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 
 
 <body>
     {% include 'sidebar.html' %}
-<div class="main" style="min-height: 100vh;">
+    <div class="main" style="min-height: 100vh;">
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-3"></div>
-            <div class="col-md-6 col-12">
-                <div class="card shadow-2-strong card-registration">
-                    <div class="card-body">
-                        <span onclick="window.location.href='/index'"
-                            style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4">
-                            <i class="fas fa-house-chimney"></i>
-                        </span>
-                        <span onclick="goBackAndRefresh()"
-                            style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-6 col-12">
+                    <div class="card shadow-2-strong card-registration">
+                        <div class="card-body">
+                            <span onclick="window.location.href='/index'"
+                                style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;"
+                                class="mb-4">
+                                <i class="fas fa-house-chimney"></i>
+                            </span>
+                            <span onclick="goBackAndRefresh()"
+                                style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
 
-                        <h3 style="font-weight: 600; margin: 10px;" class="mt-5">Quotation Management Record</h3>
+                            <h3 style="font-weight: 600; margin: 10px;" class="mt-5">Quotation Management Record</h3>
 
-                        <form method="POST" id="quotation-management-form" action="{% url 'create_quotation' %}">
-                            {% csrf_token %}
+                            <form method="POST" id="quotation-management-form" action="{% url 'create_quotation' %}">
+                                {% csrf_token %}
 
-                            <!-- STEP 1 -->
-                            <div class="form-step active">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label>Customer Contact<span class="star">*</span></label>
-                                        <input type="text" id="customer_contact" name="contact_no" required
-                                            class="form-control">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Customer Email<span class="star">*</span></label>
-                                        <input type="text" id="customer_email" name="customer_email" required
-                                            class="form-control">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Customer Full Name<span class="star">*</span></label>
-                                        <input type="text" name="customer_full_name" class="form-control" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Secondary Contact No.:</label>
-                                        <input type="text" name="secondary_contact_no" class="form-control"><br>
-
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label>Subject:</label>
-                                        <input type="text" name="subject" class="form-control"><br>
-
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Quotation Date:</label>
-                                        <input type="date" name="quotation_date" class="form-control"><br>
-
-                                    </div>
-                                    <div class="col-12">
-                                        <label>Select Terms and Conditions:</label><br>
-                                        <div class="overterm">
-                                            {% for term in terms %}
-                                            <input type="checkbox" name="terms_and_conditions" class="mt-3 "
-                                                value="{{ term.id }}">
-                                            {{ term.description|truncatewords:10 }}<br>
-                                            {% endfor %}
+                                <!-- STEP 1 -->
+                                <div class="form-step active">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label>Customer Contact<span class="star">*</span></label>
+                                            <input type="text" id="customer_contact" name="contact_no" required
+                                                class="form-control">
                                         </div>
-                                    </div>
-
-                                </div>
-                                <div class="text-center mt-3">
-                                    <button type="button" class="btn btn-primary next-step mt-2"
-                                        style="width: 150px;">Next</button>
-                                    <a href="/display_quotation" class="btn btn-info mt-2" style="width: 150px;">View
-                                        Records</a>
-                                </div>
-                            </div>
-                            <!-- STEP 2 -->
-                            <div class="form-step">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <label>Service Type <span class="star">*</span></label>
-                                        <select id="servicetype" name="servicetype" class="form-control"
-                                            onchange="fetchProducts(this)">
-                                            <option value="">Select service types</option>
-                                            {% for category, display_name in category_choices %}
-                                            <option value="{{ category }}">{{ display_name }}</option>
-                                            {% endfor %}
-                                        </select>
-
-                                        <label>Select Products</label>
-                                     
-                                           <div id="products-container"></div>
-                                      
-
-                                        <label>Selected Services</label>
-                                        <ul id="selected_services" class="selected-products-list"></ul>
-                                        <input type="hidden" name="selected_services_names" id="selected_services_ids">
-
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label>Total Price (without GST)<span class="star">*</span></label>
-                                        <input type="number" id="total_price" name="total_price" step="0.01" readonly
-                                            class="form-control">
-
-
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-check  ">
-                                            <label for="apply_gst" class="form-check-label ApplyGStT">Apply GST
-                                                (18%)</label>
-
-                                            <input type="checkbox" class="form-check-input ApplyGStT" id="apply_gst"
-                                                name="apply_gst" onchange="toggleGST()" class="form-control"
-                                                style="height: 30px; width:30px;">
+                                        <div class="col-md-6">
+                                            <label>Customer Email<span class="star">*</span></label>
+                                            <input type="text" id="customer_email" name="customer_email" required
+                                                class="form-control">
                                         </div>
+                                        <div class="col-md-6">
+                                            <label>Secondary Email:</label>
+                                            <input type="email" name="secondary_email" class="form-control">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label>Customer Full Name<span class="star">*</span></label>
+                                            <input type="text" name="customer_full_name" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Secondary Contact No.:</label>
+                                            <input type="text" name="secondary_contact_no" class="form-control"><br>
+
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label>Subject:</label>
+                                            <input type="text" name="subject" class="form-control"><br>
+
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Quotation Date:</label>
+                                            <input type="date" name="quotation_date" class="form-control"><br>
+
+                                        </div>
+                                        <div class="col-12">
+                                            <label>Select Terms and Conditions:</label><br>
+                                            <div class="overterm">
+                                                {% for term in terms %}
+                                                <input type="checkbox" name="terms_and_conditions" class="mt-3 "
+                                                    value="{{ term.id }}">
+                                                {{ term.description|truncatewords:10 }}<br>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
                                     </div>
-                                    <!-- 
+                                    <div class="text-center mt-3">
+                                        <button type="button" class="btn btn-primary next-step mt-2"
+                                            style="width: 150px;">Next</button>
+                                        <a href="/display_quotation" class="btn btn-info mt-2"
+                                            style="width: 150px;">View
+                                            Records</a>
+                                    </div>
+                                </div>
+                                <!-- STEP 2 -->
+                                <div class="form-step">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <label>Service Type <span class="star">*</span></label>
+                                            <select id="servicetype" name="servicetype" class="form-control"
+                                                onchange="fetchProducts(this)">
+                                                <option value="">Select service types</option>
+                                                {% for category, display_name in category_choices %}
+                                                <option value="{{ category }}">{{ display_name }}</option>
+                                                {% endfor %}
+                                            </select>
+
+                                            <label>Select Products</label>
+
+                                            <div id="products-container"></div>
+
+
+                                            <label>Selected Services</label>
+                                            <ul id="selected_services" class="selected-products-list"></ul>
+                                            <input type="hidden" name="selected_services_names"
+                                                id="selected_services_ids">
+
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label>Total Price (without GST)<span class="star">*</span></label>
+                                            <input type="number" id="total_price" name="total_price" step="0.01"
+                                                readonly class="form-control">
+
+
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-check  ">
+                                                <label for="apply_gst" class="form-check-label ApplyGStT">Apply GST
+                                                    (18%)</label>
+
+                                                <input type="checkbox" class="form-check-input ApplyGStT" id="apply_gst"
+                                                    name="apply_gst" onchange="toggleGST()" class="form-control"
+                                                    style="height: 30px; width:30px;">
+                                            </div>
+                                        </div>
+                                        <!-- 
         <div class="col-md-6 mb-3">
             <div id="gst_fields" style="display: none;">
                 <label>GST Number</label>
                 <input type="text" name="gst_number" placeholder="Enter GST Number" class="form-control">
             </div>
         </div> -->
+        <div class="col-md-12 mb-3">
+  <div class="form-check form-check-inline">
+    <input type="checkbox" class="form-check-input" id="apply_cgst" onchange="calculateGST()">
+    <label for="apply_cgst" class="form-check-label">Apply CGST (9%)</label>
+  </div>
+  <div class="form-check form-check-inline">
+    <input type="checkbox" class="form-check-input" id="apply_sgst" onchange="calculateGST()">
+    <label for="apply_sgst" class="form-check-label">Apply SGST (9%)</label>
+  </div>
+</div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <label>GST (18%)</label>
-                                        <input type="number" id="gst_price" name="gst_price" step="0.01" readonly
-                                            class="form-control">
+                                        <div class="col-md-6 mb-3">
+                                            <label>GST (18%)</label>
+                                            <input type="number" id="gst_price" name="gst_price" step="0.01" readonly
+                                                class="form-control">
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Total Price (with GST)</label>
+                                            <input type="number" id="total_with_gst" name="total_price_with_gst"
+                                                step="0.01" readonly class="form-control">
+                                        </div>
+
+
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <label>Total Price (with GST)</label>
-                                        <input type="number" id="total_with_gst" name="total_price_with_gst" step="0.01"
-                                            readonly class="form-control">
-                                    </div>
-
-
-                                </div>
-
-                                <div class="text-center mt-4">
-                                    <button type="button" class="btn btn-secondary prev-step mt-2"
-                                        style="width: 150px;">Previous</button>
-                                    <button type="button" class="btn btn-primary next-step mt-2"
-                                        style="width: 150px;">Next</button>
-                                </div>
-                            </div>
-
-
-                            <!-- STEP 3 -->
-
-                            <!-- STEP 1 -->
-                            <div class="form-step active">
-                                <div class="row">
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="state">Select State<span class="star">*</span></label>
-                                        <select id="state" name="state" class="form-control" required>
-                                            <option value="">Select State</option>
-                                            <option value="Maharashtra">Maharashtra</option>
-                                            <!-- Add more states -->
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label>City<span class="star">*</span></label>
-                                        <input type="text" name="city" class="form-control" required>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label>Pincode<span class="star">*</span></label>
-                                        <input type="text" name="pincode" maxlength="6" class="form-control" required>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label>Address<span class="star">*</span></label>
-                                        <textarea name="address" class="form-control" rows="1" required></textarea>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label>GPS Location<span class="star">*</span></label>
-                                        <input type="url" name="gps_location" class="form-control" required>
+                                    <div class="text-center mt-4">
+                                        <button type="button" class="btn btn-secondary prev-step mt-2"
+                                            style="width: 150px;">Previous</button>
+                                        <button type="button" class="btn btn-primary next-step mt-2"
+                                            style="width: 150px;">Next</button>
                                     </div>
                                 </div>
-                                <div class="text-center mt-3">
-                                    <button type="button" class="btn btn-secondary prev-step mt-2"
-                                        style="width: 150px;">Previous</button>
-                                    <button class="btn btn-info mt-2" type="submit"
-                                        style="width: 150px;">Submit</button>
 
 
+                                <!-- STEP 3 -->
+
+                                <!-- STEP 1 -->
+                                <div class="form-step active">
+                                    <div class="row">
+
+                                        <div class="col-md-6 mb-3">
+                                            <label for="state">Select State<span class="star">*</span></label>
+                                            <select id="state" name="state" class="form-control" required>
+                                                <option value="">Select State</option>
+                                                <option value="Maharashtra">Maharashtra</option>
+                                                <!-- Add more states -->
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>City<span class="star">*</span></label>
+                                            <input type="text" name="city" class="form-control" required>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Pincode<span class="star">*</span></label>
+                                            <input type="text" name="pincode" maxlength="6" class="form-control"
+                                                required>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Address<span class="star">*</span></label>
+                                            <textarea name="address" class="form-control" rows="1" required></textarea>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>GPS Location<span class="star">*</span></label>
+                                            <input type="url" name="gps_location" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button type="button" class="btn btn-secondary prev-step mt-2"
+                                            style="width: 150px;">Previous</button>
+                                        <button class="btn btn-info mt-2" type="submit"
+                                            style="width: 150px;">Submit</button>
+
+
+                                    </div>
                                 </div>
-                            </div>
 
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3"></div>
+                <div class="col-md-3"></div>
 
+            </div>
         </div>
     </div>
-</div>
     <!-- JavaScript for Multistep Form -->
+     <script>
+function calculateGST() {
+  const totalPrice = parseFloat(document.getElementById('total_price').value) || 0;
+  const applyCGST = document.getElementById('apply_cgst').checked;
+  const applySGST = document.getElementById('apply_sgst').checked;
+
+  let gstAmount = 0;
+
+  if (applyCGST) gstAmount += totalPrice * 0.09;  // 9% CGST
+  if (applySGST) gstAmount += totalPrice * 0.09;  // 9% SGST
+
+  document.getElementById('gst_price').value = gstAmount.toFixed(2);
+  document.getElementById('total_with_gst').value = (totalPrice + gstAmount).toFixed(2);
+}
+
+// Optional: Recalculate when total_price changes
+document.getElementById('total_price').addEventListener('input', calculateGST);
+</script>
+<script>
+function calculateGST() {
+    let total = parseFloat(document.getElementById("total_price").value) || 0;
+
+    const applyCGST = document.getElementById("apply_cgst").checked;
+    const applySGST = document.getElementById("apply_sgst").checked;
+
+    let cgst = 0;
+    let sgst = 0;
+
+    if (applyCGST) {
+        cgst = total * 0.09;
+    }
+
+    if (applySGST) {
+        sgst = total * 0.09;
+    }
+
+    const totalGST = cgst + sgst;
+    const totalWithGST = total + totalGST;
+
+    // Update values in the form
+    document.getElementById("gst_price").value = totalGST.toFixed(2);
+    document.getElementById("total_with_gst").value = totalWithGST.toFixed(2);
+}
+</script>
+
+
     <script>
         const steps = document.querySelectorAll('.form-step');
         const nextBtns = document.querySelectorAll('.next-step');

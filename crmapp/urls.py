@@ -121,6 +121,12 @@ urlpatterns = [
     path('display_followup/',views.display_followup, name='display_followup') ,
     path('reschedule/<int:service_id>/', views.reschedule_create, name='reschedule_create'),
     path('display_reschedule/',views.display_reschedule, name='display_reschedule') ,
+    path('branches/create/', views.create_branch, name='create_branch'),
+    path('branches/', views.branch_list, name='branch_list'),
+    path('generate_quotation/quotation/pdf/<int:id>/download', views.generate_quotation_pdf_download, name='download_quotation_pdf'),
+    path('generate_quotation/quotation/pdf/<int:id>/view', views.generate_quotation_pdf_view, name='view_quotation_pdf'),
+
+
 ]
 
 if settings.DEBUG:

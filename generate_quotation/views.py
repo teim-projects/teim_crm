@@ -43,7 +43,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa  # Library to convert HTML to PDF
-from crmapp.models import quotation
+from crmapp.models import quotation_management
 from io import BytesIO
 from PyPDF2 import PdfReader, PdfWriter
 from django.templatetags.static import static
@@ -51,7 +51,7 @@ from django.templatetags.static import static
 def generate_quotation_pdf(request, quotation_id, action='view'):
     try:
         # Fetch the quotation data from the database
-        quotation_data = get_object_or_404(quotation, id=quotation_id)
+        quotation_data = get_object_or_404(quotation_management, id=quotation_id)
         logo_path = request.build_absolute_uri(static('images/logo.png'))
         
         # Context to pass to the template
@@ -61,7 +61,7 @@ def generate_quotation_pdf(request, quotation_id, action='view'):
         }
 
         # Render the PDF using the template
-        template = get_template('quotation_generation/quotation_pdf_template.html')  # PDF Template location
+        template = get_template('pdf_template.html')  # PDF Template location
         html = template.render(context)
 
         # Generate the PDF in memory using BytesIO
@@ -100,5 +100,5 @@ def generate_quotation_pdf(request, quotation_id, action='view'):
         
         return response
 
-    except quotation.DoesNotExist:
+    except quotation_management.DoesNotExist:
         return HttpResponse('Quotation not found', status=404)

@@ -1,0 +1,44 @@
+
+
+
+<div class="container mt-5">
+  <h2>All Branches</h2>
+  <a href="{% url 'create_branch' %}" class="btn btn-success mb-3">+ Add New Branch</a>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Branch Name</th>
+        <th>Contact 1</th>
+        <th>Contact 2</th>
+        <th>Email 1</th>
+        <th>Email 2</th>
+        <th>GST No.</th>
+        <th>PAN No.</th>
+        <th>Address</th>
+        <th>Created At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for branch in branches %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ branch.branch_name }}</td>
+        <td>{{ branch.contact_1 }}</td>
+        <td>{{ branch.contact_2|default:"-" }}</td>
+        <td>{{ branch.email_1 }}</td>
+        <td>{{ branch.email_2|default:"-" }}</td>
+        <td>{{ branch.gst_number }}</td>
+        <td>{{ branch.pan_number }}</td>
+        <td>{{ branch.full_address }}</td>
+        <td>{{ branch.created_at|date:"Y-m-d H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="10">No branches found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+

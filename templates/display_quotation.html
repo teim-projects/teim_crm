@@ -40,7 +40,8 @@
 
         /* Title Styling */
 
-        h1,.hh {
+        h1,
+        .hh {
             font-family: 'Playfair Display', serif;
             padding: 20px;
             text-align: center;
@@ -409,7 +410,6 @@
         a.linarbtn:hover {
             box-shadow: 0px 0px 10px #6a11cb;
         }
-         
     </style>
 
 </head>
@@ -438,108 +438,117 @@
                             <p class="scroll-instruction">Scroll to view more content ➡️ </p>
                         </div>
                         <div class="container-table">
-                           <table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Sr.No</th>
-            <th>
-                <a style="text-decoration: none;color: #000000;"
-                   href="?sort_by=customer_full_name&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                    Customer Name
-                    {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
-                </a>
-            </th>
-            <th>Contact No</th>
-            <th>Secondary Contact</th>
-            <th>Email</th>
-            <th>Address</th>
-            <th>City</th>
-            <th>State</th>
-            <th>Pincode</th>
-            <th>GPS Location</th>
-            <th>Selected Services</th>
-            <th>Apply GST</th>
-            <th>GST Status</th>
-            <th>Total Charges</th>
-            <th>Total Price</th>
-            <th>Total Price (with GST)</th>
-            <th>Subject</th>
-            <th>Quotation Date</th>
-            <th>Terms & Conditions</th>
-            <th>Download</th>
-            <th>View</th>
-            <th>Edit</th>
-            <th>Delete</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for x in page_obj %}
-        <tr>
-            <td>{{ forloop.counter|add:start_index }}</td>
-            <td>{{ x.customer_full_name }}</td>
-            <td>{{ x.contact_no }}</td>
-            <td>{{ x.secondary_contact_no }}</td>
-            <td>{{ x.customer_email }}</td>
-            <td>{{ x.address }}</td>
-            <td>{{ x.city }}</td>
-            <td>{{ x.state }}</td>
-            <td>{{ x.pincode }}</td>
-            <td>
-                {% if x.gps_location %}
-                    <a href="{{ x.gps_location }}" target="_blank">Location</a>
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-          <td>
-    {% for service in x.selected_services.all %}
-        {{ service.product_name }}{% if not forloop.last %}, {% endif %}
-    {% empty %}
-        No services selected
-    {% endfor %}
-</td>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Sr.No</th>
+                                        <th>
+                                            <a style="text-decoration: none;color: #000000;"
+                                                href="?sort_by=customer_full_name&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
+                                                Customer Name
+                                                {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                                            </a>
+                                        </th>
+                                        <th>Contact No</th>
+                                        <th>Secondary Contact</th>
+                                        <th>Email</th>
+                                        <th>Secondary Email</th> <!-- ✅ New -->
+                                        <th>Address</th>
+                                        <th>City</th>
+                                        <th>State</th>
+                                        <th>Pincode</th>
+                                        <th>GPS Location</th>
+                                        <th>Shipping Branch</th> <!-- ✅ New -->
+                                        <th>Selected Services</th>
+                                        <th>Apply GST</th>
+                                        <th>GST Status</th>
+                                        <th>CGST</th> <!-- ✅ New -->
+                                        <th>SGST</th> <!-- ✅ New -->
+                                        
+                                        <th>GST Total</th> <!-- ✅ New -->
+                                        <th>Total Charges</th>
+                                        <th>Total Price</th>
+                                        <th>Total Price (with GST)</th>
+                                        <th>Subject</th>
+                                        <th>Quotation Date</th>
+                                        <th>Terms & Conditions</th>
+                                        <th>Download</th>
+                                        <th>View</th>
+                                        <th>Edit</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for x in page_obj %}
+                                    <tr>
+                                        <td>{{ forloop.counter|add:start_index }}</td>
+                                        <td>{{ x.customer_full_name }}</td>
+                                        <td>{{ x.contact_no }}</td>
+                                        <td>{{ x.secondary_contact_no }}</td>
+                                        <td>{{ x.customer_email }}</td>
+                                        <td>{{ x.secondary_email }}</td> <!-- ✅ -->
+                                        <td>{{ x.address }}</td>
+                                        <td>{{ x.city }}</td>
+                                        <td>{{ x.state }}</td>
+                                        <td>{{ x.pincode }}</td>
+                                        <td>
+                                            {% if x.gps_location %}
+                                            <a href="{{ x.gps_location }}" target="_blank">Location</a>
+                                            {% else %}-{% endif %}
+                                        </td>
+                                        <td>{{ x.branch.branch_name }}</td> <!-- ✅ -->
+                                        <td>
+                                            {% for service in x.selected_services.all %}
+                                            {{ service.product_name }}{% if not forloop.last %}, {% endif %}
+                                            {% empty %}
+                                            No services selected
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ x.apply_gst|yesno:"Yes,No" }}</td>
+                                        <td>{{ x.gst_status }}</td>
+                                        <td>{{ x.cgst }}</td> <!-- ✅ -->
+                                        <td>{{ x.sgst }}</td> <!-- ✅ -->
+                                        
+                                        <td>{{ x.gst_total }}</td> <!-- ✅ -->
+                                        <td>{{ x.total_charges }}</td>
+                                        <td>{{ x.total_price }}</td>
+                                        <td>{{ x.total_price_with_gst }}</td>
+                                        <td>{{ x.subject }}</td>
+                                        <td>{{ x.quotation_date }}</td>
+                                        <td>
+                                            {% for term in x.terms_and_conditions.all %}
+                                            {{ term.description }}{% if not forloop.last %}, {% endif %}
+                                            {% empty %}-{% endfor %}
+                                        </td>
+                                        <td>
+                                            <a href="/generate_quotation/quotation/pdf/{{ x.id }}/download"
+                                            class="btn linarbtn"
+                                            style="background: linear-gradient(to right, #2575fc, #6a11cb); color:white; border-radius:20px;">
+                                            Download PDF
+                                        </a>
+                                        </td>
+                                        <td>
+                                        <a href="/generate_quotation/quotation/pdf/{{ x.id }}/view"
+                                            class="btn btn-secondary">
+                                            View PDF
+                                        </a>
+                                        </td>
 
 
-            <td>{{ x.apply_gst|yesno:"Yes,No" }}</td>
-            <td>{{ x.gst_status }}</td>
-            <td>{{ x.total_charges }}</td>
-            <td>{{ x.total_price }}</td>
-            <td>{{ x.total_price_with_gst }}</td>
-            <td>{{ x.subject }}</td>
-            <td>{{ x.quotation_date }}</td>
-           <td>
-    {% for term in x.terms_and_conditions.all %}
-        {{ term.description }}{% if not forloop.last %}, {% endif %}
-    {% empty %}
-        -
-    {% endfor %}
-</td>
 
-            <td>
-                <a href="generate_quotation/quotation/pdf/{{ x.id }}/download"
-                   class="btn linarbtn"
-                   style="background: linear-gradient(to right, #2575fc, #6a11cb); color:white; border-radius:20px;">
-                   Download PDF
-                </a>
-            </td>
-            <td>
-                <a href="generate_quotation/quotation/pdf/{{ x.id }}/view" class="btn btn-secondary">View PDF</a>
-            </td>
-            <td>
-                <a href="/edit_quotation/{{ x.id }}" class="btn btn-outline-success">Edit</a>
-            </td>
-            <td>
-                <a href="/delete_quotation/{{ x.id }}" class="btn btn-outline-danger delete-link">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                                        <td><a href="/edit_quotation/{{ x.id }}"
+                                                class="btn btn-outline-success">Edit</a></td>
+                                        <td><a href="/delete_quotation/{{ x.id }}"
+                                                class="btn btn-outline-danger delete-link">Delete</a></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
 
 
                         </div>
-                      
-                        <div class="pagination">
+
+                         <div class="pagination"> 
 
                             {% if page_obj.has_previous %}
                             <li><a href="?page=1">&laquo; First</a></li>
@@ -567,11 +576,14 @@
                 {% csrf_token %}
                 <p class="hh">Are you sure you want to delete this record?</p>
                 <div>
-                     <input type="password" id="password" name="password" placeholder="Enter Password" class="form-control" required>
+                    <input type="password" id="password" name="password" placeholder="Enter Password"
+                        class="form-control" required>
                 </div>
                 <div class="modal-buttons">
-                    <button type="submit" id="confirmDeleteButton" class="btn btn-outline-info mt-3" style="width: 150px;">Yes</button>
-                    <button type="button" id="cancelDeleteButton" class="btn btn-outline-danger  mt-3"  style="width: 150px;">Cancel</button>
+                    <button type="submit" id="confirmDeleteButton" class="btn btn-outline-info mt-3"
+                        style="width: 150px;">Yes</button>
+                    <button type="button" id="cancelDeleteButton" class="btn btn-outline-danger  mt-3"
+                        style="width: 150px;">Cancel</button>
                 </div>
             </form>
         </div>
