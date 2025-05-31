@@ -906,7 +906,7 @@ def quotation_management_create(request):
                 state=state,
                 gps_location=gps_location,
                 pincode=pincode,
-                gst_number=gst_number,
+               
                 subject=subject,
                 quotation_date=quotation_date,
                 apply_gst=apply_gst,
@@ -1122,7 +1122,7 @@ def quotation_create(request):
     context = {
         'customers': customers,
     }
-    return render(request, 'quotation.html', context)
+    return render(request, 'quotation_create_new.html', context)
 
 
 def quotation_history(request, customer_id):
@@ -1392,6 +1392,7 @@ def lead_management_create(request):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'primarycontact' in request.GET:
             primarycontact = request.GET.get('primarycontact')
             lead = lead_management.objects.filter(primarycontact=primarycontact).order_by('enquirydate').first()
+            print("Form Data:", request.POST.dict())
 
             if lead:
                 data = {

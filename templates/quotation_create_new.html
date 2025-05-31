@@ -420,11 +420,11 @@
         </div> -->
         <div class="col-md-12 mb-3">
   <div class="form-check form-check-inline">
-    <input type="checkbox" class="form-check-input" id="apply_cgst" onchange="calculateGST()">
+    <input type="checkbox" class="form-check-input" name='cgst' id="apply_cgst" onchange="calculateGST()">
     <label for="apply_cgst" class="form-check-label">Apply CGST (9%)</label>
   </div>
   <div class="form-check form-check-inline">
-    <input type="checkbox" class="form-check-input" id="apply_sgst" onchange="calculateGST()">
+    <input type="checkbox" class="form-check-input"name='sgst' id="apply_sgst" onchange="calculateGST()">
     <label for="apply_sgst" class="form-check-label">Apply SGST (9%)</label>
   </div>
 </div>
@@ -480,7 +480,7 @@
                                         </div>
 
                                         <div class="col-md-6 mb-3">
-                                            <label>Address<span class="star">*</span></label>
+                                            <label>Billingaddress<span class="star">*</span></label>
                                             <textarea name="address" class="form-control" rows="1" required></textarea>
                                         </div>
 
