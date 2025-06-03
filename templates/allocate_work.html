@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
             margin: 0px !important;
             padding: 0px;
         }
+
         h2 {
             background: linear-gradient(to right, #2575fc, #6a11cb);
             /* Gradient definition */
@@ -25,6 +27,7 @@
             /*Script MT */
             font-weight: 400;
         }
+
         .container {
             display: flex;
             justify-content: center;
@@ -32,6 +35,7 @@
             min-height: 100vh;
             margin-top: 60px;
         }
+
         .card {
             background: #ffffff;
             border-radius: 8px;
@@ -40,16 +44,18 @@
             width: 100%;
             max-width: 800px;
         }
+
         .card h1 {
             margin-bottom: 20px;
             font-size: 24px;
             color: #333;
             text-align: center;
         }
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 5px;
         }
- 
+
         .form-group input,
         .form-group select,
         .form-group textarea {
@@ -59,10 +65,12 @@
             border: 1px solid #ddd;
             box-sizing: border-box;
         }
+
         .form-group textarea {
-            height: 120px;
+            height: 100px;
             resize: vertical;
         }
+
         .form-group button {
             background-color: #007bff;
             color: #fff;
@@ -74,103 +82,196 @@
             width: 100%;
             transition: background-color 0.3s;
         }
+
         .form-group button:hover {
             background-color: #0056b3;
         }
+
         .row {
             margin-bottom: 20px;
         }
+
         .col-md-6 {
             padding: 0 15px;
         }
-        @media (max-width: 768px){
+
+        @media (max-width: 768px) {
             .container {
-            
-            margin-top: 90px !important;
+
+                margin-top: 90px !important;
+            }
         }
+
+        .form-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.6s ease-in-out;
         }
+
+        .form-group label {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+        }
+
+        
+
+        button[type="submit"]:hover {
+            background: linear-gradient(to right, #0056b3, #0099cc);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .star {
+            color: red;
+            margin-left: 2px;
+        }
+          .step-section {
+        display: none;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    .step-section.active {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
     </style>
 </head>
+
 <body>
-    
+<script>
+    let currentStep = 1;
+    const totalSteps = 2;
+
+    function showStep(step) {
+        for (let i = 1; i <= totalSteps; i++) {
+            document.getElementById(`step-${i}`).classList.remove("active");
+        }
+        document.getElementById(`step-${step}`).classList.add("active");
+
+        document.getElementById("prevBtn").style.display = step === 1 ? "none" : "inline-block";
+        document.getElementById("nextBtn").style.display = step === totalSteps ? "none" : "inline-block";
+        document.getElementById("submitBtn").style.display = step === totalSteps ? "inline-block" : "none";
+    }
+
+    function nextPrev(n) {
+        currentStep += n;
+        if (currentStep < 1) currentStep = 1;
+        if (currentStep > totalSteps) currentStep = totalSteps;
+        showStep(currentStep);
+    }
+
+    showStep(currentStep);
+</script>
+
     {% include 'sidebar.html' %}
 
-   <div class="main">
-    <div class="container mb-5">
-        
-        <div class="card">
-<div class="icon" style="display: flex; justify-content: space-between;">
-    <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
-    <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
-  
-</div>
-            <h2 class="text-center mt-3">Allocate Work to Technician</h2>
-            <form method="post">
-                {% csrf_token %}
+    <div class="main">
+       <div class="container mb-5">
+    <div class="card mt-2 p-4">
+        <div class="icon d-flex justify-content-between">
+            <span onclick="window.location.href='/index'" style="cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-2"><i class="fas fa-house-chimney"></i></span>
+            <span onclick="goBackAndRefresh()" style="cursor: pointer; color:red; font-size:20px;" class="mb-2">X</span>
+        </div>
+
+        <h3 class="text-center mt-3">Allocate Work to Technician</h3>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Step 1 -->
+            <div class="step-section active" id="step-1">
                 <div class="row">
                     <div class="col-md-6 form-group">
                         <label for="technician">Select Technician<span class="star">*</span></label>
-                        <select name="technician" id="technician">
+                        <select name="technician" id="technician" class="form-control">
                             {% for technician in technicians %}
-                                <option value="{{ technician.id }}">{{ technician }}</option>
+                            <option value="{{ technician.id }}">{{ technician }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                  <input type="text" name="customer_name" id="customer_name" value="{{ customer_fullname }}" required readonly>
+                    <div class="col-md-6 form-group">
+                        <label for="customer_name">Name</label>
+                        <input type="text" name="customer_name" id="customer_name" class="form-control" value="{{ customer_fullname }}" required readonly>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="customer_phone_number">Customer Phone Number<span class="star">*</span></label>
+                        <input type="text" name="customer_phone_number" id="customer_phone_number" class="form-control" value="{{ customer_contact }}" required readonly>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="customer_address">Customer Address<span class="star">*</span></label>
+                        <input type="text" name="customer_address" id="customer_address" class="form-control" required>
+                    </div>
+                </div>
+            </div>
 
-                </div>
+            <!-- Step 2 -->
+            <div class="step-section" id="step-2">
                 <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label for="customer_phone_number">Customer Phone Number <span class="star">*</span></label>
-                        <input type="text" name="customer_phone_number" id="customer_phone_number" value="{{ customer_contact }}" required readonly>
+           
+                         <div class="col-md-6 form-group">
+                        <label for="payment_amount">Payment Amount:</label>
+                        <input type="number" name="payment_amount" id="payment_amount" class="form-control" value="{{ payment_amount }}" step="0.01" required readonly>
                     </div>
                     <div class="col-md-6 form-group">
-                        <label for="customer_address">Customer Address <span class="star">*</span></label>
-                        <input type="text" name="customer_address" id="customer_address" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label for="work_description">Work Description <span class="star">*</span></label>
-                        <textarea name="work_description" id="work_description" class="form-control" required></textarea>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label for="customer_payment_status">Payment Status <span class="star">*</span></label>
-                        <select name="customer_payment_status" id="customer_payment_status">
+                        <label for="customer_payment_status">Payment Status<span class="star">*</span></label>
+                        <select name="customer_payment_status" id="customer_payment_status" class="form-control">
                             <option value="Completed">Completed</option>
                             <option value="Pending">Pending</option>
                         </select>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label for="payment_amount">Payment Amount:</label>
-                        <input type="number" name="payment_amount" id="payment_amount" value="{{ payment_amount }}" step="0.01" required readonly>
-                    </div>
+               
                     <div class="col-md-6 form-group">
                         <label for="gps_location">GPS Location:</label>
-                        <input type="url" name="gps_location" id="gps_location" value="{{ gps_location }}" step="0.01" required readonly>
+                        <input type="url" name="gps_location" id="gps_location" class="form-control" value="{{ gps_location }}" required readonly>
+                    </div>
+                             <div class="col-md-6 form-group">
+                        <label for="work_description">Work Description<span class="star">*</span></label>
+                        <textarea name="work_description" rows="2" id="work_description" class="form-control" required></textarea>
                     </div>
                 </div>
-                <div class="form-group">
-                    <button type="submit">Allocate Work</button>
-                </div>
-            </form>
-        </div>
-    </div>
-   </div>
+            </div>
 
- 
+            <!-- Navigation Buttons -->
+            <div class="text-center mt-4">
+                
+                <button type="button" class="btn btn-secondary" id="prevBtn" onclick="nextPrev(-1)" style="display:none; min-width: 200px;">Previous</button>
+                <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextPrev(1)" style="min-width: 200px;">Next</button>
+                <button type="submit" class="btn btn-success" id="submitBtn" style="display:none; min-width: 200px;">Allocate Work</button>
+            </div>
+        </form>
+    </div>
+</div>
+    </div>
+
+
     <script>
 
 
-    document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
             menuItems.forEach(item => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function () {
                     const submenu = this.querySelector('.submenu');
                     const arrow = this.querySelector('.arrow-down');
-                    
+
                     // Hide all other submenus
                     menuItems.forEach(otherItem => {
                         if (otherItem !== this) {
@@ -196,28 +297,33 @@
 
 
     </script>
-  <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px; padding-bottom: 5px; margin-bottom: 0% !important;">
-    <div class="row p-3">
-        <div class="col-md-12 text-center"> <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
-            © 2025. Powered by
-            <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
-                style="height: 20px; vertical-align: middle;">
-            <a href="http://www.chronoanalytics.in/"
-                style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
-                Solution</a>
-            All Rights Reserved.
-        </p>
-      </div>
-        <div class="col-md-12 text-center">  <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
-            © 2025. Marketed by
-            <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
-            <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+    <div class="container-fluid footer  "
+        style="background-color: #f7f7f7; width:100%; margin-top:200px; padding-bottom: 5px; margin-bottom: 0% !important;">
+        <div class="row p-3">
+            <div class="col-md-12 text-center">
+                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+                    © 2025. Powered by
+                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://www.chronoanalytics.in/"
+                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                        Solution</a>
+                    All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                    © 2025. Marketed by
+                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
     -webkit-background-clip: text; 
     -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
-            All Rights Reserved.
-        </p></div>
+                    All Rights Reserved.
+                </p>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 
 </html>
