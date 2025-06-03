@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Main Follow-up</title>
+    <style>
+        .lead-type {
+            padding: 5px 10px;
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .Hot { background-color: green; }
+        .Warm { background-color: orange; }
+        .Cold { background-color: lightblue; color: black; }
+        .Not\ Interested { background-color: yellow; color: black; }
+        .Loss\ of\ Order { background-color: red; }
+
+        #followup-history {
+            display: none;
+            position: fixed;
+            top: 50px;
+            right: 50px;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 999;
+        }
+    </style>
+    <script>
+        function toggleAgencyName() {
+            const donePestControl = document.getElementById('done_pest_control').value;
+            document.getElementById('agency_name_div').style.display = donePestControl === 'Yes' ? 'block' : 'none';
+        }
+
+        function toggleHistory() {
+            const historyDiv = document.getElementById('followup-history');
+            historyDiv.style.display = historyDiv.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</head>
+<body>
+    <h1>Follow-up {{ followup_count }} for {{ lead.customername }}</h1>
+    <div class="lead-type {{ lead.typeoflead }}">{{ lead.typeoflead }}</div>
+    
+   <form method="post">
+    {% csrf_token %}
+
+    <p>Customer Name: <strong>{{ lead.customername }}</strong></p>
+    <p>Primary Contact: <strong>{{ lead.primarycontact }}</strong></p>
+    <p>Secondary Contact: <strong>{{ lead.secondarycontact }}</strong></p>
+
+    <label>Have Done Pest Control Earlier?</label>
+    <select name="done_pest_control" id="done_pest_control" onchange="toggleAgencyName()">
+        <option value="No" {% if previous_followup.done_pest_control == "No" %}selected{% endif %}>No</option>
+        <option value="Yes" {% if previous_followup.done_pest_control == "Yes" %}selected{% endif %}>Yes</option>
+    </select>
+
+    <div id="agency_name_div" style="display: {% if previous_followup.done_pest_control == 'Yes' %}block{% else %}none{% endif %};">
+        <label>Agency Name:</label>
+        <input type="text" name="agency_name" value="{{ previous_followup.agency_name }}">
+    </div>
+
+    <label>Onsite Infestation Done?</label>
+    <select name="onsite_infestation">
+        <option value="Yes" {% if previous_followup.onsite_infestation == "Yes" %}selected{% endif %}>Yes</option>
+        <option value="No" {% if previous_followup.onsite_infestation == "No" %}selected{% endif %}>No</option>
+    </select>
+
+    <label>Level of Infestation:</label>
+    <select name="infestation_level">
+        <option value="Low" {% if previous_followup.infestation_level == "Low" %}selected{% endif %}>Low</option>
+        <option value="Medium" {% if previous_followup.infestation_level == "Medium" %}selected{% endif %}>Medium</option>
+        <option value="High" {% if previous_followup.infestation_level == "High" %}selected{% endif %}>High</option>
+    </select>
+
+    <label>Type of Lead:</label>
+    <select name="typeoflead">
+        <option value="Hot" {% if previous_followup.typeoflead == "Hot" %}selected{% endif %}>Hot</option>
+        <option value="Warm" {% if previous_followup.typeoflead == "Warm" %}selected{% endif %}>Warm</option>
+        <option value="Cold" {% if previous_followup.typeoflead == "Cold" %}selected{% endif %}>Cold</option>
+        <option value="Not Interested" {% if previous_followup.typeoflead == "Not Interested" %}selected{% endif %}>Not Interested</option>
+        <option value="Loss of Order" {% if previous_followup.typeoflead == "Loss of Order" %}selected{% endif %}>Loss of Order</option>
+    </select>
+
+    <label>Follow-up Remark:</label>
+    <select name="followup_remark">
+        <option value="Call not received" {% if previous_followup.followup_remark == "Call not received" %}selected{% endif %}>Call not received</option>
+        <option value="Give next Follow up date" {% if previous_followup.followup_remark == "Give next Follow up date" %}selected{% endif %}>Give next Follow up date</option>
+        <option value="Call Out of Coverage Area" {% if previous_followup.followup_remark == "Call Out of Coverage Area" %}selected{% endif %}>Call Out of Coverage Area</option>
+    </select>
+
+    <label>Follow-up Comment:</label>
+    <textarea name="followup_comment" rows="3" cols="40">{{ previous_followup.followup_comment }}</textarea>
+
+    <div id="next_followup_div">
+        <label>Next Follow-up Date:</label>
+        <input type="date" name="next_followup_date" value="{{ previous_followup.next_followup_date|date:'Y-m-d' }}">
+    </div>
+
+    <label>Order Status:</label>
+    <select name="order_status" id="order_status" onchange="toggleNextFollowupDate()">
+        <option value="Not Closed" {% if previous_followup.order_status == "Not Closed" %}selected{% endif %}>Not Closed</option>
+        <option value="Close Win" {% if previous_followup.order_status == "Close Win" %}selected{% endif %}>Close Win</option>
+        <option value="Close Loss" {% if previous_followup.order_status == "Close Loss" %}selected{% endif %}>Close Loss</option>
+    </select>
+
+    <br><br>
+    <button type="submit">Submit Follow-up</button>
+    <button type="button" onclick="toggleHistory()">View Follow-up History</button>
+</form>
+
+<script>
+    function toggleAgencyName() {
+        var select = document.getElementById('done_pest_control');
+        var agencyDiv = document.getElementById('agency_name_div');
+        if (select.value === 'Yes') {
+            agencyDiv.style.display = 'block';
+        } else {
+            agencyDiv.style.display = 'none';
+        }
+    }
+
+    function toggleNextFollowupDate() {
+        var status = document.getElementById('order_status').value;
+        var nextFollowupDiv = document.getElementById('next_followup_div');
+        if (status === 'Close Win' || status === 'Close Loss') {
+            nextFollowupDiv.style.display = 'none';
+        } else {
+            nextFollowupDiv.style.display = 'block';
+        }
+    }
+
+    // Run on page load to set initial state
+    window.onload = function () {
+        toggleAgencyName();
+        toggleNextFollowupDate();
+    }
+</script>
+
+
+    <!-- History Popup -->
+    <div id="followup-history">
+        <h3>Follow-up History for {{ lead.customername }}</h3>
+        {% for f in followups %}
+            <p><strong>Follow-up {{ forloop.counter }}:</strong></p>
+            <ul>
+                <li>Pest Control: {{ f.done_pest_control }}</li>
+                {% if f.agency_name %}<li>Agency: {{ f.agency_name }}</li>{% endif %}
+                <li>Infestation Done: {{ f.onsite_infestation }}</li>
+                <li>Level: {{ f.infestation_level }}</li>
+                <li>Type of Lead: {{ f.typeoflead }}</li>
+                <li>Remark: {{ f.followup_remark }}</li>
+                <li>Comment: {{ f.followup_comment }}</li>
+                <li>Next Follow-up: {{ f.next_followup_date }}</li>
+                <li>Status: {{ f.order_status }}</li>
+                <li>Date: {{ f.created_at }}</li>
+            </ul>
+            <hr>
+        {% endfor %}
+    </div>
+
+    
+</body>
+</html>

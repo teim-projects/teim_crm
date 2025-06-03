@@ -43,6 +43,10 @@ def landing_page(request):
     return render(request , 'landing_page.html')
 
 
+import json
+from datetime import datetime
+from django.db.models import Count, Sum, Q
+from django.shortcuts import render
 
 def index(request):
     # Fetch data for Service Management
@@ -56,37 +60,15 @@ def index(request):
 
     # Fetch data for Lead Management
     lead_data1 = lead_management.objects.values('typeoflead').annotate(count=Count('id'))
-  
-    # total_leads = lead_management.objects.count()
-    # hot_leads = lead_management.objects.filter(typeoflead='Hot').count()
-    # warm_leads = lead_management.objects.filter(typeoflead='Warm').count()
-    # cold_leads = lead_management.objects.filter(typeoflead='Cold').count()
-    # not_interested = lead_management.objects.filter(typeoflead='NotInterested').count()
-    # loss_of_order = lead_management.objects.filter(typeoflead='LossOfOrder').count()
 
-    # # Pie chart data
-    # lead_data = {
-    #     "labels": ["Hot Leads", "Warm Leads", "Cold Leads", "Not Interested", "Loss of Order"],
-    #     "datasets": [{
-    #         "data": [hot_leads, warm_leads, cold_leads, not_interested, loss_of_order],
-    #         "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-    #     }]
-    # }
-
-    # Fetch start_date and end_date from request
-    # start_date = request.GET.get('start_date')
- 
+    # Lead type chart data (filtered by enquirydate range)
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-
     if start_date and end_date:
-        # Filter leads by date range
         filtered_leads = lead_management.objects.filter(enquirydate__range=[start_date, end_date])
     else:
-        # Use all leads if no date range is provided
         filtered_leads = lead_management.objects.all()
 
-    # Prepare lead type chart data
     lead_data = {
         "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
         "datasets": [{
@@ -100,51 +82,44 @@ def index(request):
             "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
         }]
     }
-
-    # Serialize the data to JSON
     lead_data_json = json.dumps(lead_data)
 
-    # Retrieve the start and end dates from query parameters
+    # Follow-up remark chart data (from main_followup model)
     start_date_followup = request.GET.get('start_date_followup')
     end_date_followup = request.GET.get('end_date_followup')
 
-    # Default to today's date if no date range is provided
-    if start_date_followup:
-        start_date_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
-    if end_date_followup:
-        end_date_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
+    # Filter main_followup records by enquirydate if date range is provided
+    from crmapp.models import main_followup  # Adjust import according to your app structure
 
-    # Define the stages
-    stages = {
-        1: "No Follow-Up Done",
-        2: "First Follow-Up Done",
-        3: "Second Follow-Up Done",
-        4: "Third Follow-Up Done",
-        5: "Final Follow-Up Done"
-    }
-
-    # Filter the lead_management table by the date range if provided
+    followup_queryset = main_followup.objects.all()
     if start_date_followup and end_date_followup:
-        stage_counts = lead_management.objects.filter(enquirydate__range=[start_date_followup, end_date_followup]) \
-            .values('stage') \
-            .annotate(count=Count('id')) \
-            .order_by('stage')
-    else:
-        # If no date range, fetch all data
-        stage_counts = lead_management.objects.values('stage') \
-            .annotate(count=Count('id')) \
-            .order_by('stage')
+        try:
+            start_dt_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
+            end_dt_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
+            # Assuming main_followup has a date field like enquirydate or followup_date to filter by
+            followup_queryset = followup_queryset.filter(enquirydate__range=[start_dt_followup, end_dt_followup])
+        except ValueError:
+            pass  # Ignore if date parsing fails
 
-    # Prepare the labels and data for the chart
-    follow_up_labels = [stages[stage['stage']] for stage in stage_counts]
-    follow_up_data = [stage['count'] for stage in stage_counts]
+    # Count by followup_remark choices
+    followup_counts = followup_queryset.values('followup_remark').annotate(count=Count('id'))
+    # Prepare labels and counts based on your choices order
+    followup_labels = [
+        'Call not received',
+        'Give next Follow up date',
+        'Call Out of Coverage Area',
+    ]
+    # Create data list aligned with labels order
+    followup_data_list = []
+    for label in followup_labels:
+        entry = next((item for item in followup_counts if item['followup_remark'] == label), None)
+        followup_data_list.append(entry['count'] if entry else 0)
 
-
+    # Bar chart data for products by category
     pest_control_count = Product.objects.filter(category='Pest Control').count()
     fumigation_count = Product.objects.filter(category='Fumigation').count()
     product_sell_count = Product.objects.filter(category='Product Sell').count()
 
-    # Bar chart data
     bar_chart_data = {
         "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
         "datasets": [{
@@ -154,102 +129,66 @@ def index(request):
         }]
     }
 
-    print('testtttttttttttttttttttt')
-
-
-
-     # Extract service-specific date filters
+    # Contract Type Distribution chart filtering
     start_date_service = request.GET.get('start_date_service')
     end_date_service = request.GET.get('end_date_service')
 
-    # Filter service management data by service_date range if present
     if start_date_service and end_date_service:
         start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
         end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
-
-        # Apply date filter on service_date field for contract type distribution
         service_data = service_management.objects.filter(
             Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
         ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
     else:
-        # Default data if no service date filter is applied
         service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
 
-    # Prepare data for the Contract Type Distribution chart
     labellist = [entry["contract_type"] for entry in service_data]
     countlist = [entry["count"] for entry in service_data]
 
-     # Extract query parameters
+    # Quotation and Invoice counts filtered by date and type
     start_date_qo = request.GET.get('start_date_qo')
     end_date_qo = request.GET.get('end_date_qo')
     filter_type = request.GET.get('filter_type')
 
-    # Initialize counts
     quotations_count = 0
     orders_count = 0
 
-    # Apply date filters if present
     if start_date_qo and end_date_qo:
-        # Parse dates
         start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
         end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
-
         if filter_type == 'quotation':
-            # Filter quotations by date range
             quotations_count = quotation.objects.filter(
                 Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
             ).count()
-            orders_count = invoice.objects.count()  # Unfiltered
+            orders_count = invoice.objects.count()
         elif filter_type == 'invoice':
-            # Filter invoices by date range
             orders_count = invoice.objects.filter(
                 Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
             ).count()
-            quotations_count = quotation.objects.count()  # Unfiltered
+            quotations_count = quotation.objects.count()
     else:
-        # Default counts without filters
         quotations_count = quotation.objects.count()
         orders_count = invoice.objects.count()
 
-    
-    # Prepare context
     context = {
-        # 'total_leads': leads.count(),
-        # 'hot_leads': hot_leads,
-        # 'warm_leads': warm_leads,
-        # 'cold_leads': cold_leads,
-        # 'not_interested': not_interested,
-        # 'loss_of_order': loss_of_order,
         'lead_data': lead_data_json,
         'service_data': service_data,
         'quotation_data': quotation_data,
         'invoice_data': invoice_data,
-        # 'lead_data1': lead_data1,
-        'labellist': json.dumps(labellist),  # Serialize labels
-        'countlist': json.dumps(countlist),  # Serialize counts
+        'labellist': json.dumps(labellist),
+        'countlist': json.dumps(countlist),
         "quotationlist": json.dumps(["Quotations", "Orders"]),
         "order": json.dumps([quotations_count, orders_count]),
-        'lead_data': json.dumps(lead_data),
         'bar_chart_data': json.dumps(bar_chart_data),
-        'follow_up_labels': json.dumps(follow_up_labels),
-        'follow_up_data': json.dumps(follow_up_data),
-    }
-    print("chartctfgvbhjnbgtfvrdcew:::::::::::::::::::")
 
+        # Follow-up chart context
+        'follow_up_labels': json.dumps(followup_labels),
+        'follow_up_data': json.dumps(followup_data_list),
+    }
 
     return render(request, 'index.html', context)
 
-    # return render(request, 'index.html', context)
-
-# def inventory_service_before(request):
-#     return render(request,'inventory_service_before.html')
-
-
-# def inventory_service_after(request):
-#     return render(request,'inventory_service_after.html')
-
-# def popup(request):
-#     return render(request,'popup.html')
+   
 
 import random
 
@@ -1470,6 +1409,71 @@ def lead_management_create(request):
         )
 
         return redirect('/display_lead_management')
+
+
+
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import lead_management, main_followup
+from django.utils import timezone
+
+def main_followup_view(request, lead_id):
+    lead = get_object_or_404(lead_management, id=lead_id)
+    followups = main_followup.objects.filter(lead=lead).order_by('created_at')
+    followup_count = followups.count() + 1
+
+    if request.method == "POST":
+        done_pest_control = request.POST.get('done_pest_control', 'No')
+        agency_name = request.POST.get('agency_name') if done_pest_control == 'Yes' else None
+        onsite_infestation = request.POST.get('onsite_infestation', '')
+        infestation_level = request.POST.get('infestation_level', '')
+        typeoflead = request.POST.get('typeoflead', '')
+        followup_remark = request.POST.get('followup_remark', '')
+        followup_comment = request.POST.get('followup_comment', '')
+        order_status = request.POST.get('order_status', 'Not Closed')
+
+        # Only take next_followup_date if order is not closed
+        next_followup_date = (
+            request.POST.get('next_followup_date') 
+            if order_status not in ['Close Win', 'Close Loss'] else None
+        )
+
+        # Create a new follow-up record (preserve previous follow-ups)
+        main_followup.objects.create(
+            lead=lead,
+            done_pest_control=done_pest_control,
+            agency_name=agency_name,
+            onsite_infestation=onsite_infestation,
+            infestation_level=infestation_level,
+            typeoflead=typeoflead,
+            followup_remark=followup_remark,
+            followup_comment=followup_comment,
+            next_followup_date=next_followup_date,
+            order_status=order_status,
+            created_at=timezone.now(),
+        )
+
+        # Update the lead's status
+        lead.typeoflead = typeoflead
+        if order_status in ['Close Win', 'Close Loss']:
+            lead.stage = 0  # mark lead as closed
+        lead.save()
+
+        return redirect('main_followup_view', lead_id=lead.id)
+
+    latest_followup = followups.last()
+
+    context = {
+        'lead': lead,
+        'followup_count': followup_count,
+        'followups': followups,
+        'latest_followup': latest_followup,
+    }
+    return render(request, 'main_followup.html', context)
+
+
 
 # In crmapp/views.py
 

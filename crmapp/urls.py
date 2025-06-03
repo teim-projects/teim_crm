@@ -35,6 +35,8 @@ urlpatterns = [
     # path('inventory_create',views.inventory_create),
     path('lead_management_create', views.lead_management_create),
     path('check_phone_number/', views.check_phone_number, name='check_phone_number'),
+    path('followup/<int:lead_id>/', views.main_followup_view, name='main_followup_view'),
+
 
     path('signup', views.signup),
     path('user_login', views.user_login),

@@ -256,7 +256,6 @@ class invoice(models.Model):
 #         return self.sourceoflead
 
 class lead_management(models.Model):
-
     STATE_CHOICES = [
         ('Andhra Pradesh', 'Andhra Pradesh'),
         ('Arunachal Pradesh', 'Arunachal Pradesh'),
@@ -288,8 +287,6 @@ class lead_management(models.Model):
         ('West Bengal', 'West Bengal'),
     ]
 
-
-
     BRANCH_CHOICES = [
         ('Bhiwandi', 'Bhiwandi'),
         ('Indore', 'Indore'),
@@ -299,31 +296,84 @@ class lead_management(models.Model):
         ('Aurangabad', 'Aurangabad'),
         ('Baramati', 'Baramati'),
         ('Pune', 'Pune'),
-        ('Hyderabad', 'Hyderabad'),
     ]
-    state = models.CharField(max_length=100, choices=STATE_CHOICES, default="Maharashtra")
-    branch = models.CharField(max_length=10, choices=BRANCH_CHOICES, default='NA')
 
-    sourceoflead = models.CharField(max_length=200, choices=[('Google', 'Google'), ('Justdial', 'Justdial'), ('Indiamart', 'Indiamart'), ('Customer Reference', 'Customer Reference'), ('BNI', 'BNI'),('Lineclub', 'Lineclub'),('Employee Reference', 'Employee Reference'),('Others', 'Others')], default="NOT SELECTED")
+    TYPEOFLEAD_CHOICES = [
+        ('Hot', 'Hot'),
+        ('Warm', 'Warm'),
+        ('Cold', 'Cold'),
+        ('Not Interested', 'Not Interested'),
+        ('Loss of Order', 'Loss of Order'),
+    ]
+
+    state = models.CharField(max_length=100, choices=STATE_CHOICES, default="Maharashtra")
+    branch = models.CharField(max_length=20, choices=BRANCH_CHOICES, default='NA')
+    sourceoflead = models.CharField(max_length=200, choices=[
+        ('Google', 'Google'),
+        ('Justdial', 'Justdial'),
+        ('Indiamart', 'Indiamart'),
+        ('Customer Reference', 'Customer Reference'),
+        ('BNI', 'BNI'),
+        ('Lineclub', 'Lineclub'),
+        ('Employee Reference', 'Employee Reference'),
+        ('Others', 'Others')
+    ], default="NOT SELECTED")
     salesperson = models.CharField(max_length=100)
-    customername = models.CharField(max_length=100, null=True, blank= True)
-    customersegment = models.CharField(max_length=100, choices=[('Residential', 'Residential'), ('Industrial', 'Industrial'), ('Commercial', 'Commercial'), ('Institutional', 'Institutional'), ('Irrelevant Leads', 'Irrelevant Leads')], default="NOT SELECTED")
+    customername = models.CharField(max_length=100, null=True, blank=True)
+    customersegment = models.CharField(max_length=100, choices=[
+        ('Residential', 'Residential'),
+        ('Industrial', 'Industrial'),
+        ('Commercial', 'Commercial'),
+        ('Institutional', 'Institutional'),
+        ('Irrelevant Leads', 'Irrelevant Leads')
+    ], default="NOT SELECTED")
     enquirydate = models.DateField(default=timezone.now)
-    contactedby = models.CharField(max_length=100, null=True, blank= True)
-    maincategory = models.CharField(max_length=200, null=True, blank= True)
-    subcategory = models.CharField(max_length=200, null=True, blank= True)
-    primarycontact = models.BigIntegerField(null=True)
-    secondarycontact = models.BigIntegerField(null=True)
-    customeremail = models.EmailField(null=True)
-    customeraddress = models.CharField(max_length=1000 , null=True)
+    contactedby = models.CharField(max_length=100, null=True, blank=True)
+    maincategory = models.CharField(max_length=200, null=True, blank=True)
+    subcategory = models.CharField(max_length=200, null=True, blank=True)
+    primarycontact = models.BigIntegerField(null=True, blank=True)
+    secondarycontact = models.BigIntegerField(null=True, blank=True)
+    customeremail = models.EmailField(null=True, blank=True)
+    customeraddress = models.CharField(max_length=1000, null=True, blank=True)
     location = models.URLField(null=True, blank=True)
     city = models.CharField(max_length=100, default="Unknown City")
-    typeoflead = models.CharField(max_length=100,null=True, choices=[('Hot','Hot'),('Warm','Warm'),('Cold','Cold'),('Not Interested','Not Interested'),('Loss of Order','Loss of Order')])
+    typeoflead = models.CharField(max_length=100, null=True, choices=TYPEOFLEAD_CHOICES)
     firstfollowupdate = models.DateField(default=timezone.now)
     stage = models.IntegerField(default=1)
-    
+
     def __str__(self):
-        return self.sourceoflead
+        return self.customername or "Unnamed Lead"
+
+    class Meta:
+        verbose_name_plural = "Lead Management"
+
+
+class main_followup(models.Model):
+    lead = models.ForeignKey(lead_management, on_delete=models.CASCADE)
+    done_pest_control = models.CharField(max_length=10, choices=[('Yes', 'Yes'), ('No', 'No')])
+    agency_name = models.CharField(max_length=255, null=True, blank=True)
+    onsite_infestation = models.CharField(max_length=10, choices=[('Yes', 'Yes'), ('No', 'No')])
+    infestation_level = models.CharField(max_length=10, choices=[('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')])
+    typeoflead = models.CharField(max_length=100, choices=lead_management.TYPEOFLEAD_CHOICES)
+    followup_remark = models.CharField(max_length=255, choices=[
+        ('Call not received', 'Call not received'),
+        ('Give next Follow up date', 'Give next Follow up date'),
+        ('Call Out of Coverage Area', 'Call Out of Coverage Area')
+    ])
+    followup_comment = models.TextField()
+    next_followup_date = models.DateField(null=True, blank=True)
+    order_status = models.CharField(max_length=20, choices=[
+        ('Close Win', 'Close Win'),
+        ('Close Loss', 'Close Loss'),
+        ('Not Closed', 'Not Closed')
+    ], default='Not Closed')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.lead.customername or 'Unnamed'} - Followup {self.id}"
+
+
+
 
 
 

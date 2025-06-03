@@ -755,26 +755,18 @@
                                         <td>{{x.primarycontact}}</td>
                                         <td>{{x.customeraddress}}</td>
                                         <td>{{x.firstfollowupdate}}</td>
-                                        <td>
-
-                                            {% if x.stage == 1 %}
-                                            <a href="/first_followup/{{ x.id }}/2" class="btn btn-primary"
-                                                role="button">Follow up-1</a>
-                                            {% elif x.stage == 2 %}
-                                            <a href="/second_followup/{{ x.id }}/3" class="btn btn-primary"
-                                                role="button">Follow up-2</a>
-                                            {% elif x.stage == 3 %}
-                                            <a href="/third_followup/{{ x.id }}/4" class="btn btn-primary"
-                                                role="button">Follow up-3</a>
-                                            {% elif x.stage == 4 %}
-                                            <a href="/final_followup/{{ x.id }}/5" class="btn btn-primary"
-                                                role="button">Follow up-4</a>
-                                            {% elif x.stage == 5 %}
-                                            <a href="#" class="btn btn-primary" role="button">Completed</a>
-                                            {% endif %}
+                                  <td>
+    {% if x.order_status == "Close Win" %}
+        <span class="badge" style="background-color: green; color: white;">Close Win</span>
+    {% elif x.order_status == "Close Loss" %}
+        <span class="badge" style="background-color: red; color: white;">Close Loss</span>
+    {% else %}
+        <a href="{% url 'main_followup_view' x.id %}" class="btn btn-primary">Follow Up</a>
+    {% endif %}
+</td>
 
 
-                                        </td>
+
                                         <td><a href="/edit_lead_management/{{ x.id }}" class="btn btn-success"
                                                 role="button">Edit</a></td>
                                         <td><a href="/delete_lead_management/{{ x.id }}"
