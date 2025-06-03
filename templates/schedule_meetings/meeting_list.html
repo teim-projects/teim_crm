@@ -85,45 +85,67 @@
     
 
 <div class="main-container">
-    <div class="container" style="max-width: 700px;">
-        <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
-        <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
-      
-        <h3 class="text-center mt-5">Meeting Details</h3>
-        <form method="POST">
-            {% csrf_token %}
-            <div class="form-group">
-              <select id="customer_id" class="form-control form-control-lg" name="customer_id">
-                <option value="" disabled selected>Select Customer</option>
-                {% for customer in customers %}
-                <option value="{{ customer.id }}" data-fullname="{{ customer.firstname }} {{ customer.lastname }}">{{ customer.customerid }} - {{ customer.firstname }} {{ customer.lastname }}</option>
-                {% endfor %}
-            </select>
+ <div class="container" style="max-width: 700px;">
+    <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+    <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+
+    <h3 class="text-center mt-5">Meeting Details</h3>
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="form-group col-md-6">
+                <label for="customer_id">Customer</label>
+                <select id="customer_id" class="form-control" name="customer_id" required>
+                    <option value="" disabled selected>Select Customer</option>
+                    {% for customer in customers %}
+                        <option value="{{ customer.id }}" data-fullname="{{ customer.firstname }} {{ customer.lastname }}">
+                            {{ customer.customerid }} - {{ customer.firstname }} {{ customer.lastname }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
-            <div class="form-group">
+
+            <div class="form-group col-md-6">
                 <label for="meeting_date">Meeting Date</label>
-                <!-- Date input pre-filled with today's date, but editable using a calendar picker -->
                 <input type="date" class="form-control" id="meeting_date" name="meeting_date" value="{{ today_date }}" required>
             </div>
-            <div class="form-group">
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6">
                 <label for="meeting_time">Meeting Time</label>
                 <input type="time" class="form-control" id="meeting_time" name="meeting_time" required>
             </div>
-            <div class="form-group">
+
+            <div class="form-group col-md-6">
                 <label for="participants">Participants</label>
                 <input type="text" class="form-control" id="participants" name="participants" placeholder="Enter Participants (comma-separated)" required>
             </div>
-            <div class="form-group">
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6">
                 <label for="meeting_agenda">Meeting Agenda</label>
-                <textarea class="form-control" id="meeting_agenda" name="meeting_agenda" placeholder="Enter Meeting Agenda" rows="4" required></textarea>
+                <textarea class="form-control" id="meeting_agenda" name="meeting_agenda" rows="4" placeholder="Enter Meeting Agenda" required></textarea>
             </div>
-            <div class="form-group">
+
+            <div class="form-group col-md-6">
                 <label for="minutes_of_meeting">Minutes of Meeting</label>
-                <textarea class="form-control" id="minutes_of_meeting" name="minutes_of_meeting" placeholder="Enter Minutes of the Meeting" rows="4" required></textarea>
+                <textarea class="form-control" id="minutes_of_meeting" name="minutes_of_meeting" rows="4" placeholder="Enter Minutes of the Meeting" required></textarea>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg mb-5">Save Meeting</button>
-        </form>
-    </div>
+        </div>
+
+       <div class="row">
+        <div class="col-md-4"></div>
+         <div class="text-center mt-4 mb-5 col-md-4">
+            <button type="submit" class="btn btn-primary btn-lg w-100">Save Meeting</button>
+        </div>
+        <div class="col-md-4"></div>
+       </div>
+    </form>
+</div>
+
 </div>    
 
 <script>

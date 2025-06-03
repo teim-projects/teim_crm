@@ -26,17 +26,17 @@
             background-color: #f4f4f4;
         }
         .background-image {
-            background-image: url("{% static 'images/loginbackground-img.jpg' %}");
+            background-image: url("{% static 'images/loginbackground-img.webp' %}");
             background-repeat: no-repeat;
             background-size: cover;
-        
+            min-height: 100vh;
             width: 100%;
             margin-top: 90px;
-            padding-bottom: 30PX !important;
+            padding-bottom: 20PX;
             box-shadow: 0PX;
+            
 
  }
-
 
         .heading {
             font-size: 28px;
@@ -371,7 +371,7 @@
                     <span class="icon-bar"></span>                        
                 </button> -->
                 <a class="navbar-brand " href="#">
-                    <img src="{% static 'images/Logo.png' %}" alt="Logo" style="height: 120px;   margin-bottom: 10px; "
+                    <img src="{% static 'images/Logo.webp' %}" alt="Logo" style="height: 120px;   margin-bottom: 10px; "
                         class="navbar-header_logo">
                 </a>
             </div>
@@ -389,7 +389,6 @@
                     <img src="{% static 'images/crono.png' %}" alt="Logo" style="height: 70px;   margin-bottom: 10px; ">
                 </a>
             </div>
-
             <!-- <div class="collapse navbar-collapse" id="myNavbar">
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
@@ -399,7 +398,7 @@
         </div>
     </nav>
  <!-- Navbar End -->
-
+<div class="main" style="min-height: 100vh;">
 <!-- Main Content Start -->
     <div class="container-fluid background-image">
         <div class="row" >
@@ -432,7 +431,7 @@
 
         </div>
     </div>
-    
+    </div>
 <!-- Main Content End -->
 
 <!-- Footer Start -->
