@@ -258,17 +258,36 @@ class invoice(models.Model):
 class lead_management(models.Model):
 
     STATE_CHOICES = [
-        ('Maharashtra', 'Maharashtra'),
-        ('Karnataka', 'Karnataka'),
-        ('Tamil Nadu', 'Tamil Nadu'),
-        ('Rajasthan', 'Rajasthan'),
-        ('Delhi', 'Delhi'),
-        ('Uttar Pradesh', 'Uttar Pradesh'),
+        ('Andhra Pradesh', 'Andhra Pradesh'),
+        ('Arunachal Pradesh', 'Arunachal Pradesh'),
+        ('Assam', 'Assam'),
+        ('Bihar', 'Bihar'),
+        ('Chhattisgarh', 'Chhattisgarh'),
+        ('Goa', 'Goa'),
         ('Gujarat', 'Gujarat'),
-        ('West Bengal', 'West Bengal'),
+        ('Haryana', 'Haryana'),
+        ('Himachal Pradesh', 'Himachal Pradesh'),
+        ('Jharkhand', 'Jharkhand'),
+        ('Karnataka', 'Karnataka'),
+        ('Kerala', 'Kerala'),
         ('Madhya Pradesh', 'Madhya Pradesh'),
-        # Add all other states here...
+        ('Maharashtra', 'Maharashtra'),
+        ('Manipur', 'Manipur'),
+        ('Meghalaya', 'Meghalaya'),
+        ('Mizoram', 'Mizoram'),
+        ('Nagaland', 'Nagaland'),
+        ('Odisha', 'Odisha'),
+        ('Punjab', 'Punjab'),
+        ('Rajasthan', 'Rajasthan'),
+        ('Sikkim', 'Sikkim'),
+        ('Tamil Nadu', 'Tamil Nadu'),
+        ('Telangana', 'Telangana'),
+        ('Tripura', 'Tripura'),
+        ('Uttar Pradesh', 'Uttar Pradesh'),
+        ('Uttarakhand', 'Uttarakhand'),
+        ('West Bengal', 'West Bengal'),
     ]
+
 
 
     BRANCH_CHOICES = [
@@ -280,6 +299,7 @@ class lead_management(models.Model):
         ('Aurangabad', 'Aurangabad'),
         ('Baramati', 'Baramati'),
         ('Pune', 'Pune'),
+        ('Hyderabad', 'Hyderabad'),
     ]
     state = models.CharField(max_length=100, choices=STATE_CHOICES, default="Maharashtra")
     branch = models.CharField(max_length=10, choices=BRANCH_CHOICES, default='NA')
