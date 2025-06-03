@@ -3240,16 +3240,13 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from .models import TechnicianProfile, WorkAllocation, service_management
 @login_required
-def allocate_work(request,service_id):
-    # if not request.user.is_staff:
-    #     return HttpResponse("Not authorized", status=403)
+def allocate_work(request, service_id):
     service_object = get_object_or_404(service_management, id=service_id)
-    customer_fname = service_object.customer.firstname
-    customer_lname = service_object.customer.lastname
+
+    customer_fullname = service_object.customer.fullname  # use fullname
     customer_contact = service_object.customer.primarycontact
     payment_amount = service_object.total_price_with_gst
     gps_location = service_object.gps_location
-    
 
     if request.method == 'POST':
         technician_id = request.POST.get('technician')
@@ -3260,8 +3257,7 @@ def allocate_work(request,service_id):
 
         WorkAllocation.objects.create(
             technician=technician,
-            customer_fname = customer_fname,
-            customer_lname = customer_lname,
+            customer_fullname = customer_fullname,  # you can rename field if needed
             customer_contact = customer_contact,
             customer_address=customer_address,
             work_description=work_description,
@@ -3276,8 +3272,14 @@ def allocate_work(request,service_id):
         return redirect('work_allocation_success')
 
     technicians = TechnicianProfile.objects.all()
-    return render(request, 'allocate_work.html', {'technicians': technicians, 'customer_fname':customer_fname, 'customer_lname':customer_lname, 'customer_contact':customer_contact, 'payment_amount':payment_amount, 'gps_location':gps_location})
-
+    return render(request, 'allocate_work.html', {
+        'technicians': technicians,
+        'customer_fullname': customer_fullname,
+        'customer_contact': customer_contact,
+        'payment_amount': payment_amount,
+        'gps_location': gps_location,
+    })
+ 
 
 from crmapp.models import Reschedule, service_management
 
