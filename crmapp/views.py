@@ -48,6 +48,11 @@ from datetime import datetime
 from django.db.models import Count, Sum, Q
 from django.shortcuts import render
 
+import json
+from datetime import datetime
+from django.db.models import Count, Sum, Q
+from django.shortcuts import render
+
 def index(request):
     # Fetch data for Service Management
     service_data = service_management.objects.values('selected_services').annotate(total_charges=Sum('total_charges'))
@@ -84,36 +89,6 @@ def index(request):
     }
     lead_data_json = json.dumps(lead_data)
 
-    # Follow-up remark chart data (from main_followup model)
-    start_date_followup = request.GET.get('start_date_followup')
-    end_date_followup = request.GET.get('end_date_followup')
-
-    # Filter main_followup records by enquirydate if date range is provided
-    from crmapp.models import main_followup  # Adjust import according to your app structure
-
-    followup_queryset = main_followup.objects.all()
-    if start_date_followup and end_date_followup:
-        try:
-            start_dt_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
-            end_dt_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
-            # Assuming main_followup has a date field like enquirydate or followup_date to filter by
-            followup_queryset = followup_queryset.filter(enquirydate__range=[start_dt_followup, end_dt_followup])
-        except ValueError:
-            pass  # Ignore if date parsing fails
-
-    # Count by followup_remark choices
-    followup_counts = followup_queryset.values('followup_remark').annotate(count=Count('id'))
-    # Prepare labels and counts based on your choices order
-    followup_labels = [
-        'Call not received',
-        'Give next Follow up date',
-        'Call Out of Coverage Area',
-    ]
-    # Create data list aligned with labels order
-    followup_data_list = []
-    for label in followup_labels:
-        entry = next((item for item in followup_counts if item['followup_remark'] == label), None)
-        followup_data_list.append(entry['count'] if entry else 0)
 
     # Bar chart data for products by category
     pest_control_count = Product.objects.filter(category='Pest Control').count()
@@ -181,9 +156,7 @@ def index(request):
         "order": json.dumps([quotations_count, orders_count]),
         'bar_chart_data': json.dumps(bar_chart_data),
 
-        # Follow-up chart context
-        'follow_up_labels': json.dumps(followup_labels),
-        'follow_up_data': json.dumps(followup_data_list),
+        
     }
 
     return render(request, 'index.html', context)
@@ -259,193 +232,152 @@ def signup(request):
             u.save()
             context = {'msg3': 'User Registered Successfully'}
             return render(request, "signup.html", context)
+import json
+from datetime import datetime
+from django.db.models import Count, Sum, Q
+from django.shortcuts import render
+
+from django.shortcuts import render
+from django.db.models import Count, Sum
+from datetime import datetime
+import json
+import json
+from datetime import datetime
+from django.db.models import Sum, Count
+from django.shortcuts import render
 
 def user_login(request):
-    if request.method == "GET":
-        return render(request, 'login.html')
-    
-    else:
-        uname = request.POST.get('uname')  # Use .get() to avoid MultiValueDictKeyError
-        upass = request.POST.get('upass')
+    # --- SERVICE MANAGEMENT: Sum total_charges grouped by selected_services, optional date filter ---
+    start_date_service = request.GET.get('start_date_service')
+    end_date_service = request.GET.get('end_date_service')
+    service_data_qs = None
 
-        u = authenticate(username=uname, password=upass)
+    try:
+        if start_date_service and end_date_service:
+            start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
+            end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
+            service_data_qs = service_management.objects.filter(
+                service_date__range=(start_date_service_obj, end_date_service_obj)
+            ).values('selected_services').annotate(total_charges=Sum('total_charges'))
+        else:
+            service_data_qs = service_management.objects.values('selected_services').annotate(total_charges=Sum('total_charges'))
+    except ValueError:
+        service_data_qs = service_management.objects.values('selected_services').annotate(total_charges=Sum('total_charges'))
 
-        if u is not None:
-            login(request, u)
+    # --- QUOTATIONS: Sum total_amount grouped by quotation_date ---
+    quotation_data = quotation.objects.values('quotation_date').annotate(total_amount=Sum('total_amount'))
 
+    # --- INVOICES: Sum total_amount grouped by company_name ---
+    invoice_data = invoice.objects.values('company_name').annotate(total_amount=Sum('total_amount'))
 
-           
-            start_date = request.GET.get('start_date')
-            end_date = request.GET.get('end_date')
+    # --- LEAD MANAGEMENT: Count of leads grouped by typeoflead with optional date filter ---
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    filtered_leads = lead_management.objects.all()
+    try:
+        if start_date and end_date:
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+            filtered_leads = filtered_leads.filter(enquirydate__range=(start_dt, end_dt))
+    except ValueError:
+        pass
 
-            if start_date and end_date:
-                # Filter leads by date range
-                filtered_leads = lead_management.objects.filter(enquirydate__range=[start_date, end_date])
+    lead_labels = ["Hot", "Warm", "Cold", "NotInterested", "LossofOrder"]
+    lead_data_counts = [
+        filtered_leads.filter(typeoflead='Hot').count(),
+        filtered_leads.filter(typeoflead='Warm').count(),
+        filtered_leads.filter(typeoflead='Cold').count(),
+        filtered_leads.filter(typeoflead='NotInterested').count(),
+        filtered_leads.filter(typeoflead='LossofOrder').count(),
+    ]
+    lead_data = {
+        "labels": lead_labels,
+        "datasets": [{
+            "data": lead_data_counts,
+            "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+        }]
+    }
+    lead_data_json = json.dumps(lead_data)
+
+    # --- PRODUCT CATEGORY COUNTS ---
+    pest_control_count = Product.objects.filter(category='Pest Control').count()
+    fumigation_count = Product.objects.filter(category='Fumigation').count()
+    product_sell_count = Product.objects.filter(category='Product Sell').count()
+
+    bar_chart_data = {
+        "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
+        "datasets": [{
+            "label": "Number of Products per Category",
+            "data": [pest_control_count, fumigation_count, product_sell_count],
+            "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
+        }]
+    }
+
+    # --- CONTRACT TYPE DISTRIBUTION ---
+    contract_type_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+
+    try:
+        if start_date_service and end_date_service:
+            start_dt_service = datetime.strptime(start_date_service, "%Y-%m-%d")
+            end_dt_service = datetime.strptime(end_date_service, "%Y-%m-%d")
+            contract_type_data = service_management.objects.filter(
+                service_date__range=(start_dt_service, end_dt_service)
+            ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+    except ValueError:
+        pass
+
+    contract_type_labels = [entry["contract_type"] for entry in contract_type_data]
+    contract_type_counts = [entry["count"] for entry in contract_type_data]
+
+    # --- QUOTATION & INVOICE COUNTS ---
+    start_date_qo = request.GET.get('start_date_qo')
+    end_date_qo = request.GET.get('end_date_qo')
+    filter_type = request.GET.get('filter_type')
+
+    quotations_count = 0
+    orders_count = 0
+    try:
+        if start_date_qo and end_date_qo:
+            start_dt_qo = datetime.strptime(start_date_qo, "%Y-%m-%d")
+            end_dt_qo = datetime.strptime(end_date_qo, "%Y-%m-%d")
+
+            if filter_type == 'quotation':
+                quotations_count = quotation.objects.filter(
+                    quotation_date__range=(start_dt_qo, end_dt_qo)
+                ).count()
+                orders_count = invoice.objects.count()
+            elif filter_type == 'invoice':
+                orders_count = invoice.objects.filter(
+                    date__range=(start_dt_qo, end_dt_qo)
+                ).count()
+                quotations_count = quotation.objects.count()
             else:
-                # Use all leads if no date range is provided
-                filtered_leads = lead_management.objects.all()
-
-            # Prepare lead type chart data
-            lead_data = {
-                "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
-                "datasets": [{
-                    "data": [
-                        filtered_leads.filter(typeoflead='Hot').count(),
-                        filtered_leads.filter(typeoflead='Warm').count(),
-                        filtered_leads.filter(typeoflead='Cold').count(),
-                        filtered_leads.filter(typeoflead='NotInterested').count(),
-                        filtered_leads.filter(typeoflead='LossofOrder').count()
-                    ],
-                    "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-                }]
-            }
-
-            # Serialize the data to JSON
-            lead_data_json = json.dumps(lead_data)
-
-            # Retrieve the start and end dates from query parameters
-            start_date_followup = request.GET.get('start_date_followup')
-            end_date_followup = request.GET.get('end_date_followup')
-
-            # Default to today's date if no date range is provided
-            if start_date_followup:
-                start_date_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
-            if end_date_followup:
-                end_date_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
-
-            # Define the stages
-            stages = {
-                1: "No Follow-Up Done",
-                2: "First Follow-Up Done",
-                3: "Second Follow-Up Done",
-                4: "Third Follow-Up Done",
-                5: "Final Follow-Up Done"
-            }
-
-            # Filter the lead_management table by the date range if provided
-            if start_date_followup and end_date_followup:
-                stage_counts = lead_management.objects.filter(enquirydate__range=[start_date_followup, end_date_followup]) \
-                    .values('stage') \
-                    .annotate(count=Count('id')) \
-                    .order_by('stage')
-            else:
-                # If no date range, fetch all data
-                stage_counts = lead_management.objects.values('stage') \
-                    .annotate(count=Count('id')) \
-                    .order_by('stage')
-
-            # Prepare the labels and data for the chart
-            follow_up_labels = [stages[stage['stage']] for stage in stage_counts]
-            follow_up_data = [stage['count'] for stage in stage_counts]
-
-
-            pest_control_count = Product.objects.filter(category='Pest Control').count()
-            fumigation_count = Product.objects.filter(category='Fumigation').count()
-            product_sell_count = Product.objects.filter(category='Product Sell').count()
-
-            # Bar chart data
-            bar_chart_data = {
-                "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
-                "datasets": [{
-                    "label": "Number of Products per Category",
-                    "data": [pest_control_count, fumigation_count, product_sell_count],
-                    "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
-                }]
-            }
-
-            print('testtttttttttttttttttttt')
-
-
-
-            # Extract service-specific date filters
-            start_date_service = request.GET.get('start_date_service')
-            end_date_service = request.GET.get('end_date_service')
-
-            # Filter service management data by service_date range if present
-            if start_date_service and end_date_service:
-                start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
-                end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
-
-                # Apply date filter on service_date field for contract type distribution
-                service_data = service_management.objects.filter(
-                    Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
-                ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
-            else:
-                # Default data if no service date filter is applied
-                service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
-
-            # Prepare data for the Contract Type Distribution chart
-            labellist = [entry["contract_type"] for entry in service_data]
-            countlist = [entry["count"] for entry in service_data]
-
-            # Extract query parameters
-            start_date_qo = request.GET.get('start_date_qo')
-            end_date_qo = request.GET.get('end_date_qo')
-            filter_type = request.GET.get('filter_type')
-
-            # Initialize counts
-            quotations_count = 0
-            orders_count = 0
-
-            # Apply date filters if present
-            if start_date_qo and end_date_qo:
-                # Parse dates
-                start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
-                end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
-
-                if filter_type == 'quotation':
-                    # Filter quotations by date range
-                    quotations_count = quotation.objects.filter(
-                        Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
-                    ).count()
-                    orders_count = invoice.objects.count()  # Unfiltered
-                elif filter_type == 'invoice':
-                    # Filter invoices by date range
-                    orders_count = invoice.objects.filter(
-                        Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
-                    ).count()
-                    quotations_count = quotation.objects.count()  # Unfiltered
-            else:
-                # Default counts without filters
                 quotations_count = quotation.objects.count()
                 orders_count = invoice.objects.count()
-            
-            
-            # Prepare context
-            context = {
-                # 'total_leads': leads.count(),
-                # 'hot_leads': hot_leads,
-                # 'warm_leads': warm_leads,
-                # 'cold_leads': cold_leads,
-                # 'not_interested': not_interested,
-                # 'loss_of_order': loss_of_order,
-                'lead_data': lead_data_json,
-                'service_data': service_data,
-                # 'quotation_data': quotation_data,
-                # 'invoice_data': invoice_data,
-                # 'lead_data1': lead_data1,
-                'labellist': json.dumps(labellist),  # Serialize labels
-                'countlist': json.dumps(countlist),  # Serialize counts
-                "quotationlist": json.dumps(["Quotations", "Orders"]),
-                "order": json.dumps([quotations_count, orders_count]),
-                'lead_data': json.dumps(lead_data),
-                'bar_chart_data': json.dumps(bar_chart_data),
-                'follow_up_labels': json.dumps(follow_up_labels),
-                'follow_up_data': json.dumps(follow_up_data),
-            }
-            print("chartctfgvbhjnbgtfvrdcew:::::::::::::::::::")
-
-
-            return render(request, 'index.html', context)
-
-
-            # return render(request, "index.html")
-        
-
         else:
-            context = {'msg1': 'Wrong Username Or Password'}
-            return render(request, "login.html", context)
-        
+            quotations_count = quotation.objects.count()
+            orders_count = invoice.objects.count()
+    except ValueError:
+        quotations_count = quotation.objects.count()
+        orders_count = invoice.objects.count()
+
+    # --- Prepare final context for template ---
+    context = {
+        'lead_data': lead_data_json,
+        'service_data': service_data_qs,
+        'quotation_data': quotation_data,
+        'invoice_data': invoice_data,
+        'labellist': json.dumps(contract_type_labels),
+        'countlist': json.dumps(contract_type_counts),
+        "quotationlist": json.dumps(["Quotations", "Orders"]),
+        "order": json.dumps([quotations_count, orders_count]),
+        'bar_chart_data': json.dumps(bar_chart_data),
+
+        # Removed follow-up data from context
+    }
+
+    return render(request, 'index.html', context)
+
 
     
 def user_logout(request):
@@ -1459,6 +1391,8 @@ def main_followup_view(request, lead_id):
         lead.typeoflead = typeoflead
         if order_status in ['Close Win', 'Close Loss']:
             lead.stage = 0  # mark lead as closed
+            lead.order_status = order_status  # ✅ This line updates the order_status field
+
         lead.save()
 
         return redirect('main_followup_view', lead_id=lead.id)
