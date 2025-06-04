@@ -62,7 +62,7 @@ class customer_details(models.Model):
 
    
     def __str__(self):
-        return self.firstname + " " + self.lastname
+        return self.fullname
    
     def __str__(self):
         return self.customerid
@@ -480,7 +480,7 @@ class TechnicianProfile(models.Model):
     state = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
     date_of_joining = models.DateField(default=timezone.now)
-    password = models.CharField(max_length=128)  # This should not be needed if you are using Django's User model
+    # password = models.CharField(max_length=128)  # This should not be needed if you are using Django's User model
 
 
     def __str__(self):
@@ -512,15 +512,13 @@ class service_management(models.Model):
     delivery_time = models.TimeField(default=timezone.now)
     lead_date = models.DateField(default=timezone.now)
     service_date = models.DateField(null=True, blank=True)
-    technician = models.ForeignKey(TechnicianProfile, on_delete=models.CASCADE, default=None, null=True, blank=True)
+    technicians = models.ManyToManyField(TechnicianProfile, blank=True, related_name='assigned_services')
 
 
     def __str__(self):
         selected_services = ', '.join([str(service) for service in self.selected_services.all()])
         return f'Service Management - {self.customer} ({selected_services})'
 
-
-from django.db import models
 
 class Branch(models.Model):
     branch_name = models.CharField(max_length=100)
@@ -594,29 +592,29 @@ class quotation_management(models.Model):
 
 
 
-
 class WorkAllocation(models.Model):
-    technician = models.ForeignKey(TechnicianProfile, on_delete=models.CASCADE)
-    fullname = models.CharField(max_length=100)
-    customer_contact = models.CharField(max_length=15) 
-    customer_address = models.CharField(max_length=1000)
-    gps_location = models.URLField(null=True, blank=True)
-    work_description = models.TextField()
-    customer_payment_status = models.CharField(max_length=20, choices=[('Online', 'Online'), ('Cash', 'Cash'), ('Pending', 'Pending')])
-    payment_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    allocated_datetime = models.DateTimeField(default=timezone.now)
-    created_at = models.DateTimeField(auto_now_add=True)
-
+    payment_status_choice = [('Online', 'Online'), ('Cash', 'Cash'), ('Pending', 'Pending')]
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('Completed', 'Completed'),
         ('workdesk','workdesk'),
     ]
+    service = models.ForeignKey(service_management, on_delete=models.CASCADE)
+    technician = models.ManyToManyField(TechnicianProfile)
+    fullname = models.CharField(max_length=100)
+    customer_contact = models.CharField(max_length=15) 
+    customer_address = models.CharField(max_length=1000)
+    gps_location = models.URLField(null=True, blank=True)
+    work_description = models.TextField()
+    customer_payment_status = models.CharField(max_length=20, choices=payment_status_choice)
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    allocated_datetime = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
 
 
     def __str__(self):
-        return f"Work Allocation for {self.customer_fname} ({self.status})"
+        return f"Work Allocation for {self.fullname} ({self.status})"
 
 from django.utils.timezone import now
 class Reschedule(models.Model):
@@ -634,7 +632,7 @@ class UploadedFile(models.Model):
 
 class TechWorkList(models.Model):
     technician = models.ForeignKey(User, on_delete=models.CASCADE)
-    work = models.ForeignKey(WorkAllocation, on_delete=models.CASCADE)
+    work = models.ManyToManyField(WorkAllocation)
     service = models.ForeignKey(service_management, on_delete=models.CASCADE, default=None, null=True, blank=True)
     status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Completed', 'Completed')], default='Pending')
     photos_before_service = models.ManyToManyField(UploadedFile, related_name='photos_before_service', blank=True)
@@ -643,8 +641,9 @@ class TechWorkList(models.Model):
     payment_photos = models.ManyToManyField(UploadedFile, related_name='payment_photos', blank=True)
     completion_datetime = models.DateTimeField(default=timezone.now)
 
-    def _str_(self):
-        return f"Work {self.work.id} by {self.technician.username}"
+    def __str__(self):
+        return f"Work by {self.technician.username}"
+
     
 
 

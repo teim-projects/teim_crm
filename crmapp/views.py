@@ -1647,7 +1647,8 @@ def display_allocation(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
     sort_by = request.GET.get('sort_by', 'customerid')  
-
+    allocated_service_ids = WorkAllocation.objects.values_list('service_id', flat=True)
+    
     if query:
         m = service_management.objects.filter(
             customer__customerid__icontains=query
@@ -1674,6 +1675,7 @@ def display_allocation(request):
     start_index = (page_obj.number - 1) * paginator.per_page
 
     context = {
+        'allocated_service_ids': list(allocated_service_ids),
         'current_order': sort_order,
         'current_sort_by': sort_by,
         'page_obj': page_obj,
@@ -3243,26 +3245,27 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from .models import TechnicianProfile, WorkAllocation, service_management
+# from .models import service_management, TechnicianProfile, WorkAllocation, TechWorkList
 @login_required
 def allocate_work(request, service_id):
     service_object = get_object_or_404(service_management, id=service_id)
 
-    customer_fullname = service_object.customer.fullname  # use fullname
+    customer_fullname = service_object.customer.fullname
     customer_contact = service_object.customer.primarycontact
     payment_amount = service_object.total_price_with_gst
     gps_location = service_object.gps_location
 
     if request.method == 'POST':
-        technician_id = request.POST.get('technician')
+        technician_ids = request.POST.getlist('technicians')
         customer_address = request.POST.get('customer_address')
         work_description = request.POST.get('work_description')
         customer_payment_status = request.POST.get('customer_payment_status')
-        technician = get_object_or_404(TechnicianProfile, id=technician_id)
 
-        WorkAllocation.objects.create(
-            technician=technician,
-            customer_fullname = customer_fullname,  # you can rename field if needed
-            customer_contact = customer_contact,
+        # Create the work allocation
+        work_allocation = WorkAllocation.objects.create(
+            service=service_object,
+            fullname=customer_fullname,
+            customer_contact=customer_contact,
             customer_address=customer_address,
             work_description=work_description,
             customer_payment_status=customer_payment_status,
@@ -3270,20 +3273,30 @@ def allocate_work(request, service_id):
             gps_location=gps_location,
         )
 
-        service_object.technician = technician
-        service_object.save()
+        # Add all technicians to the WorkAllocation
+        technicians = TechnicianProfile.objects.filter(id__in=technician_ids)
+        work_allocation.technician.set(technicians)
+
+        # Create TechWorkList for each technician
+        for tech in technicians:
+            tech_worklist = TechWorkList.objects.create(
+                technician=tech.user,  
+                service=service_object,
+            )
+            tech_worklist.work.add(work_allocation)
 
         return redirect('work_allocation_success')
 
     technicians = TechnicianProfile.objects.all()
-    return render(request, 'allocate_work.html', {
+    context = {
         'technicians': technicians,
         'customer_fullname': customer_fullname,
         'customer_contact': customer_contact,
         'payment_amount': payment_amount,
         'gps_location': gps_location,
-    })
- 
+    }
+    return render(request, 'allocate_work.html', context)
+
 
 from crmapp.models import Reschedule, service_management
 
@@ -3869,7 +3882,7 @@ def work_list_view(request):
 
     # Debugging output
     for work in work_allocations:
-        print("work_allocations statuses:", work.id, "status", work.status)
+        print("work_allocations statuses:", work, "status", work.status)
         
 
     print("work_allocation: ", work_allocations)
