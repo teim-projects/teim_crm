@@ -194,145 +194,146 @@
 
 
     <div class="main">
-    <div class="container" style="margin-top: 100px;">
-
-   
-<div class="row">
-    <div class="col-md-2"></div>
-    <div class="col-md-8 bg-light shadow rounded">
-                   <div class="bt">
-                  <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4 mt-2"><i class="fas fa-house-chimney"></i></span>
-            <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4 mt-2">X</span>
-          
+  <div class="container" style="margin-top: 100px;">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8 bg-light shadow rounded">
+            <div class="bt">
+                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4 mt-2"><i class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4 mt-2">X</span>
             </div>
-                <h5 class="mt-5 text-center fblow">Follow-up {{ followup_count }} for  <span class=""> {{ lead.customername }}</span></h5>
-           <form method="post" class=" mt-2 mb-3"style="padding: 0 30px;">
-    {% csrf_token %}
-<div class="card  mb-4  border-0" style="background-color: #f8f9fa; border-radius: 10px;">
-     <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Customer Name</label>
-            <div class="form-control bg-white border-0">{{ lead.customername }}</div>
+            <h5 class="mt-5 text-center fblow">Follow-up {{ followup_count }} for <span class="">{{ lead.customername }}</span></h5>
+
+            <form method="post" class="mt-2 mb-3" style="padding: 0 30px;">
+                {% csrf_token %}
+                <div class="card mb-4 border-0" style="background-color: #f8f9fa; border-radius: 10px;">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Customer Name</label>
+                            <div class="form-control bg-white border-0">{{ lead.customername }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Primary Contact</label>
+                            <div class="form-control bg-white border-0">{{ lead.primarycontact }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Secondary Contact</label>
+                            <div class="form-control bg-white border-0">{{ lead.secondarycontact }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Type of Lead</label>
+                            <div class="lead-type {{ lead.typeoflead }} text-center">{{ lead.typeoflead }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>Have Done Pest Control Earlier?</label>
+                        <select name="done_pest_control" id="done_pest_control" onchange="toggleAgencyName()" class="form-control">
+                            <option value="No" {% if previous_followup.done_pest_control == "No" %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if previous_followup.done_pest_control == "Yes" %}selected{% endif %}>Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div id="agency_name_div" style="display: {% if previous_followup.done_pest_control == 'Yes' %}block{% else %}none{% endif %};">
+                            <label>Agency Name:</label>
+                            <input type="text" name="agency_name" value="{{ previous_followup.agency_name }}" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Onsite Infestation Done?</label>
+                        <select name="onsite_infestation" class="form-control">
+                            <option value="Yes" {% if previous_followup.onsite_infestation == "Yes" %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if previous_followup.onsite_infestation == "No" %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Level of Infestation:</label>
+                        <select name="infestation_level" class="form-control">
+                            <option value="Low" {% if previous_followup.infestation_level == "Low" %}selected{% endif %}>Low</option>
+                            <option value="Medium" {% if previous_followup.infestation_level == "Medium" %}selected{% endif %}>Medium</option>
+                            <option value="High" {% if previous_followup.infestation_level == "High" %}selected{% endif %}>High</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Type of Lead:</label>
+                        <select name="typeoflead" class="form-control">
+                            <option value="Hot" {% if previous_followup.typeoflead == "Hot" %}selected{% endif %}>Hot</option>
+                            <option value="Warm" {% if previous_followup.typeoflead == "Warm" %}selected{% endif %}>Warm</option>
+                            <option value="Cold" {% if previous_followup.typeoflead == "Cold" %}selected{% endif %}>Cold</option>
+                            <option value="Not Interested" {% if previous_followup.typeoflead == "Not Interested" %}selected{% endif %}>Not Interested</option>
+                            <option value="Loss of Order" {% if previous_followup.typeoflead == "Loss of Order" %}selected{% endif %}>Loss of Order</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Follow-up Remark:</label>
+                        <select name="followup_remark" id="followup_remark" class="form-control" onchange="toggleNextFollowupDateField()">
+                            <option value="Call not received" {% if previous_followup.followup_remark == "Call not received" %}selected{% endif %}>Call not received</option>
+                            <option value="Give next Follow up date" {% if previous_followup.followup_remark == "Give next Follow up date" %}selected{% endif %}>Give next Follow up date</option>
+                            <option value="Call Out of Coverage Area" {% if previous_followup.followup_remark == "Call Out of Coverage Area" %}selected{% endif %}>Call Out of Coverage Area</option>
+                        </select>
+                    </div>
+
+                    <div id="next_followup_div" class="col-md-6" style="display: {% if previous_followup.followup_remark == 'Give next Follow up date' %}block{% else %}none{% endif %};">
+                        <label>Next Follow-up Date:</label>
+                        <input type="date" class="form-control" name="next_followup_date" value="{{ previous_followup.next_followup_date|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Order Status:</label>
+                        <select name="order_status" id="order_status" onchange="toggleNextFollowupDate()" class="form-control">
+                            <option value="Not Closed" {% if previous_followup.order_status == "Not Closed" %}selected{% endif %}>Not Closed</option>
+                            <option value="Close Win" {% if previous_followup.order_status == "Close Win" %}selected{% endif %}>Close Win</option>
+                            <option value="Close Loss" {% if previous_followup.order_status == "Close Loss" %}selected{% endif %}>Close Loss</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Follow-up Comment:</label>
+                        <textarea name="followup_comment" rows="3" cols="40" class="form-control">{{ previous_followup.followup_comment }}</textarea>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-4">
+                        <button type="button" onclick="toggleHistory()" class="btn btn-info text-center w-100 shadow mt-2">View Follow-up History</button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-success w-100 shadow mt-2">Submit Follow-up</button>
+                    </div>
+                    <div class="col-md-2"></div>
+                </div>
+            </form>
         </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Primary Contact</label>
-            <div class="form-control bg-white border-0">{{ lead.primarycontact }}</div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Secondary Contact</label>
-            <div class="form-control bg-white border-0">{{ lead.secondarycontact }}</div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Type of Lead</label>
-            <div class="lead-type {{ lead.typeoflead }} text-center">{{ lead.typeoflead }}</div>
-        </div>
+        <div class="col-md-2"></div>
     </div>
 </div>
 
+<script>
+    function toggleAgencyName() {
+        const control = document.getElementById("done_pest_control");
+        const agencyDiv = document.getElementById("agency_name_div");
+        agencyDiv.style.display = control.value === "Yes" ? "block" : "none";
+    }
 
+    function toggleNextFollowupDateField() {
+        const remark = document.getElementById("followup_remark").value;
+        const nextFollowupDiv = document.getElementById("next_followup_div");
+        nextFollowupDiv.style.display = remark === "Give next Follow up date" ? "block" : "none";
+    }
 
-<div class="row">
+    function toggleNextFollowupDate() {
+        // Keep this function if you want to add logic for order_status in future.
+    }
+</script>
 
-    <div class="col-md-6">
-        <label>Have Done Pest Control Earlier?</label>
-        <select name="done_pest_control" id="done_pest_control" onchange="toggleAgencyName()" class="form-control">
-            <option value="No" {% if previous_followup.done_pest_control == "No" %}selected{% endif %}>No</option>
-            <option value="Yes" {% if previous_followup.done_pest_control == "Yes" %}selected{% endif %}>Yes</option>
-        </select>
-    </div>
-    <div class="col-md-6">
-        <div id="agency_name_div"
-            style="display: {% if previous_followup.done_pest_control == 'Yes' %}block{% else %}none{% endif %};">
-            <label>Agency Name:</label>
-            <input type="text" name="agency_name" value="{{ previous_followup.agency_name }}" class="form-control">
-        </div>
-    </div>
-
-
-    <div class="col-md-6">
-           <label>Onsite Infestation Done?</label>
-    <select name="onsite_infestation" class="form-control">
-        <option value="Yes" {% if previous_followup.onsite_infestation == "Yes" %}selected{% endif %}>Yes</option>
-        <option value="No" {% if previous_followup.onsite_infestation == "No" %}selected{% endif %}>No</option>
-    </select>
-    </div>
-    <div class="col-md-6">
-<label>Level of Infestation:</label>
-    <select name="infestation_level" class="form-control">
-        <option value="Low" {% if previous_followup.infestation_level == "Low" %}selected{% endif %}>Low</option>
-        <option value="Medium" {% if previous_followup.infestation_level == "Medium" %}selected{% endif %}>Medium</option>
-        <option value="High" {% if previous_followup.infestation_level == "High" %}selected{% endif %}>High</option>
-    </select>
-    </div>
-
-
-    <div class="col-md-6">
-
-    <label>Type of Lead:</label>
-    <select name="typeoflead" class="form-control">
-        <option value="Hot" {% if previous_followup.typeoflead == "Hot" %}selected{% endif %}>Hot</option>
-        <option value="Warm" {% if previous_followup.typeoflead == "Warm" %}selected{% endif %}>Warm</option>
-        <option value="Cold" {% if previous_followup.typeoflead == "Cold" %}selected{% endif %}>Cold</option>
-        <option value="Not Interested" {% if previous_followup.typeoflead == "Not Interested" %}selected{% endif %}>Not Interested</option>
-        <option value="Loss of Order" {% if previous_followup.typeoflead == "Loss of Order" %}selected{% endif %}>Loss of Order</option>
-    </select>
-    </div>
-    <div class="col-md-6">
-
-    <label>Follow-up Remark:</label>
-    <select name="followup_remark" class="form-control">
-        <option value="Call not received" {% if previous_followup.followup_remark == "Call not received" %}selected{% endif %}>Call not received</option>
-        <option value="Give next Follow up date" {% if previous_followup.followup_remark == "Give next Follow up date" %}selected{% endif %}>Give next Follow up date</option>
-        <option value="Call Out of Coverage Area" {% if previous_followup.followup_remark == "Call Out of Coverage Area" %}selected{% endif %}>Call Out of Coverage Area</option>
-    </select>
-
-    </div>
-
-    <div id="next_followup_div" class="col-md-6">
-        <label>Next Follow-up Date:</label>
-        <input type="date" class="form-control" name="next_followup_date" value="{{ previous_followup.next_followup_date|date:'Y-m-d' }}">
-    </div>
-
-    <div class="col-md-6">
-            <label>Order Status:</label>
-    <select name="order_status" id="order_status" onchange="toggleNextFollowupDate()" class="form-control">
-        <option value="Not Closed" {% if previous_followup.order_status == "Not Closed" %}selected{% endif %}>Not Closed</option>
-        <option value="Close Win" {% if previous_followup.order_status == "Close Win" %}selected{% endif %}>Close Win</option>
-        <option value="Close Loss" {% if previous_followup.order_status == "Close Loss" %}selected{% endif %}>Close Loss</option>
-    </select>
-
-    </div>
-        <div class="col-md-6">
-    <label>Follow-up Comment:</label>
-    <textarea name="followup_comment" rows="3" cols="40" class="form-control">{{ previous_followup.followup_comment }}</textarea>
-</div>
-   
-</div>
-        <!-- lead Logic  -->
-
-<div class="row mt-3">
-
-
-
-    <div class="col-md-2"></div>
-    <div class="col-md-4">
-        <button type="button" onclick="toggleHistory()" class="btn btn-info text-center w-100 shadow mt-2">View Follow-up
-            History</button>
-
-    </div>
-    <div class="col-md-4">
-        <button type="submit" class="btn btn-success w-100 shadow mt-2">Submit Follow-up</button>
-    </div>
-            <div class="col-md-2"></div>
-
-</div>
-  
-</form>
- 
-    <div class="col-md-2"></div>
-</div>
-</div>
-</div>
 <script>
     function toggleAgencyName() {
         var select = document.getElementById('done_pest_control');

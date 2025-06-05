@@ -1421,6 +1421,8 @@ def main_followup_view(request, lead_id):
     followups = main_followup.objects.filter(lead=lead).order_by('created_at')
     followup_count = followups.count() + 1
 
+    latest_followup = followups.last()
+
     if request.method == "POST":
         done_pest_control = request.POST.get('done_pest_control', 'No')
         agency_name = request.POST.get('agency_name') if done_pest_control == 'Yes' else None
@@ -1430,43 +1432,56 @@ def main_followup_view(request, lead_id):
         followup_remark = request.POST.get('followup_remark', '')
         followup_comment = request.POST.get('followup_comment', '')
         order_status = request.POST.get('order_status', 'Not Closed')
-
-        # Only take next_followup_date if order is not closed
         next_followup_date = (
-            request.POST.get('next_followup_date') 
+            request.POST.get('next_followup_date')
             if order_status not in ['Close Win', 'Close Loss'] else None
         )
 
-        # Create a new follow-up record (preserve previous follow-ups)
-        main_followup.objects.create(
-            lead=lead,
-            done_pest_control=done_pest_control,
-            agency_name=agency_name,
-            onsite_infestation=onsite_infestation,
-            infestation_level=infestation_level,
-            typeoflead=typeoflead,
-            followup_remark=followup_remark,
-            followup_comment=followup_comment,
-            next_followup_date=next_followup_date,
-            order_status=order_status,
-            created_at=timezone.now(),
-        )
+        if latest_followup:
+            # Update existing follow-up
+            latest_followup.done_pest_control = done_pest_control
+            latest_followup.agency_name = agency_name
+            latest_followup.onsite_infestation = onsite_infestation
+            latest_followup.infestation_level = infestation_level
+            latest_followup.typeoflead = typeoflead
+            latest_followup.followup_remark = followup_remark
+            latest_followup.followup_comment = followup_comment
+            latest_followup.next_followup_date = next_followup_date
+            latest_followup.order_status = order_status
+            latest_followup.save()
+        else:
+            # Create new follow-up if none exists
+            main_followup.objects.create(
+                lead=lead,
+                done_pest_control=done_pest_control,
+                agency_name=agency_name,
+                onsite_infestation=onsite_infestation,
+                infestation_level=infestation_level,
+                typeoflead=typeoflead,
+                followup_remark=followup_remark,
+                followup_comment=followup_comment,
+                next_followup_date=next_followup_date,
+                order_status=order_status,
+                created_at=timezone.now(),
+            )
 
         # Update the lead's status
+       # Update the lead's status
         lead.typeoflead = typeoflead
+        main_followup.order_status = order_status  # ✅ important to reflect in lead model
         if order_status in ['Close Win', 'Close Loss']:
             lead.stage = 0  # mark lead as closed
         lead.save()
 
-        return redirect('main_followup_view', lead_id=lead.id)
 
-    latest_followup = followups.last()
+        return redirect('main_followup_view', lead_id=lead.id)
 
     context = {
         'lead': lead,
         'followup_count': followup_count,
         'followups': followups,
-        'latest_followup': latest_followup,
+        'previous_followup': latest_followup,
+        
     }
     return render(request, 'main_followup.html', context)
 
@@ -1781,13 +1796,20 @@ from .models import lead_management, SalesPerson
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import render
-from .models import lead_management, SalesPerson
+from django.shortcuts import render
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from django.db.models import Q
+from django.core.paginator import Paginator
+from .models import lead_management, SalesPerson, main_followup
+
 
 def display_lead_management(request):
-    # Start with all leads
+    # 1. Start with all leads
     filtered_leads = lead_management.objects.all()
 
-    # Get filters from GET request
+    # 2. Get filters from request
     search_query = request.GET.get('search', '').strip()
     typeoflead_filter = request.GET.get('typeoflead')
     source_filter = request.GET.get('sourceoflead')
@@ -1800,14 +1822,15 @@ def display_lead_management(request):
     sort_by = request.GET.get('sort', 'customername')
     order = request.GET.get('order', 'asc')
 
-    # Apply search
+    # 3. Apply search filter
     if search_query:
         filtered_leads = filtered_leads.filter(
             Q(primarycontact__icontains=search_query) |
-            Q(typeoflead__icontains=search_query)
+            Q(typeoflead__icontains=search_query) |
+            Q(customername__icontains=search_query)
         )
 
-    # Apply filters
+    # 4. Apply other filters
     if typeoflead_filter:
         filtered_leads = filtered_leads.filter(typeoflead=typeoflead_filter)
     if source_filter:
@@ -1821,20 +1844,33 @@ def display_lead_management(request):
     if followup_from and followup_to:
         filtered_leads = filtered_leads.filter(firstfollowupdate__range=[followup_from, followup_to])
 
-    # Count of leads (filtered total count)
+    # 5. Count for display
     branch_count = filtered_leads.count()
 
-    # Sorting
+    # 6. Apply sorting
     order_prefix = '-' if order == 'desc' else ''
     leads = filtered_leads.order_by(f'{order_prefix}{sort_by}')
 
-    # Pagination
+    # 7. Apply pagination
     paginator = Paginator(leads, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
 
-    # Dropdown options
+    # 8. Prepare followup data
+    lead_ids = [lead.id for lead in page_obj]
+    followups = main_followup.objects.filter(lead_id__in=lead_ids).order_by('lead_id', '-created_at')
+
+    latest_followups = {}
+    for followup in followups:
+        if followup.lead_id not in latest_followups:
+            latest_followups[followup.lead_id] = followup
+
+    # Attach the latest follow-up to each lead
+    for lead in page_obj:
+        lead.latest_followup = latest_followups.get(lead.id)
+
+    # 9. Get dropdown filter values
     typeoflead_choices = [choice[0] for choice in lead_management._meta.get_field('typeoflead').choices if choice[0]]
     typeoflead_used = lead_management.objects.values_list('typeoflead', flat=True).distinct()
     lead_types = sorted(set(typeoflead_choices + list(typeoflead_used)))
@@ -1849,7 +1885,7 @@ def display_lead_management(request):
 
     salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
 
-    # No-data message
+    # 10. No data message if needed
     no_data_message = ""
     if not leads.exists():
         if search_query:
@@ -1865,6 +1901,7 @@ def display_lead_management(request):
         else:
             no_data_message = "No data found for the selected filters."
 
+    # 11. Final context
     context = {
         'page_obj': page_obj,
         'start_index': start_index,
@@ -1876,7 +1913,7 @@ def display_lead_management(request):
         'current_sort': sort_by,
         'current_order': order,
         'no_data_message': no_data_message,
-        'branch_count': branch_count,  # Will always be total of filtered results
+        'branch_count': branch_count,
     }
 
     return render(request, 'display_lead_management.html', context)

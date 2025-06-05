@@ -754,16 +754,29 @@
                                         <td>{{x.enquirydate}}</td>
                                         <td>{{x.primarycontact}}</td>
                                         <td>{{x.customeraddress}}</td>
-                                        <td>{{x.firstfollowupdate}}</td>
-                                  <td>
-    {% if x.order_status == "Close Win" %}
+<td>
+  {% if x.latest_followup %}
+    {{ x.latest_followup.next_followup_date }}
+  {% else %}
+    N/A
+  {% endif %}
+</td>
+                                      <td>
+    {% if x.latest_followup %}
+    {% if x.latest_followup.order_status == "Close Win" %}
         <span class="badge" style="background-color: green; color: white;">Close Win</span>
-    {% elif x.order_status == "Close Loss" %}
+    {% elif x.latest_followup.order_status == "Close Loss" %}
         <span class="badge" style="background-color: red; color: white;">Close Loss</span>
     {% else %}
         <a href="{% url 'main_followup_view' x.id %}" class="btn btn-primary">Follow Up</a>
     {% endif %}
+{% else %}
+    <a href="{% url 'main_followup_view' x.id %}" class="btn btn-primary">Follow Up</a>
+{% endif %}
+
 </td>
+
+
 
 
 
