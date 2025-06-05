@@ -480,7 +480,6 @@ class TechnicianProfile(models.Model):
     state = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
     date_of_joining = models.DateField(default=timezone.now)
-    # password = models.CharField(max_length=128)  # This should not be needed if you are using Django's User model
 
 
     def __str__(self):

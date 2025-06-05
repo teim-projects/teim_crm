@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Technician</title>
+    <style>
+        form {
+            max-width: 600px;
+            margin: auto;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+        }
+        .btn {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center;">Edit Technician</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label>First Name:</label>
+        <input type="text" name="first_name" value="{{ technician.first_name }}" required>
+
+        <label>Last Name:</label>
+        <input type="text" name="last_name" value="{{ technician.last_name }}" required>
+
+        <label>Email:</label>
+        <input type="email" name="email" value="{{ technician.email }}" required>
+
+        <label>Contact Number:</label>
+        <input type="text" name="contact_number" value="{{ technician.contact_number }}" required>
+
+        <label>Address:</label>
+        <input type="text" name="address" value="{{ technician.address }}" required>
+
+        <label>City:</label>
+        <input type="text" name="city" value="{{ technician.city }}" required>
+
+        <label>State:</label>
+        <input type="text" name="state" value="{{ technician.state }}" required>
+
+        <label>Postal Code:</label>
+        <input type="text" name="postal_code" value="{{ technician.postal_code }}" required>
+
+        <label>Date of Joining:</label>
+        <input type="date" name="date_of_joining" value="{{ technician.date_of_joining|date:'Y-m-d' }}" required>
+
+        <label>Change Password (Optional):</label>
+        <input type="password" name="password" placeholder="Leave blank to keep current password">
+
+        <button class="btn" type="submit">Update Technician</button>
+    </form>
+</body>
+</html>

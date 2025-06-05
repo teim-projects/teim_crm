@@ -3078,6 +3078,84 @@ def create_technician_profile(request):
 
     return render(request, 'create_technician_profile.html')
 
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import TechnicianProfile
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth.hashers import make_password
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import TechnicianProfile
+
+# Display technicians with demo passwords
+def display_technician(request):
+    technicians = TechnicianProfile.objects.all()
+
+    # Manual dictionary to simulate decrypted passwords for each technician
+    # This is just for demonstration/testing purposes — do not use in production!
+    password_map = {
+        tech.id: f"password{tech.id}"  # Replace with actual known plain passwords if you have them
+        for tech in technicians
+    }
+
+    # Combine technician info with their 'plain' passwords
+    technician_data = []
+    for tech in technicians:
+        technician_data.append({
+            'id': tech.id,
+            'first_name': tech.first_name,
+            'last_name': tech.last_name,
+            'email': tech.email,
+            'contact_number': tech.contact_number,
+            'city': tech.city,
+            'date_of_joining': tech.date_of_joining,
+            'password': password_map.get(tech.id, 'Unknown')
+        })
+
+    return render(request, 'display_technician.html', {'technician_data': technician_data})
+
+
+# Edit technician
+def edit_technician(request, technician_id):
+    technician = get_object_or_404(TechnicianProfile, id=technician_id)
+    user = technician.user
+
+    if request.method == 'POST':
+        technician.first_name = request.POST.get('first_name')
+        technician.last_name = request.POST.get('last_name')
+        technician.email = request.POST.get('email')
+        technician.contact_number = request.POST.get('contact_number')
+        technician.address = request.POST.get('address')
+        technician.city = request.POST.get('city')
+        technician.state = request.POST.get('state')
+        technician.postal_code = request.POST.get('postal_code')
+        technician.date_of_joining = request.POST.get('date_of_joining')
+        password = request.POST.get('password')
+
+        if password:
+            user.password = make_password(password)
+            user.save()
+
+        technician.save()
+        messages.success(request, "Technician updated successfully.")
+        return redirect('display_technician')
+
+    return render(request, 'edit_technician.html', {'technician': technician, 'password': user.password})
+
+
+# Delete technician
+def delete_technician(request, technician_id):
+    technician = get_object_or_404(TechnicianProfile, id=technician_id)
+    user = technician.user
+    technician.delete()
+    user.delete()
+    messages.success(request, "Technician deleted successfully.")
+    return redirect('display_technician')
+
+
 def not_authorized(request):
     return render(request, 'not_authorized.html')
 
