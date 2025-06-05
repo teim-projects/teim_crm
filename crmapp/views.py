@@ -335,8 +335,6 @@ def user_login(request):
                     .order_by('stage')
 
             # Prepare the labels and data for the chart
-            follow_up_labels = [stages[stage['stage']] for stage in stage_counts]
-            follow_up_data = [stage['count'] for stage in stage_counts]
 
 
             pest_control_count = Product.objects.filter(category='Pest Control').count()
@@ -430,8 +428,7 @@ def user_login(request):
                 "order": json.dumps([quotations_count, orders_count]),
                 'lead_data': json.dumps(lead_data),
                 'bar_chart_data': json.dumps(bar_chart_data),
-                'follow_up_labels': json.dumps(follow_up_labels),
-                'follow_up_data': json.dumps(follow_up_data),
+                
             }
             print("chartctfgvbhjnbgtfvrdcew:::::::::::::::::::")
 
