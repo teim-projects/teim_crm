@@ -1058,7 +1058,7 @@ def quotation_create(request):
     context = {
         'customers': customers,
     }
-    return render(request, 'quotation_create_new.html', context)
+    return render(request, 'quotation.html', context)
 
 
 def quotation_history(request, customer_id):
