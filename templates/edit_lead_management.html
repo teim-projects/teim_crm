@@ -95,172 +95,202 @@
             }
 
         }
+            .step-section {
+        display: none;
+    }
+    .step-section.active {
+        display: block;
+    }
   </style>
     
 </head>
 <body>
   {% include 'sidebar.html' %}
 
-  <div class="main-container">
-    <div class="card shadow-2-strong card-registration p-2">
-        <div class="card-body p-3">
-            <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
-            <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
-          
-            <h3 class="mb-3 mt-5">Lead Management</h3>
-            {% for x in data %}
-            <form method="post">
-              {% csrf_token %}
-              <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div data-mdb-input-init class="form-outline">
-                        
-                        <label>Source of Lead<span class="star">*</span></label>
-                        <select id="usourceoflead" class="form-control form-control-lg" name="usourceoflead" placeholder="Please Select" value="{{ x.sourceoflead }}" required style="height:15px !important;">
-                            <option value="" disabled selected >Source of Lead</option>
-                            <option value="Google">Google</option>
-                            <option value="Justdial">Justdial</option>
-                            <option value="Indianmart">Indianmart</option>
-                            <option value="Customer Reference">Customer Reference</option>
-                            <option value="BNI">BNI</option>
-                            <option value="Lineclub">Lineclub</option>
-                            <option value="Employee Reference">Employee Reference</option>
-                            <option value="Others">Others</option>
-                        
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div data-mdb-input-init class="form-outline">
-                        <label>Enter Salesperson<span class="star">*</span></label>
-                        <input type="text" id="usalesperson" class="form-control form-control-lg" placeholder="Salesperson" name="usalesperson" value="{{ x.salesperson }}" required />
-                    </div>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div data-mdb-input-init class="form-outline">
-                        <label>Enter Customer Name<span class="star">*</span></label>
-                        <input type="text" id="ucustomername" class="form-control form-control-lg" placeholder="Customer Name" name="ucustomername" value="{{ x.customername }}"/>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div data-mdb-input-init class="form-outline">
-                        <label>Enter Customer Segment<span class="star">*</span></label>
-                        <select style="height:15px !important;" id="ucustomersegment" class="form-control form-control-lg" name="ucustomersegment" placeholder="Please Select" value="{{ x.customersegment }}" required>
-                            <option value="" disabled selected>Customer Segment</option>
-                            <option value="Resedential">Resedential</option>
-                            <option value="Industrial">Industrial</option>
-                            <option value="Commercial">Commercial</option>
-                            <option value="Institutional">Instiututional</option>
-                            <option value="Irrelevant Lead">Irrelevant Lead</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+<div class="main-container">
+  <div class="card shadow-2-strong card-registration p-2">
+    <div class="card-body p-3">
+      <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i class="fas fa-house-chimney"></i></span>
+      <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
+      <h3 class="mb-3 mt-5">Lead Management</h3>
 
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div data-mdb-input-init class="form-outline">
-                        <label>EnterType of Lead<span class="star">*</span></label>
-                        <select style="height:15px !important;" id="utypeoflead" class="form-control form-control-lg" name="utypeoflead" value="{{ x.typeoflead }}">
-                            <option value="" disabled selected>Type of Lead</option>
-                            <option value="Hot">Hot</option>
-                            <option value="Warm">Warm</option>
-                            <option value="Cold">Cold</option>
-                            <option value="NotInterested">Not Interested</option>
-                            <option value="LossOfOrder">Loss Of Order</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                  <div data-mdb-input-init class="form-outline">
-                    <label>Enter Uenquiry date<span class="star">*</span></label>
-                    <input type="date" id="uenquirydate" class="form-control form-control-lg" name="uenquirydate"  value="{{ x.enquirydate }}"/>
-                  </div>
-              </div>
-            </div>
+      {% for x in data %}
+      <form method="post">
+        {% csrf_token %}
 
-            <div class="row">
-              <div class="col-md-6 mb-4">
-                  <div data-mdb-input-init class="form-outline">
-                    <label>Contacted By<span class="star">*</span></label>
-                    <input type="text" id="ucontactedby" class="form-control form-control-lg" placeholder="Contacted By" name="ucontactedby" value="{{ x.contactedby }}"/>
-                  </div>
-              </div>
-                <div class="col-md-6 mb-4">
-                  <div data-mdb-input-init class="form-outline">
-                    <label>Main Category<span class="star">*</span></label>
-                      <input type="text" id="umaincategory" class="form-control form-control-lg" placeholder="Main Category" name="umaincategory" value="{{ x.maincategory }}"/>
-                  </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-4">
-                  <div data-mdb-input-init class="form-outline">
-                    <label>Sub Category<span class="star">*</span></label>
-                    <input type="text" id="usubcategory" class="form-control form-control-lg" placeholder="Sub Category" name="usubcategory" value="{{ x.subcategory }}"/>
-                  </div>
-              </div>
-              <div class="col-md-6 mb-4">
-                  <div data-mdb-input-init class="form-outline">
-                    <label>Primary Contact No<span class="star">*</span></label>
-                    <input type="text" id="uprimarycontact" class="form-control form-control-lg" placeholder="Primary Contact No." name="uprimarycontact" value="{{ x.primarycontact }}"/>
-                  </div>
-              </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div data-mdb-input-init class="form-outline">
-                    <label>Secondary Contact No<span class="star">*</span></label>
-                        <input type="text" id="usecondarycontact" class="form-control form-control-lg" placeholder="Secondary Contact No." name="usecondarycontact" value="{{ x.secondarycontact }}"/>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div data-mdb-input-init class="form-outline">
-                    <label>Customer Email<span class="star">*</span></label>
-                        <input type="email" id="ucustomeremail" class="form-control form-control-lg" placeholder="Customer Email" name="ucustomeremail" value="{{ x.customeremail }}"/>
-                    </div>
-                </div>
-              </div>
-
-            <div class="row">
-              <div class="col-md-12 mb-4">
-                  <div data-mdb-input-init class="form-outline">
-                    <label>Customer Address<span class="star">*</span></label>
-                      <textarea id="ucustomeraddress" class="form-control form-control-lg" placeholder="Customer Address" name="ucustomeraddress" value="{{ x.customeraddress }}">{{ x.customeraddress }}</textarea>
-                  </div>
-              </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div data-mdb-input-init class="form-outline">
-                    <label>Location<span class="star">*</span></label>
-                      <input type="url" id="ulocation" class="form-control form-control-lg" placeholder="Location" name="ulocation" value="{{ x.location }}" />
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div data-mdb-input-init class="form-outline">
-                    <label>City<span class="star">*</span></label>
-                      <input type="text" id="ucity" class="form-control form-control-lg" placeholder="City" name="ucity" value="{{ x.city }}"/>
-                    </div>
-                </div>
-              </div>
-              <div class="mt-4 pt-2 text-center" style="font-family: 'Playfair Display', serif;color:antiquewhite;">
-                <input class="btn btn-info btn-lg" type="submit" name="submit" value="Submit" style="width: 150px;" />
-              </div>
-              <div class="col-md-12"> 
-                <p style="color: red; text-align: center;">{{ msg1 }}</p>
-              </div>
-            </form>
-            {% endfor %}
-        </div>
+        <!-- Step 1 -->
+<div id="step1" class="step-section active">
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <label>Source of Lead<span class="star">*</span></label>
+      <select name="usourceoflead" class="form-control form-control-lg" required>
+        <option disabled selected>Source of Lead</option>
+        <option value="Google">Google</option>
+        <option value="Justdial">Justdial</option>
+        <option value="Indianmart">Indianmart</option>
+        <option value="Customer Reference">Customer Reference</option>
+        <option value="BNI">BNI</option>
+        <option value="Lineclub">Lineclub</option>
+        <option value="Employee Reference">Employee Reference</option>
+        <option value="Others">Others</option>
+      </select>
+    </div>
+    <div class="col-md-6 mb-4">
+      <label>Enter Salesperson<span class="star">*</span></label>
+      <input type="text" name="usalesperson" class="form-control form-control-lg" value="{{ x.salesperson }}" required />
     </div>
   </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <label>Enter Customer Name<span class="star">*</span></label>
+      <input type="text" name="ucustomername" class="form-control form-control-lg" value="{{ x.customername }}" />
+    </div>
+    <div class="col-md-6 mb-4">
+      <label>Enter Customer Segment<span class="star">*</span></label>
+      <select name="ucustomersegment" class="form-control form-control-lg" required>
+        <option disabled selected>Customer Segment</option>
+        <option value="Resedential">Resedential</option>
+        <option value="Industrial">Industrial</option>
+        <option value="Commercial">Commercial</option>
+        <option value="Institutional">Instiututional</option>
+        <option value="Irrelevant Lead">Irrelevant Lead</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="text-center">
+    <button type="button" class="btn btn-primary" style="width: 200px;" onclick="nextStep(1)">Next</button>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<div id="step2" class="step-section">
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <label>Type of Lead<span class="star">*</span></label>
+      <select name="utypeoflead" class="form-control form-control-lg">
+        <option disabled selected>Type of Lead</option>
+        <option value="Hot">Hot</option>
+        <option value="Warm">Warm</option>
+        <option value="Cold">Cold</option>
+        <option value="NotInterested">Not Interested</option>
+        <option value="LossOfOrder">Loss Of Order</option>
+      </select>
+    </div>
+    <div class="col-md-6 mb-4">
+      <label>Enquiry Date<span class="star">*</span></label>
+      <input type="date" name="uenquirydate" class="form-control form-control-lg" value="{{ x.enquirydate }}" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <label>Contacted By<span class="star">*</span></label>
+      <input type="text" name="ucontactedby" class="form-control form-control-lg" value="{{ x.contactedby }}" />
+    </div>
+    <div class="col-md-6 mb-4">
+      <label>Main Category<span class="star">*</span></label>
+      <input type="text" name="umaincategory" class="form-control form-control-lg" value="{{ x.maincategory }}" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <label>Sub Category<span class="star">*</span></label>
+      <input type="text" name="usubcategory" class="form-control form-control-lg" value="{{ x.subcategory }}" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-3">
+            <button type="button" class="btn btn-secondary w-100" onclick="prevStep(0)">Previous</button>
+
+    </div>
+    <div class="col-md-3">
+            <button type="button" class="btn btn-primary w-100" onclick="nextStep(2)">Next</button>
+
+    </div>
+    <div class="col-md-3"></div>
+  </div>
+</div>
+
+<!-- Step 3 -->
+<div id="step3" class="step-section">
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <label>Primary Contact No<span class="star">*</span></label>
+      <input type="text" name="uprimarycontact" class="form-control form-control-lg" value="{{ x.primarycontact }}" />
+    </div>
+    <div class="col-md-6 mb-4">
+      <label>Secondary Contact No<span class="star">*</span></label>
+      <input type="text" name="usecondarycontact" class="form-control form-control-lg" value="{{ x.secondarycontact }}" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <label>Customer Email<span class="star">*</span></label>
+      <input type="email" name="ucustomeremail" class="form-control form-control-lg" value="{{ x.customeremail }}" />
+    </div>
+    <div class="col-md-6 mb-4">
+      <label>Location<span class="star">*</span></label>
+      <input type="url" name="ulocation" class="form-control form-control-lg" value="{{ x.location }}" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <label>City<span class="star">*</span></label>
+      <input type="text" name="ucity" class="form-control form-control-lg" value="{{ x.city }}" />
+    </div>
+    <div class="col-md-6 mb-4">
+      <label>Customer Address<span class="star">*</span></label>
+      <textarea name="ucustomeraddress" class="form-control form-control-lg">{{ x.customeraddress }}</textarea>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-3">    
+        <button type="button" class="btn btn-secondary w-100" onclick="prevStep(1)">Previous</button>
+</div>
+    <div class="col-md-3">    <input type="submit" class="btn btn-success w-100" value="Submit" />
+</div>
+    <div class="col-md-3"></div>
+  </div>
+  <p class="mt-3 text-center text-danger">{{ msg1 }}</p>
+</div>
+
+        
+      </form>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+function showStep(step) {
+  const steps = document.querySelectorAll('.step-section');
+  steps.forEach((s, i) => {
+    s.classList.remove('active');
+    if (i === step) s.classList.add('active');
+  });
+}
+
+function nextStep(current) {
+  showStep(current);
+}
+
+function prevStep(prev) {
+  showStep(prev);
+}
+
+// Show first step on load
+document.addEventListener("DOMContentLoaded", () => showStep(0));
+</script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
