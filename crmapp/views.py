@@ -1058,7 +1058,7 @@ def quotation_create(request):
     context = {
         'customers': customers,
     }
-    return render(request, 'quotation_create_new.html', context)
+    return render(request, 'quotation.html', context)
 
 
 def quotation_history(request, customer_id):
@@ -3704,61 +3704,58 @@ def complete_work(request, work_id):
     print('techn_work',tech_work)
     
     if request.method == 'POST':
+        # Get related work object (WorkAllocation)
+        work_allocation = tech_work.work.first()  # Assuming only 1 work per tech_work
+
         # Handle Photos Before Service
-        
         photos_before_service = request.FILES.getlist('photos_before_service')
-        print('requested files for photos_before_service: ',photos_before_service)
         for photo in photos_before_service:
-            print('PHOTONAME1: ',photo)
             uploaded_file = UploadedFile.objects.create(file=photo)
             tech_work.photos_before_service.add(uploaded_file)
 
         # Handle Photos After Service
         photos_after_service = request.FILES.getlist('photos_after_service')
-        print('requested files for photos_before_service: ',photos_after_service)
         for photo in photos_after_service:
-            print('PHOTONAME2: ',photo)
             uploaded_file = UploadedFile.objects.create(file=photo)
             tech_work.photos_after_service.add(uploaded_file)
 
         # Handle digital signature
         signature_data = request.POST.get('signature_data')
         if signature_data:
-            format, imgstr = signature_data.split(';base64,')  # Split metadata from base64
-            ext = format.split('/')[-1]  # Extract image format
+            format, imgstr = signature_data.split(';base64,')
+            ext = format.split('/')[-1]
             signature_file = ContentFile(base64.b64decode(imgstr), name=f'xsignature.{ext}')
-            tech_work.customer_signature_photo.save(f'signature_{tech_work.work.id}.{ext}', signature_file)
+            tech_work.customer_signature_photo.save(f'signature_{work_allocation.id}.{ext}', signature_file)
 
-
+        # Handle signature upload
         customer_signature_photo = request.FILES.get('customer_signature_photo')
-        print('requested files for photos_before_service: ',customer_signature_photo)
         if customer_signature_photo:
             tech_work.customer_signature_photo = customer_signature_photo
 
         # Handle Payment Photos
         payment_photos = request.FILES.getlist('payment_photos')
-        print('requested files for photos_before_service: ',payment_photos)
         for photo in payment_photos:
-            print('PHOTONAME3: ',photo)
             uploaded_file = UploadedFile.objects.create(file=photo)
             tech_work.payment_photos.add(uploaded_file)
 
-        # Update Payment Status
+        # Update customer payment status on WorkAllocation
         payment_status = request.POST.get('customer_payment_status')
         if payment_status in ['Pending', 'Online', 'Cash']:
-            tech_work.work.customer_payment_status = payment_status
-            tech_work.work.save()
+            work_allocation.customer_payment_status = payment_status
+            work_allocation.save()
 
-        # Mark as Completed and Save
-        tech_work.status = 'Completed'
-        tech_work.work.status = 'Completed'
-        tech_work.completion_datetime = now()
-        tech_work.work.save()
-        tech_work.save()
- 
+        # Update all related TechWorkList entries for this work allocation
+        related_tech_works = TechWorkList.objects.filter(work=work_allocation)
+        for tw in related_tech_works:
+            tw.status = 'Completed'
+            tw.completion_datetime = now()
+            tw.save()
 
-        return redirect('completed_work_list') 
-    
+        # Finally, mark the WorkAllocation as Completed
+        work_allocation.status = 'Completed'
+        work_allocation.save()
+
+        return redirect('completed_work_list')
     return render(request, 'complete_work.html', {'tech_work': tech_work})
 
 
@@ -3766,12 +3763,23 @@ def complete_work(request, work_id):
 def completed_work_list(request):
     completed_works = TechWorkList.objects.filter(technician=request.user, status='Completed')
     return render(request, 'completed_work_list.html', {'completed_works': completed_works})
-
 @login_required
 def work_details(request, work_id):
     work = get_object_or_404(TechWorkList, id=work_id, technician=request.user)
-    return render(request, 'work_details.html', {'work': work})
-
+    
+    related_technicians = []
+    for wa in work.work.all():  # Assuming this is a ManyToMany of WorkAllocation objects
+        for tech in wa.technician.all():  # Assuming ManyToMany of TechnicianProfile
+            if tech.user != request.user:
+                related_technicians.append(tech)
+    
+    # Remove duplicates if any
+    related_technicians = list({tech.id: tech for tech in related_technicians}.values())
+    
+    return render(request, 'work_details.html', {
+        'work': work,
+        'related_technicians': related_technicians,
+    })
 
 
 
@@ -3790,16 +3798,37 @@ from .models import TechWorkList
 
 class AdminCompletedWorkView(ListView):
     model = TechWorkList
-    template_name = 'admin_completed_work_list.html'  # Updated template name
+    template_name = 'admin_completed_work_list.html'  
     context_object_name = 'completed_work_list'
     
     def get_queryset(self):
-        return TechWorkList.objects.filter(status='Completed')
+        return TechWorkList.objects.filter(status='Completed').exclude(customer_signature_photo='')
 
 class AdminWorkDetailView(DetailView):
     model = TechWorkList
-    template_name = 'admin_work_detail.html'  # Updated template name
+    template_name = 'admin_work_detail.html'
     context_object_name = 'work'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        work_instance = self.get_object()
+        
+        # Get all related technicians
+        technicians_set = set()
+        for wa in work_instance.work.all():
+            for tech in wa.technician.all():
+                technicians_set.add(tech)
+        context['related_technicians'] = technicians_set
+
+        # Get customer details from the first related WorkAllocation's service
+        first_wa = work_instance.work.first()
+        if first_wa and first_wa.service and first_wa.service.customer:
+            customer = first_wa.service.customer
+            context['customer'] = customer
+        else:
+            context['customer'] = None
+
+        return context
 
 
 def import_leads(request):
