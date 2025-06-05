@@ -3763,12 +3763,23 @@ def complete_work(request, work_id):
 def completed_work_list(request):
     completed_works = TechWorkList.objects.filter(technician=request.user, status='Completed')
     return render(request, 'completed_work_list.html', {'completed_works': completed_works})
-
 @login_required
 def work_details(request, work_id):
     work = get_object_or_404(TechWorkList, id=work_id, technician=request.user)
-    return render(request, 'work_details.html', {'work': work})
-
+    
+    related_technicians = []
+    for wa in work.work.all():  # Assuming this is a ManyToMany of WorkAllocation objects
+        for tech in wa.technician.all():  # Assuming ManyToMany of TechnicianProfile
+            if tech.user != request.user:
+                related_technicians.append(tech)
+    
+    # Remove duplicates if any
+    related_technicians = list({tech.id: tech for tech in related_technicians}.values())
+    
+    return render(request, 'work_details.html', {
+        'work': work,
+        'related_technicians': related_technicians,
+    })
 
 
 
@@ -3802,13 +3813,21 @@ class AdminWorkDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         work_instance = self.get_object()
         
-        # Collect all technicians who worked on the related WorkAllocations
+        # Get all related technicians
         technicians_set = set()
         for wa in work_instance.work.all():
             for tech in wa.technician.all():
                 technicians_set.add(tech)
-
         context['related_technicians'] = technicians_set
+
+        # Get customer details from the first related WorkAllocation's service
+        first_wa = work_instance.work.first()
+        if first_wa and first_wa.service and first_wa.service.customer:
+            customer = first_wa.service.customer
+            context['customer'] = customer
+        else:
+            context['customer'] = None
+
         return context
 
 
