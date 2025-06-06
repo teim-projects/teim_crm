@@ -101,14 +101,13 @@
                 <form method="POST" id="service-management-form">      
                     {% csrf_token %}
                     <div class="row">
-                        <div class="col-md-12 mb-4">
+                        <div class="col-md-6 mb-4">
                             <div class="form-outline">
                                 <label for="service-id">Service ID</label>
                                 <input type="text" class="form-control form-control-lg" id="service-id" name="service_id" value="{{ service.id }}" readonly>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
+                    
                         <div class="col-md-6 mb-4">
                             <div class="form-outline">
                                 <label for="old-date">Previous Date</label><br>
@@ -121,9 +120,9 @@
                                 <input type="text" class="form-control form-control-lg" id="old_delivery_time" name="old_delivery_time" value="{{ service.delivery_time }}" readonly>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12 mb-4">
+                     
+              
+                        <div class="col-md-6 mb-4">
                             <div class="form-outline">
                                 <label for="reason">Reason for Rescheduling <span class="star">*</span></label><br>
                                 <textarea id="reason" class="form-control form-control-lg" name="reason" required placeholder="Enter the reason for rescheduling"></textarea>

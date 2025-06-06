@@ -36,7 +36,7 @@
             background-color: #ffffff;
             box-shadow: 0 4px 20px rgba(3, 174, 210, 0.2);
             width: 100%;
-            max-width: 700px;
+            max-width: 750px;
             margin-top: 90px;
         }
 
@@ -232,10 +232,9 @@
         /* Style for form wrapper to center form and add padding */
         form {
             justify-content: center;
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
-            padding: 10px;
-            background-color: #ffffff;
+             background-color: #ffffff;
         }
 
 
@@ -326,7 +325,7 @@
 
 
 
-    <div class="main-container">
+    <div class="main-container" style="min-height: 100vh;">
 
 
         <div class="card shadow-2-strong card-registration">
@@ -355,111 +354,157 @@
 
             <div class="card-body">
                 <h3 class="mt-3 mb-3" style="font-weight: 600; margin: 10px;">Reschedule Service</h3>
-                <form method="POST" id="service-management-form">
-                  {% csrf_token %}
-                  {% for x in data %}
-                  <div class="row">
-                    <div class="col-md-6 mb-4">
-                      <div class="form-outline">
-                        <input type="text" id="ucustomer" class="form-control form-control-lg" placeholder="Customer Name" name="ucustomer" value="{{ x.customer }}" readonly />
-                      </div>
-                    </div>
-                  </div>
-              
-                  <label for="selected_services">Selected Services:</label>
-                  {% for service in x.selected_services.all %}
-                  <p aria-readonly="true">{{ service.product_name }}{% if not forloop.last %}, {% endif %}</p>
-                  {% endfor %}
-              
-                  <label for="utotal_price">Total Price (without GST):</label>
-                  <input type="number" step="0.01" id="utotal_price" class="form-control form-control-lg" name="utotal_price" value="{{ x.total_price }}" readonly />
-              
-                  <label for="utotal_price_with_gst">Total Price with GST:</label>
-                  <input type="number" step="0.01" id="utotal_price_with_gst" class="form-control form-control-lg" name="utotal_price_with_gst" value="{{ x.total_price_with_gst }}" readonly />
-              
-                  <label for="ucontract_type">Contract Type:</label>
-                  <input type="text" id="ucontract_type" class="form-control form-control-lg" name="ucontract_type" value="{{ x.contract_type }}" />
-              
-                  <label for="ucontract_status">Contract Status:</label>
-                  <input type="text" id="ucontract_status" class="form-control form-control-lg" name="ucontract_status" value="{{ x.contract_status }}" />
-              
-                  <label for="uproperty_type">Property Type:</label>
-                  <textarea name="uproperty_type">{{ x.property_type }}</textarea><br>
-              
-                  <label for="uwarranty_period">Warranty Period:</label>
-                  <input type="text" name="uwarranty_period" value="{{ x.warranty_period }}"><br>
-              
-                  <div class="col-md-6">
-                    <label for="ustate" class="form-label">State:</label>
-                    <input type="text" id="ustate" class="form-control form-control-lg" name="ustate" value="{{ x.state }}" />
-                  </div>
-              
-                  <label for="ucity">City:</label><br>
-                  <input type="text" id="ucity" class="form-control form-control-lg" name="ucity" value="{{ x.city }}" />
-              
-                  <label for="upincode">Pincode:</label>
-                  <input type="text" id="upincode" class="form-control form-control-lg" name="upincode" value="{{ x.pincode }}" />
-              
-                  <label for="uaddress">Address:</label>
-                  <textarea name="uaddress">{{ x.address }}</textarea><br>
-              
-                  <label for="ugps_location">GPS Location:</label>
-                  <input type="url" id="ugps_location" class="form-control form-control-lg" name="ugps_location" value="{{ x.gps_location }}" />
-              
-                  <label for="ufrequency_count">Frequency Count:</label>
-                  <input type="text" id="ufrequency_count" class="form-control form-control-lg" name="ufrequency_count" value="{{ x.frequency_count }}" />
-              
-                  <label for="upayment_terms">Payment Terms:</label>
-                  <input type="text" name="upayment_terms" value="100% Advance payment OR Whatever mutually Decided" readonly><br>
-              
-                  <label for="usales_person_name">Sales Person Name:</label>
-                  <input type="text" name="usales_person_name" value="{{ x.sales_person_name }}"><br>
-              
-                  <label for="usales_person_contact_no">Sales Person Contact No:</label>
-                  <input type="text" name="usales_person_contact_no" value="{{ x.sales_person_contact_no }}"><br>
-              
-                  <div class="col-md-6 form-group">
-                    <label class="form-label">Select Technicians:</label>
-                    <div class="dropdown">
-                      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Select Technicians
-                      </button>
-                      <ul class="dropdown-menu p-2" style="max-height: 300px; overflow-y: auto;">
-                        {% for tech in technicians %}
-                        <li>
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="technicians" value="{{ tech.id }}" 
-                            id="tech{{ forloop.counter }}" {% if tech.user in selected_technicians %}checked{% endif %}>
-                            <label class="form-check-label" for="tech{{ forloop.counter }}">
-                              {{ tech.first_name }} {{ tech.last_name }}
-                            </label>
-                          </div>
-                        </li>
-                        {% endfor %}
-                      </ul>
-                    </div>
-                  </div>
-              
-                  <label for="udelivery_time">Delivery Time</label>
-                  <input type="time" class="form-control" id="udelivery_time" name="udelivery_time" value="{{ x.delivery_time }}" required>
-              
-                  <label for="ulead_date">Lead Date:</label><br>
-                  <input type="date" name="ulead_date" value="{{ x.lead_date }}" required><br>
-              
-                  <label for="uservice_date">Service Date:</label><br>
-                  <input type="date" name="uservice_date" value="{{ x.service_date }}" required><br>
-              
-                  {% endfor %}
-                  <div class="mt-4 pt-2 text-center" style="font-family: 'Playfair Display', serif;color:antiquewhite; font-weight: 900;">
-                    <button class="btn btn-info btn-lg" type="submit">Submit</button>
-                  </div>
-                </form>
+<form method="POST" id="service-management-form">
+  {% csrf_token %}
+  {% for x in data %}
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="form-outline">
+        <input type="text" id="ucustomer" class="form-control form-control-lg" placeholder="Customer Name" name="ucustomer" value="{{ x.customer }}" readonly />
+      </div>
+    </div>
+  </div>
+
+  <label for="selected_services">Selected Services:</label>
+  {% for service in x.selected_services.all %}
+  <p aria-readonly="true">{{ service.product_name }}{% if not forloop.last %}, {% endif %}</p>
+  {% endfor %}
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="utotal_price">Total Price (without GST):</label>
+      <input type="number" step="0.01" id="utotal_price" class="form-control form-control-lg" name="utotal_price" value="{{ x.total_price }}" readonly />
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="utotal_price_with_gst">Total Price with GST:</label>
+      <input type="number" step="0.01" id="utotal_price_with_gst" class="form-control form-control-lg" name="utotal_price_with_gst" value="{{ x.total_price_with_gst }}" readonly />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="ucontract_type">Contract Type:</label>
+      <input type="text" id="ucontract_type" class="form-control form-control-lg" name="ucontract_type" value="{{ x.contract_type }}" />
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="ucontract_status">Contract Status:</label>
+      <input type="text" id="ucontract_status" class="form-control form-control-lg" name="ucontract_status" value="{{ x.contract_status }}" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="uproperty_type">Property Type:</label>
+      <textarea name="uproperty_type" class="form-control">{{ x.property_type }}</textarea>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="uwarranty_period">Warranty Period:</label>
+      <input type="text" name="uwarranty_period" class="form-control" value="{{ x.warranty_period }}">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="ustate">State:</label>
+      <input type="text" id="ustate" class="form-control form-control-lg" name="ustate" value="{{ x.state }}" />
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="ucity">City:</label>
+      <input type="text" id="ucity" class="form-control form-control-lg" name="ucity" value="{{ x.city }}" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="upincode">Pincode:</label>
+      <input type="text" id="upincode" class="form-control form-control-lg" name="upincode" value="{{ x.pincode }}" />
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="uaddress">Address:</label>
+      <textarea name="uaddress" class="form-control">{{ x.address }}</textarea>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="ugps_location">GPS Location:</label>
+      <input type="url" id="ugps_location" class="form-control form-control-lg" name="ugps_location" value="{{ x.gps_location }}" />
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="ufrequency_count">Frequency Count:</label>
+      <input type="text" id="ufrequency_count" class="form-control form-control-lg" name="ufrequency_count" value="{{ x.frequency_count }}" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="upayment_terms">Payment Terms:</label>
+      <input type="text" name="upayment_terms" class="form-control" value="100% Advance payment OR Whatever mutually Decided" readonly>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="usales_person_name">Sales Person Name:</label>
+      <input type="text" name="usales_person_name" class="form-control" value="{{ x.sales_person_name }}">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="usales_person_contact_no">Sales Person Contact No:</label>
+      <input type="text" name="usales_person_contact_no" class="form-control" value="{{ x.sales_person_contact_no }}">
+    </div>
+    <div class="col-md-6 mb-3">
+      <label>Select Technicians:</label>
+      <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle form-control" type="button" data-bs-toggle="dropdown">
+          Select Technicians
+        </button>
+        <ul class="dropdown-menu p-2" style="max-height: 300px; width:100%; overflow-y: auto;">
+          {% for tech in technicians %}
+          <li>
+            <div class="form-check">
+              <input class="form-check-input mt-2" type="checkbox" name="technicians" value="{{ tech.id }}" 
+              id="tech{{ forloop.counter }}" {% if tech.user in selected_technicians %}checked{% endif %}>
+              <label class="form-check-label text-dark" for="tech{{ forloop.counter }}">
+                {{ tech.first_name }} {{ tech.last_name }}
+              </label>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="udelivery_time">Delivery Time:</label>
+      <input type="time" class="form-control" id="udelivery_time" name="udelivery_time" value="{{ x.delivery_time }}" required>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="ulead_date">Lead Date:</label>
+      <input type="date" class="form-control" name="ulead_date" value="{{ x.lead_date }}" required>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="uservice_date">Service Date:</label>
+      <input type="date" class="form-control" name="uservice_date" value="{{ x.service_date }}" required>
+    </div>
+  </div>
+
+  {% endfor %}
+  <div class="mt-4 pt-2 text-center" style="font-family: 'Playfair Display', serif;color:antiquewhite; font-weight: 900;">
+    <button class="btn btn-info btn-lg" type="submit">Submit</button>
+  </div>
+</form>
+
         </div>
 
-
+        </div>
     <!-- Change to your actual view -->
 
-
+    </div>
 
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -498,7 +543,7 @@
             });
         });
     </script>
-    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:400px;">
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%;">
         <div class="row p-3">
             <div class="col-md-12 text-center">
                 <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
