@@ -756,7 +756,7 @@ def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
     terms = QuotationTerm.objects.all()
-    branches = Branch.objects.all()  # ✅ Add for form display
+    branches = Branch.objects.all()
 
     if request.method == 'GET' and 'contact_no' in request.GET:
         contact_no = request.GET.get('contact_no')
@@ -780,15 +780,14 @@ def quotation_management_create(request):
             contact_no = request.POST.get('contact_no')
             secondary_contact_no = request.POST.get('secondary_contact_no')
             customer_email = request.POST.get('customer_email')
-            secondary_email = request.POST.get('secondary_email')  # ✅ New
+            secondary_email = request.POST.get('secondary_email')
             address = request.POST.get('address')
             city = request.POST.get('city')
             state = request.POST.get('state')
             gps_location = request.POST.get('gps_location')
             pincode = request.POST.get('pincode', '000000')
-            # gst_number = request.POST.get('gst_number')
             subject = request.POST.get('subject')
-            branch_id = request.POST.get('branch_id')  # ✅ New
+            branch_id = request.POST.get('branch_id')
 
             # Handle quotation date
             date_str = request.POST.get('quotation_date')
@@ -811,24 +810,44 @@ def quotation_management_create(request):
 
             # Prices and GST
             total_price = request.POST.get('total_price', '').strip()
-            total_price_with_gst = request.POST.get('total_price_with_gst', '').strip()
-            if not total_price or not total_price.replace('.', '', 1).isdigit():
-                raise ValueError("Invalid total price.")
-            if total_price_with_gst and not total_price_with_gst.replace('.', '', 1).isdigit():
-                raise ValueError("Invalid total price with GST.")
+            total_gst = request.POST.get('total_gst', '0').strip()
+            total_price_with_gst = request.POST.get('total_with_gst', '').strip()
+            
+            # Validate prices
+            try:
+                total_price = float(total_price)
+                total_gst = float(total_gst) if total_gst else 0
+                total_price_with_gst = float(total_price_with_gst) if total_price_with_gst else total_price
+    
+    # Ensure total_with_gst is at least total_price
+                if total_price_with_gst < total_price:
+                    total_price_with_gst = total_price + total_gst
+            except (ValueError, TypeError):
+                raise ValueError("Invalid price values")
 
-            total_price = float(total_price)
-            total_price_with_gst = float(total_price_with_gst) if total_price_with_gst else None
+            enable_gst = request.POST.get('enable_gst') == 'on'
+            gst_type = request.POST.get('gst_type', 'cgst_sgst')
+            
+            # Calculate CGST, SGST, IGST based on GST type
+            if enable_gst:
+                gst_status = 'GST'
+                if gst_type == 'cgst_sgst':
+                    cgst = total_gst / 2
+                    sgst = total_gst / 2
+                    igst = 0
+                else:
+                    cgst = 0
+                    sgst = 0
+                    igst = total_gst
+                total_price_with_gst = total_price + total_gst    
+            else:
+                gst_status = 'NON-GST'
+                cgst = 0
+                sgst = 0
+                igst = 0
+                total_gst = 0
 
-            apply_gst = request.POST.get('apply_gst') == 'on'
-            gst_status = 'GST' if apply_gst else 'NON-GST'
-            if not apply_gst:
                 total_price_with_gst = total_price
-
-            cgst = request.POST.get('cgst') or 0  # ✅ New
-            sgst = request.POST.get('sgst') or 0  # ✅ New
-            igst = request.POST.get('igst') or 0  # ✅ New
-            gst_total = request.POST.get('gst_total') or 0  # ✅ New
 
             # Create the quotation
             quotation = quotation_management.objects.create(
@@ -836,25 +855,24 @@ def quotation_management_create(request):
                 contact_no=contact_no,
                 secondary_contact_no=secondary_contact_no,
                 customer_email=customer_email,
-                secondary_email=secondary_email,  # ✅ New
+                secondary_email=secondary_email,
                 address=address,
                 city=city,
                 state=state,
                 gps_location=gps_location,
                 pincode=pincode,
-               
                 subject=subject,
                 quotation_date=quotation_date,
-                apply_gst=apply_gst,
+                apply_gst=enable_gst,
                 gst_status=gst_status,
                 total_charges=total_price,
                 total_price=total_price,
                 total_price_with_gst=total_price_with_gst,
-                cgst=cgst,  # ✅ New
-                sgst=sgst,  # ✅ New
-                igst=igst,  # ✅ New
-                gst_total=gst_total,  # ✅ New
-                branch_id=branch_id if branch_id else None  # ✅ New
+                cgst=cgst,
+                sgst=sgst,
+                igst=igst,
+                gst_total=total_gst,
+                branch_id=branch_id if branch_id else None
             )
 
             quotation.selected_services.set(selected_services)
@@ -870,18 +888,15 @@ def quotation_management_create(request):
                 'products': products,
                 'category_choices': category_choices,
                 'terms': terms,
-                'branches': branches  # ✅ ensure branch select is preserved
+                'branches': branches
             })
 
     return render(request, 'quotation_create_new.html', {
         'products': products,
         'category_choices': category_choices,
         'terms': terms,
-        'branches': branches  # ✅ show branch list in the form
+        'branches': branches
     })
-
-
-
 
 
 

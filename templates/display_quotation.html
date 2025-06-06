@@ -452,22 +452,22 @@
                                         <th>Contact No</th>
                                         <th>Secondary Contact</th>
                                         <th>Email</th>
-                                        <th>Secondary Email</th> <!-- ✅ New -->
+                                        <th>Secondary Email</th>
                                         <th>Address</th>
                                         <th>City</th>
                                         <th>State</th>
                                         <th>Pincode</th>
                                         <th>GPS Location</th>
-                                        <th>Shipping Branch</th> <!-- ✅ New -->
+                                        <th>Shipping Branch</th>
                                         <th>Selected Services</th>
                                         <th>Apply GST</th>
                                         <th>GST Status</th>
-                                        <th>CGST</th> <!-- ✅ New -->
-                                        <th>SGST</th> <!-- ✅ New -->
-                                        
-                                        <th>GST Total</th> <!-- ✅ New -->
-                                        <th>Total Charges</th>
-                                        <th>Total Price</th>
+                                        <th>CGST</th>
+                                        <th>SGST</th>
+                                        <th>IGST</th> <!-- Added IGST column -->
+                                        <th>GST Total</th>
+                                        <!-- Removed Total Charges column -->
+                                        <th>Total Price (without GST)</th>
                                         <th>Total Price (with GST)</th>
                                         <th>Subject</th>
                                         <th>Quotation Date</th>
@@ -486,7 +486,7 @@
                                         <td>{{ x.contact_no }}</td>
                                         <td>{{ x.secondary_contact_no }}</td>
                                         <td>{{ x.customer_email }}</td>
-                                        <td>{{ x.secondary_email }}</td> <!-- ✅ -->
+                                        <td>{{ x.secondary_email }}</td>
                                         <td>{{ x.address }}</td>
                                         <td>{{ x.city }}</td>
                                         <td>{{ x.state }}</td>
@@ -496,7 +496,7 @@
                                             <a href="{{ x.gps_location }}" target="_blank">Location</a>
                                             {% else %}-{% endif %}
                                         </td>
-                                        <td>{{ x.branch.branch_name }}</td> <!-- ✅ -->
+                                        <td>{{ x.branch.branch_name }}</td>
                                         <td>
                                             {% for service in x.selected_services.all %}
                                             {{ service.product_name }}{% if not forloop.last %}, {% endif %}
@@ -506,13 +506,15 @@
                                         </td>
                                         <td>{{ x.apply_gst|yesno:"Yes,No" }}</td>
                                         <td>{{ x.gst_status }}</td>
-                                        <td>{{ x.cgst }}</td> <!-- ✅ -->
-                                        <td>{{ x.sgst }}</td> <!-- ✅ -->
-                                        
-                                        <td>{{ x.gst_total }}</td> <!-- ✅ -->
-                                        <td>{{ x.total_charges }}</td>
-                                        <td>{{ x.total_price }}</td>
-                                        <td>{{ x.total_price_with_gst }}</td>
+                                        <td>{% if x.cgst %}{{ x.cgst|floatformat:2 }}{% else %}-{% endif %}</td>
+                                        <td>{% if x.sgst %}{{ x.sgst|floatformat:2 }}{% else %}-{% endif %}</td>
+                                        <td>{% if x.igst %}{{ x.igst|floatformat:2 }}{% else %}-{% endif %}</td>
+                                        <!-- Added IGST cell -->
+                                        <td>{% if x.gst_total %}{{ x.gst_total|floatformat:2 }}{% else %}-{% endif %}
+                                        </td>
+                                        <!-- Removed Total Charges cell -->
+                                        <td>{{ x.total_price|floatformat:2 }}</td>
+                                        <td>{{ x.total_price_with_gst|floatformat:2 }}</td>
                                         <td>{{ x.subject }}</td>
                                         <td>{{ x.quotation_date }}</td>
                                         <td>
@@ -522,20 +524,17 @@
                                         </td>
                                         <td>
                                             <a href="/generate_quotation/quotation/pdf/{{ x.id }}/download"
-                                            class="btn linarbtn"
-                                            style="background: linear-gradient(to right, #2575fc, #6a11cb); color:white; border-radius:20px;">
-                                            Download PDF
-                                        </a>
+                                                class="btn linarbtn"
+                                                style="background: linear-gradient(to right, #2575fc, #6a11cb); color:white; border-radius:20px;">
+                                                Download PDF
+                                            </a>
                                         </td>
                                         <td>
-                                        <a href="/generate_quotation/quotation/pdf/{{ x.id }}/view"
-                                            class="btn btn-secondary">
-                                            View PDF
-                                        </a>
+                                            <a href="/generate_quotation/quotation/pdf/{{ x.id }}/view"
+                                                class="btn btn-secondary">
+                                                View PDF
+                                            </a>
                                         </td>
-
-
-
                                         <td><a href="/edit_quotation/{{ x.id }}"
                                                 class="btn btn-outline-success">Edit</a></td>
                                         <td><a href="/delete_quotation/{{ x.id }}"
@@ -548,7 +547,7 @@
 
                         </div>
 
-                         <div class="pagination"> 
+                        <div class="pagination">
 
                             {% if page_obj.has_previous %}
                             <li><a href="?page=1">&laquo; First</a></li>
