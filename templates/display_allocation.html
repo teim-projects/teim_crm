@@ -498,9 +498,12 @@
                                             {% endif %}
                                         </td>
                                         <td>
+                                            {% if x.id in allocated_service_ids %}
                                             <a href="/reschedule/{{ x.id }}/" class="btn btn-success"
                                                 role="button">Reschedule</a>
+                                            {% endif %}
                                         </td>
+
                                         <td><a href="/delete_service_management/{{ x.id }}"
                                                 class="btn btn-danger delete-link" role="button">Cancel</a></td>
                                     </tr>

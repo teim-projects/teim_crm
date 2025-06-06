@@ -280,6 +280,19 @@
                             <p><strong>Payment Status:</strong> {{ work.work.first.customer_payment_status }}</p>
                             <p><strong>Payment Amount:</strong> {{ work.work.first.payment_amount }}</p>
                             <p><strong>Completion Date & Time:</strong> {{ work.completion_datetime }}</p>
+                            <div>
+                                <p> <strong>Other Technicians involved:</strong>
+                                <ul>
+                                    {% for tech in related_technicians %}
+                                    <li>{{ tech.user.first_name }} {{ tech.user.last_name }}</li>
+                                    {% empty %}
+                                    <li>No other technicians involved.</li>
+                                    {% endfor %}
+                                </ul>
+                                </p>
+
+                            </div>
+
                             <!-- <p><strong>Photo Before Service:</strong><br>
                             {% if work.photo_before_service %}
                                 <img src="{{ work.photo_before_service.url }}" alt="Photo Before Service" class="img-fluid" onclick="openModal('{{ work.photo_before_service.url }}')">

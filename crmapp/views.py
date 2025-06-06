@@ -1073,7 +1073,7 @@ def quotation_create(request):
     context = {
         'customers': customers,
     }
-    return render(request, 'quotation_create_new.html', context)
+    return render(request, 'quotation.html', context)
 
 
 def quotation_history(request, customer_id):
@@ -2202,91 +2202,109 @@ def edit_customer(request , rid):
 #         return redirect( '/display_service_management')
 from .models import Reschedule
 from datetime import datetime
-def edit_service_management(request , rid):
-
-    if request.method =='GET':
-
-        m=service_management.objects.filter(id=rid)
-
+def edit_service_management(request, rid):
+    if request.method == 'GET':
+        service_obj = get_object_or_404(service_management, id=rid)
         previous_reschedules = Reschedule.objects.filter(service_id=rid)
+        all_technicians = TechnicianProfile.objects.all()
 
-        # Prepare context to pass to the template
+        # Get users already assigned as technicians (via TechWorkList)
+        allocated_technicians = User.objects.filter(techworklist__service=service_obj).distinct()
+        print("selected_technicians :",allocated_technicians)
         context = {
-            'data': m,
-            'previous_reschedules': previous_reschedules  # Add previous reschedules
+            'data': [service_obj],
+            'previous_reschedules': previous_reschedules,
+            'technicians': all_technicians,
+            'selected_technicians': allocated_technicians,
         }
-    
-        return render(request , 'edit_service_management.html' , context)  
+
+        return render(request, 'edit_service_management.html', context)
+
     else:
+        service_obj = get_object_or_404(service_management, id=rid)
+
+        technician_ids = request.POST.getlist('technicians')
+        print("technician_ids :", technician_ids)
         ucustomer_id = request.POST.get('ucustomer')
         uaddress = request.POST.get('uaddress')
-        ugst_checkbox = 'ugst' in request.POST
-        ugst_number=request.POST.get('ugst_number')
-        ugst_status = request.POST.get('ugst_status') 
-        utotal_price=float(request.POST['utotal_price'])
-        utotal_price_with_gst=float(request.POST['utotal_price_with_gst'])
-        ucontract_type= request.POST.get('ucontract_type')
-        ucontract_status=request.POST.get('ucontract_status')
-        uproperty_type=request.POST.get('uproperty_type')
-        uwarranty_period=request.POST.get('uwarranty_period')
-        ustate=request.POST.get('ustate')
-        ucity=request.POST.get('ucity')
-        upincode=request.POST.get('upincode')
-        ugps_location=request.POST.get('ugps_location')
-        ufrequency_count=request.POST.get('ufrequency_count')
-        upayment_terms=request.POST.get('upayment_terms')
-        usales_person_name=request.POST.get('usales_person_name')
-        usales_person_contact_no=request.POST.get('usales_person_contact_no')
-        udelivery_time=request.POST.get('udelivery_time')
-        ulead_date_str=request.POST['ulead_date']
-        uservice_date_str=request.POST['uservice_date']
+        utotal_price = float(request.POST['utotal_price'])
+        utotal_price_with_gst = float(request.POST['utotal_price_with_gst'])
+        ucontract_type = request.POST.get('ucontract_type')
+        ucontract_status = request.POST.get('ucontract_status')
+        uproperty_type = request.POST.get('uproperty_type')
+        uwarranty_period = request.POST.get('uwarranty_period')
+        ustate = request.POST.get('ustate')
+        ucity = request.POST.get('ucity')
+        upincode = request.POST.get('upincode')
+        ugps_location = request.POST.get('ugps_location')
+        ufrequency_count = request.POST.get('ufrequency_count')
+        upayment_terms = request.POST.get('upayment_terms')
+        usales_person_name = request.POST.get('usales_person_name')
+        usales_person_contact_no = request.POST.get('usales_person_contact_no')
+        udelivery_time = request.POST.get('udelivery_time')
+        ulead_date = request.POST['ulead_date']
+        uservice_date = request.POST['uservice_date']
+        udescription = request.POST.get('work_description')
+        upayment_status = request.POST.get('customer_payment_status')
 
-        try:
-            uservice_date = datetime.strptime(uservice_date_str, '%Y-%m-%d').date()
-        except ValueError:
-            uservice_date = None
-        
-        try:
-            ulead_date = datetime.strptime(ulead_date_str, '%Y-%m-%d').date()
-        except ValueError:
-            ulead_date = None
+        # Step 1: Ensure WorkAllocation exists for the service
+        work_allocation, created = WorkAllocation.objects.get_or_create(
+            service=service_obj,
+            defaults={
+                'fullname': service_obj.customer.fullname,
+                'customer_contact': service_obj.customer.primarycontact,
+                'customer_address': service_obj.address,
+                'work_description': udescription or "Updated work",
+                'customer_payment_status': upayment_status or "Pending",
+                'payment_amount': service_obj.total_price_with_gst,
+                'gps_location': service_obj.gps_location,
+            }
+        )
 
+        # Step 2: Delete old TechWorkList entries
+        TechWorkList.objects.filter(service=service_obj).delete()
+        # Step 3: Assign new technicians
+        technician_profiles = TechnicianProfile.objects.filter(id__in=technician_ids)
+        work_allocation.technician.set(technician_profiles)  # update technicians for WorkAllocation
+
+        for tech_profile in technician_profiles:
+            tech_user = tech_profile.user  # convert to User model
+            tech_work = TechWorkList.objects.create(
+                technician=tech_user,
+                service=service_obj,
+            )
+            tech_work.work.add(work_allocation)
+
+
+        # Step 4: Update service fields
         try:
             customer = customer_details.objects.get(customerid=ucustomer_id)
         except customer_details.DoesNotExist:
             return HttpResponse("Customer not found")
 
+        service_obj.customer = customer
+        service_obj.address = uaddress
+        service_obj.total_price = utotal_price
+        service_obj.total_price_with_gst = utotal_price_with_gst
+        service_obj.contract_type = ucontract_type
+        service_obj.contract_status = ucontract_status
+        service_obj.property_type = uproperty_type
+        service_obj.warranty_period = uwarranty_period
+        service_obj.state = ustate
+        service_obj.city = ucity
+        service_obj.pincode = upincode
+        service_obj.gps_location = ugps_location
+        service_obj.frequency_count = ufrequency_count
+        service_obj.payment_terms = upayment_terms
+        service_obj.sales_person_name = usales_person_name
+        service_obj.sales_person_contact_no = usales_person_contact_no
+        service_obj.delivery_time = udelivery_time
+        service_obj.lead_date = ulead_date
+        service_obj.service_date = uservice_date
+        service_obj.technicians.set(technician_ids)
+        service_obj.save()
 
-        m=service_management.objects.filter(id=rid)
-
-        m.update(
-            customer=customer, 
-            address=uaddress , 
-            gst_checkbox=ugst_checkbox, 
-            gst_number=ugst_number , 
-            gst_status=ugst_status, 
-            total_price=utotal_price,
-            total_price_with_gst=utotal_price_with_gst,
-            contract_type=ucontract_type,
-            contract_status=ucontract_status,
-            property_type=uproperty_type,
-            warranty_period=uwarranty_period,
-            state=ustate,
-            city=ucity,
-            pincode=upincode,
-            gps_location=ugps_location,
-            frequency_count=ufrequency_count,
-            payment_terms=upayment_terms,
-            sales_person_name=usales_person_name,
-            sales_person_contact_no=usales_person_contact_no,
-            delivery_time=udelivery_time,
-            lead_date=ulead_date,
-            service_date=uservice_date,
-            )
-
-       
-        return redirect( '/display_allocation')
-
+        return redirect('/display_allocation')
 
 # Edit Quotation
 
@@ -3378,10 +3396,17 @@ def allocate_work(request, service_id):
     service_object = get_object_or_404(service_management, id=service_id)
 
     customer_fullname = service_object.customer.fullname
+    customer_address = service_object.address
+    customer_city = service_object.city
+    customer_state = service_object.state
+    customer_pincode = service_object.pincode
     customer_contact = service_object.customer.primarycontact
     payment_amount = service_object.total_price_with_gst
     gps_location = service_object.gps_location
+    
+    customer_address = f"{customer_address}, {customer_city}, {customer_state} - {customer_pincode}"
 
+    
     if request.method == 'POST':
         technician_ids = request.POST.getlist('technicians')
         customer_address = request.POST.get('customer_address')
@@ -3418,11 +3443,15 @@ def allocate_work(request, service_id):
     context = {
         'technicians': technicians,
         'customer_fullname': customer_fullname,
+        'customer_address' : customer_address,
         'customer_contact': customer_contact,
         'payment_amount': payment_amount,
         'gps_location': gps_location,
     }
     return render(request, 'allocate_work.html', context)
+
+
+
 
 
 from crmapp.models import Reschedule, service_management
@@ -3778,12 +3807,23 @@ def complete_work(request, work_id):
 def completed_work_list(request):
     completed_works = TechWorkList.objects.filter(technician=request.user, status='Completed')
     return render(request, 'completed_work_list.html', {'completed_works': completed_works})
-
 @login_required
 def work_details(request, work_id):
     work = get_object_or_404(TechWorkList, id=work_id, technician=request.user)
-    return render(request, 'work_details.html', {'work': work})
-
+    
+    related_technicians = []
+    for wa in work.work.all():  # Assuming this is a ManyToMany of WorkAllocation objects
+        for tech in wa.technician.all():  # Assuming ManyToMany of TechnicianProfile
+            if tech.user != request.user:
+                related_technicians.append(tech)
+    
+    # Remove duplicates if any
+    related_technicians = list({tech.id: tech for tech in related_technicians}.values())
+    
+    return render(request, 'work_details.html', {
+        'work': work,
+        'related_technicians': related_technicians,
+    })
 
 
 
@@ -3817,13 +3857,21 @@ class AdminWorkDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         work_instance = self.get_object()
         
-        # Collect all technicians who worked on the related WorkAllocations
+        # Get all related technicians
         technicians_set = set()
         for wa in work_instance.work.all():
             for tech in wa.technician.all():
                 technicians_set.add(tech)
-
         context['related_technicians'] = technicians_set
+
+        # Get customer details from the first related WorkAllocation's service
+        first_wa = work_instance.work.first()
+        if first_wa and first_wa.service and first_wa.service.customer:
+            customer = first_wa.service.customer
+            context['customer'] = customer
+        else:
+            context['customer'] = None
+
         return context
 
 

@@ -439,31 +439,45 @@ class Inventory_add(models.Model):
 
 
 
+from django.db import models
+from django.utils import timezone
+from django.core.validators import MinValueValidator
+from decimal import Decimal
+
 class Inventory_summary(models.Model):
-    customer_id = models.CharField(max_length=100, default='unknown')  # Add default value
+    customer_id = models.CharField(max_length=100, default='unknown')
     customer_name = models.CharField(max_length=255)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    date_added = models.DateTimeField(default=timezone.now)
 
+    quantity = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
+
+    total_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        editable=False  
+    )
+
+    date_added = models.DateTimeField(default=timezone.now)
 
     @property
     def product_name(self):
         return self.product.product_name
 
-
     @property
     def price_per_unit(self):
         return self.product.price
 
-
-
-
-   
     def save(self, *args, **kwargs):
+        # Recalculate total_price accurately before saving
         self.total_price = self.quantity * self.product.price
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.customer_name} - {self.product.product_name} ({self.quantity})"
 
 
     def __str__(self):
@@ -489,8 +503,8 @@ class TechnicianProfile(models.Model):
 class service_management(models.Model):
     customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, null=True, blank=True)
     selected_services = models.ManyToManyField(Product, related_name="selected_services")
-    gst_checkbox = models.BooleanField(default=False)
-    gst_status = models.CharField(max_length=10, default='NON-GST')
+    # gst_checkbox = models.BooleanField(default=False)
+    # gst_status = models.CharField(max_length=10, default='NON-GST')
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)    
@@ -503,7 +517,7 @@ class service_management(models.Model):
     pincode = models.CharField(max_length=6, default="000000")
     address = models.TextField(default="Null")
     gps_location = models.URLField(null=True, blank=True)
-    gst_number = models.CharField(max_length=15, null=True, blank=True)
+    # gst_number = models.CharField(max_length=15, null=True, blank=True)
     frequency_count = models.CharField(max_length=50, choices=[(str(i), str(i)) for i in range(1, 13)] + [('Fortnight', 'Fortnight'), ('Weekly', 'Weekly'), ('Daily', 'Daily')], default="NOT SELECTED")
     payment_terms = models.CharField(max_length=200, default="100% Advance payment OR Whatever mutually Decided", editable=False)
     sales_person_name = models.CharField(max_length=100, null=True, blank=True)
