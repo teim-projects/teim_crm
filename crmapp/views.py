@@ -2195,7 +2195,7 @@ def edit_service_management(request, rid):
 
         # Get users already assigned as technicians (via TechWorkList)
         allocated_technicians = User.objects.filter(techworklist__service=service_obj).distinct()
-
+        print("selected_technicians :",allocated_technicians)
         context = {
             'data': [service_obj],
             'previous_reschedules': previous_reschedules,
@@ -2209,6 +2209,7 @@ def edit_service_management(request, rid):
         service_obj = get_object_or_404(service_management, id=rid)
 
         technician_ids = request.POST.getlist('technicians')
+        print("technician_ids :", technician_ids)
         ucustomer_id = request.POST.get('ucustomer')
         uaddress = request.POST.get('uaddress')
         utotal_price = float(request.POST['utotal_price'])
@@ -2247,15 +2248,18 @@ def edit_service_management(request, rid):
 
         # Step 2: Delete old TechWorkList entries
         TechWorkList.objects.filter(service=service_obj).delete()
-
         # Step 3: Assign new technicians
-        for tech_id in technician_ids:
-            tech_user = TechnicianProfile.objects.get(id=tech_id)
+        technician_profiles = TechnicianProfile.objects.filter(id__in=technician_ids)
+        work_allocation.technician.set(technician_profiles)  # update technicians for WorkAllocation
+
+        for tech_profile in technician_profiles:
+            tech_user = tech_profile.user  # convert to User model
             tech_work = TechWorkList.objects.create(
                 technician=tech_user,
                 service=service_obj,
             )
             tech_work.work.add(work_allocation)
+
 
         # Step 4: Update service fields
         try:
@@ -3430,6 +3434,9 @@ def allocate_work(request, service_id):
         'gps_location': gps_location,
     }
     return render(request, 'allocate_work.html', context)
+
+
+
 
 
 from crmapp.models import Reschedule, service_management
