@@ -122,7 +122,9 @@
 
 
 
-      
+        button[type="submit"]:hover {
+            background: linear-gradient(to right, #0056b3, #0099cc);
+        }
 
         @keyframes fadeIn {
             from {
@@ -160,9 +162,6 @@
                 opacity: 1;
                 transform: translateY(0);
             }
-        }
-        .card{
-            box-shadow: 0px 0px 5px white;
         }
     </style>
 </head>
@@ -218,28 +217,21 @@
                                 <label class="form-label">Select Technicians:</label>
                                 <div class="dropdown">
                                     <button class="btn btn-secondary dropdown-toggle" type="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                        Select Technicians
-                                    </button>
-                                    <ul class="dropdown-menu"
-                                        style="max-height: 200px; overflow-y: auto; width: 100%; background-color:rgb(255, 255, 255);border:none; box-shadow:0px 0px 5px black;">
+                                        data-bs-toggle="dropdown" aria-expanded="false">Select Technicians</button>
+                                    <ul class="dropdown-menu p-2">
                                         {% for tech in technicians %}
-                                        <li class="px-3">
-                                            <div class="form-check d-flex align-items-center mb-2">
-                                                <input class="form-check-input me-2" type="checkbox" name="technicians"
-                                                    value="{{ tech.id }}" id="tech{{ forloop.counter }}"
-                                                    style="width:10px ;">
-                                                <label class="form-check-label text-dark"
-                                                    for="tech{{ forloop.counter }}">
-                                                    {{ tech }}
-                                                </label>
-                                            </div>
 
+                                        <li>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="technicians"
+                                                    value="{{ tech.id }}" id="tech{{ forloop.counter }}">
+                                                <label class="form-check-label" for="tech{{ forloop.counter }}">
+                                                    {{ tech }}</label>
+                                            </div>
                                         </li>
                                         {% endfor %}
                                     </ul>
                                 </div>
-
                             </div>
                             <div class="col-md-6 form-group">
                                 <label for="customer_name">Name</label>
@@ -253,9 +245,10 @@
                                     class="form-control" value="{{ customer_contact }}" required readonly>
                             </div>
                             <div class="col-md-6 form-group">
+
                                 <label for="customer_address">Customer Address<span class="star">*</span></label>
-                                <input type="text" name="customer_address" id="customer_address" class="form-control"
-                                    required>
+                                <input type="text" value="{{ customer_address }}" name="customer_address"
+                                    id="customer_address" class="form-control" required>
                             </div>
                         </div>
                     </div>
