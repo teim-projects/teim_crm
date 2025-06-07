@@ -212,6 +212,8 @@ def generate_customerid(fullname):
 
 from django.http import JsonResponse
 from .models import customer_details
+from django.db.models import Count, Max, Q
+
 
 def get_customer_name(request):
     customer_id = request.GET.get('customer_id', None)
@@ -260,6 +262,11 @@ def signup(request):
             context = {'msg3': 'User Registered Successfully'}
             return render(request, "signup.html", context)
 
+
+
+from django.db.models import Count, Max, Q
+from django.db.models.functions import Lower
+
 def user_login(request):
     if request.method == "GET":
         return render(request, 'login.html')
@@ -278,27 +285,33 @@ def user_login(request):
             start_date = request.GET.get('start_date')
             end_date = request.GET.get('end_date')
 
+            latest_followups_qs = main_followup.objects.values('lead').annotate(
+                latest_id=Max('id')
+            ).values_list('latest_id', flat=True)
+
             if start_date and end_date:
-                # Filter leads by date range
-                filtered_leads = lead_management.objects.filter(enquirydate__range=[start_date, end_date])
+                filtered_leads = main_followup.objects.filter(
+                    id__in=latest_followups_qs,
+                    lead__enquirydate__range=[start_date, end_date]
+                )
             else:
-                # Use all leads if no date range is provided
-                filtered_leads = lead_management.objects.all()
+                filtered_leads = main_followup.objects.filter(id__in=latest_followups_qs)
 
             # Prepare lead type chart data
             lead_data = {
-                "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
-                "datasets": [{
-                    "data": [
-                        filtered_leads.filter(typeoflead='Hot').count(),
-                        filtered_leads.filter(typeoflead='Warm').count(),
-                        filtered_leads.filter(typeoflead='Cold').count(),
-                        filtered_leads.filter(typeoflead='NotInterested').count(),
-                        filtered_leads.filter(typeoflead='LossofOrder').count()
-                    ],
-                    "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-                }]
+            "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
+            "datasets": [{
+            "data": [
+            filtered_leads.filter(typeoflead='Hot').count(),
+            filtered_leads.filter(typeoflead='Warm').count(),
+            filtered_leads.filter(typeoflead='Cold').count(),
+            filtered_leads.filter(typeoflead='NotInterested').count(),
+            filtered_leads.filter(typeoflead='LossofOrder').count()
+             ],
+                "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+            }]
             }
+
 
             # Serialize the data to JSON
             lead_data_json = json.dumps(lead_data)
@@ -1519,6 +1532,76 @@ def main_followup_view(request, lead_id):
 
 
 
+
+
+
+
+from django.shortcuts import render
+from .models import main_followup, lead_management
+from django.utils import timezone
+from datetime import date
+from django.core.paginator import Paginator
+
+def today_work(request):
+    today = date.today()
+    salesperson_filter = request.GET.get('salesperson')
+
+    # Filter today's follow-ups
+    followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
+
+    if salesperson_filter:
+        followups = followups.filter(lead__salesperson=salesperson_filter)
+
+    # Pagination
+    paginator = Paginator(followups, 10)  # Show 10 records per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Get all unique salespersons
+    salespersons = lead_management.objects.values_list('salesperson', flat=True).distinct()
+
+    # Used for correct indexing
+    start_index = (page_obj.number - 1) * paginator.per_page
+
+    return render(request, 'today_work.html', {
+        'page_obj': page_obj,
+        'salespersons': salespersons,
+        'selected_salesperson': salesperson_filter,
+        'start_index': start_index
+    })
+
+
+
+from datetime import date
+
+def pending_followups(request):
+    today = date.today()
+    salesperson_filter = request.GET.get('salesperson')
+
+    # Get followups with a past next_followup_date
+    followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
+
+    if salesperson_filter:
+        followups = followups.filter(lead__salesperson=salesperson_filter)
+
+    # Pagination
+    paginator = Paginator(followups, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    salespersons = lead_management.objects.values_list('salesperson', flat=True).distinct()
+    start_index = (page_obj.number - 1) * paginator.per_page
+
+    return render(request, 'pending_followups.html', {
+        'page_obj': page_obj,
+        'salespersons': salespersons,
+        'selected_salesperson': salesperson_filter,
+        'start_index': start_index
+    })
+
+
+
+
 # In crmapp/views.py
 
 from django.shortcuts import render
@@ -1901,6 +1984,7 @@ def display_lead_management(request):
     # Attach the latest follow-up to each lead
     for lead in page_obj:
         lead.latest_followup = latest_followups.get(lead.id)
+        
 
     # 9. Get dropdown filter values
     typeoflead_choices = [choice[0] for choice in lead_management._meta.get_field('typeoflead').choices if choice[0]]

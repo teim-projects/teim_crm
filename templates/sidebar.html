@@ -951,6 +951,14 @@
             <a href="/index" style="text-decoration: none;">
                 <li data-link="/index"><i class="fas fa-home"></i> Dashboard</li>
             </a>
+            <a href="{% url 'today_work' %}" style="text-decoration: none;">
+    <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Today Work</li>
+</a>
+
+<a href="{% url 'pending_followups' %}" style="text-decoration: none;">
+    <li><i class="fas fa-clock"></i> Pending Follow-ups</li>
+</a>
+
 
             <li class="has-submenu"><i class="fas fa-info-circle"></i> View Records <span class="arrow-down"></span>
                 <div class="submenu">
