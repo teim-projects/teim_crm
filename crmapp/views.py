@@ -751,7 +751,7 @@ from .models import quotation_management, QuotationTerm
 from .models import Product
 from .models import customer_details
 from .models import Branch  # ✅ Import branch model
-
+#eee
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
@@ -1335,6 +1335,9 @@ from django.http import JsonResponse
 from .models import lead_management
 from datetime import datetime
 
+# change
+
+
 def lead_management_create(request):
     salespersons = SalesPerson.objects.all()
 
@@ -1343,8 +1346,7 @@ def lead_management_create(request):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'primarycontact' in request.GET:
             primarycontact = request.GET.get('primarycontact')
             lead = lead_management.objects.filter(primarycontact=primarycontact).order_by('enquirydate').first()
-            print("Form Data:", request.POST.dict())
-
+            
             if lead:
                 data = {
                     'sourceoflead': lead.sourceoflead,
@@ -1369,61 +1371,76 @@ def lead_management_create(request):
             else:
                 return JsonResponse({'status': 'not_found'})
 
-        # Render form normally
         return render(request, 'lead_management.html', {'salespersons': salespersons})
 
-    else:
-        # Handle form submission (POST)
-        sourceoflead = request.POST.get('sourceoflead')
-        salesperson = request.POST.get('salesperson')
-        customername = request.POST.get('customername')
-        customersegment = request.POST.get('customersegment')
-        enquirydate = datetime.strptime(request.POST.get('enquirydate'), '%Y-%m-%d').date() if request.POST.get('enquirydate') else None
-        contactedby = request.POST.get('contactedby')
-        maincategory = request.POST.get('maincategory')
-        subcategory = request.POST.get('subcategory')
+    else:  # POST request
+        try:
+            # Get all form data
+            sourceoflead = request.POST.get('sourceoflead')
+            salesperson = request.POST.get('salesperson')
+            customername = request.POST.get('customername')
+            customersegment = request.POST.get('customersegment')
+            
+            # Handle date fields
+            enquirydate_str = request.POST.get('enquirydate')
+            enquirydate = datetime.strptime(enquirydate_str, '%Y-%m-%d').date() if enquirydate_str else None
+            
+            contactedby = request.POST.get('contactedby')
+            maincategory = request.POST.get('maincategory')
+            subcategory = request.POST.get('subcategory')
 
-        primarycontact = request.POST.get('primarycontact') or None
-        primarycontact = int(primarycontact) if primarycontact else None
+            # Handle phone numbers
+            primarycontact = request.POST.get('primarycontact')
+            primarycontact = int(primarycontact) if primarycontact and primarycontact.isdigit() else None
+            
+            secondarycontact = request.POST.get('secondarycontact')
+            secondarycontact = int(secondarycontact) if secondarycontact and secondarycontact.isdigit() else None
 
-        secondarycontact = request.POST.get('secondarycontact') or None
-        secondarycontact = int(secondarycontact) if secondarycontact else None
+            # Other fields
+            customeremail = request.POST.get('customeremail')
+            customeraddress = request.POST.get('customeraddress')
+            location = request.POST.get('location')
+            city = request.POST.get('city', 'Unknown City')
+            state = request.POST.get('state')
+            typeoflead = request.POST.get('typeoflead')
+            
+            firstfollowupdate_str = request.POST.get('firstfollowupdate')
+            firstfollowupdate = datetime.strptime(firstfollowupdate_str, '%Y-%m-%d').date() if firstfollowupdate_str else None
+            
+            branch = request.POST.get('branch')
 
-        customeremail = request.POST.get('customeremail')
-        customeraddress = request.POST.get('customeraddress')
-        location = request.POST.get('location') or None
-        city = request.POST.get('city') or 'Unknown City'
-        state = request.POST.get('state') or None
-        typeoflead = request.POST.get('typeoflead')
-        firstfollowupdate = datetime.strptime(request.POST.get('firstfollowupdate'), '%Y-%m-%d').date() if request.POST.get('firstfollowupdate') else None
-        branch = request.POST.get('branch')
+            # Create new lead (duplicates allowed)
+            lead = lead_management.objects.create(
+                sourceoflead=sourceoflead,
+                salesperson=salesperson,
+                customername=customername,
+                customersegment=customersegment,
+                enquirydate=enquirydate,
+                contactedby=contactedby,
+                maincategory=maincategory,
+                subcategory=subcategory,
+                primarycontact=primarycontact,
+                secondarycontact=secondarycontact,
+                customeremail=customeremail,
+                customeraddress=customeraddress,
+                location=location,
+                state=state,
+                city=city,
+                branch=branch,
+                typeoflead=typeoflead,
+                firstfollowupdate=firstfollowupdate,
+            )
 
-        # Create the lead entry
-        lead = lead_management.objects.create(
-            sourceoflead=sourceoflead,
-            salesperson=salesperson,
-            customername=customername,
-            customersegment=customersegment,
-            enquirydate=enquirydate,
-            contactedby=contactedby,
-            maincategory=maincategory,
-            subcategory=subcategory,
-            primarycontact=primarycontact,
-            secondarycontact=secondarycontact,
-            customeremail=customeremail,
-            customeraddress=customeraddress,
-            location=location,
-            state=state,
-            city=city,
-            branch=branch,
-            typeoflead=typeoflead,
-            firstfollowupdate=firstfollowupdate,
-        )
+            return redirect('/display_lead_management')
 
-        return redirect('/display_lead_management')
-
-
-
+        except Exception as e:
+            # Log the error for debugging
+            print(f"Error creating lead: {str(e)}")
+            # Return the user to the form with error message
+            return render(request, 'lead_management.html', {
+                'salespersons': salespersons,
+                'error': 'There was an error submitting the form. Please try again.'
+            })
 
 
 
@@ -4179,5 +4196,22 @@ def get_branch_details(request, branch_id):
     except Branch.DoesNotExist:
         return JsonResponse({'error': 'Branch not found'}, status=404)    
 
+
+def get_customer_details(request):
+    if 'contact_no' in request.GET:
+        contact_no = request.GET.get('contact_no')
+        try:
+            customer = customer_details.objects.get(primarycontact=contact_no)
+            data = {
+                'customer_full_name': customer.fullname,
+                'customer_email': customer.primaryemail,
+                'soldtopartyaddress': customer.soldtopartyaddress,
+                'city': customer.soldtopartycity,
+                'state': customer.soldtopartystate,
+            }
+            return JsonResponse(data)
+        except customer_details.DoesNotExist:
+            return JsonResponse({'error': 'Customer not found'}, status=404)
+    return JsonResponse({'error': 'No contact number provided'}, status=400)
 
         

@@ -610,53 +610,54 @@ function fetchBranchDetails(branchId) {
 
 <!--  -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const contactInput = document.querySelector('input[name="contact_no"]');
-            const addressField = document.querySelector('textarea[name="address"]');
+        document.addEventListener('DOMContentLoaded', function() {
+    const contactInput = document.querySelector('input[name="contact_no"]');
+    const emailField = document.querySelector('input[name="customer_email"]');
+    const nameField = document.querySelector('input[name="customer_full_name"]');
+    const addressField = document.querySelector('textarea[name="address"]');
 
-            contactInput.addEventListener('blur', function () {
-                const contactNo = this.value.trim();
-                if (!contactNo) return;
+    contactInput.addEventListener('blur', function() {
+        const contactNo = this.value.trim();
+        if (!contactNo) return;
 
-                fetch(`?contact_no=${encodeURIComponent(contactNo)}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Customer not found');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.error) {
-                            alert(data.error);
-                            return;
-                        }
+        fetch(`/get_customer_details/?contact_no=${encodeURIComponent(contactNo)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Customer not found');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
 
-                        // Fill in the fields with returned data
-                        document.querySelector('input[name="customer_full_name"]').value = data.customer_full_name || '';
-                        document.querySelector('input[name="customer_email"]').value = data.customer_email || '';
+                // Only update fields that are empty
+                if (!emailField.value && data.customer_email) {
+                    emailField.value = data.customer_email;
+                }
+                
+                if (!nameField.value && data.customer_full_name) {
+                    nameField.value = data.customer_full_name;
+                }
 
-                        // Only populate address if it's currently empty
-                        if (!addressField.value) {
-                            addressField.value = data.soldtopartyaddress || '';
-                            // Add a visual indicator
-                            addressField.style.borderLeft = "4px solid #03AED2";
-                            addressField.title = "This address was auto-filled from customer records";
-
-                            // Remove the indicator after 5 seconds
-                            setTimeout(() => {
-                                addressField.style.borderLeft = "";
-                                addressField.title = "";
-                            }, 5000);
-                        }
-
-                        document.querySelector('input[name="city"]').value = data.soldtopartycity || '';
-                        document.querySelector('select[name="state"]').value = data.soldtopartystate || '';
-                    })
-                    .catch(error => {
-                        alert(error.message);
-                    });
+                if (!addressField.value && data.soldtopartyaddress) {
+                    addressField.value = data.soldtopartyaddress;
+                    // Visual indicator
+                    addressField.style.borderLeft = "4px solid #03AED2";
+                    addressField.title = "Auto-filled from customer records";
+                    setTimeout(() => {
+                        addressField.style.borderLeft = "";
+                        addressField.title = "";
+                    }, 5000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
-        });
+    });
+});
     </script>
 
 
@@ -664,7 +665,7 @@ function fetchBranchDetails(branchId) {
 
 
 
-
+<!--  -->
     <script>
 
         document.getElementById('quotation-management-form').addEventListener('submit', function (e) {
