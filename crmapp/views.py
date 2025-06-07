@@ -765,7 +765,7 @@ def quotation_management_create(request):
             data = {
                 'customer_full_name': customer.fullname,
                 'customer_email': customer.primaryemail,
-                'address': customer.soldtopartyaddress,
+                'soldtopartyaddress': customer.soldtopartyaddress,  # Add this line
                 'city': customer.soldtopartycity,
                 'state': customer.soldtopartystate,
             }
@@ -895,8 +895,8 @@ def quotation_management_create(request):
         'products': products,
         'category_choices': category_choices,
         'terms': terms,
-        'branches': branches
-    })
+        'branches': Branch.objects.all()  # Add this line
+})
 
 
 
@@ -4161,3 +4161,23 @@ from .models import Branch
 def branch_list(request):
     branches = Branch.objects.all().order_by('-created_at')
     return render(request, 'branch_list.html', {'branches': branches})
+
+
+def get_branch_details(request, branch_id):
+    try:
+        branch = Branch.objects.get(id=branch_id)
+        data = {
+            'contact_1': branch.contact_1,
+            'contact_2': branch.contact_2 or '',
+            'email_1': branch.email_1,
+            'email_2': branch.email_2 or '',
+            'gst_number': branch.gst_number,
+            'pan_number': branch.pan_number,
+            'full_address': branch.full_address,
+        }
+        return JsonResponse(data)
+    except Branch.DoesNotExist:
+        return JsonResponse({'error': 'Branch not found'}, status=404)    
+
+
+        

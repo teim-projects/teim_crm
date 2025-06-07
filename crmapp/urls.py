@@ -130,6 +130,8 @@ urlpatterns = [
     path('branches/', views.branch_list, name='branch_list'),
     path('generate_quotation/quotation/pdf/<int:id>/download', views.generate_quotation_pdf_download, name='download_quotation_pdf'),
     path('generate_quotation/quotation/pdf/<int:id>/view', views.generate_quotation_pdf_view, name='view_quotation_pdf'),
+    path('get_branch_details/<int:branch_id>/', views.get_branch_details, name='get_branch_details'),
+    
 
 
 ]

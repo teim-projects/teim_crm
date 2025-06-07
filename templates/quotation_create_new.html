@@ -289,7 +289,7 @@
 
 
 
-<!-- Ritesh -->
+
 
 <body>
     {% include 'sidebar.html' %}
@@ -339,18 +339,19 @@
                                         <div class="col-md-6">
                                             <label>Secondary Contact No.:</label>
                                             <input type="text" name="secondary_contact_no" class="form-control"><br>
-
                                         </div>
 
                                         <div class="col-md-6">
                                             <label>Subject:</label>
                                             <input type="text" name="subject" class="form-control"><br>
-
                                         </div>
                                         <div class="col-md-6">
                                             <label>Quotation Date:</label>
                                             <input type="date" name="quotation_date" class="form-control"><br>
-
+                                        </div>
+                                        <div class="col-12">
+                                            <label>Billing Address (Auto-filled from customer record):</label>
+                                            <textarea name="address" class="form-control" rows="2" required></textarea>
                                         </div>
                                         <div class="col-12">
                                             <label>Select Terms and Conditions:</label><br>
@@ -450,39 +451,52 @@
                                 <!-- GST form End  -->
 
                                 <!-- STEP 3 -->
+                                <!-- start -->
 
 
-                                <div class="form-step active">
+                                <!-- STEP 3 -->
+                                <div class="form-step">
                                     <div class="row">
-
-                                        <div class="col-md-6 mb-3">
-                                            <label for="state">Select State<span class="star">*</span></label>
-                                            <select id="state" name="state" class="form-control" required>
-                                                <option value="">Select State</option>
-                                                <option value="Maharashtra">Maharashtra</option>
-                                                <!-- Add more states -->
+                                        <div class="col-md-12 mb-3">
+                                            <label>Select Branch<span class="star">*</span></label>
+                                            <select id="branch_select" name="branch_id" class="form-control" required
+                                                onchange="fetchBranchDetails(this.value)">
+                                                <option value="">Select Branch</option>
+                                                {% for branch in branches %}
+                                                <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+                                                {% endfor %}
                                             </select>
                                         </div>
 
+                                        <!-- These fields will be auto-filled and read-only -->
                                         <div class="col-md-6 mb-3">
-                                            <label>City<span class="star">*</span></label>
-                                            <input type="text" name="city" class="form-control" required>
+                                            <label>Contact 1</label>
+                                            <input type="text" id="branch_contact_1" class="form-control" readonly>
                                         </div>
-
                                         <div class="col-md-6 mb-3">
-                                            <label>Pincode<span class="star">*</span></label>
-                                            <input type="text" name="pincode" maxlength="6" class="form-control"
-                                                required>
+                                            <label>Contact 2</label>
+                                            <input type="text" id="branch_contact_2" class="form-control" readonly>
                                         </div>
-
                                         <div class="col-md-6 mb-3">
-                                            <label>Billingaddress<span class="star">*</span></label>
-                                            <textarea name="address" class="form-control" rows="1" required></textarea>
+                                            <label>Email 1</label>
+                                            <input type="email" id="branch_email_1" class="form-control" readonly>
                                         </div>
-
                                         <div class="col-md-6 mb-3">
-                                            <label>GPS Location<span class="star">*</span></label>
-                                            <input type="url" name="gps_location" class="form-control" required>
+                                            <label>Email 2</label>
+                                            <input type="email" id="branch_email_2" class="form-control" readonly>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label>GST Number</label>
+                                            <input type="text" id="branch_gst" class="form-control" readonly>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label>PAN Number</label>
+                                            <input type="text" id="branch_pan" class="form-control" readonly>
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <label>Full Address</label>
+                                            <textarea id="branch_address" class="form-control" rows="2"
+                                                readonly></textarea>
                                         </div>
                                     </div>
                                     <div class="text-center mt-3">
@@ -490,10 +504,6 @@
                                             style="width: 150px;">Previous</button>
                                         <button class="btn btn-info mt-2" type="submit"
                                             style="width: 150px;">Submit</button>
-
-
-
-
                                     </div>
                                 </div>
 
@@ -512,8 +522,44 @@
         // Optional: Recalculate when total_price changes
         // document.getElementById('total_price').addEventListener('input', calculateGST);
     </script>
-    <script>
 
+
+    <script>
+function fetchBranchDetails(branchId) {
+    if (!branchId) {
+        // Clear all fields if no branch is selected
+        document.getElementById('branch_contact_1').value = '';
+        document.getElementById('branch_contact_2').value = '';
+        document.getElementById('branch_email_1').value = '';
+        document.getElementById('branch_email_2').value = '';
+        document.getElementById('branch_gst').value = '';
+        document.getElementById('branch_pan').value = '';
+        document.getElementById('branch_address').value = '';
+        return;
+    }
+
+    fetch(`/get_branch_details/${branchId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Fill in the branch details
+            document.getElementById('branch_contact_1').value = data.contact_1 || '';
+            document.getElementById('branch_contact_2').value = data.contact_2 || '';
+            document.getElementById('branch_email_1').value = data.email_1 || '';
+            document.getElementById('branch_email_2').value = data.email_2 || '';
+            document.getElementById('branch_gst').value = data.gst_number || '';
+            document.getElementById('branch_pan').value = data.pan_number || '';
+            document.getElementById('branch_address').value = data.full_address || '';
+        })
+        .catch(error => {
+            console.error('Error fetching branch details:', error);
+            alert('Error fetching branch details');
+        });
+}
     </script>
 
 
@@ -562,14 +608,15 @@
 
 
 
-
+<!--  -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const contactInput = document.querySelector('input[name="contact_no"]');
+            const addressField = document.querySelector('textarea[name="address"]');
 
-            contactInput.addEventListener('blur', function () { // When focus leaves the contact input
+            contactInput.addEventListener('blur', function () {
                 const contactNo = this.value.trim();
-                if (!contactNo) return; // If empty, do nothing
+                if (!contactNo) return;
 
                 fetch(`?contact_no=${encodeURIComponent(contactNo)}`)
                     .then(response => {
@@ -579,7 +626,6 @@
                         return response.json();
                     })
                     .then(data => {
-                        // Assuming the data keys match your form input names
                         if (data.error) {
                             alert(data.error);
                             return;
@@ -588,10 +634,23 @@
                         // Fill in the fields with returned data
                         document.querySelector('input[name="customer_full_name"]').value = data.customer_full_name || '';
                         document.querySelector('input[name="customer_email"]').value = data.customer_email || '';
-                        document.querySelector('textarea[name="address"]').value = data.address || '';
-                        document.querySelector('input[name="city"]').value = data.city || '';
-                        document.querySelector('select[name="state"]').value = data.state || '';
-                        // Add more if you want
+
+                        // Only populate address if it's currently empty
+                        if (!addressField.value) {
+                            addressField.value = data.soldtopartyaddress || '';
+                            // Add a visual indicator
+                            addressField.style.borderLeft = "4px solid #03AED2";
+                            addressField.title = "This address was auto-filled from customer records";
+
+                            // Remove the indicator after 5 seconds
+                            setTimeout(() => {
+                                addressField.style.borderLeft = "";
+                                addressField.title = "";
+                            }, 5000);
+                        }
+
+                        document.querySelector('input[name="city"]').value = data.soldtopartycity || '';
+                        document.querySelector('select[name="state"]').value = data.soldtopartystate || '';
                     })
                     .catch(error => {
                         alert(error.message);
