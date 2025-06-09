@@ -2409,153 +2409,6 @@ def edit_service_management(request, rid):
 
 # Edit Quotation
 
-# def edit_quotation(request, rid):
-
-#     if request.method == 'GET':
-#         m = quotation.objects.filter(id=rid)
-#         context = {}
-#         context['data'] = m
-#         return render(request, 'edit_quotation.html', context)
-
-#     else:
-#         ucustomer_id = request.POST.get('ucustomer')  # Assuming this is a customer ID like 'JANPUN9384'
-#         uquantity = int(request.POST['uquantity'])
-#         uprice = float(request.POST['uprice'])
-#         utermsandcondition = request.POST['utermsandcondition']
-#         uservicetype_q = request.POST['uservicetype_q']
-
-#         utotal_amount = uquantity * uprice
-
-#         udiscount = float(request.POST['udiscount']) if request.POST['udiscount'] else None
-#         ugst_checkbox = True if 'ugst_checkbox' in request.POST else False
-#         ucompany_name = request.POST.get('ucompany_name')
-#         ucompany_email = request.POST.get('ucompany_email')
-#         ucompany_contact_no = request.POST.get('ucompany_contact_no')
-#         uquotation_date = request.POST.get('uquotation_date')
-
-#         try:
-#             uquotation_date = datetime.strptime(uquotation_date, '%Y-%m-%d').date() if uquotation_date else timezone.now().date()
-#         except ValueError:
-#             uquotation_date = None  # Handle invalid date format
-
-#         ucompany_address = request.POST.get('ucompany_address')
-#         usubject = request.POST.get('usubject')
-
-#         udiscounted_amount = utotal_amount - (utotal_amount * (udiscount / 100))
-#         utotal_amount_with_gst = udiscounted_amount * 1.18 if ugst_checkbox else udiscounted_amount
-
-#         # Fetch the customer object using an appropriate field (e.g., 'customer_id')
-#         try:
-#             customer = customer_details.objects.get(customerid=ucustomer_id)  # Ensure 'customer_id' is the right field
-#         except customer_details.DoesNotExist:
-#             return HttpResponse("Customer not found")
-
-#         # Fetch the latest quotation for the customer and increment the version
-#         latest_quotation = quotation.objects.filter(customer=customer).order_by('-version').first()
-#         new_version = latest_quotation.version + 1 if latest_quotation else 1
-
-#         # Update the existing quotation and mark it inactive
-#         m = quotation.objects.filter(id=rid)
-#         m.update(status='inactive')
-
-#         # Create a new version of the quotation with the updated values
-#         m.update(
-#             customer=customer,  # Pass the customer object here, not the ID string
-#             quantity=uquantity,
-#             price=uprice,
-#             termsandcondition=utermsandcondition,
-#             servicetype_q=uservicetype_q,
-#             discount=udiscount,
-#             total_amount=utotal_amount,
-#             company_name=ucompany_name,
-#             company_email=ucompany_email,
-#             company_contact_no=ucompany_contact_no,
-#             quotation_date=uquotation_date,
-#             company_address=ucompany_address,
-#             subject=usubject,
-#             total_amount_with_gst=utotal_amount_with_gst,
-#             gst_checkbox=ugst_checkbox,
-#             version=new_version,
-#             status='active'
-#         )
-
-#         return redirect('/display_quotation')
-
-
-# def edit_quotation(request , rid):
-
-#     if request.method =='GET':
-
-#         m=quotation.objects.filter(id=rid)
-
-#         context={}
-#         context['data']=m
-    
-#         return render(request , 'edit_quotation.html' , context)
-    
-#     else:
-#         ucustomer_id = request.POST.get('ucustomer')
-#         uquantity=int(request.POST['uquantity'])
-#         uprice=float(request.POST['uprice'])
-#         utermsandcondition=request.POST['utermsandcondition']
-#         uservicetype_q=request.POST['uservicetype_q']
-       
-#         utotal_amount = uquantity * uprice
-
-#         udiscount =  float(request.POST['udiscount']) if request.POST['udiscount'] else None
-#         ugst_checkbox = True if 'ugst_checkbox' in request.POST else False
-#         ucompany_name = request.POST.get('ucompany_name')
-#         ucompany_email = request.POST.get('ucompany_email')
-#         ucompany_contact_no = request.POST.get('ucompany_contact_no')
-#         uquotation_date = request.POST.get('uquotation_date')
-
-#         try:
-#             uquotation_date = datetime.strptime(uquotation_date, '%Y-%m-%d').date() if uquotation_date else timezone.now().date()
-#         except ValueError:
-#             uquotation_date = None  # Handle invalid date format
-
-#         ucompany_address = request.POST.get('ucompany_address')
-#         usubject = request.POST.get('usubject')       
-
-#         udiscounted_amount = utotal_amount - (utotal_amount * (udiscount / 100))
-#         utotal_amount_with_gst = udiscounted_amount * 1.18 if ugst_checkbox else udiscounted_amount
-
-#         try:
-#             customer = customer_details.objects.get(customerid=ucustomer_id)  # Ensure 'customer_id' is the right field
-#         except customer_details.DoesNotExist:
-#             return HttpResponse("Customer not found")
-
-#         # Fetch the latest quotation for the customer and increment the version
-#         latest_quotation = quotation.objects.filter(customer=customer).order_by('-version').first()
-#         new_version = latest_quotation.version + 1 if latest_quotation else 1
-
-#         # Update the existing quotation and mark it inactive
-#         m = quotation.objects.filter(id=rid)
-#         m.update(status='inactive')
-
-#         m.update(
-#             customer=customer,
-#             quantity=uquantity, 
-#             price=uprice , 
-#             termsandcondition=utermsandcondition,  
-#             servicetype_q=uservicetype_q ,
-#             discount=udiscount , 
-#             total_amount=utotal_amount , 
-#             company_name=ucompany_name , 
-#             company_email=ucompany_email ,
-#             company_contact_no=ucompany_contact_no , 
-#             quotation_date=uquotation_date , 
-#             company_address=ucompany_address, 
-#             subject=usubject , 
-#             total_amount_with_gst=utotal_amount_with_gst , 
-#             gst_checkbox=ugst_checkbox, 
-#             version=new_version, 
-#             status='active'
-#         )
-
-       
-#         return redirect( '/display_quotation')
-
 # new try
 def edit_quotation(request, rid):
     if request.method == 'GET':
@@ -2621,92 +2474,6 @@ def edit_quotation(request, rid):
         )
        
         return redirect('/display_quotation')
-
-
-# def edit_quotation(request, rid):
-#     if request.method == 'GET':
-#         # Retrieve the single quotation instance using first() to avoid a QuerySet
-#         m = quotation.objects.filter(id=rid).first()
-        
-#         if not m:
-#             return HttpResponse("Quotation not found.", status=404)  # Handle not found
-        
-#         context = {'data': m}  # Pass the single instance directly to the context
-#         return render(request, 'edit_quotation.html', context)
-
-#     else:
-#         # Get the existing quotation instance
-#         m = quotation.objects.filter(id=rid).first()
-        
-#         if not m:
-#             return HttpResponse("Quotation not found.", status=404)  # Handle not found
-
-#         # Extracting data from the form
-#         uquantity = int(request.POST['uquantity'])
-#         uprice = float(request.POST['uprice'])
-#         utermsandcondition = request.POST['utermsandcondition']
-#         uservicetype_q = request.POST['uservicetype_q']
-
-#         utotal_amount = uquantity * uprice
-#         udiscount = float(request.POST['udiscount']) if request.POST['udiscount'] else 0.0
-#         ugst_checkbox = 'ugst_checkbox' in request.POST
-#         ucompany_name = request.POST.get('ucompany_name')
-#         ucompany_email = request.POST.get('ucompany_email')
-#         ucompany_contact_no = request.POST.get('ucompany_contact_no')
-#         uquotation_date = request.POST.get('uquotation_date')
-
-#         try:
-#             uquotation_date = datetime.strptime(uquotation_date, '%Y-%m-%d').date() if uquotation_date else timezone.now().date()
-#         except ValueError:
-#             uquotation_date = timezone.now().date()  # Default to current date if format is invalid
-
-#         ucompany_address = request.POST.get('ucompany_address')
-#         usubject = request.POST.get('usubject')
-
-#         # Calculate the discounted amount and total with GST
-#         udiscounted_amount = utotal_amount - (utotal_amount * (udiscount / 100))
-#         utotal_amount_with_gst = udiscounted_amount * 1.18 if ugst_checkbox else udiscounted_amount
-
-#         # Retrieve the customer associated with the current quotation
-#         customer = m.customer  # Access the customer foreign key
-
-#         # Get the latest version for the same customer to increment version
-#         latest_quotation = quotation.objects.filter(customer=customer).order_by('-version').first()
-
-#         # Increment version for the new quotation
-#         new_version = latest_quotation.version + 1 if latest_quotation else 1
-
-#         # Create a new quotation object
-#         new_quotation_obj = quotation(
-#             quantity=uquantity,
-#             price=uprice,
-#             termsandcondition=utermsandcondition,
-#             servicetype_q=uservicetype_q,
-#             discount=udiscount,
-#             total_amount=utotal_amount,
-#             company_name=ucompany_name,
-#             company_email=ucompany_email,
-#             company_contact_no=ucompany_contact_no,
-#             quotation_date=uquotation_date,
-#             company_address=ucompany_address,
-#             subject=usubject,
-#             total_amount_with_gst=utotal_amount_with_gst,
-#             gst_checkbox=ugst_checkbox,
-#             version=new_version,
-#             status='active',
-#             customer=customer  # Set the customer for the new quotation
-#         )
-
-#         # Mark the current quotation as inactive
-#         m.status = 'inactive'
-#         m.save()
-
-#         # Save the new quotation object
-#         new_quotation_obj.save()
-
-#         return redirect('/display_quotation')
-
-
 
 
 # Edit Invoice
@@ -4298,4 +4065,80 @@ def get_customer_details(request):
             return JsonResponse({'error': 'Customer not found'}, status=404)
     return JsonResponse({'error': 'No contact number provided'}, status=400)
 
+
+from .models import BankAccounts   
+from django.http import JsonResponse
+
+from .models import BankAccounts  # Make sure the model is correctly imported
+from django.views.decorators.http import require_POST
+
+def create_bank_account(request):
+    if request.method == 'POST':
+        bank_name = request.POST.get('bank_name')
+        account_number = request.POST.get('bank_account_number')
+        ifs_code = request.POST.get('ifs_code')
+        branch = request.POST.get('branch')
+
+
+        if not all([bank_name, account_number, ifs_code, branch]):
+            return JsonResponse({'error': 'All fields are required'}, status=400)
         
+     
+        if BankAccounts.objects.filter(account_number=account_number).exists():
+            return JsonResponse({'error': 'Bank account already exists'}, status=409)
+
+        BankAccounts.objects.create(
+            bank_name=bank_name,
+            account_number=account_number,
+            ifs_code=ifs_code,
+            branch=branch
+        )
+        return redirect('list_bank_accounts') 
+
+    return render(request, 'create_bank_account.html')
+
+def list_bank_accounts(request):
+    accounts = BankAccounts.objects.all()
+    return render(request, 'list_bank_accounts.html', {'bank_accounts': accounts})
+
+
+def edit_bank_account(request, account_id):
+    bank_account = get_object_or_404(BankAccounts, id=account_id)
+
+    if request.method == 'POST':
+        bank_name = request.POST.get('bank_name')
+        account_number = request.POST.get('bank_account_number')
+        ifs_code = request.POST.get('ifs_code')
+        branch = request.POST.get('branch')
+
+        if not all([bank_name, account_number, ifs_code, branch]):
+            return render(request, 'edit_bank_account.html', {
+                'error': 'All fields are required',
+                'bank': bank_account
+            })
+
+        # Optional: Check if another account exists with the same number
+        if BankAccounts.objects.filter(account_number=account_number).exclude(id=bank_account.id).exists():
+            return render(request, 'edit_bank_account.html', {
+                'error': 'Another account with this number already exists',
+                'bank': bank_account
+            })
+
+        # Update fields
+        bank_account.bank_name = bank_name
+        bank_account.account_number = account_number
+        bank_account.ifs_code = ifs_code
+        bank_account.branch = branch
+        bank_account.save()
+
+        return redirect('list_bank_accounts')
+
+    return render(request, 'edit_bank_account.html', {'bank': bank_account})
+
+
+
+@require_POST
+def delete_bank_account(request, account_id):
+    bank_account = get_object_or_404(BankAccounts, id=account_id)
+    bank_account.delete()
+    return redirect('list_bank_accounts')

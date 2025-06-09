@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Details Modal</title>
     <style>
-        .detail-container{
+        .detail-container {
             padding: 10px;
             margin-top: 5px;
         }
+
         .detail-item {
             display: flex;
             flex-direction: column;
@@ -31,14 +33,14 @@
             word-wrap: break-word;
             box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .boxcontaner::after
-        {
-            background-color:darkcyan;
+
+        .boxcontaner::after {
+            background-color: darkcyan;
             background-size: contain;
-            font-waight:bold;
-            color:darkred;
-            min-height:500px;
-            min-width:fit-content;
+            font-waight: bold;
+            color: darkred;
+            min-height: 500px;
+            min-width: fit-content;
             display: contents;
             direction: calc(9);
             font-size: large;
@@ -52,8 +54,18 @@
         }
     </style>
 </head>
+
 <body>
-    <div class="detail-container">
+
+</body>
+
+</html>
+
+
+
+
+<!-- 
+ <div class="detail-container">
         <div class="detail-item">
             <strong>Customer ID:</strong>
             <div class="detail-box">{{ invoice_var.customer }}</div>
@@ -159,22 +171,16 @@
             {% csrf_token %}
             <button type="submit" class="btn btn-primary">Pay with PayPal</button>
             </form> -->
-            <form method="POST" action="{% url 'create_paypal_payment' %}">
-                {% csrf_token %}
-                <input type="hidden" name="customer_id" value="{{ invoice_var.customer }}">
-                <input type="hidden" name="total_amount_with_gst" value="{{ invoice_var.total_amount_with_gst }}">
-                <input type="hidden" name="company_name" value="{{ invoice_var.company_name }}">
-                
-                <!-- Additional invoice details can go here -->
-                
-                <button type="submit" class="btn btn-primary">Pay Now</button>
-            </form>
-        </div>
-        
-    </div>
-</body>
-</html>
- 
+<form method="POST" action="{% url 'create_paypal_payment' %}">
+    {% csrf_token %}
+    <input type="hidden" name="customer_id" value="{{ invoice_var.customer }}">
+    <input type="hidden" name="total_amount_with_gst" value="{{ invoice_var.total_amount_with_gst }}">
+    <input type="hidden" name="company_name" value="{{ invoice_var.company_name }}">
 
+    <!-- Additional invoice details can go here -->
 
-                    
+    <button type="submit" class="btn btn-primary">Pay Now</button>
+</form>
+</div>
+
+</div> -->

@@ -660,3 +660,11 @@ class TechWorkList(models.Model):
     
 
 
+class BankAccounts(models.Model):
+    bank_name = models.CharField(max_length=100)
+    account_number = models.CharField(max_length=20)
+    ifs_code = models.CharField(max_length=20)
+    branch = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.bank_name + " - " + self.branch + " - " + self.account_number 
