@@ -4072,6 +4072,7 @@ from django.http import JsonResponse
 from .models import BankAccounts  # Make sure the model is correctly imported
 from django.views.decorators.http import require_POST
 
+@login_required
 def create_bank_account(request):
     if request.method == 'POST':
         bank_name = request.POST.get('bank_name')
@@ -4097,11 +4098,12 @@ def create_bank_account(request):
 
     return render(request, 'create_bank_account.html')
 
+@login_required
 def list_bank_accounts(request):
     accounts = BankAccounts.objects.all()
     return render(request, 'list_bank_accounts.html', {'bank_accounts': accounts})
 
-
+@login_required
 def edit_bank_account(request, account_id):
     bank_account = get_object_or_404(BankAccounts, id=account_id)
 
@@ -4136,7 +4138,7 @@ def edit_bank_account(request, account_id):
     return render(request, 'edit_bank_account.html', {'bank': bank_account})
 
 
-
+@login_required
 @require_POST
 def delete_bank_account(request, account_id):
     bank_account = get_object_or_404(BankAccounts, id=account_id)
