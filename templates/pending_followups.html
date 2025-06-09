@@ -1,112 +1,266 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Pending Follow-ups</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap & FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
     <style>
-        .table td, .table th {
+        body {
+            background-color: #f8f9fa;
+        }
+
+        h2 {
+            color: #343a40;
+        }
+
+        .table th, .table td {
             vertical-align: middle;
             text-align: center;
         }
+
         .view-btn {
             background: none;
             border: none;
+            color: #007bff;
             cursor: pointer;
         }
+
         .badge {
-            padding: 5px 10px;
-            font-size: 0.9em;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 576px) {
+            .filter-form label {
+                display: block;
+                margin-bottom: 5px;
+            }
+            .filter-form .form-select,
+            .filter-form .btn {
+                width: 100% !important;
+                margin-top: 5px;
+            }
+            .table-responsive {
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container mt-4">
-    <h2 class="mb-3">Pending Follow-ups</h2>
+{% include 'sidebar.html' %}
+<div class="main">
+    <div class="container py-4 bg-light rounded mb-3" style="margin-top: 100px;">
+        <div class="row mb-1">
+            <div class="col-12 text-center">
+                <h3 class="fw-bold text-dark">Pending Follow-ups</h3>
+            </div>
+        </div>
 
-    <form method="get" class="mb-3">
-        <label for="salesperson">Filter by Salesperson:</label>
-        <select name="salesperson" id="salesperson" class="form-select d-inline w-auto">
-            <option value="">All</option>
-            {% for person in salespersons %}
-                <option value="{{ person }}" {% if selected_salesperson == person %}selected{% endif %}>{{ person }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-    </form>
+        <!-- Filter Form -->
+        <form method="get" class="row align-items-end g-3 mb-4 filter-form">
+            <div class="col-md-6 col-sm-8">
+                <label for="salesperson" class="form-label">Filter by Salesperson:</label>
+                <select name="salesperson" id="salesperson" class="form-select">
+                    <option value="">All</option>
+                    {% for person in salespersons %}
+                        <option value="{{ person }}" {% if selected_salesperson == person %}selected{% endif %}>{{ person }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 col-sm-4">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
 
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Sr.No</th>
-                <th>Source Of Lead</th>
-                <th>Sales Person<br>Name</th>
-                <th>Customer Name</th>
-                <th>Lead Type</th>
-                <th>Branch</th>
-                <th>Enquiry Date</th>
-                <th>Contact No.</th>
-                <th>Address</th>
-                <th>Follow-up Date</th>
-                <th>Follow Up</th>
-                <th>Edit</th>
-                <th>Delete</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for x in page_obj %}
-            <tr>
-                <td>
-                    {{ forloop.counter|add:start_index }}
-                    <div class="dropdown">
-                        <button class="view-btn" onclick="openModal('{{ x.lead.id }}')"><i class="fas fa-magnifying-glass-plus"></i></button>
-                        <div class="dropdown-content">
-                            <a href="#">View More</a>
-                        </div>
-                    </div>
-                </td>
-                <td>{{ x.lead.sourceoflead }}</td>
-                <td>{{ x.lead.salesperson }}</td>
-                <td>{{ x.lead.customername }}</td>
-                <td>{{ x.lead.typeoflead }}</td>
-                <td>{{ x.lead.branch }}</td>
-                <td>{{ x.lead.enquirydate }}</td>
-                <td>{{ x.lead.primarycontact }}</td>
-                <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
-                <td>{{ x.next_followup_date }}</td>
-                <td>
-                    {% if x.order_status == "Close Win" %}
-                        <span class="badge bg-success text-white">Close Win</span>
-                    {% elif x.order_status == "Close Loss" %}
-                        <span class="badge bg-danger text-white">Close Loss</span>
-                    {% else %}
-                        <a href="{% url 'main_followup_view' x.lead.id %}" class="btn btn-primary btn-sm">Follow Up</a>
+        <!-- Data Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle text-center">
+                <thead class="table-dark text-nowrap">
+                    <tr>
+                        <th>Sr.No</th>
+                        <th>Source Of Lead</th>
+                        <th>Sales Person</th>
+                        <th>Customer</th>
+                        <th>Lead Type</th>
+                        <th>Branch</th>
+                        <th>Enquiry Date</th>
+                        <th>Contact No.</th>
+                        <th>Address</th>
+                        <th>Follow-up Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for x in page_obj %}
+                    <tr>
+                        <td>
+                            {{ forloop.counter|add:start_index }}
+                            <button class="view-btn" onclick="openModal('{{ x.lead.id }}')" title="View More">
+                                <i class="fas fa-magnifying-glass-plus"></i>
+                            </button>
+                        </td>
+                        <td>{{ x.lead.sourceoflead }}</td>
+                        <td>{{ x.lead.salesperson }}</td>
+                        <td>{{ x.lead.customername }}</td>
+                        <td>{{ x.lead.typeoflead }}</td>
+                        <td>{{ x.lead.branch }}</td>
+                        <td>{{ x.lead.enquirydate }}</td>
+                        <td>{{ x.lead.primarycontact }}</td>
+                        <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
+                        <td>{{ x.next_followup_date }}</td>
+                        <td>
+                            {% if x.order_status == "Close Win" %}
+                                <span class="badge bg-success">Close Win</span>
+                            {% elif x.order_status == "Close Loss" %}
+                                <span class="badge bg-danger">Close Loss</span>
+                            {% else %}
+                                <a href="{% url 'main_followup_view' x.lead.id %}" class="btn btn-sm btn-info text-white">Follow Up</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="text-center text-muted">No pending follow-ups.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <div class="text-secondary mb-2">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+                <div class="d-inline-flex gap-2 justify-content-center flex-wrap">
+                    {% if page_obj.has_previous %}
+                        <a class="btn btn-outline-secondary btn-sm"
+                           href="?page={{ page_obj.previous_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">
+                            Previous
+                        </a>
                     {% endif %}
-                </td>
-                <td><a href="/edit_lead_management/{{ x.lead.id }}" class="btn btn-success btn-sm">Edit</a></td>
-                <td><a href="/delete_lead_management/{{ x.lead.id }}" class="btn btn-danger btn-sm delete-link">Delete</a></td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="13">No pending follow-ups.</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                    {% if page_obj.has_next %}
+                        <a class="btn btn-outline-secondary btn-sm"
+                           href="?page={{ page_obj.next_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-        </div>
-        <div>
-            {% if page_obj.has_previous %}
-                <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Previous</a>
-            {% endif %}
-            {% if page_obj.has_next %}
-                <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Next</a>
-            {% endif %}
-        </div>
+        {% include 'buttons.html' %}
     </div>
 </div>
 
-<!-- Include FontAwesome if you're using icons -->
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<!-- Footer -->
+<div class="container-fluid footer bg-light text-center p-3 mt-3">
+    <p style="margin: 0; font-weight: 600; color: #000;">
+        © 2025. Powered by
+        <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo" style="height: 20px;">
+        <a href="http://www.chronoanalytics.in/" style="text-decoration: none;
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics Solution</a> All Rights Reserved.
+    </p>
+    <p style="font-weight: 600; color:#000;">
+        Marketed by
+        <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px;">
+        <a href="http://teim.in/" style="text-decoration: none;
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a> All Rights Reserved.
+    </p>
+</div>
+
+<script>
+    function openModal(lead_id) {
+        fetch(`/get_lead_details/${lead_id}/`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('modal-content').innerHTML = html;
+                document.getElementById('modal').classList.add('active');
+            });
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+    }
+</script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const submenu = this.querySelector('.submenu');
+                    const arrow = this.querySelector('.arrow-down');
+
+                    // Hide all other submenus
+                    menuItems.forEach(otherItem => {
+                        if (otherItem !== this) {
+                            const otherSubmenu = otherItem.querySelector('.submenu');
+                            const otherArrow = otherItem.querySelector('.arrow-down');
+                            if (otherSubmenu) {
+                                otherSubmenu.style.display = 'none';
+                                if (otherArrow.classList.contains('arrow-up')) {
+                                    otherArrow.classList.remove('arrow-up');
+                                }
+                            }
+                        }
+                    });
+
+                    // Toggle current submenu
+                    if (submenu) {
+                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+                        arrow.classList.toggle('arrow-up');
+                    }
+                });
+            });
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+            const deleteLinks = document.querySelectorAll('.delete-link');
+            const confirmationModal = document.getElementById('confirmationModal');
+            const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+            const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+            const deleteForm = document.getElementById('deleteForm');
+            let deleteUrl = '';
+
+            deleteLinks.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    deleteUrl = this.getAttribute('href');
+                    deleteForm.setAttribute('action', deleteUrl);
+                    confirmationModal.style.display = 'block';
+                });
+            });
+
+            cancelDeleteButton.addEventListener('click', function () {
+                confirmationModal.style.display = 'none';
+            });
+        });
+
+        function openModal(lead_id) {
+            fetch(`/get_lead_details/${lead_id}/`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('modal-content').innerHTML = html;
+                    document.getElementById('modal').classList.add('active');
+                });
+
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+    </script>
 </body>
 </html>
