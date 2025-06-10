@@ -87,7 +87,8 @@
                 <select name="salesperson" id="salesperson" class="form-select w-auto" style="width: 200px;">
                     <option value="">All</option>
                     {% for person in salespersons %}
-                        <option value="{{ person }}" {% if selected_salesperson == person %}selected{% endif %}>{{ person }}</option>
+                    <option value="{{ person }}" {% if selected_salesperson == person %} selected {% endif %}>{{ person }}
+                    </option>
                     {% endfor %}
                 </select>
                 <button type="submit" class="btn btn-primary btn-sm ms-2" style="width: 150px;">Filter</button>
@@ -95,12 +96,13 @@
 
             <!-- Table -->
             <div class="table-wrapper table-responsive rounded shadow-sm border">
+                {% comment %} <h5 class="mt-4">New Leads - First Follow-up Date Today</h5> {% endcomment %}
                 <table class="table table-bordered table-hover align-middle mb-0">
                     <thead class="table-dark">
-                        <tr class="sticky-top">
+                        <tr>
                             <th>Sr.No</th>
                             <th>Source Of Lead</th>
-                            <th>Sales Person<br>Name</th>
+                            <th>Sales Person</th>
                             <th>Customer Name</th>
                             <th>Lead Type</th>
                             <th>Branch</th>
@@ -115,59 +117,73 @@
                     </thead>
                     <tbody>
                         {% for x in page_obj %}
-                        <tr>
-                            <td>
-                                {{ forloop.counter|add:start_index }}
-                                <button class="view-btn" onclick="openModal('{{ x.lead.id }}')" title="View Details">
-                                    <i class="fas fa-magnifying-glass-plus"></i>
-                                </button>
-                            </td>
-                            <td>{{ x.lead.sourceoflead }}</td>
-                            <td>{{ x.lead.salesperson }}</td>
-                            <td>{{ x.lead.customername }}</td>
-                            <td>{{ x.lead.typeoflead }}</td>
-                            <td>{{ x.lead.branch }}</td>
-                            <td>{{ x.lead.enquirydate }}</td>
-                            <td>{{ x.lead.primarycontact }}</td>
-                            <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
-                            <td>{{ x.next_followup_date }}</td>
-                            <td>
-                                {% if x.order_status == "Close Win" %}
-                                    <span class="badge bg-success">Close Win</span>
-                                {% elif x.order_status == "Close Loss" %}
-                                    <span class="badge bg-danger">Close Loss</span>
-                                {% else %}
-                                    <a href="{% url 'main_followup_view' x.lead.id %}" class="btn btn-sm btn-outline-primary">Follow Up</a>
-                                {% endif %}
-                            </td>
-                            <td><a href="/edit_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-success">Edit</a></td>
-                            <td><a href="/delete_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-danger delete-link">Delete</a></td>
+                        <tr >
+                            <td>{{ forloop.counter|add:start_index }}</td>
+                        
+                            {% if x.lead %}
+                                <!-- main_followup -->
+                                <td>{{ x.lead.sourceoflead }}</td>
+                                <td>{{ x.lead.salesperson }}</td>
+                                <td>{{ x.lead.customername }}</td>
+                                <td>{{ x.lead.typeoflead }}</td>
+                                <td>{{ x.lead.branch }}</td>
+                                <td>{{ x.lead.enquirydate }}</td>
+                                <td>{{ x.lead.primarycontact }}</td>
+                                <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
+                                <td>{{ x.next_followup_date }}</td>
+                                <td>
+                                    {% if x.order_status == "Close Win" %}
+                                        <span class="badge bg-success">Close Win</span>
+                                    {% elif x.order_status == "Close Loss" %}
+                                        <span class="badge bg-danger">Close Loss</span>
+                                    {% else %}
+                                        <a href="{% url 'main_followup_view' x.lead.id %}" class="btn btn-sm btn-outline-primary">Follow Up</a>
+                                    {% endif %}
+                                </td>
+                                <td><a href="/edit_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-success">Edit</a></td>
+                                <td><a href="/delete_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-danger delete-link">Delete</a></td>
+                            
+                            {% else %}
+                                <!-- lead_management -->
+                                <td>{{ x.sourceoflead }}</td>
+                                <td>{{ x.salesperson }}</td>
+                                <td>{{ x.customername }}</td>
+                                <td>{{ x.typeoflead }}</td>
+                                <td>{{ x.branch }}</td>
+                                <td>{{ x.enquirydate }}</td>
+                                <td>{{ x.primarycontact }}</td>
+                                <td>{{ x.customeraddress|truncatewords:3 }}</td>
+                                <td>{{ x.firstfollowupdate }}</td>
+                                <td><a href="{% url 'main_followup_view' x.id %}" class="btn btn-sm btn-outline-primary">Follow Up</a></td>
+                                <td><a href="/edit_lead_management/{{ x.id }}" class="btn btn-sm btn-success">Edit</a></td>
+                                <td><a href="/delete_lead_management/{{ x.id }}" class="btn btn-sm btn-danger delete-link">Delete</a></td>
+                            {% endif %}
                         </tr>
                         {% empty %}
-                        <tr>
-                            <td colspan="13" class="text-center">No Data Available.</td>
-                        </tr>
+                        <tr><td colspan="13" class="text-center">No Data Available for Today.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
+                    {{lead_folloup}}
             </div>
 
             <!-- Pagination -->
-       <div class="d-flex flex-column justify-content-center align-items-center mt-3">
-    <div class="text-info mb-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
-    <div>
-        {% if page_obj.has_previous %}
-            <a class="btn btn-outline-secondary btn-sm text-info me-2"
-               href="?page={{ page_obj.previous_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Previous</a>
-        {% endif %}
-        {% if page_obj.has_next %}
-            <a class="btn btn-outline-secondary btn-sm text-info"
-               href="?page={{ page_obj.next_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Next</a>
-        {% endif %}
-    </div>
-</div>
+            <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                <div class="text-info mb-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+                <div>
+                    {% if page_obj.has_previous %}
+                    <a class="btn btn-outline-secondary btn-sm text-info me-2"
+                        href="?page={{ page_obj.previous_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Previous</a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                    <a class="btn btn-outline-secondary btn-sm text-info"
+                        href="?page={{ page_obj.next_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Next</a>
+                    {% endif %}
+                </div>
+            </div>
 
-                                    {% include 'buttons.html' %}
+            {% include 'buttons.html' %}
 
         </div>
     </div>
@@ -180,7 +196,8 @@
             <a href="http://www.chronoanalytics.in/" style="text-decoration: none;
                 background: linear-gradient(to right, #2575fc, #6a11cb);
                 -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics Solution</a> All Rights Reserved.
+                -webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics Solution</a> All Rights
+            Reserved.
         </p>
         <p style="font-weight: 600; color:#000;">
             Marketed by

@@ -117,7 +117,7 @@ urlpatterns = [
     path('work/<int:work_id>/view_pdf/', views.view_work_pdf, name='view_work_pdf'),
     path('work/<int:work_id>/download_pdf/', views.download_work_pdf, name='download_work_pdf'),
     path('work/<int:work_id>/share_whatsapp/', views.generate_pdf_link, name='share_work_pdf_whatsapp'),
-    path('get_customer_details/<str:customer_id>/', views.get_customer_details, name='get_customer_details'), 
+    path('get_customer_details/<str:customer_id>/', views.fetch_customer_details, name='get_customer_details'),
     path('get_service_details/<service_id>/', views.get_service_details, name='get_service_details'),
     path('get_quotation_details/<quotation_id>/', views.get_quotation_details, name='get_quotation_details'),
     path('get_invoice_details/<invoice_id>/', views.get_invoice_details, name='get_invoice_details'),
@@ -138,6 +138,13 @@ urlpatterns = [
 
 
     path('get_customer_details/', views.get_customer_details, name='get_customer_details'),
+    
+    # Bank Account 
+    path('bank/create/', views.create_bank_account, name='create_bank_account'),
+    path('bank/list/', views.list_bank_accounts, name='list_bank_accounts'),
+    path('bank/edit/<int:account_id>/', views.edit_bank_account, name='edit_bank_account'),
+    path('bank/delete/<int:account_id>/', views.delete_bank_account, name='delete_bank_account'),
+
     
 
 

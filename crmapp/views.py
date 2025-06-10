@@ -1519,7 +1519,7 @@ def main_followup_view(request, lead_id):
         lead.save()
 
 
-        return redirect('main_followup_view', lead_id=lead.id)
+        return redirect('today_work')
 
     context = {
         'lead': lead,
@@ -1541,19 +1541,31 @@ from .models import main_followup, lead_management
 from django.utils import timezone
 from datetime import date
 from django.core.paginator import Paginator
+from itertools import chain
 
 def today_work(request):
     today = date.today()
+
+    print("today",today)
     salesperson_filter = request.GET.get('salesperson')
 
     # Filter today's follow-ups
+    lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
     followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
 
     if salesperson_filter:
         followups = followups.filter(lead__salesperson=salesperson_filter)
+        lead_folloup = lead_folloup.filter(lead__salesperson=salesperson_filter)
 
+    # Combine followups and lead_folloup
+    combined = list(chain(
+        followups,  # main_followup objects (with .lead field)
+        [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]  # avoid duplication
+    ))
+    
+    print("combined", combined)
     # Pagination
-    paginator = Paginator(followups, 10)  # Show 10 records per page
+    paginator = Paginator(combined, 10)  # Show 10 records per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1562,6 +1574,7 @@ def today_work(request):
 
     # Used for correct indexing
     start_index = (page_obj.number - 1) * paginator.per_page
+
 
     return render(request, 'today_work.html', {
         'page_obj': page_obj,
@@ -1579,13 +1592,19 @@ def pending_followups(request):
     salesperson_filter = request.GET.get('salesperson')
 
     # Get followups with a past next_followup_date
+    lead_folloup = lead_management.objects.filter(firstfollowupdate__lt = today)
     followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
 
     if salesperson_filter:
         followups = followups.filter(lead__salesperson=salesperson_filter)
+        lead_folloup = lead_folloup.filter(lead__salesperson=salesperson_filter)
 
+    combined = list(chain(
+           followups,  # main_followup objects (with .lead field)
+           [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]  # avoid duplication
+       ))
     # Pagination
-    paginator = Paginator(followups, 10)
+    paginator = Paginator(combined, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1636,7 +1655,7 @@ def display_followup(request):
     }
     return render(request, 'display_followup.html', context)
 
-def get_customer_details(request, customer_id):
+def fetch_customer_details(request, customer_id):
     customer = get_object_or_404(customer_details, customerid=customer_id)
     return render(request, 'customer_details_modal.html', {'customer': customer})
 
@@ -2409,153 +2428,6 @@ def edit_service_management(request, rid):
 
 # Edit Quotation
 
-# def edit_quotation(request, rid):
-
-#     if request.method == 'GET':
-#         m = quotation.objects.filter(id=rid)
-#         context = {}
-#         context['data'] = m
-#         return render(request, 'edit_quotation.html', context)
-
-#     else:
-#         ucustomer_id = request.POST.get('ucustomer')  # Assuming this is a customer ID like 'JANPUN9384'
-#         uquantity = int(request.POST['uquantity'])
-#         uprice = float(request.POST['uprice'])
-#         utermsandcondition = request.POST['utermsandcondition']
-#         uservicetype_q = request.POST['uservicetype_q']
-
-#         utotal_amount = uquantity * uprice
-
-#         udiscount = float(request.POST['udiscount']) if request.POST['udiscount'] else None
-#         ugst_checkbox = True if 'ugst_checkbox' in request.POST else False
-#         ucompany_name = request.POST.get('ucompany_name')
-#         ucompany_email = request.POST.get('ucompany_email')
-#         ucompany_contact_no = request.POST.get('ucompany_contact_no')
-#         uquotation_date = request.POST.get('uquotation_date')
-
-#         try:
-#             uquotation_date = datetime.strptime(uquotation_date, '%Y-%m-%d').date() if uquotation_date else timezone.now().date()
-#         except ValueError:
-#             uquotation_date = None  # Handle invalid date format
-
-#         ucompany_address = request.POST.get('ucompany_address')
-#         usubject = request.POST.get('usubject')
-
-#         udiscounted_amount = utotal_amount - (utotal_amount * (udiscount / 100))
-#         utotal_amount_with_gst = udiscounted_amount * 1.18 if ugst_checkbox else udiscounted_amount
-
-#         # Fetch the customer object using an appropriate field (e.g., 'customer_id')
-#         try:
-#             customer = customer_details.objects.get(customerid=ucustomer_id)  # Ensure 'customer_id' is the right field
-#         except customer_details.DoesNotExist:
-#             return HttpResponse("Customer not found")
-
-#         # Fetch the latest quotation for the customer and increment the version
-#         latest_quotation = quotation.objects.filter(customer=customer).order_by('-version').first()
-#         new_version = latest_quotation.version + 1 if latest_quotation else 1
-
-#         # Update the existing quotation and mark it inactive
-#         m = quotation.objects.filter(id=rid)
-#         m.update(status='inactive')
-
-#         # Create a new version of the quotation with the updated values
-#         m.update(
-#             customer=customer,  # Pass the customer object here, not the ID string
-#             quantity=uquantity,
-#             price=uprice,
-#             termsandcondition=utermsandcondition,
-#             servicetype_q=uservicetype_q,
-#             discount=udiscount,
-#             total_amount=utotal_amount,
-#             company_name=ucompany_name,
-#             company_email=ucompany_email,
-#             company_contact_no=ucompany_contact_no,
-#             quotation_date=uquotation_date,
-#             company_address=ucompany_address,
-#             subject=usubject,
-#             total_amount_with_gst=utotal_amount_with_gst,
-#             gst_checkbox=ugst_checkbox,
-#             version=new_version,
-#             status='active'
-#         )
-
-#         return redirect('/display_quotation')
-
-
-# def edit_quotation(request , rid):
-
-#     if request.method =='GET':
-
-#         m=quotation.objects.filter(id=rid)
-
-#         context={}
-#         context['data']=m
-    
-#         return render(request , 'edit_quotation.html' , context)
-    
-#     else:
-#         ucustomer_id = request.POST.get('ucustomer')
-#         uquantity=int(request.POST['uquantity'])
-#         uprice=float(request.POST['uprice'])
-#         utermsandcondition=request.POST['utermsandcondition']
-#         uservicetype_q=request.POST['uservicetype_q']
-       
-#         utotal_amount = uquantity * uprice
-
-#         udiscount =  float(request.POST['udiscount']) if request.POST['udiscount'] else None
-#         ugst_checkbox = True if 'ugst_checkbox' in request.POST else False
-#         ucompany_name = request.POST.get('ucompany_name')
-#         ucompany_email = request.POST.get('ucompany_email')
-#         ucompany_contact_no = request.POST.get('ucompany_contact_no')
-#         uquotation_date = request.POST.get('uquotation_date')
-
-#         try:
-#             uquotation_date = datetime.strptime(uquotation_date, '%Y-%m-%d').date() if uquotation_date else timezone.now().date()
-#         except ValueError:
-#             uquotation_date = None  # Handle invalid date format
-
-#         ucompany_address = request.POST.get('ucompany_address')
-#         usubject = request.POST.get('usubject')       
-
-#         udiscounted_amount = utotal_amount - (utotal_amount * (udiscount / 100))
-#         utotal_amount_with_gst = udiscounted_amount * 1.18 if ugst_checkbox else udiscounted_amount
-
-#         try:
-#             customer = customer_details.objects.get(customerid=ucustomer_id)  # Ensure 'customer_id' is the right field
-#         except customer_details.DoesNotExist:
-#             return HttpResponse("Customer not found")
-
-#         # Fetch the latest quotation for the customer and increment the version
-#         latest_quotation = quotation.objects.filter(customer=customer).order_by('-version').first()
-#         new_version = latest_quotation.version + 1 if latest_quotation else 1
-
-#         # Update the existing quotation and mark it inactive
-#         m = quotation.objects.filter(id=rid)
-#         m.update(status='inactive')
-
-#         m.update(
-#             customer=customer,
-#             quantity=uquantity, 
-#             price=uprice , 
-#             termsandcondition=utermsandcondition,  
-#             servicetype_q=uservicetype_q ,
-#             discount=udiscount , 
-#             total_amount=utotal_amount , 
-#             company_name=ucompany_name , 
-#             company_email=ucompany_email ,
-#             company_contact_no=ucompany_contact_no , 
-#             quotation_date=uquotation_date , 
-#             company_address=ucompany_address, 
-#             subject=usubject , 
-#             total_amount_with_gst=utotal_amount_with_gst , 
-#             gst_checkbox=ugst_checkbox, 
-#             version=new_version, 
-#             status='active'
-#         )
-
-       
-#         return redirect( '/display_quotation')
-
 # new try
 def edit_quotation(request, rid):
     if request.method == 'GET':
@@ -2621,92 +2493,6 @@ def edit_quotation(request, rid):
         )
        
         return redirect('/display_quotation')
-
-
-# def edit_quotation(request, rid):
-#     if request.method == 'GET':
-#         # Retrieve the single quotation instance using first() to avoid a QuerySet
-#         m = quotation.objects.filter(id=rid).first()
-        
-#         if not m:
-#             return HttpResponse("Quotation not found.", status=404)  # Handle not found
-        
-#         context = {'data': m}  # Pass the single instance directly to the context
-#         return render(request, 'edit_quotation.html', context)
-
-#     else:
-#         # Get the existing quotation instance
-#         m = quotation.objects.filter(id=rid).first()
-        
-#         if not m:
-#             return HttpResponse("Quotation not found.", status=404)  # Handle not found
-
-#         # Extracting data from the form
-#         uquantity = int(request.POST['uquantity'])
-#         uprice = float(request.POST['uprice'])
-#         utermsandcondition = request.POST['utermsandcondition']
-#         uservicetype_q = request.POST['uservicetype_q']
-
-#         utotal_amount = uquantity * uprice
-#         udiscount = float(request.POST['udiscount']) if request.POST['udiscount'] else 0.0
-#         ugst_checkbox = 'ugst_checkbox' in request.POST
-#         ucompany_name = request.POST.get('ucompany_name')
-#         ucompany_email = request.POST.get('ucompany_email')
-#         ucompany_contact_no = request.POST.get('ucompany_contact_no')
-#         uquotation_date = request.POST.get('uquotation_date')
-
-#         try:
-#             uquotation_date = datetime.strptime(uquotation_date, '%Y-%m-%d').date() if uquotation_date else timezone.now().date()
-#         except ValueError:
-#             uquotation_date = timezone.now().date()  # Default to current date if format is invalid
-
-#         ucompany_address = request.POST.get('ucompany_address')
-#         usubject = request.POST.get('usubject')
-
-#         # Calculate the discounted amount and total with GST
-#         udiscounted_amount = utotal_amount - (utotal_amount * (udiscount / 100))
-#         utotal_amount_with_gst = udiscounted_amount * 1.18 if ugst_checkbox else udiscounted_amount
-
-#         # Retrieve the customer associated with the current quotation
-#         customer = m.customer  # Access the customer foreign key
-
-#         # Get the latest version for the same customer to increment version
-#         latest_quotation = quotation.objects.filter(customer=customer).order_by('-version').first()
-
-#         # Increment version for the new quotation
-#         new_version = latest_quotation.version + 1 if latest_quotation else 1
-
-#         # Create a new quotation object
-#         new_quotation_obj = quotation(
-#             quantity=uquantity,
-#             price=uprice,
-#             termsandcondition=utermsandcondition,
-#             servicetype_q=uservicetype_q,
-#             discount=udiscount,
-#             total_amount=utotal_amount,
-#             company_name=ucompany_name,
-#             company_email=ucompany_email,
-#             company_contact_no=ucompany_contact_no,
-#             quotation_date=uquotation_date,
-#             company_address=ucompany_address,
-#             subject=usubject,
-#             total_amount_with_gst=utotal_amount_with_gst,
-#             gst_checkbox=ugst_checkbox,
-#             version=new_version,
-#             status='active',
-#             customer=customer  # Set the customer for the new quotation
-#         )
-
-#         # Mark the current quotation as inactive
-#         m.status = 'inactive'
-#         m.save()
-
-#         # Save the new quotation object
-#         new_quotation_obj.save()
-
-#         return redirect('/display_quotation')
-
-
 
 
 # Edit Invoice
@@ -4142,38 +3928,26 @@ from .models import WorkAllocation  # Import your model here
 
 @login_required
 def work_list_view(request):
-    # Create two separate lists for Pending and Completed
+    # Get search query
     query = request.GET.get('search', '')
 
-    pending_work = TechWorkList.objects.filter(
-        technician=request.user, 
+    # Base queryset: only Pending work for this technician
+    work_allocations = TechWorkList.objects.filter(
+        technician=request.user,
         status="Pending"
     )
-    completed_work = TechWorkList.objects.filter(
-        technician=request.user, 
-        status="Completed"
-    )
 
+    # Apply search filter if query is provided
     if query:
-        pending_work = pending_work.filter(
+        work_allocations = work_allocations.filter(
             Q(work__customer_contact__icontains=query)
         )
-        completed_work = completed_work.filter(
-            Q(work__customer_contact__icontains=query)
-        )
-    
-    
-    # Append completed work to the pending work list
-    work_allocations = list(pending_work) + list(completed_work)
 
-    # Debugging output
+    # Debug (Optional)
     for work in work_allocations:
-        print("work_allocations statuses:", work, "status", work.status)
-        
+        print("work:", work, "| status:", work.status)
 
-    print("work_allocation: ", work_allocations)
     return render(request, 'work_list.html', {'work_allocations': work_allocations})
-
 
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
@@ -4234,6 +4008,8 @@ def generate_pdf_link(request, work_id):
 from django.shortcuts import render, redirect
 from .models import Branch
 
+from .models import Branch
+
 def create_branch(request):
     if request.method == 'POST':
         branch_name = request.POST.get('branch_name')
@@ -4243,9 +4019,13 @@ def create_branch(request):
         email_2 = request.POST.get('email_2') or None
         gst_number = request.POST.get('gst_number')
         pan_number = request.POST.get('pan_number')
+        state = request.POST.get('state')
+        code = request.POST.get('code')
+        shortcut = request.POST.get('shortcut')
         full_address = request.POST.get('full_address')
 
-        Branch.objects.create(
+        # Only pass state; model will set shortcut and code
+        branch = Branch(
             branch_name=branch_name,
             contact_1=contact_1,
             contact_2=contact_2,
@@ -4253,11 +4033,57 @@ def create_branch(request):
             email_2=email_2,
             gst_number=gst_number,
             pan_number=pan_number,
+            state=state,
+            code = code,
+            shortcut = shortcut,
             full_address=full_address
         )
-        return redirect('branch_list')  # Replace with your desired redirect view
-    return render(request, 'create_branch.html')
-from .models import Branch
+        branch.save()  
+        return redirect('branch_list')
+   
+    state_map = {
+        'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
+        'Andhra Pradesh': {'code': 37, 'shortcut': 'AP'},
+        'Arunachal Pradesh': {'code': 12, 'shortcut': 'AR'},
+        'Assam': {'code': 18, 'shortcut': 'AS'},
+        'Bihar': {'code': 10, 'shortcut': 'BR'},
+        'Chandigarh': {'code': 4, 'shortcut': 'CH'},
+        'Chhattisgarh': {'code': 22, 'shortcut': 'CG'},
+        'Dadra and Nagar Haveli and Daman and Diu': {'code': 26, 'shortcut': 'DNHDD'},
+        'Delhi': {'code': 7, 'shortcut': 'DL'},
+        'Goa': {'code': 30, 'shortcut': 'GA'},
+        'Gujarat': {'code': 24, 'shortcut': 'GJ'},
+        'Haryana': {'code': 6, 'shortcut': 'HR'},
+        'Himachal Pradesh': {'code': 2, 'shortcut': 'HP'},
+        'Jammu and Kashmir': {'code': 1, 'shortcut': 'JK'},
+        'Jharkhand': {'code': 20, 'shortcut': 'JH'},
+        'Karnataka': {'code': 29, 'shortcut': 'KA'},
+        'Kerala': {'code': 32, 'shortcut': 'KL'},
+        'Ladakh': {'code': 38, 'shortcut': 'LA'},
+        'Lakshadweep': {'code': 31, 'shortcut': 'LD'},
+        'Madhya Pradesh': {'code': 23, 'shortcut': 'MP'},
+        'Maharashtra': {'code': 27, 'shortcut': 'MH'},
+        'Manipur': {'code': 14, 'shortcut': 'MN'},
+        'Meghalaya': {'code': 17, 'shortcut': 'ML'},
+        'Mizoram': {'code': 15, 'shortcut': 'MZ'},
+        'Nagaland': {'code': 13, 'shortcut': 'NL'},
+        'Odisha': {'code': 21, 'shortcut': 'OD'},
+        'Other Country': {'code': 99, 'shortcut': 'OC'},
+        'Other Territory': {'code': 97, 'shortcut': 'OT'},
+        'Puducherry': {'code': 34, 'shortcut': 'PY'},
+        'Punjab': {'code': 3, 'shortcut': 'PB'},
+        'Rajasthan': {'code': 8, 'shortcut': 'RJ'},
+        'Sikkim': {'code': 11, 'shortcut': 'SK'},
+        'Tamil Nadu': {'code': 33, 'shortcut': 'TN'},
+        'Telangana': {'code': 36, 'shortcut': 'TS'},
+        'Tripura': {'code': 16, 'shortcut': 'TR'},
+        'Uttar Pradesh': {'code': 9, 'shortcut': 'UP'},
+        'Uttarakhand': {'code': 5, 'shortcut': 'UK'},
+        'West Bengal': {'code': 19, 'shortcut': 'WB'}
+        }   
+    
+    return render(request, 'create_branch.html' , {"state_map":state_map})
+
 
 def branch_list(request):
     branches = Branch.objects.all().order_by('-created_at')
@@ -4275,6 +4101,9 @@ def get_branch_details(request, branch_id):
             'gst_number': branch.gst_number,
             'pan_number': branch.pan_number,
             'full_address': branch.full_address,
+            'state': branch.state,
+            'code': branch.code,
+            'shortcut': branch.shortcut,
         }
         return JsonResponse(data)
     except Branch.DoesNotExist:
@@ -4298,4 +4127,85 @@ def get_customer_details(request):
             return JsonResponse({'error': 'Customer not found'}, status=404)
     return JsonResponse({'error': 'No contact number provided'}, status=400)
 
+
+from .models import BankAccounts   
+from django.http import JsonResponse
+
+from .models import BankAccounts  # Make sure the model is correctly imported
+from django.views.decorators.http import require_POST
+
+@login_required
+def create_bank_account(request):
+    if request.method == 'POST':
+        bank_name = request.POST.get('bank_name')
+        account_number = request.POST.get('bank_account_number')
+        ifs_code = request.POST.get('ifs_code')
+        branch = request.POST.get('branch')
+
+
+        if not all([bank_name, account_number, ifs_code, branch]):
+            return JsonResponse({'error': 'All fields are required'}, status=400)
         
+     
+        if BankAccounts.objects.filter(account_number=account_number).exists():
+            return JsonResponse({'error': 'Bank account already exists'}, status=409)
+
+        BankAccounts.objects.create(
+            bank_name=bank_name,
+            account_number=account_number,
+            ifs_code=ifs_code,
+            branch=branch
+        )
+        return redirect('list_bank_accounts') 
+
+    return render(request, 'create_bank_account.html')
+
+@login_required
+def list_bank_accounts(request):
+    accounts = BankAccounts.objects.all()
+    return render(request, 'list_bank_accounts.html', {'bank_accounts': accounts})
+
+@login_required
+def edit_bank_account(request, account_id):
+    bank_account = get_object_or_404(BankAccounts, id=account_id)
+
+    if request.method == 'POST':
+        bank_name = request.POST.get('bank_name')
+        account_number = request.POST.get('bank_account_number')
+        ifs_code = request.POST.get('ifs_code')
+        branch = request.POST.get('branch')
+
+        if not all([bank_name, account_number, ifs_code, branch]):
+            return render(request, 'edit_bank_account.html', {
+                'error': 'All fields are required',
+                'bank': bank_account
+            })
+
+        # Optional: Check if another account exists with the same number
+        if BankAccounts.objects.filter(account_number=account_number).exclude(id=bank_account.id).exists():
+            return render(request, 'edit_bank_account.html', {
+                'error': 'Another account with this number already exists',
+                'bank': bank_account
+            })
+
+        # Update fields
+        bank_account.bank_name = bank_name
+        bank_account.account_number = account_number
+        bank_account.ifs_code = ifs_code
+        bank_account.branch = branch
+        bank_account.save()
+
+        return redirect('list_bank_accounts')
+
+    return render(request, 'edit_bank_account.html', {'bank': bank_account})
+
+
+@login_required
+@require_POST
+def delete_bank_account(request, account_id):
+    bank_account = get_object_or_404(BankAccounts, id=account_id)
+    bank_account.delete()
+    return redirect('list_bank_accounts')
+
+
+

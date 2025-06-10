@@ -542,6 +542,9 @@ class Branch(models.Model):
     gst_number = models.CharField(max_length=20)
     pan_number = models.CharField(max_length=20)
     full_address = models.TextField()
+    state = models.CharField(max_length=50 )
+    code = models.IntegerField()
+    shortcut = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -660,3 +663,13 @@ class TechWorkList(models.Model):
     
 
 
+class BankAccounts(models.Model):
+    bank_name = models.CharField(max_length=100)
+    account_number = models.CharField(max_length=20)
+    ifs_code = models.CharField(max_length=20)
+    branch = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.bank_name + " - " + self.branch + " - " + self.account_number 
+    
+    
