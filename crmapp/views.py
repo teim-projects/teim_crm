@@ -1649,7 +1649,7 @@ def display_followup(request):
     }
     return render(request, 'display_followup.html', context)
 
-def get_customer_details(request, customer_id):
+def fetch_customer_details(request, customer_id):
     customer = get_object_or_404(customer_details, customerid=customer_id)
     return render(request, 'customer_details_modal.html', {'customer': customer})
 
