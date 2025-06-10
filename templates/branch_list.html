@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Branch List</title>
@@ -28,10 +29,12 @@
       .table-responsive {
         font-size: 14px;
       }
+
       td {
         min-width: 170px !important;
       }
-      .add-btn{
+
+      .add-btn {
         font-size: 10px !important;
       }
     }
@@ -41,6 +44,7 @@
     }
   </style>
 </head>
+
 <body>
   {% include 'sidebar.html' %}
 
@@ -68,7 +72,10 @@
               <th>GST No.</th>
               <th>PAN No.</th>
               <th>Address</th>
-              <th >Created At</th>
+              <th>State /Shortcut </th>
+              <th>State Code</th>
+
+              <th>Created At</th>
             </tr>
           </thead>
           <tbody>
@@ -83,6 +90,8 @@
               <td>{{ branch.gst_number }}</td>
               <td>{{ branch.pan_number }}</td>
               <td>{{ branch.full_address }}</td>
+              <td>{{ branch.state }} ({{ branch.shortcut}}) </td>
+              <td>{{branch.code }}</td>
               <td style="min-width: 200px !important;">{{ branch.created_at|date:"Y-m-d H:i" }}</td>
             </tr>
             {% empty %}
@@ -95,94 +104,97 @@
       </div>
 
 
-        {% include 'buttons.html' %}
+      {% include 'buttons.html' %}
 
 
 
     </div>
   </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
-            menuItems.forEach(item => {
-                item.addEventListener('click', function () {
-                    const submenu = this.querySelector('.submenu');
-                    const arrow = this.querySelector('.arrow-down');
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+      menuItems.forEach(item => {
+        item.addEventListener('click', function () {
+          const submenu = this.querySelector('.submenu');
+          const arrow = this.querySelector('.arrow-down');
 
-                    // Hide all other submenus
-                    menuItems.forEach(otherItem => {
-                        if (otherItem !== this) {
-                            const otherSubmenu = otherItem.querySelector('.submenu');
-                            const otherArrow = otherItem.querySelector('.arrow-down');
-                            if (otherSubmenu) {
-                                otherSubmenu.style.display = 'none';
-                                if (otherArrow.classList.contains('arrow-up')) {
-                                    otherArrow.classList.remove('arrow-up');
-                                }
-                            }
-                        }
-                    });
-
-                    // Toggle current submenu
-                    if (submenu) {
-                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
-                        arrow.classList.toggle('arrow-up');
-                    }
-                });
-            });
-        });
-        const deleteLinks = document.querySelectorAll('.delete-link');
-        const confirmationModal = document.getElementById('confirmationModal');
-        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-        const cancelDeleteButton = document.getElementById('cancelDeleteButton');
-        let deleteUrl = '';
-
-        deleteLinks.forEach(link => {
-            link.addEventListener('click', function (event) {
-                event.preventDefault();
-                deleteUrl = this.getAttribute('href');
-                confirmationModal.style.display = 'block';
-            });
-        });
-
-        confirmDeleteButton.addEventListener('click', function () {
-            if (deleteUrl) {
-                window.location.href = deleteUrl;
+          // Hide all other submenus
+          menuItems.forEach(otherItem => {
+            if (otherItem !== this) {
+              const otherSubmenu = otherItem.querySelector('.submenu');
+              const otherArrow = otherItem.querySelector('.arrow-down');
+              if (otherSubmenu) {
+                otherSubmenu.style.display = 'none';
+                if (otherArrow.classList.contains('arrow-up')) {
+                  otherArrow.classList.remove('arrow-up');
+                }
+              }
             }
+          });
+
+          // Toggle current submenu
+          if (submenu) {
+            submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+            arrow.classList.toggle('arrow-up');
+          }
+        });
+      });
+    });
+    const deleteLinks = document.querySelectorAll('.delete-link');
+    const confirmationModal = document.getElementById('confirmationModal');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    let deleteUrl = '';
+
+    deleteLinks.forEach(link => {
+      link.addEventListener('click', function (event) {
+        event.preventDefault();
+        deleteUrl = this.getAttribute('href');
+        confirmationModal.style.display = 'block';
+      });
+    });
+
+    confirmDeleteButton.addEventListener('click', function () {
+      if (deleteUrl) {
+        window.location.href = deleteUrl;
+      }
+    });
+
+    cancelDeleteButton.addEventListener('click', function () {
+      confirmationModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function (event) {
+      if (event.target == confirmationModal) {
+        confirmationModal.style.display = 'none';
+      }
+    });
+
+    function openModal(service_id) {
+      fetch(`/get_service_details/${service_id}/`)
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('modal-content').innerHTML = html;
+          document.getElementById('modal').classList.add('active');
         });
 
-        cancelDeleteButton.addEventListener('click', function () {
-            confirmationModal.style.display = 'none';
-        });
+    }
 
-        window.addEventListener('click', function (event) {
-            if (event.target == confirmationModal) {
-                confirmationModal.style.display = 'none';
-            }
-        });
-
-        function openModal(service_id) {
-            fetch(`/get_service_details/${service_id}/`)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('modal-content').innerHTML = html;
-                    document.getElementById('modal').classList.add('active');
-                });
-
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-    </script>
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+  </script>
   <!-- Footer -->
   <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%;">
     <div class="row p-3">
       <div class="col-md-12 text-center">
         <p style="margin: 0; font-weight: 600; color:#000000">
           © 2025. Powered by
-          <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo" style="height: 20px; vertical-align: middle;">
-          <a href="http://www.chronoanalytics.in/" style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics Solution</a>
+          <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+            style="height: 20px; vertical-align: middle;">
+          <a href="http://www.chronoanalytics.in/"
+            style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+            Solution</a>
           All Rights Reserved.
         </p>
       </div>
@@ -190,7 +202,8 @@
         <p style="font-weight: 600; color:#000000">
           © 2025. Marketed by
           <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
-          <a href="http://teim.in/" style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+          <a href="http://teim.in/"
+            style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
           All Rights Reserved.
         </p>
       </div>
@@ -200,4 +213,5 @@
   <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

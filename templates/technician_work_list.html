@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,28 +9,32 @@
     <link rel="stylesheet" href="{% static 'css\customer.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Cardo:ital@0;1&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Cardo:ital@0;1&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Outfit:wght@100..900&display=swap"
+        rel="stylesheet">
     <title>Technician Work List</title>
     <style>
         body {
             background-color: #f8f9fa;
-          
+
             min-height: 100vh;
             margin: 0;
         }
-        
+
         .technician-container {
             padding: 20px;
             background: white;
-             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            flex-grow: 1; /* Allows the container to take up remaining space */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+            /* Allows the container to take up remaining space */
             overflow-x: auto;
             margin-top: 100px;
             box-shadow: inset 0px 0px 5px blue !important;
-            box-shadow:  0px 0px 5px rgb(255, 255, 255) !important;
+            box-shadow: 0px 0px 5px rgb(255, 255, 255) !important;
             border-radius: 5px;
 
         }
+
         h1 {
             font-family: 'Playfair Display', serif;
             font-size: 45px;
@@ -38,6 +43,7 @@
             text-align: center;
             margin-left: 80px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -45,11 +51,13 @@
             overflow: hidden;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px 15px;
             text-align: left;
             border: 1px solid #7c7c7c;
-            white-space: nowrap; /* Prevent wrapping */
+            white-space: nowrap;
+            /* Prevent wrapping */
         }
 
         th {
@@ -72,28 +80,34 @@
         tr:nth-child(even) td {
             background-color: #cbcaca;
         }
+
         .actions {
             display: flex;
             gap: 10px;
         }
+
         .btn {
             padding: 5px 10px;
             border: none;
             border-radius: 5px;
             text-decoration: none;
         }
+
         .btn-edit {
             background-color: #28a745;
             color: white;
         }
+
         .btn-delete {
             background-color: #dc3545;
             color: white;
         }
+
         .btn-primary {
             margin-top: 10px;
             display: inline-block;
         }
+
         .pagination {
             margin-top: 20px;
             display: flex;
@@ -102,21 +116,26 @@
             padding: 0;
             margin: 20px 0;
         }
+
         .pagination li {
             margin: 10px 5px;
         }
-        .pagination a, .pagination span {
+
+        .pagination a,
+        .pagination span {
             padding: 10px 12px;
             text-decoration: none;
             color: #007bff;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+
         .pagination .current {
             background-color: #007bff;
             color: white;
             border-color: #007bff;
         }
+
         .pagination a:hover {
             background-color: #007bff;
             color: white;
@@ -125,17 +144,20 @@
         @media (max-width: 768px) {
             .technician-container {
                 margin-left: 0;
-              
+
                 max-width: 100%;
-                padding: 20px; /* Add some padding for better appearance */
+                padding: 20px;
+                /* Add some padding for better appearance */
                 overflow: auto;
             }
 
             .open-sidebar .technician-container {
-                margin-left: 300px; /* Adjust content when sidebar is open */
+                margin-left: 300px;
+                /* Adjust content when sidebar is open */
             }
 
         }
+
         h2 {
             background: linear-gradient(to right, #2575fc, #6a11cb);
             /* Gradient definition */
@@ -145,8 +167,9 @@
             border-bottom: 3px solid rgb(80, 16, 177);
         }
     </style>
-    
+
 </head>
+
 <body>
 
     {% include 'sidebar.html' %}
@@ -176,17 +199,25 @@
                             {% for work in page_obj %}
                             <tr>
                                 <td>{{ work.id }}</td>
-                                <td>{{ work.technician }}</td>
-                                <td>{{ work.customer_fname }} {{ work.customer_lname }}</td>
+                                <td>
+                                    {% for tech in work.technician.all %}
+                                    {{ tech.first_name }} {{ tech.last_name }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+
+                                <td>{{ work.fullname }} </td>
                                 <td>{{ work.work_description }}</td>
                                 <td>{{ work.customer_payment_status }}</td>
                                 <td>{{ work.payment_amount }}</td>
                                 <td>{{ work.status }}</td>
                                 <td class="actions">
-                                    <a href="{% url 'edit_work' work.id %}" class="btn btn-edit btn-outline-info" style="width:100px;">Edit</a>
-                                    <form action="{% url 'delete_work' work.id %}" method="post" style="display:inline;">
+                                    <a href="{% url 'edit_work' work.id %}" class="btn btn-edit btn-outline-info"
+                                        style="width:100px;">Edit</a>
+                                    <form action="{% url 'delete_work' work.id %}" method="post"
+                                        style="display:inline;">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-delete btn-outline-danger" style="width:100px;">Delete</button>
+                                        <button type="submit" class="btn btn-delete btn-outline-danger"
+                                            style="width:100px;">Delete</button>
                                     </form>
                                 </td>
                             </tr>
@@ -199,56 +230,60 @@
                     </table>
                 </div>
             </div>
-      
+
             <!-- Pagination -->
             <ul class="pagination">
                 {% if page_obj.has_previous %}
-                    <li><a href="?page=1">&laquo; First</a></li>
-                    <li><a href="?page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
+                <li><a href="?page=1">&laquo; First</a></li>
+                <li><a href="?page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
                 {% endif %}
-            
+
                 <li><span class="current">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-            
+
                 {% if page_obj.has_next %}
-                    <li><a href="?page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
-                    <li><a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+                <li><a href="?page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
+                <li><a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
                 {% endif %}
             </ul>
-            
+
             {% include 'buttons.html' %}
         </div>
     </div>
-    
+
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:100px;">
         <div class="row p-3">
-            <div class="col-md-12 text-center"> <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
-                © 2025. Powered by
-                <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
-                    style="height: 20px; vertical-align: middle;">
-                <a href="http://www.chronoanalytics.in/"
-                    style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
-                    Solution</a>
-                All Rights Reserved.
-            </p>
-          </div>
-            <div class="col-md-12 text-center">  <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
-                © 2025. Marketed by
-                <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
-                <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+            <div class="col-md-12 text-center">
+                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+                    © 2025. Powered by
+                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://www.chronoanalytics.in/"
+                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                        Solution</a>
+                    All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                    © 2025. Marketed by
+                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
         -webkit-background-clip: text; 
         -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
-                All Rights Reserved.
-            </p></div>
+                    All Rights Reserved.
+                </p>
+            </div>
         </div>
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
             menuItems.forEach(item => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function () {
                     const submenu = this.querySelector('.submenu');
                     const arrow = this.querySelector('.arrow-down');
-                    
+
                     // Hide all other submenus
                     menuItems.forEach(otherItem => {
                         if (otherItem !== this) {
@@ -273,4 +308,5 @@
         });
     </script>
 </body>
+
 </html>

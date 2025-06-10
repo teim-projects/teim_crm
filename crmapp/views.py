@@ -3909,38 +3909,26 @@ from .models import WorkAllocation  # Import your model here
 
 @login_required
 def work_list_view(request):
-    # Create two separate lists for Pending and Completed
+    # Get search query
     query = request.GET.get('search', '')
 
-    pending_work = TechWorkList.objects.filter(
-        technician=request.user, 
+    # Base queryset: only Pending work for this technician
+    work_allocations = TechWorkList.objects.filter(
+        technician=request.user,
         status="Pending"
     )
-    completed_work = TechWorkList.objects.filter(
-        technician=request.user, 
-        status="Completed"
-    )
 
+    # Apply search filter if query is provided
     if query:
-        pending_work = pending_work.filter(
+        work_allocations = work_allocations.filter(
             Q(work__customer_contact__icontains=query)
         )
-        completed_work = completed_work.filter(
-            Q(work__customer_contact__icontains=query)
-        )
-    
-    
-    # Append completed work to the pending work list
-    work_allocations = list(pending_work) + list(completed_work)
 
-    # Debugging output
+    # Debug (Optional)
     for work in work_allocations:
-        print("work_allocations statuses:", work, "status", work.status)
-        
+        print("work:", work, "| status:", work.status)
 
-    print("work_allocation: ", work_allocations)
     return render(request, 'work_list.html', {'work_allocations': work_allocations})
-
 
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
@@ -4001,6 +3989,8 @@ def generate_pdf_link(request, work_id):
 from django.shortcuts import render, redirect
 from .models import Branch
 
+from .models import Branch
+
 def create_branch(request):
     if request.method == 'POST':
         branch_name = request.POST.get('branch_name')
@@ -4010,9 +4000,13 @@ def create_branch(request):
         email_2 = request.POST.get('email_2') or None
         gst_number = request.POST.get('gst_number')
         pan_number = request.POST.get('pan_number')
+        state = request.POST.get('state')
+        code = request.POST.get('code')
+        shortcut = request.POST.get('shortcut')
         full_address = request.POST.get('full_address')
 
-        Branch.objects.create(
+        # Only pass state; model will set shortcut and code
+        branch = Branch(
             branch_name=branch_name,
             contact_1=contact_1,
             contact_2=contact_2,
@@ -4020,11 +4014,57 @@ def create_branch(request):
             email_2=email_2,
             gst_number=gst_number,
             pan_number=pan_number,
+            state=state,
+            code = code,
+            shortcut = shortcut,
             full_address=full_address
         )
-        return redirect('branch_list')  # Replace with your desired redirect view
-    return render(request, 'create_branch.html')
-from .models import Branch
+        branch.save()  
+        return redirect('branch_list')
+   
+    state_map = {
+        'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
+        'Andhra Pradesh': {'code': 37, 'shortcut': 'AP'},
+        'Arunachal Pradesh': {'code': 12, 'shortcut': 'AR'},
+        'Assam': {'code': 18, 'shortcut': 'AS'},
+        'Bihar': {'code': 10, 'shortcut': 'BR'},
+        'Chandigarh': {'code': 4, 'shortcut': 'CH'},
+        'Chhattisgarh': {'code': 22, 'shortcut': 'CG'},
+        'Dadra and Nagar Haveli and Daman and Diu': {'code': 26, 'shortcut': 'DNHDD'},
+        'Delhi': {'code': 7, 'shortcut': 'DL'},
+        'Goa': {'code': 30, 'shortcut': 'GA'},
+        'Gujarat': {'code': 24, 'shortcut': 'GJ'},
+        'Haryana': {'code': 6, 'shortcut': 'HR'},
+        'Himachal Pradesh': {'code': 2, 'shortcut': 'HP'},
+        'Jammu and Kashmir': {'code': 1, 'shortcut': 'JK'},
+        'Jharkhand': {'code': 20, 'shortcut': 'JH'},
+        'Karnataka': {'code': 29, 'shortcut': 'KA'},
+        'Kerala': {'code': 32, 'shortcut': 'KL'},
+        'Ladakh': {'code': 38, 'shortcut': 'LA'},
+        'Lakshadweep': {'code': 31, 'shortcut': 'LD'},
+        'Madhya Pradesh': {'code': 23, 'shortcut': 'MP'},
+        'Maharashtra': {'code': 27, 'shortcut': 'MH'},
+        'Manipur': {'code': 14, 'shortcut': 'MN'},
+        'Meghalaya': {'code': 17, 'shortcut': 'ML'},
+        'Mizoram': {'code': 15, 'shortcut': 'MZ'},
+        'Nagaland': {'code': 13, 'shortcut': 'NL'},
+        'Odisha': {'code': 21, 'shortcut': 'OD'},
+        'Other Country': {'code': 99, 'shortcut': 'OC'},
+        'Other Territory': {'code': 97, 'shortcut': 'OT'},
+        'Puducherry': {'code': 34, 'shortcut': 'PY'},
+        'Punjab': {'code': 3, 'shortcut': 'PB'},
+        'Rajasthan': {'code': 8, 'shortcut': 'RJ'},
+        'Sikkim': {'code': 11, 'shortcut': 'SK'},
+        'Tamil Nadu': {'code': 33, 'shortcut': 'TN'},
+        'Telangana': {'code': 36, 'shortcut': 'TS'},
+        'Tripura': {'code': 16, 'shortcut': 'TR'},
+        'Uttar Pradesh': {'code': 9, 'shortcut': 'UP'},
+        'Uttarakhand': {'code': 5, 'shortcut': 'UK'},
+        'West Bengal': {'code': 19, 'shortcut': 'WB'}
+        }   
+    
+    return render(request, 'create_branch.html' , {"state_map":state_map})
+
 
 def branch_list(request):
     branches = Branch.objects.all().order_by('-created_at')
