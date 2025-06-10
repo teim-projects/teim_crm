@@ -1592,13 +1592,19 @@ def pending_followups(request):
     salesperson_filter = request.GET.get('salesperson')
 
     # Get followups with a past next_followup_date
+    lead_folloup = lead_management.objects.filter(firstfollowupdate__lt = today)
     followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
 
     if salesperson_filter:
         followups = followups.filter(lead__salesperson=salesperson_filter)
+        lead_folloup = lead_folloup.filter(lead__salesperson=salesperson_filter)
 
+    combined = list(chain(
+           followups,  # main_followup objects (with .lead field)
+           [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]  # avoid duplication
+       ))
     # Pagination
-    paginator = Paginator(followups, 10)
+    paginator = Paginator(combined, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
