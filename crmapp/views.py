@@ -1519,7 +1519,7 @@ def main_followup_view(request, lead_id):
         lead.save()
 
 
-        return redirect('main_followup_view', lead_id=lead.id)
+        return redirect('today_work')
 
     context = {
         'lead': lead,
@@ -1541,19 +1541,31 @@ from .models import main_followup, lead_management
 from django.utils import timezone
 from datetime import date
 from django.core.paginator import Paginator
+from itertools import chain
 
 def today_work(request):
     today = date.today()
+
+    print("today",today)
     salesperson_filter = request.GET.get('salesperson')
 
     # Filter today's follow-ups
+    lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
     followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
 
     if salesperson_filter:
         followups = followups.filter(lead__salesperson=salesperson_filter)
+        lead_folloup = lead_folloup.filter(lead__salesperson=salesperson_filter)
 
+    # Combine followups and lead_folloup
+    combined = list(chain(
+        followups,  # main_followup objects (with .lead field)
+        [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]  # avoid duplication
+    ))
+    
+    print("combined", combined)
     # Pagination
-    paginator = Paginator(followups, 10)  # Show 10 records per page
+    paginator = Paginator(combined, 10)  # Show 10 records per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1562,6 +1574,7 @@ def today_work(request):
 
     # Used for correct indexing
     start_index = (page_obj.number - 1) * paginator.per_page
+
 
     return render(request, 'today_work.html', {
         'page_obj': page_obj,
@@ -1636,7 +1649,7 @@ def display_followup(request):
     }
     return render(request, 'display_followup.html', context)
 
-def get_customer_details(request, customer_id):
+def fetch_customer_details(request, customer_id):
     customer = get_object_or_404(customer_details, customerid=customer_id)
     return render(request, 'customer_details_modal.html', {'customer': customer})
 
@@ -4082,6 +4095,9 @@ def get_branch_details(request, branch_id):
             'gst_number': branch.gst_number,
             'pan_number': branch.pan_number,
             'full_address': branch.full_address,
+            'state': branch.state,
+            'code': branch.code,
+            'shortcut': branch.shortcut,
         }
         return JsonResponse(data)
     except Branch.DoesNotExist:
@@ -4184,3 +4200,6 @@ def delete_bank_account(request, account_id):
     bank_account = get_object_or_404(BankAccounts, id=account_id)
     bank_account.delete()
     return redirect('list_bank_accounts')
+
+
+
