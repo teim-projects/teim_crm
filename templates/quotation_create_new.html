@@ -501,9 +501,8 @@
                                                 readonly></textarea>
                                         </div>
                                     </div>
-                                    <form id="quotation-management-form" method="post">
-                                        <!-- your form fields here -->
-
+                                    <form id="quotation-management-form" method="post"
+                                        action="{% url 'create_quotation' %}">
                                         <div class="text-center mt-3">
                                             <button type="button" class="btn btn-secondary prev-step mt-2"
                                                 style="width: 150px;">Previous</button>
@@ -676,10 +675,12 @@
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('quotation-management-form').addEventListener('submit', function (e) {
                 // Ensure all calculations are up-to-date before submission
+
                 calculateTotal();
 
                 // You can add additional validation here if needed
                 if (selectedProducts.length === 0) {
+
                     alert('Please select at least one product');
                     e.preventDefault();
                     return;
