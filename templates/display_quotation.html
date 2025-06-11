@@ -454,12 +454,9 @@
                                         <th>Email</th>
                                         <th>Secondary Email</th>
                                         <th>Address</th>
-                                        <th>City</th>
-                                        <th>State</th>
-                                        <th>Pincode</th>
-                                        <th>GPS Location</th>
                                         <th>Shipping Branch</th>
                                         <th>Selected Services</th>
+                                        <th>Quantity</th>
                                         <th>Apply GST</th>
                                         <th>GST Status</th>
                                         <th>CGST</th>
@@ -488,14 +485,6 @@
                                         <td>{{ x.customer_email }}</td>
                                         <td>{{ x.secondary_email }}</td>
                                         <td>{{ x.address }}</td>
-                                        <td>{{ x.city }}</td>
-                                        <td>{{ x.state }}</td>
-                                        <td>{{ x.pincode }}</td>
-                                        <td>
-                                            {% if x.gps_location %}
-                                            <a href="{{ x.gps_location }}" target="_blank">Location</a>
-                                            {% else %}-{% endif %}
-                                        </td>
                                         <td>{{ x.branch.branch_name }}</td>
                                         <td>
                                             {% for service in x.selected_services.all %}
@@ -504,6 +493,16 @@
                                             No services selected
                                             {% endfor %}
                                         </td>
+                                        <td>
+                                            {% if x.product_details_json %}
+                                            {% for item in x.product_details_json %}
+                                            {{ item.quantity }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                            {% else %}
+                                            No Quantity
+                                            {% endif %}
+                                        </td>
+
                                         <td>{{ x.apply_gst|yesno:"Yes,No" }}</td>
                                         <td>{{ x.gst_status }}</td>
                                         <td>{% if x.cgst %}{{ x.cgst|floatformat:2 }}{% else %}-{% endif %}</td>

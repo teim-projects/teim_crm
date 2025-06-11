@@ -1,134 +1,268 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <title>Quotation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            font-size: 14px;
+            font-size: 11px;
             color: #000;
         }
-        .header {
+
+        .header,
+        .footer {
             text-align: center;
-            margin-bottom: 20px;
         }
-        .section {
-            margin-top: 20px;
+
+        .header img {
+            float: left;
+            width: 60px;
+            height: 60px;
         }
-        h2, h4 {
-            margin: 0;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ddd;
+
+        .company-details {
+            text-align: right;
+            font-size: 10px;
         }
-        p {
-            margin: 4px 0;
+
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
         }
+
+        .details-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .client-details {
+            width: 60%;
+            font-size: 10px;
+        }
+
+        .quotation-info {
+            width: 40%;
+            font-size: 10px;
+            text-align: right;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
-            font-size: 14px;
+            font-size: 10px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #333;
-            padding: 8px 10px;
+            padding: 4px;
             text-align: left;
-            vertical-align: middle;
+            vertical-align: top;
         }
-        th {
-            background-color: #f5f5f5;
-            font-weight: bold;
+
+        .service-table th,
+        .service-table td {
+            padding: 4px;
+            border: 1px solid #333;
+            vertical-align: top;
         }
-        .right {
+
+        .service-table th:nth-child(1),
+        .service-table td:nth-child(1) {
+            width: 5%;
+            text-align: center;
+        }
+
+        .service-table th:nth-child(2),
+        .service-table td:nth-child(2) {
+            width: 45%;
+            text-align: left;
+        }
+
+        .service-table th:nth-child(3),
+        .service-table td:nth-child(3) {
+            width: 15%;
             text-align: right;
         }
-        ul {
-            padding-left: 20px;
-            margin: 6px 0;
+
+        .service-table th:nth-child(4),
+        .service-table td:nth-child(4) {
+            width: 10%;
+            text-align: right;
         }
-        ul li {
-            margin-bottom: 4px;
+
+        .service-table th:nth-child(5),
+        .service-table td:nth-child(5) {
+            width: 15%;
+            text-align: right;
         }
-        .bold {
+
+        .totals td {
+            text-align: right;
+        }
+
+        .totals .label {
             font-weight: bold;
+        }
+
+        .terms {
+            margin-top: 10px;
+            font-size: 9.5px;
+        }
+
+        .terms ol {
+            padding-left: 18px;
+        }
+
+        .thankyou {
+            margin-top: 10px;
+            font-size: 10px;
+        }
+
+        .footer-note {
+            font-size: 9px;
+            margin-top: 20px;
+            text-align: center;
         }
     </style>
 </head>
+
 <body>
 
-<div class="header">
-    <h2>Quotation</h2>
-    <p><strong>{{ quotation.customer_full_name }}</strong></p>
-    <p>{{ quotation.address }}, {{ quotation.city }}, {{ quotation.state }} - {{ quotation.pincode }}</p>
-</div>
+    <div class="header clearfix">
+        <img src="{{ logo_path }}" alt="Logo" style="max-width: 100px; height: auto;">
+        <div class="company-details">
+            <strong>Seva Facility Services Pvt Ltd</strong><br>
+            <strong>{{ quotation.branch.full_address }} , </strong><br>
 
-<div class="section">
-    <h4>Quotation Details</h4>
-    <p><strong>Contact:</strong> {{ quotation.contact_no }}</p>
-    <p><strong>Email:</strong> {{ quotation.customer_email }}</p>
-    <p><strong>Quotation Date:</strong> {{ quotation.quotation_date }}</p>
-    <p><strong>Subject:</strong> {{ quotation.subject }}</p>
-    <p><strong>Branch:</strong> {{ quotation.branch.branch_name }}</p>
-</div>
+            <strong>{{ quotation.branch.email_1 }} , </strong>
+            <strong>{{ quotation.branch.email_2 }}</strong><br>
+            <strong>{{ quotation.branch.contact_1 }}</strong><br>
+            <strong>GSTIN:{{ quotation.branch.gst_number }}</strong><br>
+            <strong>PAN No:{{ quotation.branch.pan_number }}</strong><br>
 
-<div class="section">
-    <h4>Selected Services</h4>
-    <ul>
-        {% for product in quotation.selected_services.all %}
-            <li>{{ product.product_name }}</li>
-        {% endfor %}
-    </ul>
-</div>
+        </div>
+    </div>
 
-<div class="section">
-    <h4>Pricing & GST</h4>
-    <table>
+    <hr>
+
+
+    <div class="details-container">
+        <div class="client-details">
+            <strong>Name :</strong> {{ quotation.customer_full_name }}<br>
+            <strong>Phone :</strong> {{ quotation.contact_no }}<br>
+            {% if quotation.secondary_contact_no %}
+            <strong>Secondary Phone :</strong> {{ quotation.secondary_contact_no }}<br>
+            {% endif %}
+            <strong>Email :</strong> {{ quotation.customer_email }}<br>
+            {% if quotation.secondary_email %}
+            <strong>Secondary Email :</strong> {{ quotation.secondary_email }}<br>
+            {% endif %}
+            <strong>Address :</strong> {{ quotation.address }}
+        </div>
+
+        <div class="quotation-info">
+            <strong style="font-size: 12px;">Quotation</strong><br>
+            <strong>Quotation No:</strong>{{ quotation.quotation_date|date:" Y/m/" }}{{ quotation.id }}<br>
+            <strong>Date:</strong> {{ quotation.quotation_date|date:"d M Y" }}
+        </div>
+    </div>
+
+    <div>
+        <strong>Subject:</strong> {{ quotation.subject }}<br>
+        <em>We Thank You for your enquiry and we are pleased to give the quotation accordingly as below:</em>
+    </div>
+
+    <table class="service-table">
         <thead>
             <tr>
-                <th>Description</th>
-                <th class="right">Amount (₹)</th>
+                <th>Sr. No.</th>
+                <th>Product / Service</th>
+                <th>Rate</th>
+                <th>Qty</th>
+                <th>GST (%)</th>
+                <th>Total</th>
             </tr>
         </thead>
         <tbody>
+            {% for item in quotation.product_details_json %}
             <tr>
-                <td>Total Price (Without GST)</td>
-                <td class="right">{{ quotation.total_price }}</td>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.name }} </td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.gst }}</td>
+                <td>{{ item.total }}</td>
+
             </tr>
-            {% if quotation.apply_gst %}
-            <tr>
-                <td>CGST (9%)</td>
-                <td class="right">{{ quotation.cgst }}</td>
-            </tr>
-            <tr>
-                <td>SGST (9%)</td>
-                <td class="right">{{ quotation.sgst }}</td>
-            </tr>
-            <tr>
-                <td><strong>GST Total</strong></td>
-                <td class="right"><strong>{{ quotation.gst_total }}</strong></td>
-            </tr>
-            {% endif %}
-            <tr>
-                <td><strong>Grand Total</strong></td>
-                <td class="right"><strong>{{ quotation.total_price_with_gst }}</strong></td>
-            </tr>
+            {% endfor %}
         </tbody>
     </table>
-</div>
 
-<div class="section">
-    <h4>Terms & Conditions</h4>
-    <ul>
-        {% for term in quotation.terms_and_conditions.all %}
+    <table class="totals">
+        <tr>
+            <td class="label">Subtotal:</td>
+            <td>{{ quotation.total_price|floatformat:2 }}</td>
+        </tr>
+
+        {% if quotation.apply_gst %}
+        {% if quotation.igst %}
+        <tr>
+            <td class="label">IGST ({{ quotation.igst_rate|floatformat:2 }}%):</td>
+            <td>{{ quotation.igst|floatformat:2 }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td class="label">CGST ({{ quotation.cgst_rate|floatformat:2 }}%):</td>
+            <td>{{ quotation.cgst|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td class="label">SGST ({{ quotation.sgst_rate|floatformat:2 }}%):</td>
+            <td>{{ quotation.sgst|floatformat:2 }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="label">Total Tax:</td>
+            <td>{{ quotation.gst_total|floatformat:2 }}</td>
+        </tr>
+        {% endif %}
+
+        <tr>
+            <td class="label"><strong>Grand Total:</strong></td>
+            <td><strong>{{ quotation.total_price_with_gst|floatformat:2 }}</strong></td>
+        </tr>
+    </table>
+
+
+    <p><strong>Total in Words:</strong> {{ amount_in_words }} </p>
+
+    <div class="terms">
+        <strong>Terms & Conditions</strong>
+        <ol>
+            {% for term in quotation.terms_and_conditions.all %}
             <li>{{ term.description }}</li>
-        {% empty %}
-            <li>No terms added.</li>
-        {% endfor %}
-    </ul>
-</div>
+            {% empty %}
+
+            {% endfor %}
+        </ol>
+        {% if quotation.apply_gst %}
+        All above material and services will be attracted to GST extra as per product or service applicable.
+        {% endif %}
+    </div>
+
+    <div class="thankyou">
+        We thank you for opportunity given to serve you & look forward to adding you to our family of customers.<br><br>
+        <strong>Thanking You,</strong><br>
+        Seva Facility Services Pvt Ltd<br>
+        <strong>Contact By:</strong> {{ quotation.created_by.get_full_name }} - {{ quotation.created_by.phone_number }}
+    </div>
 
 </body>
-</html>
 
-<!-- start -->
+</html>

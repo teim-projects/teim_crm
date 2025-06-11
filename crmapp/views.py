@@ -765,26 +765,31 @@ from .models import Product
 from .models import customer_details
 from .models import Branch  # ✅ Import branch model
 #eee
+
+# New----------------
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
     terms = QuotationTerm.objects.all()
     branches = Branch.objects.all()
-
-    if request.method == 'GET' and 'contact_no' in request.GET:
-        contact_no = request.GET.get('contact_no')
-        try:
-            customer = customer_details.objects.get(primarycontact=contact_no)
-            data = {
-                'customer_full_name': customer.fullname,
-                'customer_email': customer.primaryemail,
-                'soldtopartyaddress': customer.soldtopartyaddress,  # Add this line
-                'city': customer.soldtopartycity,
-                'state': customer.soldtopartystate,
-            }
-            return JsonResponse(data)
-        except customer_details.DoesNotExist:
-            return JsonResponse({'error': 'Customer not found'}, status=404)
+  
+            
+    # if request.method == 'GET' and 'contact_no' in request.GET:
+    #     contact_no = request.GET.get('contact_no')
+        # try:
+        #     customer = customer_details.objects.get(primarycontact=contact_no)
+        #     # data = {
+        #     #         'customer_full_name': customer.fullname,
+        #     #         'customer_email': customer.primaryemail,
+        #     #         'soldtopartyaddress': customer.soldtopartyaddress,
+        #     #         'city': customer.soldtopartycity,
+        #     #         # 'state': customer.soldtopartystate,
+        #     #         'pincode':  "123456",
+        #     #         # 'shifttopartyaddress':customer.shifttopartyaddress
+        #     #     }
+        #     return JsonResponse()
+        # except customer_details.DoesNotExist:
+        #     return JsonResponse({'error': 'Customer not found'}, status=404)
 
     if request.method == 'POST':
         try:
@@ -801,6 +806,7 @@ def quotation_management_create(request):
             pincode = request.POST.get('pincode', '000000')
             subject = request.POST.get('subject')
             branch_id = request.POST.get('branch_id')
+            product_details_json = request.POST.get('product_details_json')
 
             # Handle quotation date
             date_str = request.POST.get('quotation_date')
@@ -885,7 +891,8 @@ def quotation_management_create(request):
                 sgst=sgst,
                 igst=igst,
                 gst_total=total_gst,
-                branch_id=branch_id if branch_id else None
+                branch_id=branch_id if branch_id else None,
+                product_details_json=json.loads(product_details_json) 
             )
 
             quotation.selected_services.set(selected_services)
@@ -932,20 +939,53 @@ def generate_quotation_pdf_download(request, id):
         return HttpResponse('Error generating PDF', status=500)
     return response
 
+
+
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from crmapp.custom_filters import price_in_words
+from xhtml2pdf import pisa
+import json
+import os
+
 def generate_quotation_pdf_view(request, id):
     quotation = quotation_management.objects.get(id=id)
+
+    # Safely parse the product_details_json
+    product_data = quotation.product_details_json
+    if isinstance(product_data, str):
+        try:
+            product_data = json.loads(product_data)
+        except json.JSONDecodeError:
+            product_data = []
+
+    # Add total for each product (price × quantity)
+    for product in product_data:
+        try:
+            product['total'] = float(product['price']) * float(product['quantity'])
+        except (KeyError, ValueError, TypeError):
+            product['total'] = 0.0
+
+    # Inject updated data into quotation object for template access
+    quotation.product_details_json = product_data
+    amount_in_words = price_in_words(quotation.total_price_with_gst)
+ 
+    # Render PDF
+    
     template_path = 'pdf_template.html'
-    context = {'quotation': quotation}
+    
+    context = {'quotation': quotation,
+               'amount_in_words': amount_in_words, }
+    
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="quotation.pdf"'
     template = get_template(template_path)
     html = template.render(context)
-
     pisa_status = pisa.CreatePDF(html, dest=response)
     if pisa_status.err:
         return HttpResponse('Error generating PDF', status=500)
     return response
-
 
 
 def get_products_by_category(request):
@@ -1863,7 +1903,7 @@ def display_quotation(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
-
+    print(page_obj)
     context = {
         'current_order': sort_order,
         'current_sort_by': sort_by,
@@ -2330,7 +2370,7 @@ def edit_service_management(request, rid):
 
         # Get users already assigned as technicians (via TechWorkList)
         allocated_technicians = User.objects.filter(techworklist__service=service_obj).distinct()
-        print("selected_technicians :",allocated_technicians)
+   
         context = {
             'data': [service_obj],
             'previous_reschedules': previous_reschedules,
@@ -4121,6 +4161,7 @@ def get_customer_details(request):
                 'soldtopartyaddress': customer.soldtopartyaddress,
                 'city': customer.soldtopartycity,
                 'state': customer.soldtopartystate,
+                'pincode':customer.soldtopartypostal
             }
             return JsonResponse(data)
         except customer_details.DoesNotExist:

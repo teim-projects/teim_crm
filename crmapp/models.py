@@ -558,6 +558,8 @@ from .models import Product
 from crmapp.models import Branch
 from .models import QuotationTerm  # adjust path if needed
 
+
+# New ----------
 class quotation_management(models.Model):
     customer_full_name = models.CharField(max_length=255, null=True, blank=True)
     contact_no = models.CharField(max_length=15, null=True, blank=True)
@@ -570,14 +572,15 @@ class quotation_management(models.Model):
     state = models.CharField(max_length=100, null=True, blank=True)
     pincode = models.CharField(max_length=6, default="000000")
     gps_location = models.URLField(null=True, blank=True)
-
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)  # ✅ Used for shipping
-
-    selected_services = models.ManyToManyField(Product, related_name="quotation_services")
-
+    selected_services = models.ManyToManyField(Product, related_name="quotation_services", blank=True)
+    product_details_json = models.JSONField(null=True, blank=True)
+    # product_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    # product_quantity = models.IntegerField(null=True, blank=True)
+    # product_unit = models.CharField(max_length=100, null=True, blank=True)
+    # gst_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     apply_gst = models.BooleanField(default=False)
     gst_status = models.CharField(max_length=10, default='NON-GST')
-
     cgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
     sgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
     igst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Optional, if interstate
@@ -590,6 +593,11 @@ class quotation_management(models.Model):
     subject = models.CharField(max_length=1000, null=True, blank=True)
     quotation_date = models.DateField(default=timezone.now)
 
+    # product_price 
+    # product_quantity
+    # product_unit
+    # gst_rate
+    
     terms_and_conditions = models.ManyToManyField(QuotationTerm, blank=True)
     gst_number = models.CharField(
         max_length=15,
