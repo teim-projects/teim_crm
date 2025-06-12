@@ -973,10 +973,14 @@ def generate_quotation_pdf_view(request, id):
  
     # Render PDF
     
-    template_path = 'pdf_template.html'
+    template_path = 'pdf_template.html'  
+    logo_path = request.build_absolute_uri(static('images/Logo.png'))
+  
     
     context = {'quotation': quotation,
-               'amount_in_words': amount_in_words, }
+               'amount_in_words': amount_in_words,
+               'logo_path': logo_path
+                }
     
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="quotation.pdf"'
@@ -3998,7 +4002,7 @@ from django.templatetags.static import static
 
 def view_work_pdf(request, work_id):
     work = get_object_or_404(TechWorkList, pk=work_id, technician=request.user)
-    logo_path = request.build_absolute_uri(static('images/logo.png'))
+    logo_path = request.build_absolute_uri(static('images/Logo.png'))
 
     context = {'work': work,'logo_path': logo_path}
     html = render_to_string('work_pdf_template.html', context)

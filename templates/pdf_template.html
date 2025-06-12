@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -136,11 +137,12 @@
 <body>
 
     <div class="header clearfix">
-        <img src="{{ logo_path }}" alt="Logo" style="max-width: 100px; height: auto;">
+
+        <img src="{{ logo_path }}" alt="Logo" style="width: 100px; height: auto;">
+
         <div class="company-details">
             <strong>Seva Facility Services Pvt Ltd</strong><br>
             <strong>{{ quotation.branch.full_address }} , </strong><br>
-
             <strong>{{ quotation.branch.email_1 }} , </strong>
             <strong>{{ quotation.branch.email_2 }}</strong><br>
             <strong>{{ quotation.branch.contact_1 }}</strong><br>
