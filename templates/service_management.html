@@ -598,7 +598,7 @@
                                     data-product-id="${product.product_id}" 
                                     value="${product.price}"
                                     placeholder="Product Price" 
-                                    min="0" step="1" 
+                                    min="0" step="0.01" 
                                     onchange="updateProductPrice(this, '${product.product_id}')">
 
                                 <input type="number" style="max-width: 200px; margin-left: 30px "
@@ -606,7 +606,7 @@
                                     data-product-id="${product.product_id}" 
                                     value="${product.quantity}"
                                     placeholder="Quantity" 
-                                    min="1" step="1" 
+                                    min="1" step="0.01" 
                                     onchange="updateProductQuantity(this, '${product.product_id}')">
 
 

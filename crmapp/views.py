@@ -692,9 +692,9 @@ def service_management_create(request):
 
                 customer=customer,
                 address = address,
-                gst_checkbox=apply_gst,  # Store whether GST is applied
-                gst_number=gst_number,  # Save GST number only if provided
-                gst_status = gst_status,
+                # gst_checkbox=apply_gst,  # Store whether GST is applied
+                # gst_number=gst_number,  # Save GST number only if provided
+                # gst_status = gst_status,
                 total_price=total_price,
                 total_price_with_gst=total_with_gst,
                 contract_type=request.POST.get('contract_type', 'NOT SELECTED'),
@@ -1065,72 +1065,72 @@ def delete_invoice_term(request, id):
 
 
 
-def quotation_create(request):
-    customers = customer_details.objects.all()
+# def quotation_create(request):
+#     customers = customer_details.objects.all()
 
-    if request.method == 'POST':
-        quantity = int(request.POST.get('quantity'))
-        price = float(request.POST.get('price'))
+#     if request.method == 'POST':
+#         quantity = int(request.POST.get('quantity'))
+#         price = float(request.POST.get('price'))
 
-        total_amount = quantity * price
-        discount = float(request.POST.get('discount'))
-        company_name = request.POST.get('company_name')
-        company_email = request.POST.get('company_email')
-        company_contact_no = request.POST.get('company_contact_no')
-        quotation_date = request.POST.get('quotation_date')
-        company_address = request.POST.get('company_address')
-        subject = request.POST.get('subject')
-        termsandcondition = request.POST.get('termsandcondition')
-        servicetype_q = request.POST.get('servicetype_q')
-        gst_checkbox = request.POST.get('gst_checkbox') == 'on'
-        customer_id = request.POST.get('customer_id')
-        customer = customer_details.objects.get(id=customer_id)
+#         total_amount = quantity * price
+#         discount = float(request.POST.get('discount'))
+#         company_name = request.POST.get('company_name')
+#         company_email = request.POST.get('company_email')
+#         company_contact_no = request.POST.get('company_contact_no')
+#         quotation_date = request.POST.get('quotation_date')
+#         company_address = request.POST.get('company_address')
+#         subject = request.POST.get('subject')
+#         termsandcondition = request.POST.get('termsandcondition')
+#         servicetype_q = request.POST.get('servicetype_q')
+#         gst_checkbox = request.POST.get('gst_checkbox') == 'on'
+#         customer_id = request.POST.get('customer_id')
+#         customer = customer_details.objects.get(id=customer_id)
 
-        discounted_amount = total_amount - (total_amount * (discount / 100))
-        total_amount_with_gst = discounted_amount * 1.18 if gst_checkbox else discounted_amount
+#         discounted_amount = total_amount - (total_amount * (discount / 100))
+#         total_amount_with_gst = discounted_amount * 1.18 if gst_checkbox else discounted_amount
 
-        # Get latest version of quotation for the customer
-        latest_quotation = quotation.objects.filter(customer=customer, servicetype_q=servicetype_q).order_by('-version').first()
+#         # Get latest version of quotation for the customer
+#         latest_quotation = quotation.objects.filter(customer=customer, servicetype_q=servicetype_q).order_by('-version').first()
 
-        # Increment version for the new quotation
-        if latest_quotation:
-            new_version = latest_quotation.version + 1
-        else:
-            new_version = 1
+#         # Increment version for the new quotation
+#         if latest_quotation:
+#             new_version = latest_quotation.version + 1
+#         else:
+#             new_version = 1
 
-        # Create quotation object and save to database
-        quotation_obj = quotation(
-            total_amount=total_amount,
-            discount=discount,
-            company_name=company_name,
-            company_email=company_email,
-            company_contact_no=company_contact_no,
-            quotation_date=quotation_date,
-            company_address=company_address,
-            subject=subject,
-            quantity=quantity,
-            price=price,
-            termsandcondition=termsandcondition,
-            servicetype_q=servicetype_q,
-            gst_checkbox=gst_checkbox,
-            customer=customer,
-            total_amount_with_gst=total_amount_with_gst,
-            version = new_version,
-            status = 'active'
-        )
+#         # Create quotation object and save to database
+#         quotation_obj = quotation(
+#             total_amount=total_amount,
+#             discount=discount,
+#             company_name=company_name,
+#             company_email=company_email,
+#             company_contact_no=company_contact_no,
+#             quotation_date=quotation_date,
+#             company_address=company_address,
+#             subject=subject,
+#             quantity=quantity,
+#             price=price,
+#             termsandcondition=termsandcondition,
+#             servicetype_q=servicetype_q,
+#             gst_checkbox=gst_checkbox,
+#             customer=customer,
+#             total_amount_with_gst=total_amount_with_gst,
+#             version = new_version,
+#             status = 'active'
+#         )
 
-        # Mark the previous version as inactive
-        if latest_quotation:
-            latest_quotation.status = 'inactive'
-            latest_quotation.save()
+#         # Mark the previous version as inactive
+#         if latest_quotation:
+#             latest_quotation.status = 'inactive'
+#             latest_quotation.save()
 
-        quotation_obj.save()
-        return redirect('/display_quotation')  
+#         quotation_obj.save()
+#         return redirect('/display_quotation')  
 
-    context = {
-        'customers': customers,
-    }
-    return render(request, 'quotation.html', context)
+#     context = {
+#         'customers': customers,
+#     }
+#     return render(request, 'quotation.html', context)
 
 
 def quotation_history(request, customer_id):
