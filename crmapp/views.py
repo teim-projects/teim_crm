@@ -979,11 +979,13 @@ def generate_quotation_pdf_view(request, id):
     
     template_path = 'pdf_template.html'  
     logo_path = request.build_absolute_uri(static('images/Logo.png'))
+    fottor_path = request.build_absolute_uri(static('images/qutation_fottor_pdf.jpg'))
   
     
     context = {'quotation': quotation,
                'amount_in_words': amount_in_words,
-               'logo_path': logo_path
+               'logo_path': logo_path,
+               'fottor_path':  fottor_path
                 }
     
     response = HttpResponse(content_type='application/pdf')
