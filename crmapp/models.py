@@ -566,7 +566,8 @@ class quotation_management(models.Model):
     secondary_contact_no = models.CharField(max_length=15, null=True, blank=True)
     customer_email = models.EmailField(null=True, blank=True)
     secondary_email = models.EmailField(null=True, blank=True)  # ✅ Added
-
+    contact_by = models.CharField(max_length=100 , null=True, blank=True)
+    contact_by_no = models.CharField(max_length=11,null=True,blank=True)
     address = models.TextField(null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)

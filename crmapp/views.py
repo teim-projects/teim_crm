@@ -799,6 +799,8 @@ def quotation_management_create(request):
             secondary_contact_no = request.POST.get('secondary_contact_no')
             customer_email = request.POST.get('customer_email')
             secondary_email = request.POST.get('secondary_email')
+            contact_by = request.POST.get('contact_by')
+            contact_by_no = request.POST.get('contact_by_no')
             address = request.POST.get('address')
             city = request.POST.get('city')
             state = request.POST.get('state')
@@ -875,6 +877,8 @@ def quotation_management_create(request):
                 secondary_contact_no=secondary_contact_no,
                 customer_email=customer_email,
                 secondary_email=secondary_email,
+                contact_by = contact_by,
+                contact_by_no = contact_by_no,
                 address=address,
                 city=city,
                 state=state,
@@ -899,7 +903,7 @@ def quotation_management_create(request):
             selected_term_ids = request.POST.getlist('terms_and_conditions')
             quotation.terms_and_conditions.set(selected_term_ids)
 
-            return render(request, 'display_quotation.html')
+            return redirect('/display_quotation')
 
         except Exception as e:
             print(f"Error saving quotation: {e}")
