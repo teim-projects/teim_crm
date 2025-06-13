@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Pending Follow-ups</title>
+    <title>Pending Follow-ups </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap & FontAwesome -->
@@ -59,7 +59,7 @@
 
 <body>
 {% include 'sidebar.html' %}
-<div class="main">
+<div class="main" style="min-height: 100vh;">
     <div class="container py-4 bg-light rounded mb-3" style="margin-top: 100px;">
         <div class="row mb-1">
             <div class="col-12 text-center">
@@ -192,9 +192,10 @@
                 {% include 'buttons.html' %}
             </div>
         </div>
+        </div>
 
         <!-- Footer -->
-        <div class="container-fluid footer bg-light text-center p-3 mt-3">
+        <div class="container-fluid footer bg-light text-center p-3 ">
             <p style="margin: 0; font-weight: 600; color: #000;">
                 © 2025. Powered by
                 <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo" style="height: 20px;">

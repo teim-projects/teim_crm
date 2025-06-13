@@ -1,3 +1,4 @@
+from datetime import date
 from django.db import models
 import random
 from django.contrib.auth.models import User
@@ -64,9 +65,6 @@ class customer_details(models.Model):
     def __str__(self):
         return self.fullname
    
-    def __str__(self):
-        return self.customerid
-
 
 
 
@@ -561,11 +559,12 @@ from .models import QuotationTerm  # adjust path if needed
 
 # New ----------
 class quotation_management(models.Model):
+    quotation_no = models.CharField(max_length=20, blank=True, null=True, unique=True)
     customer_full_name = models.CharField(max_length=255, null=True, blank=True)
     contact_no = models.CharField(max_length=15, null=True, blank=True)
     secondary_contact_no = models.CharField(max_length=15, null=True, blank=True)
     customer_email = models.EmailField(null=True, blank=True)
-    secondary_email = models.EmailField(null=True, blank=True)  # ✅ Added
+    secondary_email = models.EmailField(null=True, blank=True)  
     contact_by = models.CharField(max_length=100 , null=True, blank=True)
     contact_by_no = models.CharField(max_length=11,null=True,blank=True)
     address = models.TextField(null=True, blank=True)
@@ -573,19 +572,15 @@ class quotation_management(models.Model):
     state = models.CharField(max_length=100, null=True, blank=True)
     pincode = models.CharField(max_length=6, default="000000")
     gps_location = models.URLField(null=True, blank=True)
-    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)  # ✅ Used for shipping
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)  
     selected_services = models.ManyToManyField(Product, related_name="quotation_services", blank=True)
     product_details_json = models.JSONField(null=True, blank=True)
-    # product_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    # product_quantity = models.IntegerField(null=True, blank=True)
-    # product_unit = models.CharField(max_length=100, null=True, blank=True)
-    # gst_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     apply_gst = models.BooleanField(default=False)
     gst_status = models.CharField(max_length=10, default='NON-GST')
-    cgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
-    sgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
-    igst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Optional, if interstate
-    gst_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  
+    igst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  
+    gst_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  
 
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -593,11 +588,6 @@ class quotation_management(models.Model):
 
     subject = models.CharField(max_length=1000, null=True, blank=True)
     quotation_date = models.DateField(default=timezone.now)
-
-    # product_price 
-    # product_quantity
-    # product_unit
-    # gst_rate
     
     terms_and_conditions = models.ManyToManyField(QuotationTerm, blank=True)
     gst_number = models.CharField(
@@ -607,13 +597,22 @@ class quotation_management(models.Model):
         help_text="Enter 15-digit GSTIN (optional)"
     )
 
-    def __str__(self):
-        return f"Quotation for {self.customer_full_name}"
 
     def __str__(self):
         selected_services = ', '.join([str(service) for service in self.selected_services.all()])
         return f'Quotation Management - {self.customer_full_name} ({selected_services})'
 
+
+    def save(self, *args, **kwargs):
+        creating = self.pk is None
+        super().save(*args, **kwargs)  
+
+        if creating and not self.quotation_no:
+            today = date.today()
+            year = today.year
+            month = str(today.month).zfill(2)
+            self.quotation_no = f"{year}/{month}/{self.id}"
+            super().save(update_fields=['quotation_no'])
 
 
 
@@ -680,5 +679,82 @@ class BankAccounts(models.Model):
 
     def __str__(self):
         return self.bank_name + " - " + self.branch + " - " + self.account_number 
-    
-    
+
+
+#  Tax Invoice model NEW
+class TaxInvoice(models.Model):
+    quotation = models.ForeignKey(quotation_management, on_delete=models.CASCADE, related_name="tax_invoice")
+    customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, related_name="customer_details")
+    bank = models.ForeignKey(BankAccounts, on_delete=models.CASCADE, related_name="bank_details")
+    # hsn_sac = models.CharField(max_length=50, blank=True, null=True)
+    tax_invoice_no = models.CharField(max_length=30, blank=True, null=True, unique=True)  
+    created_at = models.DateTimeField(auto_now_add=True)
+    referance_no_and_date = models.CharField(max_length=100, blank=True, null=True)
+    other_referance = models.CharField(max_length=500, blank=True, null=True)
+    delivery_note = models.CharField(max_length=100, blank=True, null=True)
+    modern_terms_of_payment = models.CharField(max_length=100, blank=True, null=True)
+    buyers_order_no = models.CharField(max_length=100, blank=True, null=True)
+    dated = models.DateField(blank=True, null=True)
+    dispatch_doc_no = models.CharField(max_length=100, blank=True, null=True)
+    delivery_note_date = models.DateField(blank=True, null=True)
+    dispatched_through = models.CharField(max_length=100, blank=True, null=True)
+    destination = models.CharField(max_length=1000, blank=True, null=True)
+    service_titel = models.CharField(max_length=200)
+    shift_gstin_uin = models.CharField(max_length=100)
+    shifttopartystate = models.CharField(max_length=100)
+    shifttopartystatecode = models.CharField(max_length=10)
+    sold_gstin_uin = models.CharField(max_length=100)
+    soldtopartystate = models.CharField(max_length=100)
+    soldtopartystatecode = models.CharField(max_length=10)
+
+
+    def __str__(self):
+        return self.tax_invoice_no
+
+    def generate_tax_invoice_no(self):
+        # Step 1: Financial year
+        today = date.today()
+        start_year = today.year - 1 if today.month < 4 else today.year
+        fy = f"{str(start_year)[-2:]}-{str(start_year + 1)[-2:]}"  
+
+        # Step 2: Branch shortcut from quotation
+        try:
+            branch_code = self.quotation.branch.shortcut.upper()
+        except AttributeError:
+            branch_code = "NA"
+
+        padded_id = str(self.id).zfill(5)
+
+        return f"{fy}/{branch_code}/{padded_id}"
+
+    def save(self, *args, **kwargs):
+     creating = self.pk is None
+     super().save(*args, **kwargs)  # First save to get an ID
+
+     if creating and not self.tax_invoice_no:
+         self.tax_invoice_no = self.generate_tax_invoice_no()
+
+         # Check again to avoid duplicate tax_invoice_no (very rare case)
+         if not TaxInvoice.objects.filter(tax_invoice_no=self.tax_invoice_no).exists():
+             super().save(update_fields=['tax_invoice_no'])
+         else:
+             # In rare case of collision (e.g., deleted invoice reused ID),
+             # regenerate with extra logic like appending a suffix or throw error
+             suffix = str(self.id).zfill(5)
+             self.tax_invoice_no = f"{self.generate_tax_invoice_no()}-{suffix}"
+             super().save(update_fields=['tax_invoice_no'])
+
+
+class TaxInvoiceItem(models.Model):
+    tax_invoice = models.ForeignKey(TaxInvoice, on_delete=models.CASCADE, related_name='items')
+    product_name = models.CharField(max_length=255)
+    hsn_code = models.CharField(max_length=50, blank=True, null=True)
+    quantity = models.PositiveIntegerField()
+    unit = models.CharField(max_length=20, blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    gst_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    gst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=10, decimal_places=2)  # price * qty + GST
+
+    def __str__(self):
+        return f"{self.product_name} ({self.quantity})"

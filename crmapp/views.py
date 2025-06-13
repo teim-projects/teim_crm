@@ -2,7 +2,7 @@ from django.shortcuts import render , redirect , HttpResponse , get_object_or_40
 from httpcore import request
 from .forms import InventoryServiceForm, InventoryAddForm ,  AddProductForm, UpdateProductForm
 from django.utils import timezone
-from crmapp.models import customer_details, service_management , quotation ,invoice , lead_management , Product , Inventory_summary , Inventory_add  
+from crmapp.models import customer_details, service_management ,TaxInvoice, quotation ,invoice , lead_management , Product , Inventory_summary , Inventory_add  
 from django .db.models import Q
 import random
 from django.http import JsonResponse
@@ -38,6 +38,50 @@ from datetime import datetime
 import json
 from django.utils.dateparse import parse_date
 from django.db.models import Count
+
+
+state_map = {
+        'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
+        'Andhra Pradesh': {'code': 37, 'shortcut': 'AP'},
+        'Arunachal Pradesh': {'code': 12, 'shortcut': 'AR'},
+        'Assam': {'code': 18, 'shortcut': 'AS'},
+        'Bihar': {'code': 10, 'shortcut': 'BR'},
+        'Chandigarh': {'code': 4, 'shortcut': 'CH'},
+        'Chhattisgarh': {'code': 22, 'shortcut': 'CG'},
+        'Dadra and Nagar Haveli and Daman and Diu': {'code': 26, 'shortcut': 'DNHDD'},
+        'Delhi': {'code': 7, 'shortcut': 'DL'},
+        'Goa': {'code': 30, 'shortcut': 'GA'},
+        'Gujarat': {'code': 24, 'shortcut': 'GJ'},
+        'Haryana': {'code': 6, 'shortcut': 'HR'},
+        'Himachal Pradesh': {'code': 2, 'shortcut': 'HP'},
+        'Jammu and Kashmir': {'code': 1, 'shortcut': 'JK'},
+        'Jharkhand': {'code': 20, 'shortcut': 'JH'},
+        'Karnataka': {'code': 29, 'shortcut': 'KA'},
+        'Kerala': {'code': 32, 'shortcut': 'KL'},
+        'Ladakh': {'code': 38, 'shortcut': 'LA'},
+        'Lakshadweep': {'code': 31, 'shortcut': 'LD'},
+        'Madhya Pradesh': {'code': 23, 'shortcut': 'MP'},
+        'Maharashtra': {'code': 27, 'shortcut': 'MH'},
+        'Manipur': {'code': 14, 'shortcut': 'MN'},
+        'Meghalaya': {'code': 17, 'shortcut': 'ML'},
+        'Mizoram': {'code': 15, 'shortcut': 'MZ'},
+        'Nagaland': {'code': 13, 'shortcut': 'NL'},
+        'Odisha': {'code': 21, 'shortcut': 'OD'},
+        'Other Country': {'code': 99, 'shortcut': 'OC'},
+        'Other Territory': {'code': 97, 'shortcut': 'OT'},
+        'Puducherry': {'code': 34, 'shortcut': 'PY'},
+        'Punjab': {'code': 3, 'shortcut': 'PB'},
+        'Rajasthan': {'code': 8, 'shortcut': 'RJ'},
+        'Sikkim': {'code': 11, 'shortcut': 'SK'},
+        'Tamil Nadu': {'code': 33, 'shortcut': 'TN'},
+        'Telangana': {'code': 36, 'shortcut': 'TS'},
+        'Tripura': {'code': 16, 'shortcut': 'TR'},
+        'Uttar Pradesh': {'code': 9, 'shortcut': 'UP'},
+        'Uttarakhand': {'code': 5, 'shortcut': 'UK'},
+        'West Bengal': {'code': 19, 'shortcut': 'WB'}
+        } 
+
+
 
 def landing_page(request):
     return render(request , 'landing_page.html')
@@ -772,24 +816,6 @@ def quotation_management_create(request):
     products = Product.objects.all()
     terms = QuotationTerm.objects.all()
     branches = Branch.objects.all()
-  
-            
-    # if request.method == 'GET' and 'contact_no' in request.GET:
-    #     contact_no = request.GET.get('contact_no')
-        # try:
-        #     customer = customer_details.objects.get(primarycontact=contact_no)
-        #     # data = {
-        #     #         'customer_full_name': customer.fullname,
-        #     #         'customer_email': customer.primaryemail,
-        #     #         'soldtopartyaddress': customer.soldtopartyaddress,
-        #     #         'city': customer.soldtopartycity,
-        #     #         # 'state': customer.soldtopartystate,
-        #     #         'pincode':  "123456",
-        #     #         # 'shifttopartyaddress':customer.shifttopartyaddress
-        #     #     }
-        #     return JsonResponse()
-        # except customer_details.DoesNotExist:
-        #     return JsonResponse({'error': 'Customer not found'}, status=404)
 
     if request.method == 'POST':
         try:
@@ -921,9 +947,73 @@ def quotation_management_create(request):
         'terms': terms,
         'branches': Branch.objects.all()  # Add this line
 })
+from django.http import JsonResponse
+from .models import quotation_management
 
 
 
+
+def get_quotation_details_by_no(request):
+    quotation_no = request.GET.get('quotation_no')
+    if not quotation_no:
+        return JsonResponse({'error': 'Quotation number is required'}, status=400)
+
+    try:
+        quotation = quotation_management.objects.select_related('branch').get(quotation_no=quotation_no)
+        branch = quotation.branch
+        product = quotation.product_details_json
+        cgst = quotation.cgst
+        sgst = quotation.sgst
+        igst = quotation.igst
+        total = quotation.total_price_with_gst
+        bank_accounts = BankAccounts.objects.all().values('id', 'bank_name', 'account_number', 'ifs_code', 'branch')
+        # Fetch customer manually by customer_id string field
+        customer_contact = quotation.contact_no
+        customer = customer_details.objects.get(primarycontact=customer_contact)
+
+
+        return JsonResponse({
+            # Branch data
+            'branch_name':branch.branch_name if branch else '',
+            'branch_contact_1': branch.contact_1 if branch else '',
+            'branch_email_1': branch.email_1 if branch else '',
+            'branch_gst': branch.gst_number if branch else '',
+            'branch_pan': branch.pan_number if branch else '',
+            'branch_address': branch.full_address if branch else '',
+            'state':branch.state if branch else '',
+            'code':branch.code if branch else '',
+
+            # Customer data
+            'fullname': customer.fullname,
+            'primarycontact': customer.primarycontact,
+            'primaryemail': customer.primaryemail,
+            'soldtopartyaddress': customer.soldtopartyaddress,
+            'soldtopartycity': customer.soldtopartycity,
+            'soldtopartystate': customer.soldtopartystate,
+            'soldtopartypostal': customer.soldtopartypostal,
+            'shifttopartyaddress': customer.shifttopartyaddress,
+            'shifttopartycity': customer.shifttopartycity,
+            'shifttopartystate': customer.shifttopartystate,
+            'shifttopartypostal': customer.shifttopartypostal,
+            
+            # Product data
+            'product':product,
+            'cgst':cgst,
+            'sgst':sgst,
+            'igst':igst,
+            'total':total,
+            
+
+            # Bank data
+            'bank': list(bank_accounts),
+            'state_map': state_map,
+        })
+
+    except quotation_management.DoesNotExist:
+        return JsonResponse({'error': 'Quotation not found'}, status=404)
+    except customer_details.DoesNotExist:
+        return JsonResponse({'error': 'Customer not found for this quotation'}, status=404)
+    
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
@@ -4091,47 +4181,6 @@ def create_branch(request):
         branch.save()  
         return redirect('branch_list')
    
-    state_map = {
-        'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
-        'Andhra Pradesh': {'code': 37, 'shortcut': 'AP'},
-        'Arunachal Pradesh': {'code': 12, 'shortcut': 'AR'},
-        'Assam': {'code': 18, 'shortcut': 'AS'},
-        'Bihar': {'code': 10, 'shortcut': 'BR'},
-        'Chandigarh': {'code': 4, 'shortcut': 'CH'},
-        'Chhattisgarh': {'code': 22, 'shortcut': 'CG'},
-        'Dadra and Nagar Haveli and Daman and Diu': {'code': 26, 'shortcut': 'DNHDD'},
-        'Delhi': {'code': 7, 'shortcut': 'DL'},
-        'Goa': {'code': 30, 'shortcut': 'GA'},
-        'Gujarat': {'code': 24, 'shortcut': 'GJ'},
-        'Haryana': {'code': 6, 'shortcut': 'HR'},
-        'Himachal Pradesh': {'code': 2, 'shortcut': 'HP'},
-        'Jammu and Kashmir': {'code': 1, 'shortcut': 'JK'},
-        'Jharkhand': {'code': 20, 'shortcut': 'JH'},
-        'Karnataka': {'code': 29, 'shortcut': 'KA'},
-        'Kerala': {'code': 32, 'shortcut': 'KL'},
-        'Ladakh': {'code': 38, 'shortcut': 'LA'},
-        'Lakshadweep': {'code': 31, 'shortcut': 'LD'},
-        'Madhya Pradesh': {'code': 23, 'shortcut': 'MP'},
-        'Maharashtra': {'code': 27, 'shortcut': 'MH'},
-        'Manipur': {'code': 14, 'shortcut': 'MN'},
-        'Meghalaya': {'code': 17, 'shortcut': 'ML'},
-        'Mizoram': {'code': 15, 'shortcut': 'MZ'},
-        'Nagaland': {'code': 13, 'shortcut': 'NL'},
-        'Odisha': {'code': 21, 'shortcut': 'OD'},
-        'Other Country': {'code': 99, 'shortcut': 'OC'},
-        'Other Territory': {'code': 97, 'shortcut': 'OT'},
-        'Puducherry': {'code': 34, 'shortcut': 'PY'},
-        'Punjab': {'code': 3, 'shortcut': 'PB'},
-        'Rajasthan': {'code': 8, 'shortcut': 'RJ'},
-        'Sikkim': {'code': 11, 'shortcut': 'SK'},
-        'Tamil Nadu': {'code': 33, 'shortcut': 'TN'},
-        'Telangana': {'code': 36, 'shortcut': 'TS'},
-        'Tripura': {'code': 16, 'shortcut': 'TR'},
-        'Uttar Pradesh': {'code': 9, 'shortcut': 'UP'},
-        'Uttarakhand': {'code': 5, 'shortcut': 'UK'},
-        'West Bengal': {'code': 19, 'shortcut': 'WB'}
-        }   
-    
     return render(request, 'create_branch.html' , {"state_map":state_map})
 
 
@@ -4177,6 +4226,7 @@ def get_customer_details(request):
         except customer_details.DoesNotExist:
             return JsonResponse({'error': 'Customer not found'}, status=404)
     return JsonResponse({'error': 'No contact number provided'}, status=400)
+
 
 
 from .models import BankAccounts   
@@ -4259,4 +4309,137 @@ def delete_bank_account(request, account_id):
     return redirect('list_bank_accounts')
 
 
+# def create_tax_invoice(request):
+#     if request.method == "POST":
+#         quotation_no = request.POST.get("quotation_no")
+#         hsn_sac = request.POST.get("hsn_sac")
 
+#         reference = request.POST.get("referance_no_and_date")
+#         bank_id = request.POST.get("bank_id")  
+
+#         # Fetch quotation
+#         quotation = quotation_management.objects.filter(quotation_number=quotation_no).first()
+
+#         if not quotation:
+#             messages.error(request, "Quotation number not found.")
+#             return render(request, "create_tax_invoice.html")
+
+#         # Get related customer and bank
+#         customer = getattr(quotation, 'customer', None)
+#         if not customer:
+#             messages.error(request, "Customer not found for this quotation.")
+#             return render(request, "create_tax_invoice.html")
+
+#         bank = get_object_or_404(BankAccounts, id=bank_id)
+
+#         # Check for existing invoice
+#         if TaxInvoice.objects.filter(quotation=quotation).exists():
+#             messages.warning(request, "Invoice already created for this quotation.")
+#             return render(request, "create_tax_invoice.html")
+
+#         # Create invoice – tax_invoice_no will be auto-generated
+#         invoice = TaxInvoice.objects.create(
+#             quotation=quotation,
+#             customer=customer,
+#             bank=bank,
+#             hsn_sac=hsn_sac,
+#             referance_no_and_date=reference
+#         )
+
+#         messages.success(request, f"Tax Invoice Created: {invoice.tax_invoice_no}")
+#         return redirect("create_tax_invoice")  # or redirect to invoice detail
+
+#     context = {
+#     'customers': customer_details.objects.all(),
+#     'banks': BankAccounts.objects.all()
+#     }
+#     return render(request, "create_tax_invoice.html", context=context)
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.utils import timezone
+from .models import TaxInvoice, TaxInvoiceItem, quotation_management, customer_details, BankAccounts
+import json
+from datetime import datetime
+
+
+def create_tax_invoice(request):
+    if request.method == "POST":
+        try:
+            # 1. Get quotation and related data
+            quotation_no = request.POST.get("quotation_no")
+            quotation = get_object_or_404(quotation_management, quotation_no=quotation_no)
+            customer = get_object_or_404(customer_details, primarycontact=quotation.contact_no)
+            bank_id = request.POST.get("bank_id")
+            bank = get_object_or_404(BankAccounts, id=bank_id)
+
+            # 2. Get delivery + payment fields
+            invoice = TaxInvoice.objects.create(
+                quotation=quotation,
+                customer=customer,
+                bank=bank,
+                referance_no_and_date=request.POST.get("referance_no_and_date"),
+                other_referance=request.POST.get("other_references"),
+                delivery_note=request.POST.get("delivery_note"),
+                modern_terms_of_payment=request.POST.get("mode_terms_of_payment"),
+                buyers_order_no=request.POST.get("buyer_order_no"),
+                dated=parse_date_or_none(request.POST.get("dated")),
+                dispatch_doc_no=request.POST.get("dispatch_doc_no"),
+                delivery_note_date=parse_date_or_none(request.POST.get("delivery_note_date")),
+                dispatched_through=request.POST.get("dispatched_through"),
+                destination=request.POST.get("destination"),
+                service_titel = request.POST.get('service_titel'),
+                shift_gstin_uin = request.POST.get('shift_gstin_uin'),
+                shifttopartystate = request.POST.get('shifttopartystate'),
+                shifttopartystatecode = request.POST.get('shifttopartystatecode'),
+                sold_gstin_uin = request.POST.get('sold_gstin_uin'),
+                soldtopartystate = request.POST.get('soldtopartystate'),
+                soldtopartystatecode = request.POST.get('soldtopartystatecode'),
+            )
+            print('service_titel', request.POST.get('service_titel'))
+
+            # 3. Handle Products (from hidden input field 'product_data' passed via JS)
+            product_data = request.POST.get("product_data", "[]")
+            items = json.loads(product_data)
+
+            for item in items:
+                price = float(item.get('price', 0))
+                quantity = int(item.get('quantity', 0))
+                gst_percent = float(item.get('gst', 0))
+                gst_amount = (price * quantity * gst_percent) / 100
+                total = price * quantity + gst_amount
+
+                TaxInvoiceItem.objects.create(
+                    tax_invoice=invoice,
+                    product_name=item.get('name'),
+                    hsn_code=item.get('hsn'),
+                    quantity=quantity,
+                    unit=item.get('unit'),
+                    price=price,
+                    gst_percent=gst_percent,
+                    gst_amount=gst_amount,
+                    total=total
+                )
+
+            return redirect("tax_invoice_success")  # Optional success view
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    banks = BankAccounts.objects.all()
+    return render(request, "create_tax_invoice.html", {'banks': banks})
+
+
+def parse_date_or_none(date_str):
+    """Utility to parse date from string or return None."""
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else None
+    except:
+        return None
+
+
+
+
+def tax_invoice_success(request):
+    return HttpResponse("Doneee!!!!!!!!!!1")

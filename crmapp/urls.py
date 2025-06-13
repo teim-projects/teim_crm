@@ -138,14 +138,17 @@ urlpatterns = [
 
 
     path('get_customer_details/', views.get_customer_details, name='get_customer_details'),
-    
+    path('get_quotation_details_by_no/', views.get_quotation_details_by_no, name='get_quotation_details_by_no'),
+
     # Bank Account 
     path('bank/create/', views.create_bank_account, name='create_bank_account'),
     path('bank/list/', views.list_bank_accounts, name='list_bank_accounts'),
     path('bank/edit/<int:account_id>/', views.edit_bank_account, name='edit_bank_account'),
     path('bank/delete/<int:account_id>/', views.delete_bank_account, name='delete_bank_account'),
 
-    
+    # Tax Invoice
+    path('tax-invoice/create/',views.create_tax_invoice, name="create_tax_invoice"),
+    path('tax-invoice/success/', views.tax_invoice_success, name='tax_invoice_success'),
 
 
 ]
