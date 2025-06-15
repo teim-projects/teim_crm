@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tax Invoice</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            background-color: #fff;
+            /* Remove grey background for PDF */
+        }
+
+        .invoice-container {
+            width: 100%;
+            margin: 0;
+            background-color: #fff;
+            padding: 0;
+            border: none;
+            box-shadow: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            /* margin-bottom: 10px; */
+        }
+
+        td,
+        th {
+            border: 1px solid #000;
+            /* padding: 6px; */
+            vertical-align: top;
+        }
+
+        .no-border td,
+        .no-border th {
+            border: none !important;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        @page {
+            size: A4;
+            margin: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="invoice-container bg-white">
+
+        <table>
+            <tr>
+                <td colspan="3" >
+                    <h4 class="text-center fw-bold mb-1">Tax Invoice</h4>
+                </td>
+            
+            </tr>
+            <tr>
+                <!-- LEFT: Company + Buyer/Consignee info -->
+                <td rowspan="6" style="width: 50%;">
+                    <strong>{{ invoice.quotation.branch.branch_name }}</strong><br>
+                    {{ invoice.quotation.branch.full_address }}<br>
+                    GSTIN/UIN: {{ invoice.quotation.branch.gst_number }}<br>
+                    State Name: {{ invoice.quotation.branch.state }}, Code: {{ invoice.quotation.branch.code }}<br>
+                    E-Mail: {{ invoice.quotation.branch.email_1 }}<br><br>
+                    <hr style="border-top: 1px solid #000; margin:0;">
+                    <strong>Consignee (Ship to)</strong><br>
+                    <strong>{{ invoice.customer.fullname }}</strong><br>
+                    {{ invoice.customer.shifttopartyaddress }}<br>
+                    {{ invoice.customer.shifttopartycity }}, {{ invoice.customer.shifttopartystate }} -
+                    {{ invoice.customer.soldtopartypostal }}<br>
+                    GSTIN/UIN: {{ invoice.shift_gstin_uin }}<br>
+                    State Name: {{ invoice.shifttopartystate }}, Code: {{ invoice.shifttopartystatecode }}<br><br>
+                    <hr style="border-top: 1px solid #000; margin:0;">
+                    <strong>Buyer (Bill to)</strong><br>
+                    <strong>{{ invoice.customer.fullname }}</strong><br>
+                    {{ invoice.customer.soldtopartyaddress }}<br>
+                    {{ invoice.customer.soldtopartycity }}, {{ invoice.customer.soldtopartystate }} -
+                    {{ invoice.customer.soldtopartypostal }}<br>
+                    GSTIN/UIN: {{ invoice.sold_gstin_uin }}<br>
+                    State Name: {{ invoice.soldtopartystate }}, Code: {{ invoice.soldtopartystatecode }}<br>
+                    Place of Supply: {{ invoice.soldtopartystate }}
+                </td>
+
+                <!-- RIGHT: Invoice Details -->
+                <td><strong>Invoice No.</strong><br>{{ invoice.tax_invoice_no }}</td>
+                <td><strong>Dated</strong><br>{{ invoice.dated|date:"d-M-Y" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Delivery Note</strong><br>{{ invoice.delivery_note }}</td>
+                <td><strong>Mode/Terms of Payment</strong><br>{{ invoice.modern_terms_of_payment }}</td>
+            </tr>
+            <tr>
+                <td><strong>Reference No. & Date.</strong><br>{{ invoice.referance_no_and_date }}</td>
+                <td><strong>Other References</strong><br>{{ invoice.other_referance }}</td>
+            </tr>
+            <tr>
+                <td><strong>Buyer's Order No.</strong><br>{{ invoice.buyers_order_no }}</td>
+                <td><strong>Dated</strong><br>{{ invoice.dated|date:"d-M-Y" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Dispatch Doc No.</strong><br>{{ invoice.dispatch_doc_no }}</td>
+                <td><strong>Delivery Note Date</strong><br>{{ invoice.delivery_note_date }}</td>
+            </tr>
+            <tr>
+                <td><strong>Dispatched through</strong><br>{{ invoice.dispatched_through }}</td>
+                <td><strong>Destination</strong><br>{{ invoice.destination }}</td>
+            </tr>
+        </table>
+
+
+
+
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Sr. No.</th>
+                    <th>Description of Services</th>
+                    <th>HSN/SAC</th>
+                    <th>GST Rate</th>
+                    <th>Quantity</th>
+                    <th>Rate</th>
+                    <th>Per</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for x in items %}
+                <tr>
+                    <td class="srno">{{ forloop.counter }}</td> <!-- Serial Number -->
+                    <td>
+                        <strong>{{ invoice.service_titel }}</strong><br>
+                        {{ x.product_name }}
+                    </td>
+                    <td>{{ x.hsn_code }}</td>
+                    <td>{{ x.gst_percent }}%</td>
+                    <td>{{ x.quantity }} {{ x.unit }}</td>
+                    <td>{{ x.price }}</td>
+                    <td>{{ x.unit }}</td>
+                    <td>{{ x.total }}</td>
+                </tr>
+                {% endfor %}
+
+                <!-- GST and Total Row (if same for all) -->
+                {% if cgst_total and sgst_total %}
+                <tr>
+                    <td colspan="7" class="text-right fw-bold">CGST</td>
+                    <td>{{ cgst_total|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td colspan="7" class="text-right fw-bold">SGST</td>
+                    <td>{{ sgst_total|floatformat:2 }}</td>
+                </tr>
+                {% elif igst_total %}
+                <tr>
+                    <td colspan="7" class="text-right fw-bold">IGST</td>
+                    <td>{{ igst_total|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+
+                <tr>
+                    <td colspan="7" class="text-right fw-bold">Total</td>
+                    <td><strong>₹ {{ invoice.grand_total }}</strong></td>
+                </tr>
+            </tbody>
+
+        </table>
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; ">
+            <tr>
+                <td colspan="2" style="padding: 5px; border-bottom: none;">
+                    <p style="margin: 0;"><strong>Amount Chargeable (in words):</strong><br>
+                        {{ amount_in_words }}
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <!-- Remarks -->
+                <td style="width: 60%; padding: 5px; vertical-align: top; border-top: none;">
+                    <p style="margin: 0;"><strong>Remarks:</strong><br>
+                        Being Invoice for Pest Management Services done for the month of {{ today|date:"F Y" }}<br><br>
+                        <strong>Declaration</strong><br>
+                        The Payment of this invoice is due immediately. In case of late payment, interest @18% p.a will
+                        be charged from
+                        the date of invoice up to the date of payment. Any dispute on service /invoice will be subject
+                        to Pune.
+                    </p>
+                </td>
+
+                <!-- Bank Details -->
+                <td style="padding: 10px; vertical-align: bottom; border-top: none; border-left: none !important;">
+                    <p style="margin: 0;">
+                        <strong>Company’s Bank Details</strong><br>
+                        Bank Name : <strong>{{ invoice.bank.bank_name }}</strong><br>
+                        A/c No. : <strong>{{ invoice.bank.account_number }}</strong><br>
+                        Branch & IFSC Code : <strong>{{ invoice.bank.ifs_code }}</strong>
+                    </p>
+                </td>
+
+
+            </tr>
+
+            <!-- Signature row -->
+            <tr>
+                <td style="padding-top: 10px;">
+                    Customer’s Seal and Signature
+                </td>
+                <td style="text-align: right; padding: 10px;">
+                    for <strong>{{ invoice.quotation.branch.branch_name }}</strong><br><br><br>
+                    <span style="margin-top: 20px;">Authorised Signatory</span>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Footer -->
+        <p style="text-align: center; font-style: italic; margin-top: 10px;">
+            This is a Computer Generated Invoice
+        </p>
+
+
+
+    </div>
+
+</body>
+
+</html>

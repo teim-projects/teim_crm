@@ -48,7 +48,8 @@
             text-align: center;
         } */
 
-        h1,.hh{
+        h1,
+        .hh {
             font-family: 'Playfair Display', serif;
             padding: 20px;
             text-align: center;
@@ -208,7 +209,7 @@
         } */
         .form-inline .btn-outline-success {
             color: #000000;
-          
+
         }
 
         .form-inline .btn-outline-success:hover {
@@ -418,7 +419,6 @@
             }
 
         }
-    
     </style>
 </head>
 
@@ -437,7 +437,8 @@
                                 <input class="form-control mr-sm-2" type="search" name="search"
                                     placeholder="Search by Cust.ID/Invoice no." aria-label="Search"
                                     value="{{ request.GET.search }}">
-                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" style="width:150px">Search</button>
+                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
+                                    style="width:150px">Search</button>
 
                             </form>
                         </div>
@@ -450,34 +451,26 @@
                                 <thead>
                                     <tr>
                                         <th>Sr.No</th>
-                                        <th>
-                                            <a style="text-decoration: none;color: #000000;"
-                                                href="?sort_by=customerid&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                                                Customer ID
-                                                {% if current_order == 'asc' %}
-                                                ▲
-                                                {% else %}
-                                                ▼
-                                                {% endif %}
-                                            </a>
-                                        </th>
+
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
                                                 href="?sort_by=firstname&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                                                First Name
-                                                {% if current_order == 'asc' %}
-                                                ▲
-                                                {% else %}
-                                                ▼
+                                                Name
+                                                {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                                            </a>
+                                        </th>
+                                        <th>
+                                            <a style="text-decoration: none; color: #000000;"
+                                                href="?sort_by=invoice_no&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
+                                                Invoice No.
+                                                {% if current_sort_by == 'invoice_no' %}
+                                                {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
                                                 {% endif %}
                                             </a>
                                         </th>
-                                        <th>Company Details</th>
-                                        <th>Invoice No.</th>
-                                        <th>Total Amount</th>
                                         <th style="text-align: center;">Total Amount<br>(GST)</th>
                                         <th style="text-align: center;">Delivery<br> Date</th>
-                                        <th style="text-align: center;">Dispatched<br> Date</th>
+                                        <th style="text-align: center;">Dispatched<br> Doc No</th>
                                         <th style="text-align: center;">Download<br>PDF</th>
                                         <th style="text-align: center;">View<br>PDF</th>
                                         <th>Edit</th>
@@ -488,41 +481,29 @@
                                     {% for x in page_obj %}
                                     <tr>
                                         <td>{{ forloop.counter|add:start_index }}</td>
+
+                                        <td>{{ x.customer.fullname }}</td>
+                                        <td>{{ x.tax_invoice_no }}</td>
+                                        <td style="text-align: right;">{{ x.grand_total }}</td>
+                                        <td>{{ x.dated }}</td>
+                                        <td>{{ x.dispatch_doc_no }}</td>
                                         <td>
-                                            {{ x.customer.customerid }}
-                                            <div class="dropdown">
-                                                <button class="view-btn" onclick="openModal('{{ x.id }}')"><i
-                                                        class="fas fa-magnifying-glass-plus"></i></button>
-                                                <div class="dropdown-content">
-                                                    <a href="#">View More</a>
-                                                </div>
-                                            </div>
+                                            <a href="{% url 'tax_invoice_pdf' x.id %}?download=true"
+                                                class="btn btn-sm btn-primary">Download PDF</a>
                                         </td>
-                                        <td>{{ x.customer.firstname }} {{ x.customer.lastname }}</td>
-                                        <td style="text-align: center;">
-                                            {{ x.company_name }}<br>
-                                            {{ x.company_contact_no }}
-                                        </td>
-                                        <td>{{ x.invoice_no }}</td>
-                                        <td>{{ x.total_amount }}</td>
-                                        <td>{{ x.total_amount_with_gst }}</td>
-                                        <td>{{ x.delivery_date | date:"d/m/y" }}</td>
-                                        <td>{{ x.dispatched_date | date:"d/m/y" }}</td>
+
                                         <td>
-                                            <a href="generate_invoice/invoice/pdf/{{ x.id }}/{{ 'download' }}"
-                                                class="btn   btn-outline-primary" role="button" style="width: 100px;">Download</a>
+                                            <a href="{% url 'tax_invoice_pdf' x.id %}" class="btn btn-outline-secondary"
+                                                role="button" style="width: 100px;">View</a>
                                         </td>
                                         <td>
-                                            <a href="generate_invoice/invoice/pdf/{{ x.id }}/{{ 'view' }}"
-                                                class="btn   btn-outline-secondary" role="button" style="width: 100px;">View</a>
+                                            <a href="/edit_invoice/{{ x.id }}" class="btn btn-outline-success"
+                                                style="width: 100px;">Edit</a>
                                         </td>
                                         <td>
-                                            <a href="/edit_invoice/{{ x.id }}" class="btn btn-outline-success  "
-                                                role="button" style="width: 100px;">Edit</a>
-                                        </td>
-                                        <td>
-                                            <a href="/delete_invoice/{{ x.id }}" class="btn btn-outline-danger  delete-link"
-                                                role="button" style="width: 100px;">Delete</a>
+                                            <a href="/delete_invoice/{{ x.id }}"
+                                                class="btn btn-outline-danger delete-link"
+                                                style="width: 100px;">Delete</a>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -530,7 +511,7 @@
                             </table>
 
                         </div>
-     
+
                         <div class="pagination">
 
                             {% if page_obj.has_previous %}
@@ -560,11 +541,14 @@
                 {% csrf_token %}
                 <p class="hh">Are you sure you want to delete this record?</p>
                 <div>
-                    <input type="password" id="password" name="password" placeholder="Enter Password" class="form-control" required>
+                    <input type="password" id="password" name="password" placeholder="Enter Password"
+                        class="form-control" required>
                 </div>
                 <div class="modal-buttons">
-                    <button type="submit" id="confirmDeleteButton" class="btn btn-outline-info mt-3" style="width: 150px;">Yes</button>
-                    <button type="button" id="cancelDeleteButton" class="btn btn-outline-danger  mt-3"  style="width: 150px;">Cancel</button>
+                    <button type="submit" id="confirmDeleteButton" class="btn btn-outline-info mt-3"
+                        style="width: 150px;">Yes</button>
+                    <button type="button" id="cancelDeleteButton" class="btn btn-outline-danger  mt-3"
+                        style="width: 150px;">Cancel</button>
                 </div>
             </form>
         </div>
@@ -645,9 +629,9 @@
 
     </script>
 
-     <!-- Footer -->
+    <!-- Footer -->
 
-     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">
                 <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">

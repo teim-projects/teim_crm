@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.shortcuts import render , redirect , HttpResponse , get_object_or_404
 from httpcore import request
 from .forms import InventoryServiceForm, InventoryAddForm ,  AddProductForm, UpdateProductForm
@@ -1057,7 +1058,7 @@ def generate_quotation_pdf_view(request, id):
     # Add total for each product (price × quantity)
     for product in product_data:
         try:
-            product['total'] = float(product['price']) * float(product['quantity'])
+            product['total'] = round(float(product['price']) * float(product['quantity']), 2)
         except (KeyError, ValueError, TypeError):
             product['total'] = 0.0
 
@@ -4362,7 +4363,7 @@ from django.utils import timezone
 from .models import TaxInvoice, TaxInvoiceItem, quotation_management, customer_details, BankAccounts
 import json
 from datetime import datetime
-
+from weasyprint import HTML
 
 def create_tax_invoice(request):
     if request.method == "POST":
@@ -4374,7 +4375,10 @@ def create_tax_invoice(request):
             bank_id = request.POST.get("bank_id")
             bank = get_object_or_404(BankAccounts, id=bank_id)
 
-            # 2. Get delivery + payment fields
+            # 2. Get product data
+            product_data = request.POST.get("product_data", "[]")
+            items = json.loads(product_data)
+            # 4. Create TaxInvoice with grand_total
             invoice = TaxInvoice.objects.create(
                 quotation=quotation,
                 customer=customer,
@@ -4389,26 +4393,27 @@ def create_tax_invoice(request):
                 delivery_note_date=parse_date_or_none(request.POST.get("delivery_note_date")),
                 dispatched_through=request.POST.get("dispatched_through"),
                 destination=request.POST.get("destination"),
-                service_titel = request.POST.get('service_titel'),
-                shift_gstin_uin = request.POST.get('shift_gstin_uin'),
-                shifttopartystate = request.POST.get('shifttopartystate'),
-                shifttopartystatecode = request.POST.get('shifttopartystatecode'),
-                sold_gstin_uin = request.POST.get('sold_gstin_uin'),
-                soldtopartystate = request.POST.get('soldtopartystate'),
-                soldtopartystatecode = request.POST.get('soldtopartystatecode'),
+                service_titel=request.POST.get('service_titel'),
+                shift_gstin_uin=request.POST.get('shift_gstin_uin'),
+                shifttopartystate=request.POST.get('shifttopartystate'),
+                shifttopartystatecode=request.POST.get('shifttopartystatecode'),
+                sold_gstin_uin=request.POST.get('sold_gstin_uin'),
+                soldtopartystate=request.POST.get('soldtopartystate'),
+                soldtopartystatecode=request.POST.get('soldtopartystatecode'),
+                # grand_total=grand_total  # ✅ Use the calculated value here
             )
-            print('service_titel', request.POST.get('service_titel'))
 
-            # 3. Handle Products (from hidden input field 'product_data' passed via JS)
-            product_data = request.POST.get("product_data", "[]")
-            items = json.loads(product_data)
-
+            # 5. Save products       
+            grand_total = 0
             for item in items:
                 price = float(item.get('price', 0))
-                quantity = int(item.get('quantity', 0))
+                quantity = float(item.get('quantity', 0))
+                print("q",quantity)
                 gst_percent = float(item.get('gst', 0))
-                gst_amount = (price * quantity * gst_percent) / 100
-                total = price * quantity + gst_amount
+                gst_amount = round((price * quantity * gst_percent) / 100,2)
+                print("gst",gst_amount)
+                total = price * quantity 
+                grand_total += total + gst_amount
 
                 TaxInvoiceItem.objects.create(
                     tax_invoice=invoice,
@@ -4421,15 +4426,19 @@ def create_tax_invoice(request):
                     gst_amount=gst_amount,
                     total=total
                 )
+            
+            invoice.grand_total = grand_total
+            invoice.save()
 
-            return redirect("tax_invoice_success")  # Optional success view
+
+
+            return redirect("tax_invoice_pdf")
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
     banks = BankAccounts.objects.all()
     return render(request, "create_tax_invoice.html", {'banks': banks})
-
 
 def parse_date_or_none(date_str):
     """Utility to parse date from string or return None."""
@@ -4440,6 +4449,85 @@ def parse_date_or_none(date_str):
 
 
 
+def display_tax_invoice(request):
+    query = request.GET.get('search', '')
+    sort_by = request.GET.get('sort_by', '')
+    sort_order = request.GET.get('order', 'asc')
+    
+    
+    if query:
+        m = TaxInvoice.objects.filter(
+            Q(customer__customerid__icontains=query) |
+            Q(tax_invoice_no__icontains=query)
+        )
+    else:
+        m = TaxInvoice.objects.all().prefetch_related('items')
 
-def tax_invoice_success(request):
-    return HttpResponse("Doneee!!!!!!!!!!1")
+    
+    if sort_by == 'firstname':
+        sort_field = 'customer__fullname'
+    elif sort_by == 'invoice_no':
+        sort_field = 'tax_invoice_no'
+    else:
+        sort_field = 'id'  # default sorting if no valid sort_by is provided
+
+    # Apply ordering based on direction
+    if sort_order == 'desc':
+        m = m.order_by(f'-{sort_field}')
+    else:
+        m = m.order_by(sort_field)
+
+    paginator = Paginator(m, 10)  
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    start_index = (page_obj.number - 1) * paginator.per_page
+
+    context = {
+        'current_order': sort_order,
+        'current_sort_by': sort_by,
+        'query': query,
+        'page_obj': page_obj,
+        'start_index': start_index,
+    }
+    return render(request, 'display_invoice.html', context)
+
+
+
+def tax_invoice_pdf(request, id):
+    invoice = get_object_or_404(TaxInvoice, id=id)
+    items = invoice.items.all()
+    cgst = invoice.quotation.cgst
+    sgst = invoice.quotation.sgst
+    igst = invoice.quotation.igst
+    amount_in_words = price_in_words(invoice.grand_total)
+    # print("data" ,invoice.quotation.igst )
+    context = {
+        'invoice': invoice,
+        'items': items,
+        'cgst_total': cgst,
+        'sgst_total': sgst,
+        'igst_total':igst,
+        'amount_in_words':amount_in_words,
+        'today': datetime.now(),
+    }
+
+    
+    # Render the template
+    template_path = 'tax_invoice_pdf.html'
+    template = get_template(template_path)
+    html_string = template.render(context)
+
+    # Generate PDF
+    html = HTML(string=html_string, base_url=request.build_absolute_uri())
+    pdf = html.write_pdf()
+    response = HttpResponse(pdf, content_type='application/pdf')
+    # Check if 'download=true' is passed in query params
+    if request.GET.get('download') == 'true':
+        response['Content-Disposition'] = f'attachment; filename="TaxInvoice_{invoice.id}.pdf"'
+    else:
+        response['Content-Disposition'] = f'inline; filename="TaxInvoice_{invoice.id}.pdf"'
+
+
+    return response
+

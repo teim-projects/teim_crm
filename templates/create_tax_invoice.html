@@ -145,10 +145,10 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td id="gstValues1"></td>
-                            <td id="gstValues2"></td>
-                            <td id="totalQuantity"></td>
-                            <td id="total"></td>
+                            <td id="gstValues1" class="gstValues1"></td>
+                            <td id="gstValues2" class="gsrValues2"></td>
+                            <td id="totalQuantity" class="totalQuantity"></td>
+                            <td id="grand_total" class="grand_total" name="grand_total"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -211,7 +211,7 @@
                     <option value="">Select Bank Account</option>
                 </select>
             </div>
-
+            <input type="hidden" id="grand_total" name="grand_total">
             <input type="hidden" name="product_data" id="product_data">
             <div class="d-flex justify-content-center mt-4">
                 <button type="submit" class="btn btn-primary">Submit</button>
@@ -295,6 +295,7 @@
 
                     // Product Table Rendering
                     const productBody = document.getElementById('product-table-body');
+                 
                     productBody.innerHTML = ''; // Clear previous rows
 
                     if (data.product && Array.isArray(data.product)) {
@@ -303,8 +304,8 @@
                                       <tr>
                                         <td><input type="text" class="form-control product-name" value="${prod.name}" readonly></td>
                                         <td><input type="text" class="form-control hsn" placeholder="Enter HSN/SAC number"></td>
-                                        <td><input type="number" class="form-control price" value="${prod.price}" readonly></td>
-                                        <td><input type="number" class="form-control quantity" value="${prod.quantity}" readonly></td>
+                                        <td><input type="number" class="form-control price"value="${parseFloat(prod.price).toFixed(2) || 0.00}"  readonly></td>
+                                        <td><input type="number" class="form-control quantity" value="${parseFloat(prod.quantity).toFixed(2) || 0.00}" readonly></td>
                                         <td><input type="text" class="form-control unit" value="${prod.unit}" readonly></td>
                                         <td><input type="number" class="form-control gst" value="${prod.gst}" readonly></td>
                                       </tr>
@@ -329,7 +330,8 @@
                         document.getElementById('gstHeader2').innerHTML = 'SGST'
                         document.getElementById('gstValues2').innerText = data.sgst || 0;
                     }
-                    document.getElementById('total').innerText = data.total || 0;
+                    document.getElementById('grand_total').innerText = data.total || 0;
+                    document.getElementById('grand_total').value = data.total || 0;
                     document.getElementById('totalQuantity').innerText = totalQuantity || 0;
 
 
@@ -384,7 +386,7 @@
                     name: row.querySelector(".product-name")?.value || "",
                     hsn: row.querySelector(".hsn")?.value || "",
                     price: parseFloat(row.querySelector(".price")?.value || 0),
-                    quantity: parseInt(row.querySelector(".quantity")?.value || 0),
+                    quantity: parseFloat(row.querySelector(".quantity")?.value || 0),
                     unit: row.querySelector(".unit")?.value || "",
                     gst: parseFloat(row.querySelector(".gst")?.value || 0)
                 });

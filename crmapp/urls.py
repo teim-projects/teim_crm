@@ -68,7 +68,7 @@ urlpatterns = [
     path('delete_customer/<rid>' ,views.delete_customer),
     path('delete_service_management/<rid>' ,views.delete_service_management),
     path('delete_quotation/<rid>' ,views.delete_quotation),
-    path('delete_invoice/<rid>' ,views.delete_invoice),
+    # path('delete_invoice/<rid>' ,views.delete_invoice),
     # path('delete_inventory/<rid>' ,views.delete_inventory),
     path('delete_lead_management/<rid>' ,views.delete_lead_management),
     path('search',views.search), 
@@ -148,7 +148,8 @@ urlpatterns = [
 
     # Tax Invoice
     path('tax-invoice/create/',views.create_tax_invoice, name="create_tax_invoice"),
-    path('tax-invoice/success/', views.tax_invoice_success, name='tax_invoice_success'),
+    path('display_tax_invoice/', views.display_tax_invoice),
+    path('tax-invoice/pdf/<int:id>/', views.tax_invoice_pdf, name='tax_invoice_pdf'),
 
 
 ]
