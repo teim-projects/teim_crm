@@ -79,7 +79,7 @@
 
     <div class="main">
         <div class="container bg-light rounded p-3 mb-5">
-            <h3 class="text-center mb-4">Pending Follow-ups</h3>
+            <h3 class="text-center mb-4">Todays Follow-ups</h3>
 
             <!-- Filter -->
             <form method="get" class="d-flex flex-wrap gap-2 mb-4 align-items-center">
@@ -117,55 +117,62 @@
                     </thead>
                     <tbody>
                         {% for x in page_obj %}
-                        <tr >
+                        <tr>
                             <td>{{ forloop.counter|add:start_index }}</td>
-                        
+
                             {% if x.lead %}
-                                <!-- main_followup -->
-                                <td>{{ x.lead.sourceoflead }}</td>
-                                <td>{{ x.lead.salesperson }}</td>
-                                <td>{{ x.lead.customername }}</td>
-                                <td>{{ x.lead.typeoflead }}</td>
-                                <td>{{ x.lead.branch }}</td>
-                                <td>{{ x.lead.enquirydate }}</td>
-                                <td>{{ x.lead.primarycontact }}</td>
-                                <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
-                                <td>{{ x.next_followup_date }}</td>
-                                <td>
-                                    {% if x.order_status == "Close Win" %}
-                                        <span class="badge bg-success">Close Win</span>
-                                    {% elif x.order_status == "Close Loss" %}
-                                        <span class="badge bg-danger">Close Loss</span>
-                                    {% else %}
-                                        <a href="{% url 'main_followup_view' x.lead.id %}" class="btn btn-sm btn-outline-primary">Follow Up</a>
-                                    {% endif %}
-                                </td>
-                                <td><a href="/edit_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-success">Edit</a></td>
-                                <td><a href="/delete_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-danger delete-link">Delete</a></td>
-                            
+                            <!-- main_followup -->
+                            <td>{{ x.lead.sourceoflead }}</td>
+                            <td>{{ x.lead.salesperson }}</td>
+                            <td>{{ x.lead.customername }}</td>
+                            <td>{{ x.lead.typeoflead }}</td>
+                            <td>{{ x.lead.branch }}</td>
+                            <td>{{ x.lead.enquirydate }}</td>
+                            <td>{{ x.lead.primarycontact }}</td>
+                            <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
+                            <td>{{ x.next_followup_date }}</td>
+                            <td>
+                                {% if x.order_status == "Close Win" %}
+                                <span class="badge bg-success">Close Win</span>
+                                {% elif x.order_status == "Close Loss" %}
+                                <span class="badge bg-danger">Close Loss</span>
+                                {% else %}
+                                <a href="{% url 'main_followup_view' x.lead.id %}"
+                                    class="btn btn-sm btn-outline-primary">Follow Up</a>
+                                {% endif %}
+                            </td>
+                            <td><a href="/edit_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-success">Edit</a>
+                            </td>
+                            <td><a href="/delete_lead_management/{{ x.lead.id }}"
+                                    class="btn btn-sm btn-danger delete-link">Delete</a></td>
+
                             {% else %}
-                                <!-- lead_management -->
-                                <td>{{ x.sourceoflead }}</td>
-                                <td>{{ x.salesperson }}</td>
-                                <td>{{ x.customername }}</td>
-                                <td>{{ x.typeoflead }}</td>
-                                <td>{{ x.branch }}</td>
-                                <td>{{ x.enquirydate }}</td>
-                                <td>{{ x.primarycontact }}</td>
-                                <td>{{ x.customeraddress|truncatewords:3 }}</td>
-                                <td>{{ x.firstfollowupdate }}</td>
-                                <td><a href="{% url 'main_followup_view' x.id %}" class="btn btn-sm btn-outline-primary">Follow Up</a></td>
-                                <td><a href="/edit_lead_management/{{ x.id }}" class="btn btn-sm btn-success">Edit</a></td>
-                                <td><a href="/delete_lead_management/{{ x.id }}" class="btn btn-sm btn-danger delete-link">Delete</a></td>
+                            <!-- lead_management -->
+                            <td>{{ x.sourceoflead }}</td>
+                            <td>{{ x.salesperson }}</td>
+                            <td>{{ x.customername }}</td>
+                            <td>{{ x.typeoflead }}</td>
+                            <td>{{ x.branch }}</td>
+                            <td>{{ x.enquirydate }}</td>
+                            <td>{{ x.primarycontact }}</td>
+                            <td>{{ x.customeraddress|truncatewords:3 }}</td>
+                            <td>{{ x.firstfollowupdate }}</td>
+                            <td><a href="{% url 'main_followup_view' x.id %}"
+                                    class="btn btn-sm btn-outline-primary">Follow Up</a></td>
+                            <td><a href="/edit_lead_management/{{ x.id }}" class="btn btn-sm btn-success">Edit</a></td>
+                            <td><a href="/delete_lead_management/{{ x.id }}"
+                                    class="btn btn-sm btn-danger delete-link">Delete</a></td>
                             {% endif %}
                         </tr>
                         {% empty %}
-                        <tr><td colspan="13" class="text-center">No Data Available for Today.</td></tr>
+                        <tr>
+                            <td colspan="13" class="text-center">No Data Available for Today.</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
 
-                    {{lead_folloup}}
+                {{lead_folloup}}
             </div>
 
             <!-- Pagination -->

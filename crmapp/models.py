@@ -46,7 +46,7 @@ class customer_details(models.Model):
     fullname = models.CharField(max_length=100)
     primaryemail=models.EmailField()
     secondaryemail=models.EmailField(null=True , blank=True)
-    primarycontact=models.BigIntegerField()
+    primarycontact=models.BigIntegerField( unique=True)
     secondarycontact=models.BigIntegerField(null=True , blank=True)
     contactperson=models.CharField(max_length=100)
     customersegment=models.CharField(max_length=100)

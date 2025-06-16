@@ -15,7 +15,7 @@ urlpatterns = [
     path('edit-sales-person/<int:pk>/', views.edit_sales_person, name='edit_sales_person'),
     path('delete-sales-person/<int:pk>/', views.delete_sales_person, name='delete_sales_person'),
     path('customer_details_create',views.customer_details_create),
-    path('service_management_create',views.service_management_create),
+    path('service_management_create',views.service_management_create, name='service_management_create'),
 
      # Quotation Terms
     path('add_quotation_term/', views.add_quotation_term, name='add_quotation_term'),
@@ -148,7 +148,7 @@ urlpatterns = [
 
     # Tax Invoice
     path('tax-invoice/create/',views.create_tax_invoice, name="create_tax_invoice"),
-    path('display_tax_invoice/', views.display_tax_invoice),
+    path('display_tax_invoice/', views.display_tax_invoice, name="display_tax_invoice"),
     path('tax-invoice/pdf/<int:id>/', views.tax_invoice_pdf, name='tax_invoice_pdf'),
 
 

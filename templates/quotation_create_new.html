@@ -361,7 +361,8 @@
                                         </div>
                                         <div class="col-12">
                                             <label>Billing Address (Auto-filled from customer record):</label>
-                                            <textarea name="address" class="form-control" rows="2" required></textarea>
+                                            <textarea name="address" id="customer_address" class="form-control" rows="2"
+                                                required></textarea>
                                         </div>
                                         <div class="col-12">
                                             <label>Select Terms and Conditions:</label><br>
@@ -655,8 +656,8 @@
                         }
                         console.log(data.pincode)
                         if (!addressField.value && data.soldtopartyaddress) {
-                            const pincode = data.pincode;
-                            const fullAddress = `${data.soldtopartyaddress}, ${data.city} - ${pincode}`;
+                            const pincode = data.sold_pincode;
+                            const fullAddress = `${data.soldtopartyaddress}, ${data.sold_city} - ${pincode}`;
                             addressField.value = fullAddress;
                             // Visual indicator
                             addressField.style.borderLeft = "4px solid #03AED2";

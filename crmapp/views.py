@@ -409,7 +409,7 @@ def user_login(request):
                 }]
             }
 
-            print('testtttttttttttttttttttt')
+     
 
 
 
@@ -694,9 +694,10 @@ def service_management_create(request):
     if request.method == 'POST':
         try:
             # Parse and validate form data
-            customer_id = request.POST['customer_id']
-            customer = customer_details.objects.get(id=customer_id)
+            customer_contact = request.POST['customer_contact']
+            customer = customer_details.objects.get(primarycontact=customer_contact)
             address=request.POST.get('address', 'Null')
+            print('add',address)
             lead_date = request.POST.get('lead_date')
             service_date = request.POST.get('service_date')
             lead_date = datetime.strptime(lead_date, '%Y-%m-%d').date() if lead_date else None
@@ -759,7 +760,8 @@ def service_management_create(request):
                 lead_date=lead_date,
                 service_date=service_date,
             )
-
+            print("city",request.POST.get('city'))
+            print("pincode",request.POST.get('pincode'))
             # Save the instance first before assigning many-to-many fields
             instance.save()
             print("Instance saved:", instance.customer)
@@ -1657,8 +1659,9 @@ def main_followup_view(request, lead_id):
         main_followup.order_status = order_status  # ✅ important to reflect in lead model
         if order_status in ['Close Win', 'Close Loss']:
             lead.stage = 0  # mark lead as closed
-        lead.save()
-
+            lead.save()
+            if order_status == 'Close Win':
+                return redirect('service_management_create')
 
         return redirect('today_work')
 
@@ -3135,7 +3138,7 @@ def create_technician_profile(request):
             date_of_joining=date_of_joining
         )
 
-        return redirect('/index')  # Replace with your success page or URL name
+        return redirect('/technicians')  # Replace with your success page or URL name
 
     return render(request, 'create_technician_profile.html')
 
@@ -4218,16 +4221,20 @@ def get_customer_details(request):
             data = {
                 'customer_full_name': customer.fullname,
                 'customer_email': customer.primaryemail,
+                'shifttopartyaddress': customer.shifttopartyaddress,
+                'city': customer.shifttopartycity,
+                'state': customer.shifttopartystate,
+                'pincode':customer.shifttopartypostal,
                 'soldtopartyaddress': customer.soldtopartyaddress,
-                'city': customer.soldtopartycity,
-                'state': customer.soldtopartystate,
-                'pincode':customer.soldtopartypostal
+                'sold_city': customer.soldtopartycity,
+                'sold_state': customer.soldtopartystate,
+                'sold_pincode':customer.soldtopartypostal
+                
             }
             return JsonResponse(data)
         except customer_details.DoesNotExist:
             return JsonResponse({'error': 'Customer not found'}, status=404)
     return JsonResponse({'error': 'No contact number provided'}, status=400)
-
 
 
 from .models import BankAccounts   
@@ -4432,7 +4439,7 @@ def create_tax_invoice(request):
 
 
 
-            return redirect("tax_invoice_pdf")
+            return redirect("display_tax_invoice")
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)

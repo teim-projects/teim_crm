@@ -289,26 +289,17 @@
                     <!-- STEP 1: Customer & Services -->
                     <div class="form-step">
                         <!-- Customer Selection -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Select Customer<span class="star">*</span></label>
-                                <select id="customer_id" class="form-control" name="customer_id" required
-                                    onchange="updateCustomerDetails()">
-                                    <option value="" disabled selected>Select Customer</option>
-                                    {% for customer in customers %}
-                                    <option value="{{ customer.id }}" data-contact="{{ customer.primarycontact }}"
-                                        data-email="{{ customer.primaryemail }}">
-                                        {{ customer.customerid }} - {{ customer.fullname }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
+
 
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Customer Contact<span class="star">*</span></label>
-                                <input type="text" id="customer_contact" name="customer_contact" readonly required
+                                <input type="text" id="customer_contact" name="customer_contact" required
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label>Customer Name<span class="star">*</span></label>
+                                <input type="text" id="customer_full_name" name="customer_full_name" readonly required
                                     class="form-control">
                             </div>
                             <div class="col-md-6">
@@ -317,6 +308,7 @@
                                     class="form-control">
                             </div>
                         </div>
+
 
                         <!-- Service Type -->
                         <label>Service Type<span class="star">*</span></label>
@@ -440,12 +432,12 @@
 
 
                         <label>City<span class="star">*</span></label>
-                        <input type="text" name="city" class="form-control" required><br>
+                        <input type="text" id="city" name="city" class="form-control" required><br>
                         <label>Pincode<span class="star">*</span></label>
-                        <input type="text" name="pincode" maxlength="6" class="form-control" required>
+                        <input type="text" id="pincode" name="pincode" maxlength="6" class="form-control" required>
 
                         <label>Address<span class="star">*</span></label>
-                        <textarea name="address" class="form-control" required></textarea>
+                        <textarea name="address" id="address" class="form-control" required></textarea>
 
                         <label>GPS Location<span class="star">*</span></label>
                         <input type="url" name="gps_location" class="form-control" required>
@@ -558,7 +550,7 @@
             });
         });
     </script>
-    <script>
+    <!-- <script>
         function updateCustomerDetails() {
             const customerSelect = document.getElementById("customer_id");
             const selectedOption = customerSelect.options[customerSelect.selectedIndex];
@@ -569,7 +561,57 @@
             document.getElementById("customer_contact").value = contact || '';
             document.getElementById("customer_email").value = email || '';
         }
+    </script> -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const contactInput = document.getElementById("customer_contact");
+            const nameInput = document.getElementById("customer_full_name");
+            const emailInput = document.getElementById("customer_email");
+            const cityInput = document.getElementById("city");
+            const pincodeInput = document.getElementById("pincode");
+            const addressInput = document.getElementById("address");
+
+            contactInput.addEventListener('blur', function () {
+                const contactNo = contactInput.value.trim();
+                if (!contactNo) return;
+
+                fetch(`/get_customer_details/?contact_no=${encodeURIComponent(contactNo)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Customer not found');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+
+                        if (data.customer_email) {
+                            emailInput.value = data.customer_email;
+                        }
+                        if (data.customer_full_name) {
+                            nameInput.value = data.customer_full_name;
+                        }
+                        if (data.city) {
+                            cityInput.value = data.city;
+                        }
+                        if (data.pincode) {
+                            pincodeInput.value = data.pincode;
+                        }
+                        if (data.shifttopartyaddress) {
+                            addressInput.value = data.shifttopartyaddress;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+        });
     </script>
+
     <script>
         let selectedProducts = [];
         let totalPrice = 0;
