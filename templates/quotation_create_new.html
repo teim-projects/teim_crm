@@ -321,6 +321,7 @@
                                             <label>Customer Contact<span class="star">*</span></label>
                                             <input type="text" id="customer_contact" name="contact_no" required
                                                 class="form-control">
+                                            <input type="hidden" name="customer_id" id="customer_id" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label>Customer Email<span class="star">*</span></label>
@@ -624,6 +625,7 @@
     <!--  -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const customerIdField = document.getElementById("customer_id");
             const contactInput = document.querySelector('input[name="contact_no"]');
             const emailField = document.querySelector('input[name="customer_email"]');
             const nameField = document.querySelector('input[name="customer_full_name"]');
@@ -644,6 +646,10 @@
                         if (data.error) {
                             alert(data.error);
                             return;
+                        }
+
+                        if (data.customer_id) {
+                            customerIdField.value = data.customer_id;
                         }
 
                         // Only update fields that are empty

@@ -536,6 +536,7 @@ from .models import QuotationTerm  # adjust path if needed
 
 # New ----------
 class quotation_management(models.Model):
+    customer = models.ForeignKey(customer_details, on_delete = models.CASCADE, null=True, blank=True)
     quotation_no = models.CharField(max_length=20, blank=True, null=True, unique=True)
     customer_full_name = models.CharField(max_length=255, null=True, blank=True)
     contact_no = models.CharField(max_length=15, null=True, blank=True)

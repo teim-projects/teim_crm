@@ -426,62 +426,64 @@
             outline: 0;
             box-shadow: 0 0 0 .2rem rgba(0, 123, 255, .25);
         }
-       
-    /* Background and border styling */
-    .form-control.custom-select {
-        background-color: #f0f4ff; /* soft blue shade */
-        border: 1px solid #ccd9ff;
-        border-radius: 0.5rem;
-        transition: all 0.3s ease;
-        color: #333;
-    }
 
-    /* Hover effect */
-    .form-control.custom-select:hover {
-        background-color: #e3ebff;
-        border-color: #4b7bec; /* TeimCRM primary */
-    }
+        /* Background and border styling */
+        .form-control.custom-select {
+            background-color: #f0f4ff;
+            /* soft blue shade */
+            border: 1px solid #ccd9ff;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            color: #333;
+        }
 
-    /* On focus */
-    .form-control.custom-select:focus {
-        border-color: #4b7bec;
-        box-shadow: 0 0 5px rgba(75, 123, 236, 0.5);
-    }
+        /* Hover effect */
+        .form-control.custom-select:hover {
+            background-color: #e3ebff;
+            border-color: #4b7bec;
+            /* TeimCRM primary */
+        }
 
-    /* Labels styling */
-    label {
-        font-weight: 600;
-        color: #34495e;
-    }
-    .datehid{
-         
-             color: #3498db !important;
- 
-    }
+        /* On focus */
+        .form-control.custom-select:focus {
+            border-color: #4b7bec;
+            box-shadow: 0 0 5px rgba(75, 123, 236, 0.5);
+        }
 
-    /* Overall background for filter row */
-    #filterForm {
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 1rem;
-        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);
-    }
+        /* Labels styling */
+        label {
+            font-weight: 600;
+            color: #34495e;
+        }
 
-    /* Small text below filters */
-    .text-muted {
-        font-size: 0.8rem;
-        color: #6c757d;
-    }
- 
+        .datehid {
 
-    .date-box{
-        box-shadow: 0px 0px 1px cyan;
-         border-radius: 5px;
+            color: #3498db !important;
 
-        margin: 10px !important;
-         
-    }
-        
+        }
+
+        /* Overall background for filter row */
+        #filterForm {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 1rem;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Small text below filters */
+        .text-muted {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+
+        .date-box {
+            box-shadow: 0px 0px 1px cyan;
+            border-radius: 5px;
+
+            margin: 10px !important;
+
+        }
     </style>
 </head>
 
@@ -539,12 +541,14 @@
 
                                             <div class="col-md-4 col-12 mt-4">
                                                 <a href="{% url 'export_leads_excel' %}">
-                                              <button type="button" class="buttonback">📤 &nbsp;Export Excel</button>
+                                                    <button type="button" class="buttonback">📤 &nbsp;Export
+                                                        Excel</button>
                                                 </a>
                                             </div>
                                             <div class=" col-md-4 col-12 mt-4"><a href="{% url 'import_leads' %}">
-                                                    <button type="button" class="buttonback">📥 &nbsp;Import Leads</button>
-                                              </a>
+                                                    <button type="button" class="buttonback">📥 &nbsp;Import
+                                                        Leads</button>
+                                                </a>
                                             </div>
                                         </div>
 
@@ -557,127 +561,136 @@
 
                             </form>
 
-<hr class="text-dark">
-                     
+                            <hr class="text-dark">
 
 
 
-<!-- Button to toggle the filter form -->
-<button id="toggleFilterBtn" class="btn btn-primary mb-3">Show Filters</button>
 
-<!-- Container to hold the filter form -->
-<div id="filterContainer" style="max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; opacity: 0;">
- <form method="get" id="filterForm" class="row mb-4" style="gap: 10px;">
-    <div class="row ">
-        <!-- Type of Lead -->
-        <div class="col-md-3">
-            <label>Type of Lead</label>
-            <select name="typeoflead" class="form-control custom-select">
-                <option value="">All Lead Types</option>
-                {% for type in lead_types %}
-                <option value="{{ type }}" {% if request.GET.typeoflead == type %}selected{% endif %}>{{ type }}</option>
-                {% endfor %}
-            </select>
-        </div>
+                            <!-- Button to toggle the filter form -->
+                            <button id="toggleFilterBtn" class="btn btn-primary mb-3">Show Filters</button>
 
-        <!-- Source of Lead -->
-        <div class="col-md-3">
-            <label>Source of Lead</label>
-            <select name="sourceoflead" class="form-control custom-select">
-                <option value="">All Sources</option>
-                {% for source in sources %}
-                <option value="{{ source }}" {% if request.GET.sourceoflead == source %}selected{% endif %}>{{ source }}</option>
-                {% endfor %}
-            </select>
-        </div>
+                            <!-- Container to hold the filter form -->
+                            <div id="filterContainer"
+                                style="max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; opacity: 0;">
+                                <form method="get" id="filterForm" class="row mb-4" style="gap: 10px;">
+                                    <div class="row ">
+                                        <!-- Type of Lead -->
+                                        <div class="col-md-3">
+                                            <label>Type of Lead</label>
+                                            <select name="typeoflead" class="form-control custom-select">
+                                                <option value="">All Lead Types</option>
+                                                {% for type in lead_types %}
+                                                <option value="{{ type }}" 
+                                                {% if request.GET.typeoflead == type %}selected{% endif %}>{{ type }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
 
-        <!-- Salesperson -->
-        <div class="col-md-3">
-            <label>Salesperson</label>
-            <select name="salesperson" class="form-control custom-select">
-                <option value="">All Salespersons</option>
-                {% for sp in salespersons %}
-                <option value="{{ sp }}" {% if request.GET.salesperson == sp %}selected{% endif %}>{{ sp }}</option>
-                {% endfor %}
-            </select>
-        </div>
+                                        <!-- Source of Lead -->
+                                        <div class="col-md-3">
+                                            <label>Source of Lead</label>
+                                            <select name="sourceoflead" class="form-control custom-select">
+                                                <option value="">All Sources</option>
+                                                {% for source in sources %}
+                                                <option value="{{ source }}" {% if request.GET.sourceoflead == source %}selected{% endif %}>
+                                                    {{ source }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
 
-        <!-- Branch -->
-        <div class="col-md-3">
-            <label>Branch</label>
-            <select name="branch" class="form-control custom-select">
-                <option value="">All Branches</option>
-                {% for b in branches %}
-                <option value="{{ b }}" {% if request.GET.branch == b %}selected{% endif %}>{{ b }}</option>
-                {% endfor %}
-            </select>
-            {% if branch_count %}
-            <small class="text-muted">Total leads in this branch: {{ branch_count }}</small>
-            {% endif %}
-        </div>
+                                        <!-- Salesperson -->
+                                        <div class="col-md-3">
+                                            <label>Salesperson</label>
+                                            <select name="salesperson" class="form-control custom-select">
+                                                <option value="">All Salespersons</option>
+                                                {% for sp in salespersons %}
+                                                <option value="{{ sp }}" {% if request.GET.salesperson == sp %}selected
+                                                {% endif %}>{{ sp }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
 
-       
-    </div>
+                                        <!-- Branch -->
+                                        <div class="col-md-3">
+                                            <label>Branch</label>
+                                            <select name="branch" class="form-control custom-select">
+                                                <option value="">All Branches</option>
+                                                {% for b in branches %}
+                                                <option value="{{ b }}" {% if request.GET.branch == b %}selected
+                                                {% endif %}>{{ b }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            {% if branch_count %}
+                                            <small class="text-muted">Total leads in this branch: {{ branch_count }}</small>
+                                            {% endif %}
+                                        </div>
 
-    <div class="row mt-3">
-    <!-- Enquiry Date Section -->
-    <div class="col-md-6 ">
-        <div class="row date-box p-2">
-                    <h6 class="text-center datehid">Enquiry Date</h6>
 
-            <div class="col-md-6">
-                <label class="text-center">From</label>
-                <input type="date" name="enquiry_from" class="form-control custom-select mb-1"
-                    value="{{ request.GET.enquiry_from }}">
-            </div>
-            <div class="col-md-6 ">
-                <label class="text-center">To</label>
-                <input type="date" name="enquiry_to" class="form-control custom-select"
-                    value="{{ request.GET.enquiry_to }}">
-            </div>
-        </div>
-    </div>
+                                    </div>
 
-    <!-- Follow-up Date Section -->
-    <div class="col-md-6 ">
-        <div class="row date-box p-2">
-                    <h6 class="text-center datehid">Follow-up Date</h6>
+                                    <div class="row mt-3">
+                                        <!-- Enquiry Date Section -->
+                                        <div class="col-md-6 ">
+                                            <div class="row date-box p-2">
+                                                <h6 class="text-center datehid">Enquiry Date</h6>
 
-            <div class="col-md-6">
-                <label class="text-center">From</label>
-                <input type="date" name="followup_from" class="form-control custom-select mb-1"
-                    value="{{ request.GET.followup_from }}">
-            </div>
-            <div class="col-md-6">
-                <label class="text-center">To</label>
-                <input type="date" name="followup_to" class="form-control custom-select"
-                    value="{{ request.GET.followup_to }}">
-            </div>
-        </div>
-    </div>
-</div>
+                                                <div class="col-md-6">
+                                                    <label class="text-center">From</label>
+                                                    <input type="date" name="enquiry_from"
+                                                        class="form-control custom-select mb-1"
+                                                        value="{{ request.GET.enquiry_from }}">
+                                                </div>
+                                                <div class="col-md-6 ">
+                                                    <label class="text-center">To</label>
+                                                    <input type="date" name="enquiry_to"
+                                                        class="form-control custom-select"
+                                                        value="{{ request.GET.enquiry_to }}">
+                                                </div>
+                                            </div>
+                                        </div>
 
-</form>
-</div>
+                                        <!-- Follow-up Date Section -->
+                                        <div class="col-md-6 ">
+                                            <div class="row date-box p-2">
+                                                <h6 class="text-center datehid">Follow-up Date</h6>
 
-<script>
-  const toggleBtn = document.getElementById('toggleFilterBtn');
-  const filterContainer = document.getElementById('filterContainer');
-  
-  toggleBtn.addEventListener('click', () => {
-    if (filterContainer.style.maxHeight && filterContainer.style.maxHeight !== '0px') {
-      // Hide form
-      filterContainer.style.maxHeight = '0';
-      filterContainer.style.opacity = '0';
-      toggleBtn.textContent = 'Show Filters';
-    } else {
-      // Show form
-      filterContainer.style.maxHeight = filterContainer.scrollHeight + 'px';
-      filterContainer.style.opacity = '1';
-      toggleBtn.textContent = 'Hide Filters';
-    }
-  });
-</script>
+                                                <div class="col-md-6">
+                                                    <label class="text-center">From</label>
+                                                    <input type="date" name="followup_from"
+                                                        class="form-control custom-select mb-1"
+                                                        value="{{ request.GET.followup_from }}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="text-center">To</label>
+                                                    <input type="date" name="followup_to"
+                                                        class="form-control custom-select"
+                                                        value="{{ request.GET.followup_to }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </form>
+                            </div>
+
+                            <script>
+                                const toggleBtn = document.getElementById('toggleFilterBtn');
+                                const filterContainer = document.getElementById('filterContainer');
+
+                                toggleBtn.addEventListener('click', () => {
+                                    if (filterContainer.style.maxHeight && filterContainer.style.maxHeight !== '0px') {
+                                        // Hide form
+                                        filterContainer.style.maxHeight = '0';
+                                        filterContainer.style.opacity = '0';
+                                        toggleBtn.textContent = 'Show Filters';
+                                    } else {
+                                        // Show form
+                                        filterContainer.style.maxHeight = filterContainer.scrollHeight + 'px';
+                                        filterContainer.style.opacity = '1';
+                                        toggleBtn.textContent = 'Hide Filters';
+                                    }
+                                });
+                            </script>
 
                             <script>
                                 document.addEventListener('DOMContentLoaded', () => {
@@ -754,37 +767,41 @@
                                         <td>{{x.enquirydate}}</td>
                                         <td>{{x.primarycontact}}</td>
                                         <td>{{ x.customeraddress|truncatewords:3 }}</td>
-<td>
-  {% if x.latest_followup %}
-    {% if x.latest_followup.order_status == "Close Win" %}
-      NA
-    {% elif x.latest_followup.order_status == "Close Loss" %}
-      NA
-    {% elif x.latest_followup.next_followup_date %}
-      {{ x.latest_followup.next_followup_date|date:"d M, Y" }}
-    {% else %}
-      {{ x.firstfollowupdate|date:"d M, Y" }}
-    {% endif %}
-  {% else %}
-    {{ x.firstfollowupdate|date:"d M, Y" }}
-  {% endif %}
-</td>
+                                        <td>
+                                            {% if x.latest_followup %}
+                                            {% if x.latest_followup.order_status == "Close Win" %}
+                                            NA
+                                            {% elif x.latest_followup.order_status == "Close Loss" %}
+                                            NA
+                                            {% elif x.latest_followup.next_followup_date %}
+                                            {{ x.latest_followup.next_followup_date|date:"d M, Y" }}
+                                            {% else %}
+                                            {{ x.firstfollowupdate|date:"d M, Y" }}
+                                            {% endif %}
+                                            {% else %}
+                                            {{ x.firstfollowupdate|date:"d M, Y" }}
+                                            {% endif %}
+                                        </td>
 
 
-                                      <td>
-    {% if x.latest_followup %}
-    {% if x.latest_followup.order_status == "Close Win" %}
-        <span class="badge" style="background-color: green; color: white;">Close Win</span>
-    {% elif x.latest_followup.order_status == "Close Loss" %}
-        <span class="badge" style="background-color: red; color: white;">Close Loss</span>
-    {% else %}
-        <a href="{% url 'main_followup_view' x.id %}" class="btn btn-primary">Follow Up</a>
-    {% endif %}
-{% else %}
-    <a href="{% url 'main_followup_view' x.id %}" class="btn btn-primary">Follow Up</a>
-{% endif %}
+                                        <td>
+                                            {% if x.latest_followup %}
+                                            {% if x.latest_followup.order_status == "Close Win" %}
+                                            <span class="badge" style="background-color: green; color: white;">Close
+                                                Win</span>
+                                            {% elif x.latest_followup.order_status == "Close Loss" %}
+                                            <span class="badge" style="background-color: red; color: white;">Close
+                                                Loss</span>
+                                            {% else %}
+                                            <a href="{% url 'main_followup_view' x.id %}" class="btn btn-primary">Follow
+                                                Up</a>
+                                            {% endif %}
+                                            {% else %}
+                                            <a href="{% url 'main_followup_view' x.id %}" class="btn btn-primary">Follow
+                                                Up</a>
+                                            {% endif %}
 
-</td>
+                                        </td>
 
 
 

@@ -821,6 +821,13 @@ def quotation_management_create(request):
     branches = Branch.objects.all()
 
     if request.method == 'POST':
+        customer_id = request.POST.get('customer_id')
+        customer = None
+        if customer_id:
+            try:
+                customer = customer_details.objects.get(id=customer_id)
+            except customer_details.DoesNotExist:
+                raise ValueError("Invalid customer ID.")
         try:
             # Core data
             customer_full_name = request.POST.get('customer_full_name')
@@ -901,6 +908,7 @@ def quotation_management_create(request):
 
             # Create the quotation
             quotation = quotation_management.objects.create(
+                 customer=customer,
                 customer_full_name=customer_full_name,
                 contact_no=contact_no,
                 secondary_contact_no=secondary_contact_no,
@@ -1234,8 +1242,8 @@ def delete_invoice_term(request, id):
 
 def quotation_history(request, customer_id):
     customer = customer_details.objects.get(id=customer_id)
-    quotations = quotation.objects.filter(customer=customer).order_by('-version')  # Get all versions of quotations
-
+    print(customer, customer_id)
+    quotations = quotation_management.objects.filter(customer=customer).order_by('-quotation_date')  
     context = {
         'customer': customer,
         'quotations': quotations,
@@ -3727,41 +3735,47 @@ def import_leads(request):
         form = LeadImportForm()
     
     return render(request, 'import_leads.html', {'form': form})
+import csv
+from datetime import datetime
 
 def handle_csv(file):
     decoded_file = file.read().decode('utf-8').splitlines()
     reader = csv.reader(decoded_file)
-    next(reader)  # Skip header row
+    next(reader)  
 
     for row in reader:
         try:
+            # Handle empty or malformed rows
+            if len(row) < 19:
+                print(f"Skipped incomplete row: {row}")
+                continue
 
-            # dateoflead = datetime.strptime(row[6], '%Y-%m-%d').date()
+            # Clean and parse date fields
 
             lead_management.objects.create(
-                sourceoflead=row[0],
-                salesperson=row[1],
-                primarycontact=row[2],
-                customeraddress=row[3],
-                customeremail=row[4],
-                enquirydate=row[5],
-                typeoflead=row[6],
-                city=row[7],
-                contactedby=row[8],
-                customername =row[9],
-                customersegment=row[10],
-                location=row[11],
-                maincategory=row[12],
-                secondarycontact=row[13],
-                subcategory=row[14],
-                firstfollowupdate=row[15],
-                stage=row[16],
-        )
-            
-        except ValueError as e:
-            # Handle any errors with date parsing or other fields
-            messages.error(request, f'Error in row: {row}. {e}')
-        
+                sourceoflead=row[1].strip(),
+                salesperson=row[2].strip(),
+                customername=row[3].strip(),
+                customersegment=row[4].strip(),
+                enquirydate=datetime.strptime(row[5], "%Y-%m-%d").date(),
+                contactedby=row[6].strip(),
+                maincategory=row[7].strip(),
+                subcategory=row[8].strip(),
+                primarycontact=row[9].strip(),
+                secondarycontact=row[10] if row[10].strip().lower() != 'null' else None,
+                customeremail=row[11].strip(),
+                customeraddress=row[12].strip(),
+                location=row[13].strip(),
+                city=row[14].strip(),
+                typeoflead=row[15].strip(),
+                firstfollowupdate=datetime.strptime(row[16], "%Y-%m-%d").date(),
+                stage=int(row[17].strip()),
+                branch=row[18].strip(),
+                state=row[19].strip(),
+            )
+        except Exception as e:
+            print(f"❌ Error importing row {row}: {e}")
+
 
 def handle_xlsx(file):
     wb = openpyxl.load_workbook(file)
@@ -4021,6 +4035,7 @@ def get_customer_details(request):
         try:
             customer = customer_details.objects.get(primarycontact=contact_no)
             data = {
+                'customer_id': customer.id,
                 'customer_full_name': customer.fullname,
                 'customer_email': customer.primaryemail,
                 'shifttopartyaddress': customer.shifttopartyaddress,
