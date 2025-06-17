@@ -2375,8 +2375,7 @@ def edit_customer(request , rid):
         return render(request , 'edit_customer.html' , context)
     
     else:
-        ufirstname=request.POST['ufirstname']
-        ulastname=request.POST['ulastname']
+        ufullname=request.POST['ufullname']
         uprimaryemail=request.POST['uprimaryemail']
         usecondaryemail=request.POST['usecondaryemail']
         uprimarycontact=request.POST['uprimarycontact']
@@ -2397,7 +2396,7 @@ def edit_customer(request , rid):
 
         m=customer_details.objects.filter(id=rid)
 
-        m.update(firstname=ufirstname, lastname=ulastname , primaryemail=uprimaryemail,  secondaryemail=usecondaryemail , primarycontact=uprimarycontact , secondarycontact=usecondarycontact , contactperson=ucontactperson , customersegment=ucustomersegment , shifttopartyaddress=ushifttopartyaddress , shifttopartycity=ushifttopartycity , shifttopartystate=ushifttopartystate , shifttopartypostal=ushifttopartypostal , soldtopartyaddress=usoldtopartyaddress , soldtopartycity=usoldtopartycity , soldtopartystate=usoldtopartystate , soldtopartypostal=usoldtopartypostal)
+        m.update(fullname=ufullname , primaryemail=uprimaryemail,  secondaryemail=usecondaryemail , primarycontact=uprimarycontact , secondarycontact=usecondarycontact , contactperson=ucontactperson , customersegment=ucustomersegment , shifttopartyaddress=ushifttopartyaddress , shifttopartycity=ushifttopartycity , shifttopartystate=ushifttopartystate , shifttopartypostal=ushifttopartypostal , soldtopartyaddress=usoldtopartyaddress , soldtopartycity=usoldtopartycity , soldtopartystate=usoldtopartystate , soldtopartypostal=usoldtopartypostal)
 
        
         return redirect( '/display_customer')
@@ -2405,65 +2404,6 @@ def edit_customer(request , rid):
 
 
 
-
-# Edit Service Management
-
-# from datetime import datetime
-# def edit_service_management(request , rid):
-
-#     if request.method =='GET':
-
-#         m=service_management.objects.filter(id=rid)
-
-#         context={}
-#         context['data']=m
-    
-#         return render(request , 'edit_service_management.html' , context)  
-#     else:
-#         upestcontrolservice=request.POST['upestcontrolservice']
-#         uservices=request.POST['uservices']
-#         uservicetype=request.POST['uservicetype']
-#         uservice_frequency=request.POST['uservice_frequency']
-#         uservice_charges=request.POST['uservice_charges']
-
-#         if 'ugst_checkbox' in request.POST:
-#             ugst_checkbox = True
-#         else:
-#             ugst_checkbox = False
-
-#         upayment_terms_checkbox = request.POST.get('upayment_terms_checkbox')
-#         uservice_date_str=request.POST['uservice_date']
-#         ulead_date_str=request.POST['ulead_date']
-#         usales_person_name=request.POST['usales_person_name']
-#         usales_person_contact_no=request.POST['usales_person_contact_no']
-#         utechnician_operator_name=request.POST['utechnician_operator_name']
-
-#         try:
-#             uservice_date = datetime.strptime(uservice_date_str, '%Y-%m-%d').date()
-#         except ValueError:
-#             uservice_date = None
-        
-#         try:
-#             ulead_date = datetime.strptime(ulead_date_str, '%Y-%m-%d').date()
-#         except ValueError:
-#             ulead_date = None
-
-#         if ugst_checkbox:
-#             total_charges = float(uservice_charges) * 1.18  # Adding 18% GST
-#             upayment_terms_checkbox = "Payment Due in 15 days (including GST)"
-#         else:
-#             total_charges = float(uservice_charges)
-#             upayment_terms_checkbox = "100% Advance Payment"
-
-        
-        
-
-#         m=service_management.objects.filter(id=rid)
-
-#         m.update(pestcontrolservice=upestcontrolservice, services=uservices , servicetype=uservicetype, service_frequency=uservice_frequency , service_charges=uservice_charges , gst_checkbox = True if ugst_checkbox == 'on' else False , payment_terms_checkbox=upayment_terms_checkbox , service_date=uservice_date , lead_date=ulead_date , sales_person_name=usales_person_name , sales_person_contact_no=usales_person_contact_no , technician_operator_name=utechnician_operator_name , total_charges=total_charges)
-
-       
-#         return redirect( '/display_service_management')
 from .models import Reschedule
 from datetime import datetime
 def edit_service_management(request, rid):
@@ -2706,39 +2646,6 @@ def edit_invoice(request , rid):
         return redirect( '/display_invoice')
 
 
-
-# Edit Inventory
-
-
-
-# def edit_inventory(request , rid):
-
-#     if request.method =='GET':
-
-#         m=inventory.objects.filter(id=rid)
-
-#         context={}
-#         context['data']=m
-    
-#         return render(request , 'edit_inventory.html' , context)
-    
-#     else:
-#         uitemnumber=request.POST['uitemnumber']
-#         uitemname=request.POST['uitemname']
-#         uprice=request.POST['uprice']
-#         uquantity=request.POST['uquantity']
-       
-        
-
-#         m=inventory.objects.filter(id=rid)
-
-#         m.update(itemnumber=uitemnumber, itemname=uitemname , price=uprice,  quantity=uquantity)
-
-       
-#         return redirect( '/display_inventory')
-    
-
-
 # Edit Lead Management
 
 
@@ -2774,7 +2681,8 @@ def edit_lead_management(request, rid):
         umaincategory = request.POST.get('umaincategory', '')
         usubcategory = request.POST.get('usubcategory', '')
         uprimarycontact = request.POST.get('uprimarycontact', '')
-        usecondarycontact = request.POST.get('usecondarycontact', '')
+        usecondarycontact_raw = request.POST.get('usecondarycontact')
+        usecondarycontact = int(usecondarycontact_raw) if usecondarycontact_raw else None
         ucustomeremail = request.POST.get('ucustomeremail', '')
         ucustomeraddress = request.POST.get('ucustomeraddress', '')
         ulocation = request.POST.get('ulocation', '')       
@@ -2827,112 +2735,6 @@ def search_inventory(request):
 
 
 def search(request):
-    # search_query = request.GET.get('q', '').strip()
-    # if search_query:
-    #     # Perform case-insensitive search operation based on the query in the specified fields
-    #     results = (
-    #         customer_details.objects.filter(firstname__icontains=search_query) |
-    #         customer_details.objects.filter(lastname__icontains=search_query) |
-    #         customer_details.objects.filter(customerid__icontains=search_query)
-    #     )
-
-    #     data = [
-    #         {
-    #             'customerid': customer.customerid,
-    #             'firstname': customer.firstname,
-    #             'lastname': customer.lastname,
-    #             'primaryemail': customer.primaryemail,
-    #             'secondaryemail': customer.secondaryemail,
-    #             'primarycontact': customer.primarycontact,
-    #             'secondarycontact': customer.secondarycontact,
-    #             'contactperson': customer.contactperson,
-    #             'customersegment': customer.customersegment,
-    #             'shifttopartyaddress': customer.shifttopartyaddress,
-    #             'shifttopartycity': customer.shifttopartycity,
-    #             'shifttopartystate': customer.shifttopartystate,
-    #             'shifttopartypostal': customer.shifttopartypostal,
-    #             'soldtopartyaddress': customer.soldtopartyaddress,
-    #             'soldtopartycity': customer.soldtopartycity,
-    #             'soldtopartystate': customer.soldtopartystate,
-    #             'soldtopartypostal': customer.soldtopartypostal,
-    #         }
-    #         for customer in results
-    #     ]
-
-    #     return render(request, 'search.html', {'results': data})
-    # else:
-    #     return render(request, 'search.html', {'message': 'No search query provided'})
-
-
-
-    # search_query = request.GET.get('q', '').strip()
-    # sort_field = request.GET.get('sort', 'firstname')  # Default sort field is 'firstname'
-    # sort_order = request.GET.get('order', 'asc')  # Default sort order is 'asc'
-
-    # if sort_order == 'desc':
-    #     sort_field = f'-{sort_field}'  # Prefix the field with '-' for descending order
-
-    # results = customer_details.objects.all()
-
-    # if search_query:
-    #     results = results.filter(
-    #         Q(firstname__icontains=search_query) |
-    #         Q(lastname__icontains=search_query) |
-    #         Q(customerid__icontains=search_query)
-    #     )
-
-    # results = results.order_by(sort_field)
-
-    # # Paginate results
-    # paginator = Paginator(results, 10)  # Show 10 results per page
-    # page_number = request.GET.get('page')
-    # page_obj = paginator.get_page(page_number)
-
-    # context = {
-    #     'search_query': search_query,
-    #     'page_obj': page_obj,
-    #     'sort_order': sort_order,
-    #     'sort_field': sort_field.lstrip('-'),  # Remove '-' to pass only field name
-    # }
-
-    # return render(request, 'search.html', context)
-
-
-    # search_query = request.GET.get('q', '').strip()
-    # sort_field = request.GET.get('sort', 'firstname')  # Default sorting field
-    # sort_order = '' if sort_field.startswith('-') else '-'
-    # sort_field = f"{sort_order}{sort_field}"
-    
-    # if search_query:
-    #     # Perform case-insensitive search operation
-    #     results = (
-    #         customer_details.objects.filter(firstname__icontains=search_query) |
-    #         customer_details.objects.filter(lastname__icontains=search_query) |
-    #         customer_details.objects.filter(customerid__icontains=search_query)
-    #     ).order_by(sort_field)
-
-    #     paginator = Paginator(results, 10)  # Paginate with 10 results per page
-    #     page_number = request.GET.get('page', 1)
-    #     page_obj = paginator.get_page(page_number)
-
-    #     context = {
-    #         'search_query': search_query,
-    #         'page_obj': page_obj,
-    #         'sort_order': 'asc' if sort_order == '' else 'desc',
-    #         'sort_field': sort_field.lstrip('-'),
-    #         'no_results': results.exists() == False,  # True if no results found
-    #     }
-    # else:
-    #     context = {
-    #         'search_query': search_query,
-    #         'page_obj': None,
-    #         'sort_order': 'asc',
-    #         'sort_field': 'firstname',
-    #         'no_results': True,  # True because no query was provided
-    #     }
-
-    # return render(request, 'search.html', context)
-
     search_query = request.GET.get('q', '').strip()
     sort_field = request.GET.get('sort', 'firstname')  # Default sort by 'firstname'
     
@@ -4370,7 +4172,7 @@ from django.utils import timezone
 from .models import TaxInvoice, TaxInvoiceItem, quotation_management, customer_details, BankAccounts
 import json
 from datetime import datetime
-from weasyprint import HTML
+
 
 def create_tax_invoice(request):
     if request.method == "POST":
@@ -4526,15 +4328,16 @@ def tax_invoice_pdf(request, id):
     html_string = template.render(context)
 
     # Generate PDF
-    html = HTML(string=html_string, base_url=request.build_absolute_uri())
-    pdf = html.write_pdf()
-    response = HttpResponse(pdf, content_type='application/pdf')
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html_string.encode("UTF-8")), result)
+    if pdf.err:
+        return HttpResponse('Error generating PDF', status=500)
+    response = HttpResponse(result.getvalue(), content_type='application/pdf')
     # Check if 'download=true' is passed in query params
     if request.GET.get('download') == 'true':
         response['Content-Disposition'] = f'attachment; filename="TaxInvoice_{invoice.id}.pdf"'
     else:
         response['Content-Disposition'] = f'inline; filename="TaxInvoice_{invoice.id}.pdf"'
-
 
     return response
 

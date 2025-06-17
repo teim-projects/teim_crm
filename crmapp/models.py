@@ -229,29 +229,6 @@ class invoice(models.Model):
         return f"Invoice No: {self.invoice_no}"
 
 
-# class inventory(models.Model):
-#     itemnumber=models.IntegerField()
-#     itemname=models.CharField(max_length=100)
-#     price=models.IntegerField()
-#     quantity=models.IntegerField()
-
-
-# class lead_management(models.Model):
-#     sourceoflead = models.CharField(max_length=100)
-#     salesperson = models.CharField(max_length=100)
-#     havedonepestcontrolearlier = models.CharField(max_length=100)
-#     leadstatus = models.CharField(max_length=100, choices=[('Call', 'Call'), ('Visit', 'Visit'), ('Quotation', 'Quotation')])
-#     typeoflead = models.CharField(max_length=100,null=True, choices=[('Hot','Hot'),('Warm','Warm'),('Cold','Cold'),('Not Interested','Not Interested'),('Loss of Order','Loss of Order')])
-#     typeofcontract = models.CharField(max_length=100, choices=[('Monthly', 'Monthly'), ('Quarterly', 'Quarterly')])
-#     dateoflead = models.DateField(default=timezone.now)
-#     contactno = models.BigIntegerField(null=True)
-#     customeremail = models.EmailField(null=True)
-#     customeraddress = models.CharField(max_length=255 , null=True)
-#     visitorsname=models.CharField(max_length=200 , default='Null')
-
-
-#     def __str__(self):
-#         return self.sourceoflead
 
 class lead_management(models.Model):
     STATE_CHOICES = [

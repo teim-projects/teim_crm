@@ -142,14 +142,9 @@
           <div id="step1" class="step">
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label>First Name <span class="star">*</span></label>
-                <input type="text" class="form-control" name="ufirstname" value="{{ x.firstname }}"
+                <label>Full Name <span class="star">*</span></label>
+                <input type="text" class="form-control" name="ufullname" value="{{ x.fullname }}"
                   placeholder="First Name" />
-              </div>
-              <div class="col-md-6 mb-3">
-                <label>Last Name <span class="star">*</span></label>
-                <input type="text" class="form-control" name="ulastname" value="{{ x.lastname }}"
-                  placeholder="Last Name" />
               </div>
               <div class="col-md-6 mb-3">
                 <label>Primary Email <span class="star">*</span></label>
@@ -157,7 +152,7 @@
                   placeholder="Primary Email" />
               </div>
               <div class="col-md-6 mb-3">
-                <label>Secondary Email <span class="star">*</span></label>
+                <label>Secondary Email </label>
                 <input type="email" class="form-control" name="usecondaryemail" value="{{ x.secondaryemail }}"
                   placeholder="Secondary Email" />
               </div>
@@ -167,7 +162,7 @@
                   placeholder="Primary Contact No" />
               </div>
               <div class="col-md-6 mb-3">
-                <label>Secondary Contact No <span class="star">*</span></label>
+                <label>Secondary Contact No </label>
                 <input type="number" class="form-control" name="usecondarycontact" value="{{ x.secondarycontact }}"
                   placeholder="Secondary Contact No" />
               </div>
@@ -215,11 +210,11 @@
             <div class="row">
               <div class="col-md-3"></div>
               <div class="col-md-3">
-                              <button type="button" class="btn btn-secondary w-100" onclick="prevStep()">Previous</button>
+                <button type="button" class="btn btn-secondary w-100" onclick="prevStep()">Previous</button>
 
               </div>
               <div class="col-md-3">
-                              <button type="button" class="btn btn-primary w-100" onclick="nextStep()">Next</button>
+                <button type="button" class="btn btn-primary w-100" onclick="nextStep()">Next</button>
 
               </div>
               <div class="col-md-3"></div>
@@ -254,11 +249,11 @@
             <div class="row">
               <div class="col-md-3"></div>
               <div class="col-md-3">
-                              <button type="button" class="btn btn-secondary w-100" onclick="prevStep()">Previous</button>
+                <button type="button" class="btn btn-secondary w-100" onclick="prevStep()">Previous</button>
 
               </div>
               <div class="col-md-3">
-                              <input type="submit" class="btn btn-success w-100" value="Submit" />
+                <input type="submit" class="btn btn-success w-100" value="Submit" />
 
               </div>
               <div class="col-md-3"></div>

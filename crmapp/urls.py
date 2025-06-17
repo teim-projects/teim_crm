@@ -64,7 +64,7 @@ urlpatterns = [
     path('edit_quotation/<rid>', views.edit_quotation),
     path('edit_invoice/<rid>', views.edit_invoice),
     # path('edit_inventory/<rid>', views.edit_inventory),
-    path('edit_lead_management/<rid>', views.edit_lead_management),
+    path('edit_lead_management/<rid>', views.edit_lead_management,name='edit_lead_management'),
     path('delete_customer/<rid>' ,views.delete_customer),
     path('delete_service_management/<rid>' ,views.delete_service_management),
     path('delete_quotation/<rid>' ,views.delete_quotation),
