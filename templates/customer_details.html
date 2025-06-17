@@ -126,39 +126,39 @@
 
 
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function () {
-    $('input[name="primarycontact"]').on('change', function () {
-        const mobile = $(this).val();
-        if (mobile.length === 10) {
-            $.ajax({
-                url: "",
-                data: {
-                    'primarycontact': mobile
-                },
-                dataType: 'json',
-                success: function (response) {
-                    if (response.status === 'exists') {
-                        const data = response.data;
-                        $('input[name="fullname"]').val(data.fullname);
-                        $('input[name="primaryemail"]').val(data.primaryemail);
-                        $('input[name="secondarycontact"]').val(data.secondarycontact);
-                        $('input[name="contactperson"]').val(data.contactperson);
-                        $('input[name="customersegment"]').val(data.customersegment);
-                        $('input[name="shifttopartyaddress"]').val(data.shifttopartyaddress);
-                        $('input[name="shifttopartycity"]').val(data.shifttopartycity);
-                        $('input[name="soldtopartyaddress"]').val(data.soldtopartyaddress);
-                        $('input[name="soldtopartycity"]').val(data.soldtopartycity);
-                    } else {
-                        alert("No lead data found for this number.");
-                    }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('input[name="primarycontact"]').on('change', function () {
+                const mobile = $(this).val();
+                if (mobile.length === 10) {
+                    $.ajax({
+                        url: "",
+                        data: {
+                            'primarycontact': mobile
+                        },
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.status === 'exists') {
+                                const data = response.data;
+                                $('input[name="fullname"]').val(data.fullname);
+                                $('input[name="primaryemail"]').val(data.primaryemail);
+                                $('input[name="secondarycontact"]').val(data.secondarycontact);
+                                $('input[name="contactperson"]').val(data.contactperson);
+                                $('input[name="customersegment"]').val(data.customersegment);
+                                $('input[name="shifttopartyaddress"]').val(data.shifttopartyaddress);
+                                $('input[name="shifttopartycity"]').val(data.shifttopartycity);
+                                $('input[name="soldtopartyaddress"]').val(data.soldtopartyaddress);
+                                $('input[name="soldtopartycity"]').val(data.soldtopartycity);
+                            } else {
+                                alert("No lead data found for this number.");
+                            }
+                        }
+                    });
                 }
             });
-        }
-    });
-});
-</script>
+        });
+    </script>
 
 
 
@@ -193,9 +193,10 @@ $(document).ready(function () {
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="fullname" placeholder="Full Name" required><br>
+                                <input type="text" class="form-control" name="fullname" placeholder="Full Name"
+                                    required><br>
                             </div>
-                           
+
                             <div class="col-md-6 mb-3">
                                 <label>Primary Email <span class="text-danger">*</span></label>
                                 <input type="email" class="form-control" name="primaryemail" placeholder="Primary Email"
@@ -222,15 +223,15 @@ $(document).ready(function () {
                                     required>
                             </div>
                         </div>
-                         <div class="row">
+                        <div class="row">
                             <div class="col-md-3"></div>
                             <div class="col-md-3 "></div>
                             <div class="col-md-3 "></div>
-                            <div class="col-md-3 col-12">      <button type="button" class="btn btn-primary float-end" onclick="nextStep()"
-                            style="width: 100%;">Next</button></div>
+                            <div class="col-md-3 col-12"> <button type="button" class="btn btn-primary float-end"
+                                    onclick="nextStep()" style="width: 100%;">Next</button></div>
 
                         </div>
-                  
+
 
                     </div>
 
@@ -261,19 +262,19 @@ $(document).ready(function () {
                                     required>
                             </div>
                         </div>
-                       
-                       
 
 
-                              <div class="row">
+
+
+                        <div class="row">
                             <div class="col-md-3"></div>
                             <div class="col-md-3 col-12">
                                 <button type="button" class="btn btn-secondary   mt-2" onclick="prevStep()"
-                            style="width: 100%;">Previous</button>
+                                    style="width: 100%;">Previous</button>
                             </div>
                             <div class="col-md-3 col-12">
-                                 <button type="button" class="btn btn-primary    mt-2" onclick="nextStep()"
-                            style="width: 100%;">Next</button>
+                                <button type="button" class="btn btn-primary    mt-2" onclick="nextStep()"
+                                    style="width: 100%;">Next</button>
                             </div>
                             <div class="col-md-3"></div>
 
@@ -311,8 +312,7 @@ $(document).ready(function () {
                                     style="width: 100%;">Previous</button>
                             </div>
                             <div class="col-md-3 col-12">
-                                <input type="submit" class="btn btn-success   " value="Submit"
-                                    style="width: 100%;">
+                                <input type="submit" class="btn btn-success   " value="Submit" style="width: 100%;">
                             </div>
                             <div class="col-md-3"></div>
 

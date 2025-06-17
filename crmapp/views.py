@@ -645,6 +645,9 @@ def customer_details_create(request):
             customerid=customerid
         )
         return redirect('/display_customer')
+    
+    
+
 
 
 from django.shortcuts import render
@@ -1850,6 +1853,61 @@ def display_customer(request):
     return render(request, 'display_customer.html', context)
 
 
+def import_customers(request):
+    if request.method == 'POST':
+        form = CustomerImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['file']
+            file_type = file.name.split('.')[-1]
+
+            if file_type == 'csv':
+                handle_customer_csv(file)
+                messages.success(request, "Customer data imported successfully.")
+            else:
+                messages.error(request, 'Only CSV files are supported.')
+                return redirect('import_customers')
+
+            return redirect('display_customer')  # Update as per your success page
+    else:
+        form = CustomerImportForm()
+
+    return render(request, 'import_customer.html', {'form': form})
+
+
+def handle_customer_csv(file):
+    decoded_file = file.read().decode('utf-8').splitlines()
+    reader = csv.reader(decoded_file)
+    next(reader)  # Skip header
+
+    for row in reader:
+        try:
+            if len(row) < 16:
+                print(f"⚠️ Skipped incomplete row: {row}")
+                continue
+
+            customer_details.objects.create(
+                fullname=row[1].strip(),
+                primaryemail=row[2].strip(),
+                secondaryemail=row[3].strip() if row[3].strip().lower() != 'null' else None,
+                primarycontact=int(row[4].strip()),
+                secondarycontact=int(row[5].strip()) if row[5].strip().lower() != 'null' else None,
+                contactperson=row[6].strip(),
+                customersegment=row[7].strip(),
+                shifttopartyaddress=row[8].strip(),
+                shifttopartycity=row[9].strip(),
+                shifttopartystate=row[10].strip(),
+                shifttopartypostal=row[11].strip(),
+                soldtopartyaddress=row[12].strip(),
+                soldtopartycity=row[13].strip(),
+                soldtopartystate=row[14].strip(),
+                soldtopartypostal=row[15].strip(),
+                customerid=row[16].strip() if row[16].strip() else None,
+            )
+
+        except Exception as e:
+            print(f"❌ Error importing row {row}: {e}")
+
+
 from crmapp.models import Reschedule
 def display_reschedule(request):
     query = request.GET.get('search', '').strip()
@@ -2784,7 +2842,7 @@ def search(request):
 
 # In crmapp/views.py
 from django.shortcuts import render
-from .forms import InventoryServiceForm
+from .forms import InventoryServiceForm , CustomerImportForm
 from .models import customer_details, Product, Inventory_summary
 
 def inventory_service(request):
@@ -3735,6 +3793,7 @@ def import_leads(request):
         form = LeadImportForm()
     
     return render(request, 'import_leads.html', {'form': form})
+
 import csv
 from datetime import datetime
 
@@ -3749,9 +3808,6 @@ def handle_csv(file):
             if len(row) < 19:
                 print(f"Skipped incomplete row: {row}")
                 continue
-
-            # Clean and parse date fields
-
             lead_management.objects.create(
                 sourceoflead=row[1].strip(),
                 salesperson=row[2].strip(),

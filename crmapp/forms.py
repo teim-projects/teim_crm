@@ -83,7 +83,9 @@ class LeadImportForm(forms.Form):
     file = forms.FileField()
 
 
-
+class CustomerImportForm(forms.Form):
+    file = forms.FileField()
+    
 # from django import forms
 # from .models import followup
 
