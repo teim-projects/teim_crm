@@ -433,6 +433,13 @@
                                     style="width: 150px;">Search</button>
 
                             </form>
+
+                            <!-- Export Button -->
+                            <div class="col-md-2 mt-2 mt-md-0">
+                                <a href="{% url 'export_quotation' %}">
+                                    <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
+                                </a>
+                            </div>
                         </div>
                         <div class="p mb-3">
                             <p class="scroll-instruction">Scroll to view more content ➡️ </p>
@@ -443,12 +450,25 @@
                                     <tr>
                                         <th>Sr.No</th>
                                         <th>
-                                            <a style="text-decoration: none;color: #000000;"
-                                                href="?sort_by=customer_full_name&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                                                Customer Name
+                                            <a style="text-decoration: none; color: #000000;"
+                                                href="?sort_by=quotation_no&order={% if current_sort_by == 'quotation_no' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
+                                                Quotation No
+                                                {% if current_sort_by == 'quotation_no' %}
                                                 {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                                                {% endif %}
                                             </a>
                                         </th>
+
+                                        <th>
+                                            <a style="text-decoration: none; color: #000000;"
+                                                href="?sort_by=customer_full_name&order={% if current_sort_by == 'customer_full_name' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
+                                                Customer Name
+                                                {% if current_sort_by == 'customer_full_name' %}
+                                                {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                                                {% endif %}
+                                            </a>
+                                        </th>
+
                                         <th>Contact No</th>
                                         <th>Secondary Contact</th>
                                         <th>Email</th>
@@ -471,7 +491,7 @@
                                         <th>Terms & Conditions</th>
                                         <th>Download</th>
                                         <th>View</th>
-                                        <th>Edit</th>
+                                        <!-- <th>Edit</th> -->
                                         <th>Delete</th>
                                     </tr>
                                 </thead>
@@ -479,6 +499,7 @@
                                     {% for x in page_obj %}
                                     <tr>
                                         <td>{{ forloop.counter|add:start_index }}</td>
+                                        <td>{{ x.quotation_no }}</td>
                                         <td>{{ x.customer_full_name }}</td>
                                         <td>{{ x.contact_no }}</td>
                                         <td>{{ x.secondary_contact_no }}</td>
@@ -534,8 +555,8 @@
                                                 View PDF
                                             </a>
                                         </td>
-                                        <td><a href="/edit_quotation/{{ x.id }}"
-                                                class="btn btn-outline-success">Edit</a></td>
+                                        <!-- <td><a href="/edit_quotation/{{ x.id }}"
+                                                class="btn btn-outline-success">Edit</a></td> -->
                                         <td><a href="/delete_quotation/{{ x.id }}"
                                                 class="btn btn-outline-danger delete-link">Delete</a></td>
                                     </tr>

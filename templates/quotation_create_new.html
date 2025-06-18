@@ -802,7 +802,7 @@
                                 onchange="updateSelectedServices(this)" class="me-2">
                             <span>${product.product_name}</span>
                         </div>
-                        
+
                         <div class="row g-2">
                             <div class="col-md-3">
                                 <label>Price</label>
@@ -814,8 +814,6 @@
                                     onchange="updateProductPrice(this, '${product.product_id}')">
                             </div>
                    
-                        
-
                             <div class="col-md-3">
                                 <label>Quantity</label>
                                 <input type="number" class="form-control product-quantity-input" 
@@ -827,11 +825,23 @@
                             </div>
                             
                             <div class="col-md-3">
+                                <label>Description</label>
+                                    <input type="text" class="form-control product-description-input" 
+                                        data-product-id="${product.product_id}" 
+                                        value="${product.description}"
+                                        placeholder="Description"
+                                        onchange="updateProductDescription(this, '${product.product_id}')">
+
+                            </div>
+
+                            <div class="col-md-3">
                                 <label>Unit</label>
-                                <input type="text" class="form-control product-unit-input" 
-                                    data-product-id="${product.product_id}" 
-                                    value="${product.unit || ''}"
-                                    placeholder="Unit">
+                                    <input type="text" class="form-control product-unit-input" 
+                                        data-product-id="${product.product_id}" 
+                                        value="${product.unit}"
+                                        placeholder="Unit"
+                                        onchange="updateProductUnit(this, '${product.product_id}')">
+
                             </div>
                             
                             <div class="col-md-3" id="gst_${product.product_id}" style="display: ${gstEnabled ? 'block' : 'none'}">
@@ -851,34 +861,75 @@
             }
         }
 
+        // function updateSelectedServices(checkbox) {
+        //     const productId = checkbox.value;
+        //     const productName = checkbox.getAttribute('data-name');
+        //     const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
+        //     const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
+        //     const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
+        //     const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
+        //     console.log("Unit", unitInput)
+        //     const productPrice = parseFloat(priceInput.value) || 0;
+        //     const productQuantity = parseInt(quantityInput.value) || 1;
+        //     const productGST = parseFloat(gstInput.value) || 0;
+        //     const productUnit = unitInput.value || '';
+        //     console.log("productUnit", productUnit)
+
+        //     if (checkbox.checked) {
+        //         selectedProducts.push({
+        //             id: productId,
+        //             name: productName,
+        //             price: productPrice,
+        //             quantity: productQuantity,
+        //             unit: productUnit,
+        //             gst: productGST
+        //         });
+        //     } else {
+        //         selectedProducts = selectedProducts.filter(product => product.id !== productId);
+        //     }
+
+        //     updateSelectedServicesList();
+        //     calculateTotal();
+        // }
+
         function updateSelectedServices(checkbox) {
-            const productId = checkbox.value;
-            const productName = checkbox.getAttribute('data-name');
-            const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
-            const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
-            const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
-            const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
+            setTimeout(() => {
+                const productId = checkbox.value;
+                const productName = checkbox.getAttribute('data-name');
 
-            const productPrice = parseFloat(priceInput.value) || 0;
-            const productQuantity = parseInt(quantityInput.value) || 1;
-            const productGST = parseFloat(gstInput.value) || 0;
-            const productUnit = unitInput.value || '';
+                const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
+                const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
+                const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
+                const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
+                const descriptionInput = document.querySelector(`input[data-product-id="${productId}"].product-description-input`);
 
-            if (checkbox.checked) {
-                selectedProducts.push({
-                    id: productId,
-                    name: productName,
-                    price: productPrice,
-                    quantity: productQuantity,
-                    unit: productUnit,
-                    gst: productGST
-                });
-            } else {
-                selectedProducts = selectedProducts.filter(product => product.id !== productId);
-            }
+                console.log("Unit Input Element:", unitInput);
 
-            updateSelectedServicesList();
-            calculateTotal();
+                const productPrice = priceInput ? parseFloat(priceInput.value) : 0;
+                const productQuantity = quantityInput ? parseInt(quantityInput.value) : 1;
+                const productGST = gstInput ? parseFloat(gstInput.value) : 0;
+                const productUnit = unitInput ? unitInput.value : '';
+                const productDesc = descriptionInput ? descriptionInput.value : '';
+
+                console.log("Unit Value:", productUnit);
+
+                if (checkbox.checked) {
+                    selectedProducts.push({
+                        id: productId,
+                        name: productName,
+                        price: productPrice,
+                        quantity: productQuantity,
+                        unit: productUnit,
+                        description: productDesc,
+                        gst: productGST
+                    });
+                } else {
+                    selectedProducts = selectedProducts.filter(product => product.id !== productId);
+                }
+
+                updateSelectedServicesList();
+                calculateTotal();
+            }, 0);
         }
 
         function updateProductPrice(input, productId) {
@@ -899,6 +950,25 @@
             }
             updateSelectedServicesList();
             calculateTotal();
+        }
+
+        function updateProductUnit(input, productId) {
+            const newUnit = input.value || '';
+            const product = selectedProducts.find(p => p.id === productId);
+            if (product) {
+                product.unit = newUnit;
+            }
+            updateSelectedServicesList();
+        }
+
+
+        function updateProductDescription(input, productId) {
+            const newDesc = input.value || '';
+            const product = selectedProducts.find(p => p.id === productId);
+            if (product) {
+                product.description = newDesc;
+            }
+            updateSelectedServicesList();
         }
 
         function updateProductGST(input, productId) {

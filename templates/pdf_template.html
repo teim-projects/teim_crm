@@ -3,30 +3,30 @@
 <html lang="en">
 
 <head>
-   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <meta charset="UTF-8">
     <title>Quotation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-          font-size:13px !important;
+            font-size: 13px !important;
             color: #000;
         }
 
 
-       .fs{
-        font-size:13px;
-       }
- 
-        
+        .fs {
+            font-size: 13px;
+        }
+
+
         .footer {
             text-align: center;
         }
 
-    
-       
+
+
 
         .clearfix::after {
             content: "";
@@ -130,94 +130,98 @@
             margin-top: 20px;
             text-align: center;
         }
-    
-        .theadd{
+
+        .theadd {
             border: none !important;
             border-collapse: collapse;
 
         }
-        .theadd tr td{
-            
-               border: none !important;
-         }
-         .pdf-footer {
-    position: fixed;
-    bottom: 0;
 
-    left: 0;
-    width: 100%;
-    height: 300px !important;
-    height: 60px; /* Adjust according to your footer image height */
-    text-align: center;
-    z-index: 999;
-}
+        .theadd tr td {
 
+            border: none !important;
+        }
+
+        .pdf-footer {
+            position: fixed;
+            bottom: 0;
+
+            left: 0;
+            width: 100%;
+            height: 300px !important;
+            height: 60px;
+            /* Adjust according to your footer image height */
+            text-align: center;
+            z-index: 999;
+        }
     </style>
 </head>
 
 <body>
 
 
-     
- 
+
+
 
     <table class=" theadd" style="border-bottom: 2px solid black;">
         <tr>
             <td>
-                                     <img src="{{ logo_path }}" alt="Logo" width="150px" style="position: fixed !important; top:50% !important;left:10% !important;">
+                <img src="{{ logo_path }}" alt="Logo" width="150px"
+                    style="position: fixed !important; top:50% !important;left:10% !important;">
 
             </td>
             <td>
-                 <div class="company-details " style="text-align: right;">
-        <strong style="font-size: 18px;">Seva Facility Services Pvt Ltd</strong><br>
-        <span>{{ quotation.branch.full_address }},</span><br>
-        <span>{{ quotation.branch.email_1 }},</span>
-        <span>{{ quotation.branch.email_2 }}</span><br>
-        <span>{{ quotation.branch.contact_1 }}</span><br>
-        <span>GSTIN: {{ quotation.branch.gst_number }}</span><br>
-        <span>PAN No: {{ quotation.branch.pan_number }}</span><br>
-    </div>  
+                <div class="company-details " style="text-align: right;">
+                    <strong style="font-size: 18px;">Seva Facility Services Pvt Ltd</strong><br>
+                    <span>{{ quotation.branch.full_address }},</span><br>
+                    <span>{{ quotation.branch.email_1 }},</span>
+                    <span>{{ quotation.branch.email_2 }}</span><br>
+                    <span>{{ quotation.branch.contact_1 }}</span><br>
+                    <span>GSTIN: {{ quotation.branch.gst_number }}</span><br>
+                    <span>PAN No: {{ quotation.branch.pan_number }}</span><br>
+                </div>
             </td>
         </tr>
     </table>
-         
-               
-       
-   
- 
-
- 
-
- 
-<table  class=" theadd">
-    <tr>
-        <td>
-        <div class="client-details fs" style="border-left: 5px solid #4484CD;">
-            <strong class="mt-2">Name :</strong> {{ quotation.customer_full_name }}<br>
-            <strong>Phone :</strong> {{ quotation.contact_no }}<br>
-            {% if quotation.secondary_contact_no %}
-            <strong>Secondary Phone :</strong> {{ quotation.secondary_contact_no }}<br>
-            {% endif %}
-            <strong>Email :</strong> {{ quotation.customer_email }}<br>
-            {% if quotation.secondary_email %}
-            <strong>Secondary Email :</strong> {{ quotation.secondary_email }}<br>
-            {% endif %}
-            <strong>Address :</strong> {{ quotation.address }}
-        </div>
-        </td>
-        <td>
-               <div class="quotation-info fs">
-            <strong style="font-size: 12px;">Quotation Information</strong><br>
-            <strong class="fs">No:</strong><span class="fs">{{ quotation.quotation_no }}</span><br>
-            <strong class="fs">Date:</strong><span class="fs"> {{ quotation.quotation_date|date:"d M Y" }}</span>
-        </div>
-        </td>
-    </tr>
-</table>
-    <div class="details-container" >
 
 
-     
+
+
+
+
+
+
+
+    <table class=" theadd">
+        <tr>
+            <td>
+                <div class="client-details fs" style="border-left: 5px solid #4484CD;">
+                    <strong class="mt-2">Name :</strong> {{ quotation.customer_full_name }}<br>
+                    <strong>Phone :</strong> {{ quotation.contact_no }}<br>
+                    {% if quotation.secondary_contact_no %}
+                    <strong>Secondary Phone :</strong> {{ quotation.secondary_contact_no }}<br>
+                    {% endif %}
+                    <strong>Email :</strong> {{ quotation.customer_email }}<br>
+                    {% if quotation.secondary_email %}
+                    <strong>Secondary Email :</strong> {{ quotation.secondary_email }}<br>
+                    {% endif %}
+                    <strong>Address :</strong> {{ quotation.address }}
+                </div>
+            </td>
+            <td>
+                <div class="quotation-info fs">
+                    <strong style="font-size: 12px;">Quotation Information</strong><br>
+                    <strong class="fs">No:</strong><span class="fs">{{ quotation.quotation_no }}</span><br>
+                    <strong class="fs">Date:</strong><span class="fs">
+                        {{ quotation.quotation_date|date:"d M Y" }}</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div class="details-container">
+
+
+
     </div>
 
     <div>
@@ -240,7 +244,8 @@
             {% for item in quotation.product_details_json %}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ item.name }} </td>
+                <td>{{ item.name }} <br>
+                    {{ item.description }}</td>
                 <td>{{ item.price }}</td>
                 <td>{{ item.quantity }}</td>
                 <td>{{ item.gst }}</td>
@@ -289,8 +294,8 @@
     <p><strong>Total in Words:</strong> {{ amount_in_words }} </p>
 
     <div class="terms fs">
-    
-        <strong class="fs" >Terms & Conditions</strong>
+
+        <strong class="fs">Terms & Conditions</strong>
         <ol class="fs">
             {% for term in quotation.terms_and_conditions.all %}
             <li>{{ term.description }}</li>
@@ -299,28 +304,29 @@
             {% endfor %}
         </ol>
         {% if quotation.apply_gst %}
-<span class="fs">
+        <span class="fs">
             All above material and services will be attracted to GST extra as per product or service applicable.
 
-</span>
+        </span>
         {% endif %}
     </div>
 
     <div class="thankyou fs">
-<span class="fs">
-            We thank you for opportunity given to serve you & look forward to adding you to our family of customers.<br><br>
+        <span class="fs">
+            We thank you for opportunity given to serve you & look forward to adding you to our family of
+            customers.<br><br>
 
-</span>
+        </span>
         <strong class="fs">Thanking You,</strong><br><br>
-      <span class="fs"> Seva Facility Services Pvt Ltd</span> <br><br>
-        <strong class="fs">Contact By:{{ quotation.contact_by }} - {{ quotation.contact_by_no }}</strong> 
+        <span class="fs"> Seva Facility Services Pvt Ltd</span> <br><br>
+        <strong class="fs">Contact By:{{ quotation.contact_by }} - {{ quotation.contact_by_no }}</strong>
     </div>
 
 
 
-   <div class="pdf-footer">
-    <img src="{{ fottor_path }}" alt="Footer Image" width="100%" height="100%">
-</div>
+    <div class="pdf-footer">
+        <img src="{{ fottor_path }}" alt="Footer Image" width="100%" height="100%">
+    </div>
 
 </body>
 

@@ -646,7 +646,28 @@ def customer_details_create(request):
         )
         return redirect('/display_customer')
     
-    
+
+
+def export_customer_excel(request):
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="customer_list.csv"'
+
+    writer = csv.writer(response)
+
+    # Get all model field names
+    model_fields = [field.name for field in customer_details._meta.fields]
+
+    # Write header row
+    writer.writerow([field.replace('_', ' ').title() for field in model_fields])
+
+    # Write data rows
+    for obj in customer_details.objects.all().values_list(*model_fields):
+        writer.writerow(obj)
+
+    return response
+
+
 
 
 
@@ -964,6 +985,26 @@ def quotation_management_create(request):
 from django.http import JsonResponse
 from .models import quotation_management
 
+
+
+def export_quotation_excel(request):
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="Quotation_list.csv"'
+
+    writer = csv.writer(response)
+
+    # Get all model field names
+    model_fields = [field.name for field in quotation_management._meta.fields]
+
+    # Write header row
+    writer.writerow([field.replace('_', ' ').title() for field in model_fields])
+
+    # Write data rows
+    for obj in quotation_management.objects.all().values_list(*model_fields):
+        writer.writerow(obj)
+
+    return response
 
 
 
@@ -1742,37 +1783,132 @@ def today_work(request):
 
 from datetime import date
 
+# def pending_followups(request):
+#     today = date.today()
+#     salesperson_filter = request.GET.get('salesperson')
+
+#     # Get followups with a past next_followup_date
+#     lead_folloup = lead_management.objects.filter(firstfollowupdate__lt = today)
+#     followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
+
+#     if salesperson_filter:
+#         followups = followups.filter(lead__salesperson=salesperson_filter)
+#         lead_folloup = lead_folloup.filter(lead__salesperson=salesperson_filter)
+
+#     combined = list(chain(
+#            followups,  # main_followup objects (with .lead field)
+#            [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]  # avoid duplication
+#        ))
+#     # Pagination
+#     paginator = Paginator(combined, 10)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+
+#     salespersons = lead_management.objects.values_list('salesperson', flat=True).distinct()
+#     start_index = (page_obj.number - 1) * paginator.per_page
+
+#     return render(request, 'pending_followups.html', {
+#         'page_obj': page_obj,
+#         'salespersons': salespersons,
+#         'selected_salesperson': salesperson_filter,
+#         'start_index': start_index
+#     })
+
+from itertools import chain
+from datetime import date
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from django.db.models import Q
+from .models import lead_management, main_followup, SalesPerson
+
 def pending_followups(request):
     today = date.today()
+
+    # Get filters
+    search_query = request.GET.get('search', '').strip()
+    typeoflead_filter = request.GET.get('typeoflead')
+    source_filter = request.GET.get('sourceoflead')
     salesperson_filter = request.GET.get('salesperson')
+    branch_filter = request.GET.get('branch')
+    enquiry_from = request.GET.get('enquiry_from')
+    enquiry_to = request.GET.get('enquiry_to')
+    followup_from = request.GET.get('followup_from')
+    followup_to = request.GET.get('followup_to')
+    sort_by = request.GET.get('sort', 'customername')
+    order = request.GET.get('order', 'asc')
 
-    # Get followups with a past next_followup_date
-    lead_folloup = lead_management.objects.filter(firstfollowupdate__lt = today)
+    order_prefix = '-' if order == 'desc' else ''
+
+    # Overdue leads without followup
+    lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today)
+    if salesperson_filter:
+        lead_folloup = lead_folloup.filter(salesperson=salesperson_filter)
+
+    # Overdue leads with followup
     followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
-
     if salesperson_filter:
         followups = followups.filter(lead__salesperson=salesperson_filter)
-        lead_folloup = lead_folloup.filter(lead__salesperson=salesperson_filter)
 
-    combined = list(chain(
-           followups,  # main_followup objects (with .lead field)
-           [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]  # avoid duplication
-       ))
-    # Pagination
-    paginator = Paginator(combined, 10)
+    combined_leads = list(chain(
+        followups,
+        [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]
+    ))
+
+    # Apply search and filters manually
+    filtered = []
+    for item in combined_leads:
+        lead = item.lead if hasattr(item, 'lead') else item
+
+        if search_query and not (
+            search_query.lower() in str(lead.primarycontact).lower() or
+            search_query.lower() in str(lead.customername).lower() or
+            search_query.lower() in str(lead.typeoflead).lower()
+        ):
+            continue
+        if typeoflead_filter and lead.typeoflead != typeoflead_filter:
+            continue
+        if source_filter and lead.sourceoflead != source_filter:
+            continue
+        if branch_filter and lead.branch != branch_filter:
+            continue
+        if enquiry_from and enquiry_to and not (enquiry_from <= str(lead.enquirydate) <= enquiry_to):
+            continue
+        if followup_from and followup_to and not (followup_from <= str(lead.firstfollowupdate) <= followup_to):
+            continue
+
+        filtered.append(item)
+
+    # Sort
+    def get_sort_value(obj):
+        lead = obj.lead if hasattr(obj, 'lead') else obj
+        return getattr(lead, sort_by, '')
+
+    filtered.sort(key=get_sort_value, reverse=(order == 'desc'))
+
+    # Paginate
+    paginator = Paginator(filtered, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
-    salespersons = lead_management.objects.values_list('salesperson', flat=True).distinct()
     start_index = (page_obj.number - 1) * paginator.per_page
+
+    # Dropdowns
+    typeoflead_choices = [c[0] for c in lead_management._meta.get_field('typeoflead').choices if c[0]]
+    source_choices = [c[0] for c in lead_management._meta.get_field('sourceoflead').choices if c[0]]
+    branch_choices = [c[0] for c in lead_management._meta.get_field('branch').choices if c[0]]
+    salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
 
     return render(request, 'pending_followups.html', {
         'page_obj': page_obj,
+        'search_query': search_query,
+        'start_index': start_index,
+        'lead_types': typeoflead_choices,
+        'sources': source_choices,
+        'branches': branch_choices,
         'salespersons': salespersons,
         'selected_salesperson': salesperson_filter,
-        'start_index': start_index
+        'current_sort': sort_by,
+        'current_order': order
     })
-
 
 
 
@@ -1822,7 +1958,8 @@ def display_customer(request):
 
     if query:
         m = (customer_details.objects.filter(customerid__icontains=query) |
-             customer_details.objects.filter(primarycontact__icontains=query))
+             customer_details.objects.filter(primarycontact__icontains=query)|
+             customer_details.objects.filter(fullname__icontains=query))
     else:
         m = customer_details.objects.all()
 
@@ -2057,11 +2194,16 @@ def display_quotation(request):
     sort_order = sort_order if sort_order in ['asc', 'desc'] else 'asc'
     sort_by = request.GET.get('sort_by', 'customer_full_name')
 
-    valid_sort_fields = ['customer_full_name', 'quotation_date', 'total_price', 'total_price_with_gst']
+    valid_sort_fields = ['quotation_no','customer_full_name', 'quotation_date', 'total_price', 'total_price_with_gst']
 
     m = quotation_management.objects.all()
     if query:
-        m = m.filter(customer_full_name__icontains=query)
+        m = m.filter(
+            Q(customer_full_name__icontains=query) |
+            Q(quotation_no__icontains=query) |
+            Q(customer__customerid__icontains=query) |
+            Q(contact_no__icontains=query)
+        )
 
     if sort_by in valid_sort_fields:
         order_prefix = '-' if sort_order == 'desc' else ''
@@ -2270,30 +2412,25 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 import xlwt
+from .models import lead_management
 
 def export_leads_excel(request):
-    from .models import lead_management
 
-    response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="leads_full.xls"'
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="leads_full.csv"'
 
-    wb = xlwt.Workbook(encoding='utf-8')
-    ws = wb.add_sheet('Leads')
+    writer = csv.writer(response)
 
     # Get all model field names
     model_fields = [field.name for field in lead_management._meta.fields]
 
-    # Write header
-    for col_num, field_name in enumerate(model_fields):
-        ws.write(0, col_num, field_name.replace('_', ' ').title())
+    # Write header row
+    writer.writerow([field.replace('_', ' ').title() for field in model_fields])
 
     # Write data rows
-    data = lead_management.objects.all().values_list(*model_fields)
-    for row_num, row in enumerate(data, start=1):
-        for col_num, cell_value in enumerate(row):
-            ws.write(row_num, col_num, str(cell_value))
+    for obj in lead_management.objects.all().values_list(*model_fields):
+        writer.writerow(obj)
 
-    wb.save(response)
     return response
 
 
@@ -4344,7 +4481,7 @@ def display_tax_invoice(request):
         m = TaxInvoice.objects.all().prefetch_related('items')
 
     
-    if sort_by == 'firstname':
+    if sort_by == 'name':
         sort_field = 'customer__fullname'
     elif sort_by == 'invoice_no':
         sort_field = 'tax_invoice_no'
@@ -4412,3 +4549,44 @@ def tax_invoice_pdf(request, id):
 
     return response
 
+
+import csv
+from django.http import HttpResponse
+from .models import TaxInvoice, TaxInvoiceItem  # adjust path as needed
+
+
+def export_invoice_excel(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="invoice_list.csv"'
+
+    writer = csv.writer(response)
+
+    # Header row
+    writer.writerow([
+        'Invoice No', 'Quotation No', 'Customer Name', 'Bank Name', 'Created At', 'Grand Total',
+        'Product Name', 'HSN Code', 'Quantity', 'Unit', 'Price', 'GST %', 'GST Amount', 'Total'
+    ])
+
+    # Fetch invoices and write rows with their items
+    invoices = TaxInvoice.objects.select_related('quotation', 'customer', 'bank').prefetch_related('items')
+
+    for invoice in invoices:
+        for item in invoice.items.all():
+            writer.writerow([
+                invoice.tax_invoice_no,
+                invoice.quotation.quotation_no if invoice.quotation else '',
+                invoice.customer.fullname if invoice.customer else '',
+                invoice.bank.bank_name if invoice.bank else '',
+                invoice.created_at.strftime('%Y-%m-%d %H:%M'),
+                invoice.grand_total,
+                item.product_name,
+                item.hsn_code,
+                item.quantity,
+                item.unit,
+                item.price,
+                item.gst_percent,
+                item.gst_amount,
+                item.total
+            ])
+
+    return response

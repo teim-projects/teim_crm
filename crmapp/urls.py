@@ -29,6 +29,7 @@ urlpatterns = [
     path('view_invoice_terms/', views.view_invoice_terms, name='view_invoice_terms'),
     path('delete_invoice_term/<int:id>/', views.delete_invoice_term, name='delete_invoice_term'),
     path('create_quotation/', views.quotation_management_create, name='create_quotation'),
+    path('export-quotation/', views.export_quotation_excel, name='export_quotation'),
 
     # path('quotation_create',views.quotation_create, name='quotation_create'),
     path('invoice_create',views.invoice_create),
@@ -47,9 +48,9 @@ urlpatterns = [
     path('logout', views.user_logout),
     path('display_customer', views.display_customer, name="display_customer"),
     path('import-customers/', views.import_customers, name='import_customers'),
-    path('display_service_management', views.display_service_management),
+    path('display_service_management', views.display_service_management, name="display_service_management"),
     path('display_allocation', views.display_allocation),
-    path('display_quotation', views.display_quotation),
+    path('display_quotation', views.display_quotation, name="display_quotation"),
     path('display_invoice', views.display_invoice),
     # Payment gateway
     path('checkout/', views.create_paypal_payment, name='create_paypal_payment'),
@@ -139,6 +140,7 @@ urlpatterns = [
 
 
     path('get_customer_details/', views.get_customer_details, name='get_customer_details'),
+    path('export-customers/', views.export_customer_excel, name='export_customers'),
     path('get_quotation_details_by_no/', views.get_quotation_details_by_no, name='get_quotation_details_by_no'),
 
     # Bank Account 
@@ -151,6 +153,7 @@ urlpatterns = [
     path('tax-invoice/create/',views.create_tax_invoice, name="create_tax_invoice"),
     path('display_tax_invoice/', views.display_tax_invoice, name="display_tax_invoice"),
     path('tax-invoice/pdf/<int:id>/', views.tax_invoice_pdf, name='tax_invoice_pdf'),
+    path('export-invoice/', views.export_invoice_excel, name='export_invoice'),
 
 
 ]

@@ -58,31 +58,166 @@
 </head>
 
 <body>
-{% include 'sidebar.html' %}
-<div class="main" style="min-height: 100vh;">
-    <div class="container py-4 bg-light rounded mb-3" style="margin-top: 100px;">
-        <div class="row mb-1">
-            <div class="col-12 text-center">
-                <h3 class="fw-bold text-dark">Pending Follow-ups</h3>
+    {% include 'sidebar.html' %}
+    <div class="main" style="min-height: 100vh;">
+        <div class="container py-4 bg-light rounded mb-3" style="margin-top: 100px;">
+            <div class="row mb-1">
+                <div class="col-12 text-center">
+                    <h3 class="fw-bold text-dark">Pending Follow-ups</h3>
+                </div>
             </div>
-        </div>
 
-            <!-- Filter Form -->
-            <form method="get" class="row align-items-end g-3 mb-4 filter-form">
-                <div class="col-md-6 col-sm-8">
-                    <label for="salesperson" class="form-label">Filter by Salesperson:</label>
-                    <select name="salesperson" id="salesperson" class="form-select">
-                        <option value="">All</option>
-                        {% for person in salespersons %}
-                        <option value="{{ person }}" {% if selected_salesperson == person %}selected{% endif %}>
-                            {{ person }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2 col-sm-4">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
-                </div>
-            </form>
+           <div class="search">
+                <form class="form-inline d-flex align-items-center gap-2" method="get">
+                    <input class="form-control me-2 w-50" type="search" name="search"
+                        placeholder="Search by Name / Phone no." aria-label="Search"
+                        value="{{ request.GET.search }}">
+                    <button class="btn btn-outline-success" type="submit" style="min-width: 150px;">Search</button>
+                </form>
+            </div>
+
+                   
+                   
+            
+
+            <!-- Button to toggle the filter form -->
+            <button id="toggleFilterBtn" class="btn btn-primary mb-3">Show Filters</button>
+
+            <!-- Container to hold the filter form -->
+            <div id="filterContainer"
+                style="max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; opacity: 0;">
+                <form method="get" id="filterForm" class="row mb-4" style="gap: 10px;">
+                    <div class="row ">
+                        <!-- Type of Lead -->
+                        <div class="col-md-3">
+                            <label>Type of Lead</label>
+                            <select name="typeoflead" class="form-control custom-select">
+                                <option value="">All Lead Types</option>
+                                {% for type in lead_types %}
+                                <option value="{{ type }}" {% if request.GET.typeoflead == type %}selected{% endif %}>
+                                    {{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Source of Lead -->
+                        <div class="col-md-3">
+                            <label>Source of Lead</label>
+                            <select name="sourceoflead" class="form-control custom-select">
+                                <option value="">All Sources</option>
+                                {% for source in sources %}
+                                <option value="{{ source }}" {% if request.GET.sourceoflead == source %}selected
+                                {% endif %}>
+                                    {{ source }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Salesperson -->
+                        <div class="col-md-3">
+                            <label>Salesperson</label>
+                            <select name="salesperson" class="form-control custom-select">
+                                <option value="">All Salespersons</option>
+                                {% for sp in salespersons %}
+                                <option value="{{ sp }}" {% if request.GET.salesperson == sp %}selected {% endif %}>
+                                    {{ sp }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Branch -->
+                        <div class="col-md-3">
+                            <label>Branch</label>
+                            <select name="branch" class="form-control custom-select">
+                                <option value="">All Branches</option>
+                                {% for b in branches %}
+                                <option value="{{ b }}" {% if request.GET.branch == b %}selected {% endif %}>{{ b }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if branch_count %}
+                            <small class="text-muted">Total leads in this branch: {{ branch_count }}</small>
+                            {% endif %}
+                        </div>
+
+
+                    </div>
+
+                    <div class="row mt-3">
+                        <!-- Enquiry Date Section -->
+                        {% comment %} <div class="col-md-6 ">
+                            <div class="row date-box p-2">
+                                <h6 class="text-center datehid text-primary">Enquiry Date</h6>
+
+                                <div class="col-md-6">
+                                    <label class="text-center">From</label>
+                                    <input type="date" name="enquiry_from" class="form-control custom-select mb-1"
+                                        value="{{ request.GET.enquiry_from }}">
+                                </div>
+                                <div class="col-md-6 ">
+                                    <label class="text-center">To</label>
+                                    <input type="date" name="enquiry_to" class="form-control custom-select"
+                                        value="{{ request.GET.enquiry_to }}">
+                                </div>
+                            </div>
+                        </div> {% endcomment %}
+
+                        <!-- Follow-up Date Section -->
+                        {% comment %} <div class="col-md-6 ">
+                            <div class="row date-box p-2">
+                                <h6 class="text-center datehid text-primary">Follow-up Date</h6>
+
+                                <div class="col-md-6">
+                                    <label class="text-center">From</label>
+                                    <input type="date" name="followup_from" class="form-control custom-select mb-1"
+                                        value="{{ request.GET.followup_from }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="text-center">To</label>
+                                    <input type="date" name="followup_to" class="form-control custom-select"
+                                        value="{{ request.GET.followup_to }}">
+                                </div>
+                            </div>
+                        </div> {% endcomment %}
+                    </div>
+
+                </form>
+            </div>
+
+            <script>
+                const toggleBtn = document.getElementById('toggleFilterBtn');
+                const filterContainer = document.getElementById('filterContainer');
+
+                toggleBtn.addEventListener('click', () => {
+                    if (filterContainer.style.maxHeight && filterContainer.style.maxHeight !== '0px') {
+                        // Hide form
+                        filterContainer.style.maxHeight = '0';
+                        filterContainer.style.opacity = '0';
+                        toggleBtn.textContent = 'Show Filters';
+                    } else {
+                        // Show form
+                        filterContainer.style.maxHeight = filterContainer.scrollHeight + 'px';
+                        filterContainer.style.opacity = '1';
+                        toggleBtn.textContent = 'Hide Filters';
+                    }
+                });
+            </script>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const filterForm = document.getElementById('filterForm');
+                    if (filterForm) {
+                        filterForm.querySelectorAll('select, input').forEach(element => {
+                            element.addEventListener('change', () => {
+                                filterForm.submit();
+                            });
+                        });
+                    }
+                });
+            </script>
+
+
+
 
             <!-- Data Table -->
             <div class="table-responsive">
@@ -192,110 +327,110 @@
                 {% include 'buttons.html' %}
             </div>
         </div>
-        </div>
+    </div>
 
-        <!-- Footer -->
-        <div class="container-fluid footer bg-light text-center p-3 ">
-            <p style="margin: 0; font-weight: 600; color: #000;">
-                © 2025. Powered by
-                <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo" style="height: 20px;">
-                <a href="http://www.chronoanalytics.in/" style="text-decoration: none;
+    <!-- Footer -->
+    <div class="container-fluid footer bg-light text-center p-3 ">
+        <p style="margin: 0; font-weight: 600; color: #000;">
+            © 2025. Powered by
+            <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo" style="height: 20px;">
+            <a href="http://www.chronoanalytics.in/" style="text-decoration: none;
             background: linear-gradient(to right, #2575fc, #6a11cb);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics Solution</a> All Rights Reserved.
-            </p>
-            <p style="font-weight: 600; color:#000;">
-                Marketed by
-                <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px;">
-                <a href="http://teim.in/" style="text-decoration: none;
+        </p>
+        <p style="font-weight: 600; color:#000;">
+            Marketed by
+            <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px;">
+            <a href="http://teim.in/" style="text-decoration: none;
             background: linear-gradient(to right, #2575fc, #6a11cb);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a> All Rights Reserved.
-            </p>
-        </div>
+        </p>
+    </div>
 
-        <script>
-            function openModal(lead_id) {
-                fetch(`/get_lead_details/${lead_id}/`)
-                    .then(response => response.text())
-                    .then(html => {
-                        document.getElementById('modal-content').innerHTML = html;
-                        document.getElementById('modal').classList.add('active');
-                    });
-            }
+    <script>
+        function openModal(lead_id) {
+            fetch(`/get_lead_details/${lead_id}/`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('modal-content').innerHTML = html;
+                    document.getElementById('modal').classList.add('active');
+                });
+        }
 
-            function closeModal() {
-                document.getElementById('modal').classList.remove('active');
-            }
-        </script>
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+    </script>
 
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
-                menuItems.forEach(item => {
-                    item.addEventListener('click', function () {
-                        const submenu = this.querySelector('.submenu');
-                        const arrow = this.querySelector('.arrow-down');
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const submenu = this.querySelector('.submenu');
+                    const arrow = this.querySelector('.arrow-down');
 
-                        // Hide all other submenus
-                        menuItems.forEach(otherItem => {
-                            if (otherItem !== this) {
-                                const otherSubmenu = otherItem.querySelector('.submenu');
-                                const otherArrow = otherItem.querySelector('.arrow-down');
-                                if (otherSubmenu) {
-                                    otherSubmenu.style.display = 'none';
-                                    if (otherArrow.classList.contains('arrow-up')) {
-                                        otherArrow.classList.remove('arrow-up');
-                                    }
+                    // Hide all other submenus
+                    menuItems.forEach(otherItem => {
+                        if (otherItem !== this) {
+                            const otherSubmenu = otherItem.querySelector('.submenu');
+                            const otherArrow = otherItem.querySelector('.arrow-down');
+                            if (otherSubmenu) {
+                                otherSubmenu.style.display = 'none';
+                                if (otherArrow.classList.contains('arrow-up')) {
+                                    otherArrow.classList.remove('arrow-up');
                                 }
                             }
-                        });
-
-                        // Toggle current submenu
-                        if (submenu) {
-                            submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
-                            arrow.classList.toggle('arrow-up');
                         }
                     });
+
+                    // Toggle current submenu
+                    if (submenu) {
+                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+                        arrow.classList.toggle('arrow-up');
+                    }
                 });
             });
-            document.addEventListener("DOMContentLoaded", function () {
-                const deleteLinks = document.querySelectorAll('.delete-link');
-                const confirmationModal = document.getElementById('confirmationModal');
-                const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-                const cancelDeleteButton = document.getElementById('cancelDeleteButton');
-                const deleteForm = document.getElementById('deleteForm');
-                let deleteUrl = '';
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+            const deleteLinks = document.querySelectorAll('.delete-link');
+            const confirmationModal = document.getElementById('confirmationModal');
+            const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+            const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+            const deleteForm = document.getElementById('deleteForm');
+            let deleteUrl = '';
 
-                deleteLinks.forEach(link => {
-                    link.addEventListener('click', function (event) {
-                        event.preventDefault();
-                        deleteUrl = this.getAttribute('href');
-                        deleteForm.setAttribute('action', deleteUrl);
-                        confirmationModal.style.display = 'block';
-                    });
-                });
-
-                cancelDeleteButton.addEventListener('click', function () {
-                    confirmationModal.style.display = 'none';
+            deleteLinks.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    deleteUrl = this.getAttribute('href');
+                    deleteForm.setAttribute('action', deleteUrl);
+                    confirmationModal.style.display = 'block';
                 });
             });
 
-            function openModal(lead_id) {
-                fetch(`/get_lead_details/${lead_id}/`)
-                    .then(response => response.text())
-                    .then(html => {
-                        document.getElementById('modal-content').innerHTML = html;
-                        document.getElementById('modal').classList.add('active');
-                    });
+            cancelDeleteButton.addEventListener('click', function () {
+                confirmationModal.style.display = 'none';
+            });
+        });
 
-            }
+        function openModal(lead_id) {
+            fetch(`/get_lead_details/${lead_id}/`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('modal-content').innerHTML = html;
+                    document.getElementById('modal').classList.add('active');
+                });
 
-            function closeModal() {
-                document.getElementById('modal').classList.remove('active');
-            }
+        }
 
-        </script>
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+    </script>
 </body>
 
 </html>

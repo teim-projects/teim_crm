@@ -448,26 +448,37 @@
                 <div class="col-12 ">
                     <div class="table-wrapper">
                         <h1>Customer Details</h1>
-                        <!-- <nav class="navbar navbar-light bg-light" id="searchInput">
-                            <form class="form-inline" id="searchForm" action="/search" method="GET">
-                                <input class="form-control mr-sm-2" type="search" id="searchInput" name="q" placeholder="Search" aria-label="Search">
-                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="searchButton">Search</button>
-                            </form>
-                        </nav> -->
-                        <div class="navbar">
-                            <form class="form-inline" method="get">
-                                <input class="form-control mr-sm-2 " type="search" name="search"
-                                    placeholder="Search by Cust.ID/Phone no." aria-label="Search"
-                                    value="{{ request.GET.search }}">
-                                <button class="btn btn-outline-success  my-2 my-sm-0 ml-2" type="submit"
-                                    style="width: 264px;">Search</button>
-                            </form>
+
+                        <div class="row align-items-center mb-3">
+
+                            <!-- Search Form -->
+                            <div class="col-md-4 justify-content">
+                                <form class="d-flex" method="get">
+                                    <input class="form-control me-2" type="search" name="search"
+                                        placeholder="Search by Cust.ID/Phone no / Name." aria-label="Search"
+                                        value="{{ request.GET.search }}">
+                                    <button class="btn btn-outline-success" type="submit">Search</button>
+                                </form>
+                            </div>
+
+
+                            <!-- Export Button -->
+                            <div class="col-md-2 mt-2 mt-md-0">
+                                <a href="{% url 'export_customers' %}">
+                                    <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
+                                </a>
+                            </div>
+
+                            <!-- Import Button -->
+                            <div class="col-md-2 mt-2 mt-md-0">
+                                <a href="{% url 'import_customers' %}">
+                                    <button type="button" class="btn btn-secondary w-100">📥 &nbsp;Import
+                                        Customers</button>
+                                </a>
+                            </div>
+
                         </div>
-                        <div class="col-md-4 col-12 mt-4">
-                            <a href="{% url 'import_customers' %}">
-                                <button type="button" class="buttonback">📥 &nbsp;Import Customers</button>
-                            </a>
-                        </div>
+
                         <div class="p mb-3">
                             <p class="scroll-instruction">Scroll to view more content ➡️ </p>
                         </div>

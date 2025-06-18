@@ -441,6 +441,13 @@
                                     style="width:150px">Search</button>
 
                             </form>
+
+                            <!-- Export Button -->
+                            <div class="col-md-2 mt-2 mt-md-0">
+                                <a href="{% url 'export_invoice' %}">
+                                    <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
+                                </a>
+                            </div>
                         </div>
                         <div class="p mb-3">
                             <p class="scroll-instruction">Scroll to view more content ➡️ </p>
@@ -473,7 +480,7 @@
                                         <th style="text-align: center;">Dispatched<br> Doc No</th>
                                         <th style="text-align: center;">Download<br>PDF</th>
                                         <th style="text-align: center;">View<br>PDF</th>
-                                        <th>Edit</th>
+                                        <!-- <th>Edit</th> -->
                                         <th>Delete</th>
                                     </tr>
                                 </thead>
@@ -496,10 +503,10 @@
                                             <a href="{% url 'tax_invoice_pdf' x.id %}" class="btn btn-outline-secondary"
                                                 role="button" style="width: 100px;">View</a>
                                         </td>
-                                        <td>
+                                        <!-- <td>
                                             <a href="/edit_invoice/{{ x.id }}" class="btn btn-outline-success"
                                                 style="width: 100px;">Edit</a>
-                                        </td>
+                                        </td> -->
                                         <td>
                                             <a href="/delete_invoice/{{ x.id }}"
                                                 class="btn btn-outline-danger delete-link"
