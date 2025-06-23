@@ -852,6 +852,32 @@ def quotation_management_create(request):
                 customer = customer_details.objects.get(id=customer_id)
             except customer_details.DoesNotExist:
                 raise ValueError("Invalid customer ID.")
+
+        else:
+            # Create new customer
+            customer_full_name = request.POST.get('customer_full_name')
+            contact_no = request.POST.get('contact_no')
+            secondary_contact_no = request.POST.get('secondary_contact_no')or None
+            customer_email = request.POST.get('customer_email')
+            secondary_email = request.POST.get('secondary_email')or None
+            address = request.POST.get('address')
+            city = request.POST.get('city')
+            state = request.POST.get('state')
+            gps_location = request.POST.get('gps_location')
+            pincode = request.POST.get('pincode', '000000')
+
+            customerid = generate_customerid(customer_full_name)
+            
+            # You can add validation here if necessary
+            customer = customer_details.objects.create(
+                customerid = customerid,
+                fullname=customer_full_name,
+                primarycontact=contact_no,
+                secondarycontact=secondary_contact_no,
+                primaryemail=customer_email,
+                secondaryemail=secondary_email,
+                shifttopartyaddress=address,
+            )
         try:
             # Core data
             customer_full_name = request.POST.get('customer_full_name')
@@ -900,7 +926,7 @@ def quotation_management_create(request):
                 total_gst = float(total_gst) if total_gst else 0
                 total_price_with_gst = float(total_price_with_gst) if total_price_with_gst else total_price
     
-    # Ensure total_with_gst is at least total_price
+        # Ensure total_with_gst is at least total_price
                 if total_price_with_gst < total_price:
                     total_price_with_gst = total_price + total_gst
             except (ValueError, TypeError):
@@ -932,7 +958,7 @@ def quotation_management_create(request):
 
             # Create the quotation
             quotation = quotation_management.objects.create(
-                 customer=customer,
+                customer=customer,
                 customer_full_name=customer_full_name,
                 contact_no=contact_no,
                 secondary_contact_no=secondary_contact_no,
@@ -982,6 +1008,7 @@ def quotation_management_create(request):
         'terms': terms,
         'branches': Branch.objects.all()  # Add this line
 })
+    
 from django.http import JsonResponse
 from .models import quotation_management
 
@@ -1097,7 +1124,6 @@ from crmapp.custom_filters import price_in_words
 from xhtml2pdf import pisa
 import json
 import os
-
 def generate_quotation_pdf_view(request, id):
     quotation = quotation_management.objects.get(id=id)
 
@@ -1110,37 +1136,53 @@ def generate_quotation_pdf_view(request, id):
             product_data = []
 
     # Add total for each product (price × quantity)
+    total_gst_value = 0
+    gst_count = 0
+
     for product in product_data:
         try:
             product['total'] = round(float(product['price']) * float(product['quantity']), 2)
         except (KeyError, ValueError, TypeError):
             product['total'] = 0.0
 
-    # Inject updated data into quotation object for template access
+        # Sum GST values
+        try:
+            gst_value = float(product.get('gst', 0))
+            total_gst_value += gst_value
+            gst_count += 1
+        except (ValueError, TypeError):
+            continue
+
+    # Calculate average GST
+    average_gst = round(total_gst_value / gst_count, 2) if gst_count else 0.0
+
+    # Inject updated data
     quotation.product_details_json = product_data
     amount_in_words = price_in_words(quotation.total_price_with_gst)
- 
-    # Render PDF
-    
+
+    # Paths for logo and footer
     template_path = 'pdf_template.html'  
     logo_path = request.build_absolute_uri(static('images/Logo.png'))
     fottor_path = request.build_absolute_uri(static('images/qutation_fottor_pdf.jpg'))
-  
-    
-    context = {'quotation': quotation,
-               'amount_in_words': amount_in_words,
-               'logo_path': logo_path,
-               'fottor_path':  fottor_path
-                }
-    
+
+    context = {
+        'quotation': quotation,
+        'amount_in_words': amount_in_words,
+        'logo_path': logo_path,
+        'fottor_path': fottor_path,
+        'average_gst': average_gst  # ✅ Add this to context
+    }
+
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="quotation.pdf"'
     template = get_template(template_path)
     html = template.render(context)
     pisa_status = pisa.CreatePDF(html, dest=response)
+
     if pisa_status.err:
         return HttpResponse('Error generating PDF', status=500)
     return response
+
 
 
 def get_products_by_category(request):
@@ -1174,6 +1216,7 @@ def add_quotation_term(request):
 
 def edit_quotation_term(request, id):
     term = get_object_or_404(QuotationTerm, id=id)
+    
     if request.method == 'POST':
         term.description = request.POST.get('description')
         term.save()
@@ -1215,73 +1258,6 @@ def delete_invoice_term(request, id):
     return redirect('view_invoice_terms')
 
 
-
-# def quotation_create(request):
-#     customers = customer_details.objects.all()
-
-#     if request.method == 'POST':
-#         quantity = int(request.POST.get('quantity'))
-#         price = float(request.POST.get('price'))
-
-#         total_amount = quantity * price
-#         discount = float(request.POST.get('discount'))
-#         company_name = request.POST.get('company_name')
-#         company_email = request.POST.get('company_email')
-#         company_contact_no = request.POST.get('company_contact_no')
-#         quotation_date = request.POST.get('quotation_date')
-#         company_address = request.POST.get('company_address')
-#         subject = request.POST.get('subject')
-#         termsandcondition = request.POST.get('termsandcondition')
-#         servicetype_q = request.POST.get('servicetype_q')
-#         gst_checkbox = request.POST.get('gst_checkbox') == 'on'
-#         customer_id = request.POST.get('customer_id')
-#         customer = customer_details.objects.get(id=customer_id)
-
-#         discounted_amount = total_amount - (total_amount * (discount / 100))
-#         total_amount_with_gst = discounted_amount * 1.18 if gst_checkbox else discounted_amount
-
-#         # Get latest version of quotation for the customer
-#         latest_quotation = quotation.objects.filter(customer=customer, servicetype_q=servicetype_q).order_by('-version').first()
-
-#         # Increment version for the new quotation
-#         if latest_quotation:
-#             new_version = latest_quotation.version + 1
-#         else:
-#             new_version = 1
-
-#         # Create quotation object and save to database
-#         quotation_obj = quotation(
-#             total_amount=total_amount,
-#             discount=discount,
-#             company_name=company_name,
-#             company_email=company_email,
-#             company_contact_no=company_contact_no,
-#             quotation_date=quotation_date,
-#             company_address=company_address,
-#             subject=subject,
-#             quantity=quantity,
-#             price=price,
-#             termsandcondition=termsandcondition,
-#             servicetype_q=servicetype_q,
-#             gst_checkbox=gst_checkbox,
-#             customer=customer,
-#             total_amount_with_gst=total_amount_with_gst,
-#             version = new_version,
-#             status = 'active'
-#         )
-
-#         # Mark the previous version as inactive
-#         if latest_quotation:
-#             latest_quotation.status = 'inactive'
-#             latest_quotation.save()
-
-#         quotation_obj.save()
-#         return redirect('/display_quotation')  
-
-#     context = {
-#         'customers': customers,
-#     }
-#     return render(request, 'quotation.html', context)
 
 
 def quotation_history(request, customer_id):
@@ -1781,38 +1757,6 @@ def today_work(request):
 
 
 
-from datetime import date
-
-# def pending_followups(request):
-#     today = date.today()
-#     salesperson_filter = request.GET.get('salesperson')
-
-#     # Get followups with a past next_followup_date
-#     lead_folloup = lead_management.objects.filter(firstfollowupdate__lt = today)
-#     followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
-
-#     if salesperson_filter:
-#         followups = followups.filter(lead__salesperson=salesperson_filter)
-#         lead_folloup = lead_folloup.filter(lead__salesperson=salesperson_filter)
-
-#     combined = list(chain(
-#            followups,  # main_followup objects (with .lead field)
-#            [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]  # avoid duplication
-#        ))
-#     # Pagination
-#     paginator = Paginator(combined, 10)
-#     page_number = request.GET.get('page')
-#     page_obj = paginator.get_page(page_number)
-
-#     salespersons = lead_management.objects.values_list('salesperson', flat=True).distinct()
-#     start_index = (page_obj.number - 1) * paginator.per_page
-
-#     return render(request, 'pending_followups.html', {
-#         'page_obj': page_obj,
-#         'salespersons': salespersons,
-#         'selected_salesperson': salesperson_filter,
-#         'start_index': start_index
-#     })
 
 from itertools import chain
 from datetime import date
@@ -2714,73 +2658,140 @@ def edit_service_management(request, rid):
         return redirect('/display_allocation')
 
 # Edit Quotation
+import json
+from .models import quotation_management, QuotationTerm, Product  # adjust as needed
 
-# new try
 def edit_quotation(request, rid):
-    if request.method == 'GET':
-        m = quotation.objects.filter(id=rid)
-        context = {'data': m}
-        return render(request, 'edit_quotation.html', context)
-    
-    else:
-        ucustomer_id = request.POST.get('ucustomer')
-        uquantity = int(request.POST['uquantity'])
-        uprice = float(request.POST['uprice'])
-        utermsandcondition = request.POST['utermsandcondition']
-        uservicetype_q = request.POST['uservicetype_q']
-        utotal_amount = float(request.POST['hidden_total_amount'])  # Use hidden input value
-        utotal_amount_with_gst = float(request.POST['hidden_total_amount_with_gst'])  # Use hidden input value
-        udiscount = float(request.POST['udiscount']) if request.POST['udiscount'] else None
-        ugst_checkbox = 'ugst' in request.POST  # Check for the GST checkbox
-        ucompany_name = request.POST.get('ucompany_name')
-        ucompany_email = request.POST.get('ucompany_email')
-        ucompany_contact_no = request.POST.get('ucompany_contact_no')
-        uquotation_date = request.POST.get('uquotation_date')
+    quotation = quotation_management.objects.get(id=rid)
 
+    if request.method == "POST":
+        delete_ids = request.POST.getlist('delete_product_ids[]')
+        existing_products = quotation.product_details_json or []
+
+        updated_products = []
+        existing_product_ids = set()
+
+        # Get form fields
+        customer_full_name = request.POST.get('customer_full_name')
+        contact_no = request.POST.get('contact_no')
+        secondary_contact_no = request.POST.get('secondary_contact_no')
+        customer_email = request.POST.get('customer_email')
+        secondary_email = request.POST.get('secondary_email')
+        contact_by = request.POST.get('contact_by')
+        contact_by_no = request.POST.get('contact_by_no')
+        address = request.POST.get('address')
+        subject = request.POST.get('subject')
+        branch_id = request.POST.get('branch_id')
+        selected_term_ids = request.POST.getlist('terms_and_conditions')  # get selected terms
+
+        for product in existing_products:
+            product_id = str(product['id'])
+            if product_id in delete_ids:
+                continue
+            existing_product_ids.add(product_id)
+
+            try:
+                price = float(request.POST.get(f'product_price_{product_id}', product.get('price', 0)))
+                quantity = float(request.POST.get(f'product_quantity_{product_id}', product.get('quantity', 0)))
+                gst = float(request.POST.get(f'product_gst_{product_id}', product.get('gst', 0)))
+                description = request.POST.get(f'product_description_{product_id}', product.get('description', ''))
+                unit = request.POST.get(f'product_unit_{product_id}', product.get('unit', ''))
+            except (TypeError, ValueError):
+                continue
+
+            updated_products.append({
+                'id': product_id,
+                'name': product.get('name'),
+                'price': price,
+                'quantity': quantity,
+                'gst': gst,
+                'description': description,
+                'unit': unit
+            })
+
+        # New products
         try:
-            uquotation_date = datetime.strptime(uquotation_date, '%Y-%m-%d').date() if uquotation_date else timezone.now().date()
+            new_products = json.loads(request.POST.get("product_details_json", "[]"))
+        except json.JSONDecodeError:
+            new_products = []
+
+        for new_product in new_products:
+            if str(new_product.get('id')) not in existing_product_ids:
+                updated_products.append(new_product)
+
+        # Totals
+        try:
+            total_without_gst = float(request.POST.get("grand_total_without_gst", 0))
+            total_gst = float(request.POST.get("grand_total_gst", 0))
         except ValueError:
-            uquotation_date = None
+            total_without_gst = 0
+            total_gst = 0
 
-        ucompany_address = request.POST.get('ucompany_address')
-        usubject = request.POST.get('usubject')
-        
+        enable_gst = request.POST.get('enable_gst') == 'on'
+        gst_type = request.POST.get('gst_type', 'cgst_sgst')
+
+        if enable_gst:
+            gst_status = 'GST'
+            cgst = total_gst / 2 if gst_type == 'cgst_sgst' else 0
+            sgst = total_gst / 2 if gst_type == 'cgst_sgst' else 0
+            igst = total_gst if gst_type == 'igst' else 0
+        else:
+            gst_status = 'NON-GST'
+            cgst = sgst = igst = total_gst = 0
+
+        total_with_gst = total_without_gst + total_gst
+
+        # Save quotation fields
+        quotation.customer_full_name = customer_full_name
+        quotation.contact_no = contact_no
+        quotation.secondary_contact_no = secondary_contact_no
+        quotation.customer_email = customer_email
+        quotation.secondary_email = secondary_email
+        quotation.contact_by = contact_by
+        quotation.contact_by_no = contact_by_no
+        quotation.address = address
+        quotation.subject = subject
+        quotation.branch_id = branch_id
+
+        quotation.product_details_json = updated_products
+        quotation.total_price = total_without_gst
+        quotation.gst_total = total_gst
+        quotation.total_price_with_gst = total_with_gst
+        quotation.cgst = cgst
+        quotation.sgst = sgst
+        quotation.igst = igst
+        quotation.gst_status = gst_status
+        quotation.apply_gst = enable_gst
+        quotation.save()
+
+        # Save terms
+        quotation.terms_and_conditions.set(selected_term_ids)
+
+        return redirect('display_quotation')
+
+    else:
+        terms = QuotationTerm.objects.all()
+        branches = Branch.objects.all()
         try:
-            customer = customer_details.objects.get(customerid=ucustomer_id)
-        except customer_details.DoesNotExist:
-            return HttpResponse("Customer not found")
+            product_details = json.loads(quotation.product_details_json)
+        except Exception:
+            product_details = []
 
-        # Fetch the latest quotation for the customer and increment the version
-        latest_quotation = quotation.objects.filter(customer=customer,servicetype_q=uservicetype_q).order_by('-version').first()
-        new_version = latest_quotation.version + 1 if latest_quotation else 1
-
-        # Update the existing quotation and mark it inactive
-        m = quotation.objects.filter(id=rid)
-        m.update(status='inactive')
-
-        # Update the quotation details with new values
-        m.update(
-            customer=customer,
-            quantity=uquantity,
-            price=uprice,
-            termsandcondition=utermsandcondition,
-            servicetype_q=uservicetype_q,
-            discount=udiscount,
-            total_amount=utotal_amount,
-            company_name=ucompany_name,
-            company_email=ucompany_email,
-            company_contact_no=ucompany_contact_no,
-            quotation_date=uquotation_date,
-            company_address=ucompany_address,
-            subject=usubject,
-            total_amount_with_gst=utotal_amount_with_gst,
-            gst_checkbox=ugst_checkbox,
-            version=new_version,
-            status='active'
+        product_ids = [item['id'] for item in product_details if 'id' in item]
+        selected_categories = list(
+            Product.objects.filter(product_id__in=product_ids)
+            .values_list('category', flat=True)
+            .distinct()
         )
-       
-        return redirect('/display_quotation')
 
+        return render(request, 'edit_quotation.html', {
+            'quotation': quotation,
+            'all_terms': terms,
+            'branches': branches,
+            'product_details': json.dumps(product_details),
+            'selected_categories': selected_categories,
+            'category_choices': Product.CATEGORY_CHOICES,
+        })
 
 # Edit Invoice
 

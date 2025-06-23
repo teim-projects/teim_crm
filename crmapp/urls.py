@@ -63,7 +63,7 @@ urlpatterns = [
 
     path('edit_customer/<rid>', views.edit_customer),
     path('edit_service_management/<rid>', views.edit_service_management, name='edit_service_management'),
-    path('edit_quotation/<rid>', views.edit_quotation),
+    path('edit_quotation/<int:rid>', views.edit_quotation, name="edit_quotation"),
     path('edit_invoice/<rid>', views.edit_invoice),
     # path('edit_inventory/<rid>', views.edit_inventory),
     path('edit_lead_management/<rid>', views.edit_lead_management,name='edit_lead_management'),

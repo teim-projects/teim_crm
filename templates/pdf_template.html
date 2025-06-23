@@ -210,8 +210,9 @@
             </td>
             <td>
                 <div class="quotation-info fs">
-                    <strong style="font-size: 12px;">Quotation Information</strong><br>
-                    <strong class="fs">No:</strong><span class="fs">{{ quotation.quotation_no }}</span><br>
+                    <strong style="font-size: 12px;">Quotation Information</strong><br> <br>
+                    <strong style="font-size: 20px;"> {{ quotation.quotation_no }}</strong> <br> <br>
+
                     <strong class="fs">Date:</strong><span class="fs">
                         {{ quotation.quotation_date|date:"d M Y" }}</span>
                 </div>
@@ -236,7 +237,7 @@
                 <th>Product / Service</th>
                 <th>Rate</th>
                 <th>Qty</th>
-                <th>GST (%)</th>
+                <!-- <th>GST (%)</th> -->
                 <th>Total</th>
             </tr>
         </thead>
@@ -248,7 +249,7 @@
                     {{ item.description }}</td>
                 <td>{{ item.price }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>{{ item.gst }}</td>
+                <!-- <td>{{ item.gst }}</td> -->
                 <td>{{ item.total }}</td>
 
             </tr>
@@ -265,19 +266,23 @@
         {% if quotation.apply_gst %}
         {% if quotation.igst %}
         <tr>
-            <td class="label text-center">IGST ({{ quotation.igst_rate|floatformat:2 }}%):</td>
+            <td class="label text-center">IGST {{ quotation.igst_rate|floatformat:2 }}:</td>
             <td>{{ quotation.igst|floatformat:2 }}</td>
         </tr>
         {% else %}
         <tr>
-            <td class="label text-center">CGST ({{ quotation.cgst_rate|floatformat:2 }}%):</td>
+            <td class="label text-center">CGST {{ quotation.cgst_rate|floatformat:2 }}:</td>
             <td>{{ quotation.cgst|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="label text-center">SGST ({{ quotation.sgst_rate|floatformat:2 }}%):</td>
+            <td class="label text-center">SGST {{ quotation.sgst_rate|floatformat:2 }}:</td>
             <td>{{ quotation.sgst|floatformat:2 }}</td>
         </tr>
         {% endif %}
+        <tr>
+            <td class="label text-center">GST :</td>
+            <td>{{ average_gst|floatformat:2 }} %</td>
+        </tr>
         <tr>
             <td class="label text-center">Total Tax:</td>
             <td>{{ quotation.gst_total|floatformat:2 }}</td>

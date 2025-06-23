@@ -421,8 +421,7 @@
                                 <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
                                 <option value="Chandigarh">Chandigarh</option>
                                 <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and
-                                    Daman
-                                    and Diu</option>
+                                    Daman and Diu</option>
                                 <option value="Lakshadweep">Lakshadweep</option>
                                 <option value="Puducherry">Puducherry</option>
                                 <option value="Ladakh">Ladakh</option>
@@ -635,6 +634,7 @@
                                 onchange="updateSelectedServices(this)">
                                 ${product.product_name}
                                 <br>
+                               
                                <input type="number" style="max-width: 200px"
                                     class="product-price-input" 
                                     data-product-id="${product.product_id}" 
@@ -651,6 +651,15 @@
                                     min="1" step="0.01" 
                                     onchange="updateProductQuantity(this, '${product.product_id}')">
 
+                                 <div id="desc-container-${product.product_id}" style="display:none; margin-top: 10px;">
+                                    <label>Description:</label><br>
+                                    <textarea class="form-control description-input"
+                                    data-product-id="${product.product_id}"
+                                    placeholder="Enter description" rows="2"
+                                    oninput="updateProductDescription(this, '${product.product_id}')"
+                                    style="width: 300px;"></textarea>
+                                </div>
+
 
 
                             `;
@@ -662,18 +671,37 @@
                     });
             }
         }
+
         function updateSelectedServices(checkbox) {
             const productId = checkbox.value;
             const productName = checkbox.getAttribute('data-name');
-            const priceInput = document.querySelector(`input[data-product-id="${productId}"][type="number"].product-price-input`);
-            const quantityInput = document.querySelector(`input[data-product-id="${productId}"][type="number"].product-quantity-input`);
+            const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
+            const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
+            const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"]`);
+            const descContainer = document.getElementById(`desc-container-${productId}`);
 
             const productPrice = parseFloat(priceInput.value) || 0;
             const productQuantity = parseFloat(quantityInput.value) || 1;
+            const description = descriptionInput?.value || '';
 
             if (checkbox.checked) {
-                selectedProducts.push({ id: productId, name: productName, price: productPrice, quantity: productQuantity });
+                if (descContainer) descContainer.style.display = 'block';
+
+                // Avoid duplicates
+                const alreadyAdded = selectedProducts.find(p => p.id === productId);
+                if (!alreadyAdded) {
+                    selectedProducts.push({
+                        id: productId,
+                        name: productName,
+                        price: productPrice,
+                        quantity: productQuantity,
+                        description: description
+                    });
+                }
             } else {
+                if (descContainer) descContainer.style.display = 'none';
+                if (descriptionInput) descriptionInput.value = '';
+
                 selectedProducts = selectedProducts.filter(product => product.id !== productId);
             }
 
@@ -718,6 +746,19 @@
                 clearGSTFields();
             }
         }
+
+        function updateProductDescription(textarea, productId) {
+            const newDescription = textarea.value;
+
+            selectedProducts.forEach(product => {
+                if (product.id === productId) {
+                    product.description = newDescription;
+                }
+            });
+
+            updateSelectedServicesList();
+        }
+
 
         function toggleGST() {
             const isGSTApplied = document.getElementById('apply_gst').checked;

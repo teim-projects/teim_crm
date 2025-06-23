@@ -491,7 +491,7 @@
                                         <th>Terms & Conditions</th>
                                         <th>Download</th>
                                         <th>View</th>
-                                        <!-- <th>Edit</th> -->
+                                        <th>Edit</th>
                                         <th>Delete</th>
                                     </tr>
                                 </thead>
@@ -555,8 +555,7 @@
                                                 View PDF
                                             </a>
                                         </td>
-                                        <!-- <td><a href="/edit_quotation/{{ x.id }}"
-                                                class="btn btn-outline-success">Edit</a></td> -->
+                                        <td><a href="{% url 'edit_quotation' x.id %}">Edit</a></td>
                                         <td><a href="/delete_quotation/{{ x.id }}"
                                                 class="btn btn-outline-danger delete-link">Delete</a></td>
                                     </tr>
