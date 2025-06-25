@@ -4612,6 +4612,7 @@ def export_invoice_excel(request):
 def create_payment_record(request):
     payment_choices = PaymentsRecord.PAYMENT_MODE_CHOICES
     payment_ratings = [(i, f"{i} Star") for i in range(1, 6)]
+    
 
     if request.method == "GET":
         return render(request, "payment_records_create.html", {
@@ -4638,12 +4639,16 @@ def create_payment_record(request):
                 attachment=request.FILES.get("payment_attachment")
             )
 
-            # ✅ Perform model-level validation before save
-            record.full_clean()  
-            record.save()        
+            
+            try:
+                record.full_clean()  # This triggers the clean() method
+                record.save()
+                messages.success(request, "Payment record created successfully.")
+                return redirect("payment-records/list/")
 
-            messages.success(request, "Payment record created successfully.")
-            return redirect("payment_records_list")  
+            except ValidationError as ve:
+                for msg in ve.messages:
+                    messages.error(request, msg)
 
         except TaxInvoice.DoesNotExist:
             messages.error(request, "Invoice not found.")
@@ -4667,7 +4672,10 @@ def fetch_invoice_details(request):
         invoice_no = request.POST.get("invoice_no")
         try:
             invoice = TaxInvoice.objects.get(tax_invoice_no=invoice_no)
-            customer = invoice.customer  # assuming a FK to customer_details
+            customer = invoice.customer
+
+            last_payment = PaymentsRecord.objects.filter(main_invoice=invoice).order_by('-id').first()
+            amount_remaining = last_payment.amount_remaining if last_payment else invoice.grand_total 
 
             data = {
                 "success": True,
@@ -4675,8 +4683,13 @@ def fetch_invoice_details(request):
                 "mobile": customer.primarycontact,
                 "email": customer.primaryemail,
                 "total_amount": invoice.grand_total,
+                "amount_remaining":float(amount_remaining),
             }
         except TaxInvoice.DoesNotExist:
             data = {"success": False, "error": "Invoice not found"}
 
         return JsonResponse(data)
+    
+
+def payment_records_list(request):
+    return render(request,"payment_records_list.html")
