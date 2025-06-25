@@ -4644,8 +4644,7 @@ def create_payment_record(request):
                 record.full_clean()  # This triggers the clean() method
                 record.save()
                 messages.success(request, "Payment record created successfully.")
-                return redirect("payment-records/list/")
-
+                return redirect("payment_record_lists")
             except ValidationError as ve:
                 for msg in ve.messages:
                     messages.error(request, msg)

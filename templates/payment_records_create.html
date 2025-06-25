@@ -14,22 +14,11 @@
     padding: 0;
   }
 
-  body {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto; /* Allows full-page scrolling */
-  }
+ 
 
-  .main {
-  height: calc(100vh - 100px); /* adjust if there's a fixed navbar */
-  overflow-y: auto;
-  }
+ 
 
-  .footer {
-    background-color: #f7f7f7;
-    width: 100%;
-    flex-shrink: 0;
-  }
+ 
 </style>
 
 
@@ -38,8 +27,8 @@
   {% include 'sidebar.html' %}
 
   
-  <div class="main" >
-    <div class="container bg-white" style="margin-top: 100px;">
+  <div class="main" style="min-height: 100vh;" >
+    <div class="container " style="margin-top: 100px;">
       {% if messages %}
       {% for message in messages %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-success" role="alert">
@@ -48,90 +37,142 @@
         </div>
       {% endfor %}
       {% endif %}
+
+      
+      <div class="row ">
+        <div class="col-md-2"></div>
+        <div class="col-md-8 bg-white p-2 rounded shadow mb-4">
+                      <div class="bt">
+                <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4 mt-2"><i class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4 mt-2">X</span>
+            </div>
       <form method="post">
         {% csrf_token %}
-        <div class="mb-3">
-          <label class="form-label">Invoice No</label>
-          <input type="text" id="invoice_no" name="main_invoice" onblur="fetchInvoice()">
-        </div>
+<h3 class="text-center mt-2">Payment records</h3>
+        <div class="row">
 
-        <div class="mb-3">
-          <label class="form-label">Customer Name</label>
+       
+         <div class="col-md-6">
+                    <label class="form-label">Invoice No <span class="star">*</span></label>
+          <input type="text" id="invoice_no" class="w-100" name="main_invoice" onblur="fetchInvoice()">
+      
+         </div>
+         <div class="col-md-6">
+                    <label class="form-label">Customer Name</label>
           <input type="text" id="customer_name" class="form-control" readonly>
         
-          <label class="form-label">Mobile No</label>
+         </div>
+         <div class="col-md-6">
+                    <label class="form-label">Mobile No</label>
           <input type="text" id="customer_mobile" class="form-control" readonly>
         
-          <label class="form-label">Email</label>
+         </div>
+         <div class="col-md-6">
+                    <label class="form-label">Email</label>
           <input type="text" id="customer_email" class="form-control" readonly>
         
-          <label class="form-label">Total Amount</label>
+         </div>
+         <div class="col-md-6">
+                    <label class="form-label">Total Amount</label>
           <input type="text" id="total_amount" name="total_amount" class="form-control" readonly>
 
-          <label class="form-label">Remaining Amount</label>
-          <input type="text" id="amount_remaining" readonly>
-        </div>
-
-        <div class="mb-3">
-          <label  class="form-label">Amount Paid</label>
-          <input type="number" name="amount_paid" required>
-        </div>
-
-        <div class="mb-3">
-          <label  class="form-label">Payment Date</label>
-          <input type="date" name="payment_date" required>
-        </div>
-        <div class="mb-3">
+         </div>
+         <div class="col-md-6">
+                    <label class="form-label">Remaining Amount</label>
+          <input class="form-control" type="text" id="amount_remaining" readonly>
+      
+         </div>
+         <div class="col-md-6">
+                    <label  class="form-label">Amount Paid <span class="star">*</span></label>
+          <input class="form-control" type="number" name="amount_paid" step="any" required>
+      
+         </div>
+         <div class="col-md-6">
+                    <label  class="form-label">Payment Date <span class="star">*</span></label>
+          <input class="form-control" type="date" name="payment_date" required>
+      
+         </div>
+         <div class="col-md-6">
+          
           <label  class="form-label">Next Due Date</label>
-          <input type="date" name="next_due_date" >
-        </div>
+          <input class="form-control" type="date" name="next_due_date" >
+      
+         </div>
+         <div class="col-md-6">
+                    <label  class="form-label">Previous Due Date</label>
+          <input class="form-control" type="date" name="previous_due_date" >
+      
+         </div>
+         <div class="col-md-6">
+                    <label  class="form-label">Work type <span class="star">*</span></label>
+          <input class="form-control" type="text" name="work_type" placeholder="Enter work type" >
+      
+         </div>
+         <div class="col-md-6">
+                    <label  class="form-label">Payment details</label>
+          <input class="form-control" type="text" name="Payment_details" placeholder="Enter Payment Details" >
+      
+         </div>
+         <div class="col-md-6">
+                              <label  class="form-label">Select Payment Mode <span class="star">*</span></label>
 
-        <div class="mb-3">
-          <label  class="form-label">Previous Due Date</label>
-          <input type="date" name="previous_due_date" >
-        </div>
-
-        <div class="mb-3">
-          <label  class="form-label">Work type</label>
-          <input type="text" name="work_type" placeholder="Enter work type" >
-        </div>
-
-        <div class="mb-3">
-          <label  class="form-label">Payment details</label>
-          <input type="text" name="Payment_details" placeholder="Enter Payment Details" >
-        </div>
-
-        <div class="mb-3">
-          <select name="payment_mode" class="form-select" required>
+                    <select name="payment_mode" class="form-select" required>
             <option value="">-- Select Payment Mode --</option>
             {% for value, label in payment_choices %}
             <option value="{{ value }}">{{ label }}</option>
             {% endfor %}
           </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Payment Rating</label>
+         </div>
+         
+         <div class="col-md-6">
+                    <label class="form-label">Payment Rating</label>
           <select name="payment_rating" class="form-select">
             <option value="">-- Select Rating --</option>
             {% for val, label in payment_ratings %}
               <option value="{{ val }}">{{ label }}</option>
             {% endfor %}
           </select>
-        </div>
+         </div>
 
-        <div class="mb-3">
-          <label class="form-label">Remarks</label>
-          <textarea name="remarks" class="form-control" rows="4" placeholder="Enter Remarks"></textarea>
-        </div>
+         <div class="col-md-6">
+                    <label  class="form-label">Upload Payment Attachment</label>
+          <input class="form-control" type="file" name="Payment_attachment" >
+         </div>
+ 
 
-        <div class="mb-3">
-          <label  class="form-label">Upload Payment Attachment</label>
-          <input type="file" name="Payment_attachment" >
-        </div>
-  
-        <button type="submit" class="btn btn-primary">Submit</button>
+         <div class="col-md-6">
+                    <label class="form-label">Remarks</label>
+          <textarea name="remarks" class="form-control" rows="2" placeholder="Enter Remarks"></textarea>
+      
+         </div>
+
+
+
+
+
+
+
+
+      
+
+      
+
+
+    
+  <div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+              <button type="submit" class="btn btn-primary w-100 mt-3 mb-3">Submit</button>
+
+    </div>
+    <div class="col-md-4"></div>
+  </div>
+         </div>
       </form>
+
+      </div>
+        <div class="col-md-2"></div>
+      </div>
     </div>
 
 
