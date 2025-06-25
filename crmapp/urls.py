@@ -156,6 +156,11 @@ urlpatterns = [
     path('export-invoice/', views.export_invoice_excel, name='export_invoice'),
 
 
+    # Payment Record Section
+    path('ajax/fetch-invoice/', views.fetch_invoice_details, name='fetch_invoice'),
+    path('payment-records/create/', views.create_payment_record, name='create_payment_records'),
+
+
 ]
 
 if settings.DEBUG:

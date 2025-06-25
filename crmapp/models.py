@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from num2words import num2words # type: ignore
 from django.contrib.auth.models import User
+from pydantic import ValidationError
 
 
 def generate_customerid():
@@ -532,7 +533,7 @@ from django.utils import timezone
 from .models import Product
 from crmapp.models import Branch
 from .models import QuotationTerm  # adjust path if needed
-
+from django.db.models import Sum
 
 # New ----------
 class quotation_management(models.Model):
@@ -737,3 +738,112 @@ class TaxInvoiceItem(models.Model):
 
     def __str__(self):
         return f"{self.product_name} ({self.quantity})"
+
+
+from django.core.exceptions import ValidationError
+# Payments Record 
+class PaymentsRecord(models.Model):
+    PAYMENT_MODE_DICT  = {
+    "UPI": "upi",
+    "CASH": "cash",
+    "CREDIT CARD": "credit_card",
+    "DEBIT CARD": "debit_card",
+    "NET BANKING": "net_banking",
+    "WALLET": "wallet",
+    "BANK TRANSFER": "bank_transfer",
+    "CHEQUE": "cheque",
+    "PAY LATER": "pay_later",
+    "EMI": "emi",
+    "NEFT": "neft",
+    "RTGS": "rtgs",
+    "IMPS": "imps"
+    }
+
+    PAYMENT_MODE_CHOICES = [(value, key) for key, value in PAYMENT_MODE_DICT.items()]
+
+    payment_invoice_no = models.CharField(max_length=100, unique=True, blank=True)
+    main_invoice = models.ForeignKey(TaxInvoice, on_delete=models.CASCADE, related_name='payments')
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_remaining = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    payment_date = models.DateField()
+    next_due_date = models.DateField(blank=True, null=True)
+    previous_due_date = models.DateField(blank=True, null=True)
+    work_type = models.CharField(max_length=100, blank=True, null=True)
+    payment_details = models.CharField(max_length=500, blank=True, null=True)
+    payment_mode = models.CharField(max_length=100, choices=PAYMENT_MODE_CHOICES)
+    payment_rating = models.IntegerField(choices=[(i, f"{i} Star") for i in range(1, 6)], null=True, blank=True)
+    remarks = models.TextField(blank=True, null=True)
+    attachment = models.FileField(upload_to='payment_attachments/', null=True, blank=True)
+
+    def clean(self):
+        if self.attachment and self.attachment.size > 5 * 1024 * 1024:
+            raise ValidationError("Attachment size cannot exceed 5MB.")
+        
+        creating = self.pk is None
+        previous_payments = PaymentsRecord.objects.filter(main_invoice=self.main_invoice)
+        if not creating:
+            previous_payments = previous_payments.exclude(pk=self.pk)
+    
+        total_paid = previous_payments.aggregate(total=Sum('amount_paid'))['total'] or 0
+        grand_total = self.main_invoice.grand_total
+    
+        if total_paid >= grand_total:
+            raise ValidationError("This invoice is already fully paid. No further payments are allowed.")
+    
+        if (total_paid + self.amount_paid) > grand_total:
+            raise ValidationError("Total paid exceeds invoice amount.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  
+
+        creating = self.pk is None
+
+        previous_payments = PaymentsRecord.objects.filter(main_invoice=self.main_invoice)
+        if not creating:
+            previous_payments = previous_payments.exclude(pk=self.pk)
+
+        total_paid = previous_payments.aggregate(total=Sum('amount_paid'))['total'] or 0
+        grand_total = self.main_invoice.grand_total
+
+        self.amount_remaining = grand_total - (total_paid + self.amount_paid)
+
+        super().save(*args, **kwargs)
+
+        if creating and not self.payment_invoice_no:
+            base_invoice_no = self.main_invoice.tax_invoice_no or f"INV={self.main_invoice.pk}"
+            count = PaymentsRecord.objects.filter(main_invoice=self.main_invoice).count()
+            suffix = str(count).zfill(3)
+            generated_no = f"PAY/{base_invoice_no}/{suffix}"
+
+            if not PaymentsRecord.objects.filter(payment_invoice_no=generated_no).exists():
+                self.payment_invoice_no = generated_no
+            else:
+                self.payment_invoice_no = f"{generated_no}-{self.pk}"
+
+            super().save(update_fields=['payment_invoice_no'])
+
+    @property
+    def ageing(self):
+        invoice_date = None
+        if hasattr(self.main_invoice, 'created_at') and self.main_invoice.created_at:
+            invoice_date = self.main_invoice.created_at.date()
+        elif hasattr(self.main_invoice, 'dated') and self.main_invoice.dated:
+            invoice_date = self.main_invoice.dated
+
+        if invoice_date:
+            days = (timezone.now().date() - invoice_date).days
+            if days <= 7:
+                return "0–7 Days"
+            elif days <= 15:
+                return "8–15 Days"
+            elif days <= 21:
+                return "16–21 Days"
+            elif days <= 30:
+                return "22–30 Days"
+            return "30+ Days"
+        return "Unknown"
+    
+    def __str__(self):
+        return self.payment_invoice_no
+    
+

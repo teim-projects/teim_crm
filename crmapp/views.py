@@ -867,7 +867,7 @@ def quotation_management_create(request):
             pincode = request.POST.get('pincode', '000000')
 
             customerid = generate_customerid(customer_full_name)
-            
+
             # You can add validation here if necessary
             customer = customer_details.objects.create(
                 customerid = customerid,
@@ -1124,6 +1124,7 @@ from crmapp.custom_filters import price_in_words
 from xhtml2pdf import pisa
 import json
 import os
+
 def generate_quotation_pdf_view(request, id):
     quotation = quotation_management.objects.get(id=id)
 
@@ -1167,6 +1168,7 @@ def generate_quotation_pdf_view(request, id):
 
     context = {
         'quotation': quotation,
+        'product_details': product_data,
         'amount_in_words': amount_in_words,
         'logo_path': logo_path,
         'fottor_path': fottor_path,
@@ -4563,8 +4565,9 @@ def tax_invoice_pdf(request, id):
 
 import csv
 from django.http import HttpResponse
-from .models import TaxInvoice, TaxInvoiceItem  # adjust path as needed
-
+from .models import TaxInvoice, TaxInvoiceItem , PaymentsRecord
+from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ValidationError
 
 def export_invoice_excel(request):
     response = HttpResponse(content_type='text/csv')
@@ -4601,3 +4604,79 @@ def export_invoice_excel(request):
             ])
 
     return response
+
+
+#  Payments Record Section
+
+
+def create_payment_record(request):
+    payment_choices = PaymentsRecord.PAYMENT_MODE_CHOICES
+    payment_ratings = [(i, f"{i} Star") for i in range(1, 6)]
+
+    if request.method == "GET":
+        return render(request, "payment_records_create.html", {
+            'payment_choices': payment_choices,
+            'payment_ratings': payment_ratings
+        })
+
+    if request.method == "POST":
+        invoice_no = request.POST.get("main_invoice")
+        try:
+            invoice = TaxInvoice.objects.get(tax_invoice_no=invoice_no)
+
+            record = PaymentsRecord(
+                main_invoice=invoice,
+                amount_paid=request.POST.get("amount_paid"),
+                payment_date=request.POST.get("payment_date"),
+                next_due_date=request.POST.get("next_due_date") or None,
+                previous_due_date=request.POST.get("previous_due_date") or None,
+                work_type=request.POST.get("work_type"),
+                payment_details=request.POST.get("Payment_details"),
+                payment_mode=request.POST.get("payment_mode"),
+                payment_rating=request.POST.get("payment_rating") or None,
+                remarks=request.POST.get("remarks"),
+                attachment=request.FILES.get("payment_attachment")
+            )
+
+            # ✅ Perform model-level validation before save
+            record.full_clean()  
+            record.save()        
+
+            messages.success(request, "Payment record created successfully.")
+            return redirect("payment_records_list")  
+
+        except TaxInvoice.DoesNotExist:
+            messages.error(request, "Invoice not found.")
+
+        except ValidationError as ve:
+            messages.error(request, f"Validation error: {ve}")
+
+        except Exception as e:
+            messages.error(request, f"Unexpected error: {str(e)}")
+
+
+    return render(request, "payment_records_create.html", {
+        'payment_choices': payment_choices,
+        'payment_ratings': payment_ratings
+    })
+
+
+@csrf_exempt 
+def fetch_invoice_details(request):
+    if request.method == "POST":
+        invoice_no = request.POST.get("invoice_no")
+        try:
+            invoice = TaxInvoice.objects.get(tax_invoice_no=invoice_no)
+            customer = invoice.customer  # assuming a FK to customer_details
+
+            data = {
+                "success": True,
+                "fullname": customer.fullname,
+                "mobile": customer.primarycontact,
+                "email": customer.primaryemail,
+                "total_amount": invoice.grand_total,
+            }
+        except TaxInvoice.DoesNotExist:
+            data = {"success": False, "error": "Invoice not found"}
+
+        return JsonResponse(data)

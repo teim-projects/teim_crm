@@ -159,179 +159,175 @@
 
 <body>
 
+    
+    <header>
 
-
-
-
-    <table class=" theadd" style="border-bottom: 2px solid black;">
-        <tr>
-            <td>
-                <img src="{{ logo_path }}" alt="Logo" width="150px"
-                    style="position: fixed !important; top:50% !important;left:10% !important;">
-
-            </td>
-            <td>
-                <div class="company-details " style="text-align: right;">
-                    <strong style="font-size: 18px;">Seva Facility Services Pvt Ltd</strong><br>
-                    <span>{{ quotation.branch.full_address }},</span><br>
-                    <span>{{ quotation.branch.email_1 }},</span>
-                    <span>{{ quotation.branch.email_2 }}</span><br>
-                    <span>{{ quotation.branch.contact_1 }}</span><br>
-                    <span>GSTIN: {{ quotation.branch.gst_number }}</span><br>
-                    <span>PAN No: {{ quotation.branch.pan_number }}</span><br>
-                </div>
-            </td>
-        </tr>
-    </table>
-
-
-
-
-
-
-
-
-
-    <table class=" theadd">
-        <tr>
-            <td>
-                <div class="client-details fs" style="border-left: 5px solid #4484CD;">
-                    <strong class="mt-2">Name :</strong> {{ quotation.customer_full_name }}<br>
-                    <strong>Phone :</strong> {{ quotation.contact_no }}<br>
-                    {% if quotation.secondary_contact_no %}
-                    <strong>Secondary Phone :</strong> {{ quotation.secondary_contact_no }}<br>
-                    {% endif %}
-                    <strong>Email :</strong> {{ quotation.customer_email }}<br>
-                    {% if quotation.secondary_email %}
-                    <strong>Secondary Email :</strong> {{ quotation.secondary_email }}<br>
-                    {% endif %}
-                    <strong>Address :</strong> {{ quotation.address }}
-                </div>
-            </td>
-            <td>
-                <div class="quotation-info fs">
-                    <strong style="font-size: 12px;">Quotation Information</strong><br> <br>
-                    <strong style="font-size: 20px;"> {{ quotation.quotation_no }}</strong> <br> <br>
-
-                    <strong class="fs">Date:</strong><span class="fs">
-                        {{ quotation.quotation_date|date:"d M Y" }}</span>
-                </div>
-            </td>
-        </tr>
-    </table>
-    <div class="details-container">
-
-
-
-    </div>
-
-    <div>
-        <strong>Subject:</strong> {{ quotation.subject }}<br>
-        <em>We Thank You for your enquiry and we are pleased to give the quotation accordingly as below:</em>
-    </div>
-
-    <table class="service-table fs">
-        <thead class="thead-dark">
+        <table class=" theadd" style="border-bottom: 2px solid black;">
             <tr>
-                <th>Sr. No.</th>
-                <th>Product / Service</th>
-                <th>Rate</th>
-                <th>Qty</th>
-                <!-- <th>GST (%)</th> -->
-                <th>Total</th>
+                <td>
+                    <img src="{{ logo_path }}" alt="Logo" width="150px"
+                        style="position: fixed !important; top:50% !important;left:10% !important;">
+
+                </td>
+                <td>
+                    <div class="company-details " style="text-align: right;">
+                        <strong style="font-size: 18px;">Seva Facility Services Pvt Ltd</strong><br>
+                        <span>{{ quotation.branch.full_address }},</span><br>
+                        <span>{{ quotation.branch.email_1 }},</span>
+                        <span>{{ quotation.branch.email_2 }}</span><br>
+                        <span>{{ quotation.branch.contact_1 }}</span><br>
+                        <span>GSTIN: {{ quotation.branch.gst_number }}</span><br>
+                        <span>PAN No: {{ quotation.branch.pan_number }}</span><br>
+                    </div>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            {% for item in quotation.product_details_json %}
+        </table>
+
+    </header>
+
+
+    <main>
+        <!-- Customer & Quotation details  -->
+        <table class=" theadd">
             <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ item.name }} <br>
-                    {{ item.description }}</td>
-                <td>{{ item.price }}</td>
-                <td>{{ item.quantity }}</td>
-                <!-- <td>{{ item.gst }}</td> -->
-                <td>{{ item.total }}</td>
+                <td>
+                    <div class="client-details fs" style="border-left: 5px solid #4484CD;">
+                        <strong class="mt-2">Name :</strong> {{ quotation.customer_full_name }}<br>
+                        <strong>Phone :</strong> {{ quotation.contact_no }}<br>
+                        {% if quotation.secondary_contact_no %}
+                        <strong>Secondary Phone :</strong> {{ quotation.secondary_contact_no }}<br>
+                        {% endif %}
+                        <strong>Email :</strong> {{ quotation.customer_email }}<br>
+                        {% if quotation.secondary_email %}
+                        <strong>Secondary Email :</strong> {{ quotation.secondary_email }}<br>
+                        {% endif %}
+                        <strong>Address :</strong> {{ quotation.address }}
+                    </div>
+                </td>
 
+                <td>
+                    <div class="quotation-info fs">
+                        <strong style="font-size: 12px;">Quotation Information</strong><br> <br>
+                        <strong style="font-size: 20px;"> {{ quotation.quotation_no }}</strong> <br> <br>
+
+                        <strong class="fs">Date:</strong><span class="fs">
+                            {{ quotation.quotation_date|date:"d M Y" }}</span>
+                    </div>
+                </td>
             </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        </table>
+        <!-- <div class="details-container">
 
-    <table class="totals fs text-center">
-        <tr>
-            <td class="label text-center">Subtotal:</td>
-            <td>{{ quotation.total_price|floatformat:2 }}</td>
-        </tr>
+        </div> -->
 
-        {% if quotation.apply_gst %}
-        {% if quotation.igst %}
-        <tr>
-            <td class="label text-center">IGST {{ quotation.igst_rate|floatformat:2 }}:</td>
-            <td>{{ quotation.igst|floatformat:2 }}</td>
-        </tr>
-        {% else %}
-        <tr>
-            <td class="label text-center">CGST {{ quotation.cgst_rate|floatformat:2 }}:</td>
-            <td>{{ quotation.cgst|floatformat:2 }}</td>
-        </tr>
-        <tr>
-            <td class="label text-center">SGST {{ quotation.sgst_rate|floatformat:2 }}:</td>
-            <td>{{ quotation.sgst|floatformat:2 }}</td>
-        </tr>
-        {% endif %}
-        <tr>
-            <td class="label text-center">GST :</td>
-            <td>{{ average_gst|floatformat:2 }} %</td>
-        </tr>
-        <tr>
-            <td class="label text-center">Total Tax:</td>
-            <td>{{ quotation.gst_total|floatformat:2 }}</td>
-        </tr>
-        {% endif %}
+        <div>
+            <strong>Subject:</strong> {{ quotation.subject }}<br>
+            <em>We Thank You for your enquiry and we are pleased to give the quotation accordingly as below:</em>
+        </div>
 
-        <tr>
-            <td class="label text-center"><strong>Grand Total:</strong></td>
-            <td><strong>{{ quotation.total_price_with_gst|floatformat:2 }}</strong></td>
-        </tr>
-    </table>
+        <table class="service-table fs">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Sr. No.</th>
+                    <th>Product / Service</th>
+                    <th>Rate</th>
+                    <th>Qty</th>
+                    <!-- <th>GST (%)</th> -->
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in product_details %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.name }} <br>
+                        {{ item.description }}</td>
+                    <td>{{ item.price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <!-- <td>{{ item.gst }}</td> -->
+                    <td>{{ item.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table class="totals fs text-center">
+            <tr>
+                <td class="label text-center">Subtotal:</td>
+                <td>{{ quotation.total_price|floatformat:2 }}</td>
+            </tr>
+
+            {% if quotation.apply_gst %}
+            {% if quotation.igst %}
+            <tr>
+                <td class="label text-center">IGST {{ quotation.igst_rate|floatformat:2 }}:</td>
+                <td>{{ quotation.igst|floatformat:2 }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td class="label text-center">CGST {{ quotation.cgst_rate|floatformat:2 }}:</td>
+                <td>{{ quotation.cgst|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td class="label text-center">SGST {{ quotation.sgst_rate|floatformat:2 }}:</td>
+                <td>{{ quotation.sgst|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td class="label text-center">GST :</td>
+                <td>{{ average_gst|floatformat:2 }} %</td>
+            </tr>
+            <tr>
+                <td class="label text-center">Total Tax:</td>
+                <td>{{ quotation.gst_total|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+
+            <tr>
+                <td class="label text-center"><strong>Grand Total:</strong></td>
+                <td><strong>{{ quotation.total_price_with_gst|floatformat:2 }}</strong></td>
+            </tr>
+        </table>
 
 
-    <p><strong>Total in Words:</strong> {{ amount_in_words }} </p>
+        <p><strong>Total in Words:</strong> {{ amount_in_words }} </p>
 
-    <div class="terms fs">
+        <div class="terms fs">
 
-        <strong class="fs">Terms & Conditions</strong>
-        <ol class="fs">
-            {% for term in quotation.terms_and_conditions.all %}
-            <li>{{ term.description }}</li>
-            {% empty %}
+            <strong class="fs">Terms & Conditions</strong>
+            <ol class="fs">
+                {% for term in quotation.terms_and_conditions.all %}
+                <li>{{ term.description }}</li>
+                {% empty %}
 
-            {% endfor %}
-        </ol>
-        {% if quotation.apply_gst %}
-        <span class="fs">
-            All above material and services will be attracted to GST extra as per product or service applicable.
+                {% endfor %}
+            </ol>
+            {% if quotation.apply_gst %}
+            <span class="fs">
+                All above material and services will be attracted to GST extra as per product or service applicable.
 
-        </span>
-        {% endif %}
-    </div>
+            </span>
+            {% endif %}
+        </div>
 
-    <div class="thankyou fs">
-        <span class="fs">
-            We thank you for opportunity given to serve you & look forward to adding you to our family of
-            customers.<br><br>
+        <div class="thankyou fs">
+            <span class="fs">
+                We thank you for opportunity given to serve you & look forward to adding you to our family of
+                customers.<br><br>
 
-        </span>
-        <strong class="fs">Thanking You,</strong><br><br>
-        <span class="fs"> Seva Facility Services Pvt Ltd</span> <br><br>
-        <strong class="fs">Contact By:{{ quotation.contact_by }} - {{ quotation.contact_by_no }}</strong>
-    </div>
+            </span>
+            <strong class="fs">Thanking You,</strong><br><br>
+            <span class="fs"> Seva Facility Services Pvt Ltd</span> <br><br>
+            <strong class="fs">Contact By:{{ quotation.contact_by }} - {{ quotation.contact_by_no }}</strong>
+        </div>
 
+    </main>
 
-
-    <div class="pdf-footer">
-        <img src="{{ fottor_path }}" alt="Footer Image" width="100%" height="100%">
-    </div>
+    <footer>
+        <div class="pdf-footer">
+            <img src="{{ fottor_path }}" alt="Footer Image" width="100%" height="100%">
+        </div>
+    </footer>
 
 </body>
 
