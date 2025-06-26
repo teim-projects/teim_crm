@@ -841,7 +841,7 @@ from .models import Branch  # ✅ Import branch model
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
-    terms = QuotationTerm.objects.all()
+    terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
 
     if request.method == 'POST':
@@ -865,6 +865,7 @@ def quotation_management_create(request):
             state = request.POST.get('state')
             gps_location = request.POST.get('gps_location')
             pincode = request.POST.get('pincode', '000000')
+            custom_terms = request.POST.get('add_terms_conditions')or None
 
             customerid = generate_customerid(customer_full_name)
 
@@ -983,7 +984,8 @@ def quotation_management_create(request):
                 igst=igst,
                 gst_total=total_gst,
                 branch_id=branch_id if branch_id else None,
-                product_details_json=json.loads(product_details_json) 
+                product_details_json=json.loads(product_details_json),
+                custom_terms = custom_terms,
             )
 
             quotation.selected_services.set(selected_services)
@@ -1166,13 +1168,17 @@ def generate_quotation_pdf_view(request, id):
     logo_path = request.build_absolute_uri(static('images/Logo.png'))
     fottor_path = request.build_absolute_uri(static('images/qutation_fottor_pdf.jpg'))
 
+    custom_terms_str = quotation.custom_terms
+    custom_terms_list = [term.strip() for term in custom_terms_str.split(',') if term.strip()]
+
     context = {
         'quotation': quotation,
         'product_details': product_data,
         'amount_in_words': amount_in_words,
         'logo_path': logo_path,
         'fottor_path': fottor_path,
-        'average_gst': average_gst  # ✅ Add this to context
+        'average_gst': average_gst  ,
+        'custom_terms_list': custom_terms_list,
     }
 
     response = HttpResponse(content_type='application/pdf')
@@ -2685,6 +2691,7 @@ def edit_quotation(request, rid):
         subject = request.POST.get('subject')
         branch_id = request.POST.get('branch_id')
         selected_term_ids = request.POST.getlist('terms_and_conditions')  # get selected terms
+        custom_terms = request.POST.get('add_terms_conditions')
 
         for product in existing_products:
             product_id = str(product['id'])
@@ -2764,6 +2771,7 @@ def edit_quotation(request, rid):
         quotation.igst = igst
         quotation.gst_status = gst_status
         quotation.apply_gst = enable_gst
+        quotation.custom_terms = custom_terms
         quotation.save()
 
         # Save terms

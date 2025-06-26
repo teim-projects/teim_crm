@@ -567,6 +567,7 @@ class quotation_management(models.Model):
 
     subject = models.CharField(max_length=1000, null=True, blank=True)
     quotation_date = models.DateField(default=timezone.now)
+    custom_terms = models.TextField(blank=True, null=True)
     
     terms_and_conditions = models.ManyToManyField(QuotationTerm, blank=True)
     gst_number = models.CharField(
