@@ -159,7 +159,9 @@ urlpatterns = [
     # Payment Record Section
     path('ajax/fetch-invoice/', views.fetch_invoice_details, name='fetch_invoice'),
     path('payment-records/create/', views.create_payment_record, name='create_payment_records'),
-path('payment-records/list/',views.payment_records_list, name="payment_record_lists"),
+    path('payment-records/list/',views.payment_records_list, name="payment_record_lists"),
+    path('payment-records/details/<int:pk>',views.payment_records_details, name="payment_records_details"),
+    path('fetch_invoice_product_details/<int:id>/', views.fetch_tax_invoice_details, name='fetch_invoice_product_details'),
 
 ]
 

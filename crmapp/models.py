@@ -775,6 +775,7 @@ class PaymentsRecord(models.Model):
     payment_rating = models.IntegerField(choices=[(i, f"{i} Star") for i in range(1, 6)], null=True, blank=True)
     remarks = models.TextField(blank=True, null=True)
     attachment = models.FileField(upload_to='payment_attachments/', null=True, blank=True)
+    base_invoice_ref = models.CharField(max_length=100, editable=False)
 
     def clean(self):
         if self.attachment and self.attachment.size > 5 * 1024 * 1024:
@@ -818,10 +819,11 @@ class PaymentsRecord(models.Model):
 
             if not PaymentsRecord.objects.filter(payment_invoice_no=generated_no).exists():
                 self.payment_invoice_no = generated_no
+                self.base_invoice_ref = base_invoice_no
             else:
                 self.payment_invoice_no = f"{generated_no}-{self.pk}"
 
-            super().save(update_fields=['payment_invoice_no'])
+            super().save(update_fields=['payment_invoice_no','base_invoice_ref'])
 
     @property
     def ageing(self):
