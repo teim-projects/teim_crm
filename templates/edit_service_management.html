@@ -462,7 +462,7 @@
           {% for tech in technicians %}
           <li>
             <div class="form-check">
-              <input class="form-check-input mt-2" type="checkbox" name="technicians" value="{{ tech.id }}" 
+              <input class="form-check-input mt-4" type="checkbox" name="technicians" value="{{ tech.id }}" 
               id="tech{{ forloop.counter }}" {% if tech.user in selected_technicians %}checked{% endif %}>
               <label class="form-check-label text-dark" for="tech{{ forloop.counter }}">
                 {{ tech.first_name }} {{ tech.last_name }}
