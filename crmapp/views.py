@@ -4676,7 +4676,7 @@ def create_payment_record(request):
 @csrf_exempt 
 def fetch_invoice_details(request):
     if request.method == "POST":
-        invoice_no = request.POST.get("invoice_no")
+        invoice_no = request.POST.get("invoice_no") 
         try:
             invoice = TaxInvoice.objects.get(tax_invoice_no=invoice_no)
             customer = invoice.customer
@@ -4698,5 +4698,91 @@ def fetch_invoice_details(request):
         return JsonResponse(data)
     
 
+def fetch_tax_invoice_details(request, id):
+    invoice = TaxInvoice.objects.get(id=id)
+    return render(request, 'tax_invoice_details.html', {'invoice': invoice})
+
+    
+from django.db.models import Max, Subquery, OuterRef
+from collections import OrderedDict
+
 def payment_records_list(request):
-    return render(request,"payment_records_list.html")
+    search_query = request.GET.get('search', '')
+    ageing_filter = request.GET.get('ageing', '')
+    due_order = request.GET.get('due_order', '')
+    remain_amount = request.GET.get('remain_amount','')
+    print("ageing_filter", ageing_filter)
+
+    latest_ids = PaymentsRecord.objects.values('main_invoice_id') \
+        .annotate(latest_id=Max('id')) \
+        .values_list('latest_id', flat=True)
+    
+    payments = PaymentsRecord.objects.filter(id__in=latest_ids).select_related('main_invoice')
+
+    if search_query:
+        payments = payments.filter(payment_invoice_no__icontains=search_query)
+
+    if ageing_filter:
+        payments = [
+            p for p in payments 
+            if p.ageing and p.ageing.replace('–', '-').replace(' Days', '') == ageing_filter
+        ]
+
+    if due_order == "asc":
+        payments = sorted(payments, key=lambda x: x.next_due_date or x.payment_date)
+    elif due_order == "desc":
+        payments = sorted(payments, key=lambda x: x.next_due_date or x.payment_date, reverse=True)
+
+    if remain_amount == "asc":
+        payments = sorted(payments, key=lambda x: x.amount_remaining)
+    elif remain_amount == "desc":
+        payments = sorted(payments, key=lambda x: x.amount_remaining, reverse=True)
+
+    context = {
+        "payments": payments,
+        "search_query": search_query,
+        "ageing_selected": ageing_filter,
+        "due_order": due_order,
+        "remain_amount":remain_amount,
+    }
+    return render(request, "payment_records_list.html", context)
+
+
+
+def payment_records_details(request , pk):
+    search_query = request.GET.get('search', '')
+    ageing_filter = request.GET.get('ageing', '')
+    due_order = request.GET.get('due_order', '')
+    remain_amount = request.GET.get('remain_amount','')
+
+    main_invoice = get_object_or_404(TaxInvoice, id=pk)
+    payments = PaymentsRecord.objects.filter(main_invoice_id = main_invoice)
+ 
+    if search_query:
+        payments = payments.filter(payment_invoice_no__icontains=search_query)
+
+    if ageing_filter:
+        payments = [
+            p for p in payments 
+            if p.ageing and p.ageing.replace('–', '-').replace(' Days', '') == ageing_filter
+        ]
+
+    if due_order == "asc":
+        payments = sorted(payments, key=lambda x: x.next_due_date or x.payment_date)
+    elif due_order == "desc":
+        payments = sorted(payments, key=lambda x: x.next_due_date or x.payment_date, reverse=True)
+
+    if remain_amount == "asc":
+        payments = sorted(payments, key=lambda x: x.amount_remaining)
+    elif remain_amount == "desc":
+        payments = sorted(payments, key=lambda x: x.amount_remaining, reverse=True)
+
+    context = {
+        "payments": payments,
+        "main_invoice": main_invoice,
+        "search_query": search_query,
+        "ageing_selected": ageing_filter,
+        "due_order": due_order,
+        "remain_amount":remain_amount,
+    }
+    return render(request, "payment_records_details.html", context)
