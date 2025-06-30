@@ -2311,8 +2311,12 @@ def display_lead_management(request):
 
     # 9. Get dropdown filter values
     typeoflead_choices = [choice[0] for choice in lead_management._meta.get_field('typeoflead').choices if choice[0]]
-    typeoflead_used = lead_management.objects.values_list('typeoflead', flat=True).distinct()
-    lead_types = sorted(set(typeoflead_choices + list(typeoflead_used)))
+    # print("typeoflead_choices",typeoflead_choices)
+    # print(" 1365fkugrjgdudjbfygjhbkjdgjdgkhfkfh")
+    # typeoflead_used = lead_management.objects.values_list('typeoflead', flat=True).distinct()
+    # print("typeoflead_used",typeoflead_used)
+    lead_types = sorted(set(typeoflead_choices))
+    # print("lead_types",lead_types)
 
     source_choices = [choice[0] for choice in lead_management._meta.get_field('sourceoflead').choices if choice[0]]
     source_used = lead_management.objects.values_list('sourceoflead', flat=True).distinct()
