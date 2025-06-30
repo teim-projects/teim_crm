@@ -129,12 +129,14 @@ def index(request):
     }
     lead_data_json = json.dumps(lead_data)
 
+ 
+
     # Follow-up remark chart data (from main_followup model)
     start_date_followup = request.GET.get('start_date_followup')
     end_date_followup = request.GET.get('end_date_followup')
 
     # Filter main_followup records by enquirydate if date range is provided
-    from crmapp.models import main_followup  # Adjust import according to your app structure
+     # Adjust import according to your app structure
 
     followup_queryset = main_followup.objects.all()
     if start_date_followup and end_date_followup:
@@ -215,6 +217,33 @@ def index(request):
         quotations_count = quotation.objects.count()
         orders_count = invoice.objects.count()
 
+    start_date = request.GET.get("start_date_order")
+    print("start_date", start_date)
+
+    end_date = request.GET.get("end_date_order")
+    print("end_date",end_date)
+    followups = main_followup.objects.all()
+    # print("followups",followups)
+
+    if start_date and end_date:
+        try:
+            start = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end = datetime.strptime(end_date, "%Y-%m-%d")+ timedelta(days=1) 
+            followups = followups.filter(created_at__range=(start, end))
+            # print("followup_filter", followups)
+        except ValueError:
+            pass  
+
+    # Create labels and data
+    order_status_labels = ['Close Win', 'Close Loss', 'Not Closed']
+    queryset = followups.values('order_status').annotate(count=Count('id'))
+
+    order_status_data = []
+    for label in order_status_labels:
+        match = next((item for item in queryset if item['order_status'] == label), None)
+        order_status_data.append(match['count'] if match else 0)
+    
+
     context = {
         'lead_data': lead_data_json,
         'service_data': service_data,
@@ -226,6 +255,9 @@ def index(request):
         "order": json.dumps([quotations_count, orders_count]),
         'bar_chart_data': json.dumps(bar_chart_data),
 
+       
+        "order_status_labels": order_status_labels,
+        "order_status_data": order_status_data,
         # Follow-up chart context
         'follow_up_labels': json.dumps(followup_labels),
         'follow_up_data': json.dumps(followup_data_list),
@@ -2311,13 +2343,7 @@ def display_lead_management(request):
 
     # 9. Get dropdown filter values
     typeoflead_choices = [choice[0] for choice in lead_management._meta.get_field('typeoflead').choices if choice[0]]
-    # print("typeoflead_choices",typeoflead_choices)
-    # print(" 1365fkugrjgdudjbfygjhbkjdgjdgkhfkfh")
-    # typeoflead_used = lead_management.objects.values_list('typeoflead', flat=True).distinct()
-    # print("typeoflead_used",typeoflead_used)
     lead_types = sorted(set(typeoflead_choices))
-    # print("lead_types",lead_types)
-
     source_choices = [choice[0] for choice in lead_management._meta.get_field('sourceoflead').choices if choice[0]]
     source_used = lead_management.objects.values_list('sourceoflead', flat=True).distinct()
     sources = sorted(set(source_choices + list(source_used)))

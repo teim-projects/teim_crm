@@ -419,7 +419,7 @@
 
     <div class="container cardsmaincontainer " style="margin-top: 70px;  min-height: 100vh !important;">
         <div class="row">
-            <div class="col-md-4 col-12 col-sm-12 col-lg-4 col-xl-4 mt-3 jgssgh">
+            <div class="col-md-4 col-12 col-sm-12 col-lg-4 col-xl-4 mt-3 ">
                 <div class="pie-chart-container  cards car "  >
                     <!-- Pie Chart for Lead Distribution -->
                     
@@ -521,9 +521,122 @@
                     </script>
                 </div>
             </div>
-            <div class="col-md-4 col-12 col-sm-12 col-lg-4 col-xl-4 mt-3">
+           
     
+        
+
+
+<div class="col-md-4 col-12 col-sm-12 col-lg-4 col-xl-4 mt-3 ">
+    <div class="pie-chart-container cards car">
+        <!-- Pie Chart for Order Status -->
+        <h3 class="ml-5 mt-1">Order Status</h3>
+
+        <!-- Optional: Date Range Filter -->
+        <div class="date-filter-container">
+            <div class="row">
+                <div class="col-md-6 col-6">
+                    <label for="start_date_order">Start Date:</label>
+                    <input type="date" id="start_date_order" name="start_date_order" class="form-control">
+                </div>
+                <div class="col-md-6 col-6">
+                    <label for="end_date_order">End Date:</label>
+                    <input type="date" id="end_date_order" name="end_date_order" class="form-control">
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 15px;">
+            <button onclick="filterOrderStatus()" class="mt-4"
+                style="padding: 7px 15px; background-color: #36A2EB; color: white; border: none; border-radius: 5px; cursor: pointer; width:150px !important;">
+                Filter
+            </button>
+        </div>
+
+        <!-- Display Selected Date Range -->
+        <div id="selected-order-range"
+            style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #4BC0C0;">
+            <!-- Selected date range will appear here -->
+        </div>
+
+        <canvas id="orderStatusChart" class="canvass"></canvas>
+
+        <script>
+            const orderStatusLabels = {{ order_status_labels|safe }};
+            const orderStatusData = {{ order_status_data|safe }};
+            let orderStatusChart;
+
+            function renderOrderStatusChart(labels, data) {
+                const ctx = document.getElementById('orderStatusChart').getContext('2d');
+                if (orderStatusChart) {
+                    orderStatusChart.destroy();
+                }
+
+                orderStatusChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: ['#4BC0C0', '#FF6384', '#FFCE56'],
+                            borderColor: '#ffffff',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        onClick: function (event, elements) {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const status = labels[index];
+                                window.location.href = `/display_main_followup?order_status=${encodeURIComponent(status)}`;
+                            }
+                        }
+                    }
+                });
+            }
+
+            function filterOrderStatus() {
+                const startDate = document.getElementById('start_date_order').value;
+                const endDate = document.getElementById('end_date_order').value;
+
+                if (!startDate || !endDate) {
+                    alert("Please select both start and end dates.");
+                    return;
+                }
+
+                window.location.href = `?start_date_order=${startDate}&end_date_order=${endDate}`;
+            }
+
+            function displaySelectedOrderDateRange() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const startDate = urlParams.get('start_date_order');
+                const endDate = urlParams.get('end_date_order');
+
+                const rangeElement = document.getElementById('selected-order-range');
+                if (startDate && endDate) {
+                    rangeElement.textContent = `Showing order status from ${startDate} to ${endDate}`;
+                } else {
+                    rangeElement.textContent = "Showing order status for all dates";
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                renderOrderStatusChart(orderStatusLabels, orderStatusData);
+                displaySelectedOrderDateRange();
+            });
+
+
+            console.log("Labels:", {{ order_status_labels|safe }});
+            console.log("Data:", {{ order_status_data|safe }});
+        </script>
+    </div>
 </div>
+
 
             <div class="col-md-4 col-12 col-sm-12 col-lg-4 col-xl-4 mt-3">
                 <div class="quote-vs-order-container cards ">
@@ -661,10 +774,10 @@
 
             </div>
         </div>
+    </div>
         
-        <div class="row">
-
-            <div class="col-md-6 col-12 col-sm-12 col-lg-6 col-xl-6 mt-3">
+        <div class="row mt-0">
+            <div class="col-md-6 col-12 col-sm-12 col-lg-6 col-xl-6 mt-1">
                 <div class="contractTypeChart-container cards ">
                     <h3 class="mt-1">Contract Type Status</h3>
                     <!-- Date Range Filter -->
