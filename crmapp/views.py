@@ -357,8 +357,6 @@ def user_login(request):
         if u is not None:
             login(request, u)
 
-
-           
             start_date = request.GET.get('start_date')
             end_date = request.GET.get('end_date')
 
@@ -441,10 +439,7 @@ def user_login(request):
                 }]
             }
 
-     
-
-
-
+    
             # Extract service-specific date filters
             start_date_service = request.GET.get('start_date_service')
             end_date_service = request.GET.get('end_date_service')
@@ -520,10 +515,9 @@ def user_login(request):
                 'bar_chart_data': json.dumps(bar_chart_data),
                 
             }
-            print("chartctfgvbhjnbgtfvrdcew:::::::::::::::::::")
-
-
-            return render(request, 'index.html', context)
+            
+            # return render(request, 'index.html', context)
+            return redirect('index')
 
 
             # return render(request, "index.html")
