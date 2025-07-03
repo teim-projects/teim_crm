@@ -22,8 +22,8 @@
     <title>Sidebar</title>
     <style>
         body {
-            background-color: rgba(24, 24, 24, 1) !important; /* Dark gray, almost black */
-            color: #F4F4F5 !important;
+             color: #000000 !important;
+                         background-color: #f5fffa  !important;
 
         }
         .header {
@@ -58,14 +58,23 @@
             /* Only padding on the top for space */
             overflow-y: auto;
             color: black !important;
-            transition: left 0.3s ease-in-out;
-            z-index: 2000;
+             z-index: 2000;
             /* Ensure sidebar is above overlay */
 
             /* Curved bottom-right corner */
             box-shadow: 2px 0px 10px rgba(30, 8, 158, 0.5);
             /* Optional for better aesthetics */
         }
+        .addnewshadow{
+      box-shadow: 0px 0px 10px rgb(125, 93, 93);
+            background-color: rgba(255, 255, 255, 0.945);
+
+}
+
+.formshdow{
+     background-color: #ffffff;
+            box-shadow: 04 px 20px rgba(3, 174, 210, 0.2);
+}
 
         .overlay {
             display: none;
@@ -765,8 +774,7 @@
 
 
 
-            <li class="has-submenu" onclick="window.location.href='/pending_work'"><i class="fas fa-tasks"></i> Pending
-                Work</li>
+                 
             <li class="has-submenu" onclick="window.location.href='/work_list'"><i class="far fa-list-alt"></i></i> Work List
             </li>
             <li class="has-submenu" onclick="window.location.href='/completed_work_list'"><i class="fa-solid fa-check-double"></i>Completed Work List</li>
@@ -842,37 +850,7 @@
 <!-- Load the Particles.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
-<!-- Initialize Particles -->
-<script>
-    particlesJS("particles-js", {
-      particles: {
-        number: { value: 80 },
-        shape: { type: "circle" },
-        opacity: { value: 0.3 },
-        size: { value: 5, random: true },
-        color: { value: "#00e5ff" },
-        line_linked: { color: "#00e5ff" },
-        move: {
-          enable: true,
-          speed:0.6,
-          direction: "none",
-          straight: false,
-          bounce: false
-        }
-      },
-      interactivity: {
-        detect_on: "canvas",
-        events: {
-          onhover: { enable: true, mode: "grab" },
-         },
-        modes: {
-          grab: { distance: 80, line_linked: { opacity: 0.5 } },
-         }
-      },
-      retina_detect: true
-    });
-  </script>
-  
+ 
   
 
     
