@@ -427,7 +427,7 @@
                         <div class="navbar">
                             <form class="form-inline" method="get">
                                 <input class="form-control mr-sm-2" type="search" name="search"
-                                    placeholder="Search by Cust.ID" aria-label="Search"
+                                    placeholder="Search by Cust.ID \ Mobile " aria-label="Search"
                                     value="{{ request.GET.search }}">
                                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
                                     style="width: 150px;">Search</button>
@@ -444,127 +444,96 @@
                         <div class="p mb-3">
                             <p class="scroll-instruction">Scroll to view more content ➡️ </p>
                         </div>
-                        <div class="container-table">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Sr.No</th>
-                                        <th>
-                                            <a style="text-decoration: none; color: #000000;"
-                                                href="?sort_by=quotation_no&order={% if current_sort_by == 'quotation_no' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                                                Quotation No
-                                                {% if current_sort_by == 'quotation_no' %}
-                                                {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
-                                                {% endif %}
-                                            </a>
-                                        </th>
+                        <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle text-nowrap">
+        <thead class="table-light">
+            <tr>
+                <th>Sr.No</th>
+                <th  class="text-center">Actions</th>
+                <th>
+                    <a href="?sort_by=quotation_no&order={% if current_sort_by == 'quotation_no' and current_order == 'asc' %}desc{% else %}asc{% endif %}"
+                       class="text-decoration-none text-dark">
+                        Quotation No
+                        {% if current_sort_by == 'quotation_no' %}
+                            {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="?sort_by=customer_full_name&order={% if current_sort_by == 'customer_full_name' and current_order == 'asc' %}desc{% else %}asc{% endif %}"
+                       class="text-decoration-none text-dark">
+                        Customer Name
+                        {% if current_sort_by == 'customer_full_name' %}
+                            {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                        {% endif %}
+                    </a>
+                </th>
+                <th>Contact No</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>Shipping Branch</th>
+                <th>Selected Services</th>
+                <th>Quantity</th>
+                <th>Apply <br> GST</th>
+                <th>GST <br> Status</th>
+                <th>GST Total</th>
+                <th>Total Price <br> (without GST)</th>
+                <th>Total Price <br> (with GST)</th>
+                <th>Subject</th>
+                <th>Quotation Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for x in page_obj %}
+            <tr>
+                <td>{{ forloop.counter|add:start_index }}</td>
+                <td>
+                    <a href="/generate_quotation/quotation/pdf/{{ x.id }}/download"
+                       class="btn btn-sm btn-primary"><i class="fa-solid fa-download"></i></a>
+                
+                    <a href="/generate_quotation/quotation/pdf/{{ x.id }}/view"
+                       class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
+               
+                    <a href="{% url 'edit_quotation' x.id %}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                
+                    <a href="/delete_quotation/{{ x.id }}" class="btn btn-sm btn-danger delete-link"><i class="fa-solid fa-trash"></i></a>
+                </td>
+                <td>{{ x.quotation_no }}</td>
+                <td>{{ x.customer_full_name }}</td>
+                <td>{{ x.contact_no }}</td>
+                <td>{{ x.customer_email }}</td>
+                <td>{{ x.address|truncatechars:20 }}</td>
+                <td>{{ x.branch.branch_name|truncatechars:20 }}</td>
+                <td>
+                    {% for service in x.selected_services.all %}
+                        {{ service.product_name|truncatechars:25 }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        No services
+                    {% endfor %}
+                </td>
+                <td>
+                    {% if x.product_details_json %}
+                        {% for item in x.product_details_json %}
+                            {{ item.quantity }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        No Quantity
+                    {% endif %}
+                </td>
+                <td>{{ x.apply_gst|yesno:"Yes,No" }}</td>
+                <td>{{ x.gst_status }}</td>
+                <td>{% if x.gst_total %}{{ x.gst_total|floatformat:2 }}{% else %}-{% endif %}</td>
+                <td>{{ x.total_price|floatformat:2 }}</td>
+                <td>{{ x.total_price_with_gst|floatformat:2 }}</td>
+                <td>{{ x.subject|truncatechars:25 }}</td>
+                <td>{{ x.quotation_date }}</td>
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-                                        <th>
-                                            <a style="text-decoration: none; color: #000000;"
-                                                href="?sort_by=customer_full_name&order={% if current_sort_by == 'customer_full_name' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                                                Customer Name
-                                                {% if current_sort_by == 'customer_full_name' %}
-                                                {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
-                                                {% endif %}
-                                            </a>
-                                        </th>
-
-                                        <th>Contact No</th>
-                                        <th>Secondary Contact</th>
-                                        <th>Email</th>
-                                        <th>Secondary Email</th>
-                                        <th>Address</th>
-                                        <th>Shipping Branch</th>
-                                        <th>Selected Services</th>
-                                        <th>Quantity</th>
-                                        <th>Apply GST</th>
-                                        <th>GST Status</th>
-                                        <th>CGST</th>
-                                        <th>SGST</th>
-                                        <th>IGST</th> <!-- Added IGST column -->
-                                        <th>GST Total</th>
-                                        <!-- Removed Total Charges column -->
-                                        <th>Total Price (without GST)</th>
-                                        <th>Total Price (with GST)</th>
-                                        <th>Subject</th>
-                                        <th>Quotation Date</th>
-                                        <th>Terms & Conditions</th>
-                                        <th>Download</th>
-                                        <th>View</th>
-                                        <th>Edit</th>
-                                        <th>Delete</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for x in page_obj %}
-                                    <tr>
-                                        <td>{{ forloop.counter|add:start_index }}</td>
-                                        <td>{{ x.quotation_no }}</td>
-                                        <td>{{ x.customer_full_name }}</td>
-                                        <td>{{ x.contact_no }}</td>
-                                        <td>{{ x.secondary_contact_no }}</td>
-                                        <td>{{ x.customer_email }}</td>
-                                        <td>{{ x.secondary_email }}</td>
-                                        <td>{{ x.address }}</td>
-                                        <td>{{ x.branch.branch_name }}</td>
-                                        <td>
-                                            {% for service in x.selected_services.all %}
-                                            {{ service.product_name }}{% if not forloop.last %}, {% endif %}
-                                            {% empty %}
-                                            No services selected
-                                            {% endfor %}
-                                        </td>
-                                        <td>
-                                            {% if x.product_details_json %}
-                                            {% for item in x.product_details_json %}
-                                            {{ item.quantity }}{% if not forloop.last %}, {% endif %}
-                                            {% endfor %}
-                                            {% else %}
-                                            No Quantity
-                                            {% endif %}
-                                        </td>
-
-                                        <td>{{ x.apply_gst|yesno:"Yes,No" }}</td>
-                                        <td>{{ x.gst_status }}</td>
-                                        <td>{% if x.cgst %}{{ x.cgst|floatformat:2 }}{% else %}-{% endif %}</td>
-                                        <td>{% if x.sgst %}{{ x.sgst|floatformat:2 }}{% else %}-{% endif %}</td>
-                                        <td>{% if x.igst %}{{ x.igst|floatformat:2 }}{% else %}-{% endif %}</td>
-                                        <!-- Added IGST cell -->
-                                        <td>{% if x.gst_total %}{{ x.gst_total|floatformat:2 }}{% else %}-{% endif %}
-                                        </td>
-                                        <!-- Removed Total Charges cell -->
-                                        <td>{{ x.total_price|floatformat:2 }}</td>
-                                        <td>{{ x.total_price_with_gst|floatformat:2 }}</td>
-                                        <td>{{ x.subject }}</td>
-                                        <td>{{ x.quotation_date }}</td>
-                                        <td>
-                                            {% for term in x.terms_and_conditions.all %}
-                                            {{ term.description }}{% if not forloop.last %}, {% endif %}
-                                            {% empty %}-{% endfor %}
-                                        </td>
-                                        <td>
-                                            <a href="/generate_quotation/quotation/pdf/{{ x.id }}/download"
-                                                class="btn linarbtn"
-                                                style="background: linear-gradient(to right, #2575fc, #6a11cb); color:white; border-radius:20px;">
-                                                Download PDF
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a href="/generate_quotation/quotation/pdf/{{ x.id }}/view"
-                                                class="btn btn-secondary">
-                                                View PDF
-                                            </a>
-                                        </td>
-                                        <td><a href="{% url 'edit_quotation' x.id %}">Edit</a></td>
-                                        <td><a href="/delete_quotation/{{ x.id }}"
-                                                class="btn btn-outline-danger delete-link">Delete</a></td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-
-
-                        </div>
 
                         <div class="pagination">
 

@@ -30,6 +30,10 @@ urlpatterns = [
     path('delete_invoice_term/<int:id>/', views.delete_invoice_term, name='delete_invoice_term'),
     path('create_quotation/', views.quotation_management_create, name='create_quotation'),
     path('export-quotation/', views.export_quotation_excel, name='export_quotation'),
+    path('save_quotation_session/', views.save_quotation_session, name='save_quotation_session'),
+    # path('clear_quotation_session/', views.clear_quotation_session, name='clear_quotation_session'),
+
+
 
     # path('quotation_create',views.quotation_create, name='quotation_create'),
     path('invoice_create',views.invoice_create),
@@ -72,7 +76,7 @@ urlpatterns = [
     path('delete_quotation/<rid>' ,views.delete_quotation),
     # path('delete_invoice/<rid>' ,views.delete_invoice),
     # path('delete_inventory/<rid>' ,views.delete_inventory),
-    path('delete_lead_management/<rid>' ,views.delete_lead_management),
+    path('delete_lead_management/<int:rid>' ,views.delete_lead_management),
     path('search',views.search), 
     path('search_inventory',views.search_inventory), 
     path('inventory_service/', views.inventory_service, name='inventory_service'),
@@ -154,6 +158,7 @@ urlpatterns = [
     path('display_tax_invoice/', views.display_tax_invoice, name="display_tax_invoice"),
     path('tax-invoice/pdf/<int:id>/', views.tax_invoice_pdf, name='tax_invoice_pdf'),
     path('export-invoice/', views.export_invoice_excel, name='export_invoice'),
+    path('delete_invoice/<invoice_id>/', views.delete_invoice , name='delete_invoice'),
 
 
     # Payment Record Section

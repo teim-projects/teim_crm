@@ -222,7 +222,7 @@
   <div class="row">
     <div class="col-md-6 mb-4">
       <label>Primary Contact No<span class="star">*</span></label>
-      <input type="number" name="uprimarycontact" class="form-control form-control-lg" value="{{ x.primarycontact }}" />
+      <input type="number" name="uprimarycontact" class="form-control form-control-lg" value="{{ x.primarycontact }}"  required/>
     </div>
     <div class="col-md-6 mb-4">
       <label>Secondary Contact No</label>
@@ -232,10 +232,10 @@
   <div class="row">
     <div class="col-md-6 mb-4">
       <label>Customer Email<span class="star">*</span></label>
-      <input type="email" name="ucustomeremail" class="form-control form-control-lg" value="{{ x.customeremail }}" />
+      <input type="email" name="ucustomeremail" class="form-control form-control-lg" value="{{ x.customeremail }}" required/>
     </div>
     <div class="col-md-6 mb-4">
-      <label>Location<span class="star">*</span></label>
+      <label>Location</label>
       <input type="url" name="ulocation" class="form-control form-control-lg" value="{{ x.location }}" />
     </div>
   </div>

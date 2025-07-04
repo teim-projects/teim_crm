@@ -230,10 +230,10 @@
                 <tr>
                     <th>Sr. No.</th>
                     <th>Product / Service</th>
-                    <th>Rate</th>
+                    <th>Rate (Rs)</th>
                     <th>Qty</th>
                     <!-- <th>GST (%)</th> -->
-                    <th>Total</th>
+                    <th>Total (Rs)</th>
                 </tr>
             </thead>
             <tbody>
@@ -242,10 +242,10 @@
                     <td>{{ forloop.counter }}</td>
                     <td>{{ item.name }} <br>
                         {{ item.description }}</td>
-                    <td>Rs.{{ item.price }}</td>
+                    <td>{{ item.price }}</td>
                     <td>{{ item.quantity }}</td>
                     <!-- <td>{{ item.gst }}</td> -->
-                    <td>Rs.{{ item.total }}</td>
+                    <td>{{ item.total }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -254,23 +254,23 @@
         <table class="totals fs text-center">
             <tr>
                 <td class="label text-center">Subtotal:</td>
-                <td>Rs.{{ quotation.total_price|floatformat:2 }}</td>
+                <td>{{ quotation.total_price|floatformat:2 }}</td>
             </tr>
 
             {% if quotation.apply_gst %}
             {% if quotation.igst %}
             <tr>
                 <td class="label text-center">IGST {{ quotation.igst_rate|floatformat:2 }}:</td>
-                <td>Rs.{{ quotation.igst|floatformat:2 }}</td>
+                <td>{{ quotation.igst|floatformat:2 }}</td>
             </tr>
             {% else %}
             <tr>
                 <td class="label text-center">CGST {{ quotation.cgst_rate|floatformat:2 }}:</td>
-                <td>Rs.{{ quotation.cgst|floatformat:2 }}</td>
+                <td>{{ quotation.cgst|floatformat:2 }}</td>
             </tr>
             <tr>
                 <td class="label text-center">SGST {{ quotation.sgst_rate|floatformat:2 }}:</td>
-                <td>Rs.{{ quotation.sgst|floatformat:2 }}</td>
+                <td>{{ quotation.sgst|floatformat:2 }}</td>
             </tr>
             {% endif %}
             <tr>
@@ -279,7 +279,7 @@
             </tr>
             <tr>
                 <td class="label text-center">Total Tax:</td>
-                <td>Rs.{{ quotation.gst_total|floatformat:2 }}</td>
+                <td>{{ quotation.gst_total|floatformat:2 }}</td>
             </tr>
             {% endif %}
 

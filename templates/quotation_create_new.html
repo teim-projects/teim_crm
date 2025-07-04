@@ -316,62 +316,67 @@
                                         <div class="col-md-6">
                                             <label>Customer Contact<span class="star">*</span></label>
                                             <input type="text" id="customer_contact" name="contact_no" required
-                                                class="form-control">
+                                                class="form-control" value="{{ form_data.contact_no }}" >
                                             <input type="hidden" name="customer_id" id="customer_id" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label>Customer Email<span class="star">*</span></label>
                                             <input type="text" id="customer_email" name="customer_email" required
-                                                class="form-control">
+                                                class="form-control" value="{{ form_data.customer_email }}">
                                         </div>
                                         <div class="col-md-6">
                                             <label>Secondary Email:</label>
-                                            <input type="email" name="secondary_email" class="form-control">
+                                            <input type="email" name="secondary_email" class="form-control" 
+                                            value="{{ form_data.secondary_email }}">
                                         </div>
 
                                         <div class="col-md-6">
                                             <label>Customer Full Name<span class="star">*</span></label>
-                                            <input type="text" name="customer_full_name" class="form-control" required>
+                                            <input type="text" name="customer_full_name" class="form-control" 
+                                            value="{{ form_data.customer_full_name }}" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label>Secondary Contact No.:</label>
-                                            <input type="text" name="secondary_contact_no" class="form-control"><br>
+                                            <input type="text" name="secondary_contact_no" class="form-control"
+                                            value="{{ form_data.secondary_contact_no }}" ><br>
                                         </div>
                                         <div class="col-md-6">
                                             <label>Contact By<span class="star">*</span></label>
                                             <input type="text" id="contact_by" name="contact_by" required
-                                                class="form-control">
+                                                class="form-control" value="{{ form_data.contact_by }}">
                                         </div>
                                         <div class="col-md-6">
                                             <label>Contact No<span class="star">*</span></label>
-                                            <input type="number" id="contact_by_no" name="contact_by_no" required
-                                                class="form-control">
+                                            <input type="number" id="contact_by_no" name="contact_by_no"  required
+                                               value="{{ form_data.contact_by_no }}" class="form-control">
                                         </div>
 
                                         <div class="col-md-6">
                                             <label>Subject:</label>
-                                            <input type="text" name="subject" class="form-control"><br>
+                                            <input type="text" name="subject" value="{{ form_data.subject }}" class="form-control"><br>
                                         </div>
                                         <div class="col-md-6">
                                             <label>Quotation Date:</label>
-                                            <input type="date" name="quotation_date" class="form-control"><br>
+                                            <input type="date" name="quotation_date" class="form-control" 
+                                            value="{{ form_data.quotation_date }}"><br>
                                         </div>
                                         <div class="col-12">
                                             <label>Billing Address (Auto-filled from customer record):</label>
                                             <textarea name="address" id="customer_address" class="form-control" rows="2"
-                                                required></textarea>
+                                                required >{{ form_data.address }}</textarea>
                                         </div>
                                         <div class="col-12">
                                             <label>Select Terms and Conditions:</label><br>
                                             <div class="overterm">
                                                 {% for term in terms %}
                                                 <input type="checkbox" name="terms_and_conditions" class="mt-3 "
-                                                    value="{{ term.id }}">
+                                                    value="{{ term.id }}"
+                                                {% if term.id|stringformat:"s" in form_data.terms_and_conditions %}checked{% endif %}>
                                                 {{ term.description|truncatewords:10 }}<br>
                                                 {% endfor %}
                                             </div>
                                             <div class="add_terms_conditions mt-2">
-                                                <textarea name="add_terms_conditions" rows="4" placeholder="Enter your Customize Terms &Conditions"></textarea>
+                                                <textarea name="add_terms_conditions" rows="4" placeholder="Enter your Customize Terms &Conditions">{{ form_data.add_terms_conditions }}</textarea>
                                             </div>
                                         </div>
 
@@ -392,6 +397,17 @@
                                 <div class="form-step">
                                     <div class="row">
                                         <div class="col-12">
+                                            <div class="mb-3 text-end">
+                                                <button type="button" class="btn btn-success"
+                                                    onclick="saveQuotationFormToSession(() => { 
+                                                        var myModal = new bootstrap.Modal(document.getElementById('addProductModal'));
+                                                        myModal.show();
+                                                    })">
+                                                    + Add New Product
+                                                </button>
+
+                                            </div>
+                                            
                                             <label>Service Type <span class="star">*</span></label>
                                             <select id="servicetype" name="servicetype" class="form-control"
                                                 onchange="fetchProducts(this)">
@@ -506,8 +522,7 @@
                                                 readonly></textarea>
                                         </div>
                                     </div>
-                                    <form id="quotation-management-form" method="post"
-                                        action="{% url 'create_quotation' %}">
+                                    <form id="quotation-management-form" method="post" action="{% url 'create_quotation' %}">
                                         <div class="text-center mt-3">
                                             <button type="button" class="btn btn-secondary prev-step mt-2"
                                                 style="width: 150px;">Previous</button>
@@ -519,6 +534,37 @@
                                 </div>
 
                             </form>
+                        </div>
+                        <div class="add_product">
+                            <!-- Add Product Modal (placed after the main quotation form) -->
+                            <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+                              <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content p-3">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title">Add New Product</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <!-- ✅ Separate form here -->
+                                    <form method="POST" action="{% url 'add_product' %}?from_quotation=true">
+                                      {% csrf_token %}
+                                      <div class="mb-3">
+                                        <label>Product Name <span class="text-danger">*</span></label>
+                                        {{ form.product_name }}
+                                      </div>
+                                      <div class="mb-3">
+                                        <label>Select Category <span class="text-danger">*</span></label>
+                                        {{ form.category }}
+                                      </div>
+                                      <div class="text-end mt-3">
+                                        <button type="submit" class="btn btn-success">Add Product</button>
+                                      </div>
+                                    </form>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -568,6 +614,7 @@
                 });
         }
     </script>
+
 
 
     <script>
@@ -775,7 +822,8 @@
 
             calculateTotal();
         }
-
+        
+        
         function fetchProducts(selectElement) {
             document.getElementById('products-container').innerHTML = '';
             const selectedCategories = Array.from(selectElement.selectedOptions).map(option => option.value);
@@ -821,7 +869,6 @@
                                 <label>Description</label>
                                     <input type="text" class="form-control product-description-input" 
                                         data-product-id="${product.product_id}" 
-                                        value="${product.description}"
                                         placeholder="Description"
                                         onchange="updateProductDescription(this, '${product.product_id}')">
 
@@ -831,7 +878,6 @@
                                 <label>Unit</label>
                                     <input type="text" class="form-control product-unit-input" 
                                         data-product-id="${product.product_id}" 
-                                        value="${product.unit}"
                                         placeholder="Unit"
                                         onchange="updateProductUnit(this, '${product.product_id}')">
 
@@ -854,36 +900,7 @@
             }
         }
 
-        // function updateSelectedServices(checkbox) {
-        //     const productId = checkbox.value;
-        //     const productName = checkbox.getAttribute('data-name');
-        //     const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
-        //     const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
-        //     const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
-        //     const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
-        //     console.log("Unit", unitInput)
-        //     const productPrice = parseFloat(priceInput.value) || 0;
-        //     const productQuantity = parseInt(quantityInput.value) || 1;
-        //     const productGST = parseFloat(gstInput.value) || 0;
-        //     const productUnit = unitInput.value || '';
-        //     console.log("productUnit", productUnit)
-
-        //     if (checkbox.checked) {
-        //         selectedProducts.push({
-        //             id: productId,
-        //             name: productName,
-        //             price: productPrice,
-        //             quantity: productQuantity,
-        //             unit: productUnit,
-        //             gst: productGST
-        //         });
-        //     } else {
-        //         selectedProducts = selectedProducts.filter(product => product.id !== productId);
-        //     }
-
-        //     updateSelectedServicesList();
-        //     calculateTotal();
-        // }
+        
 
         function updateSelectedServices(checkbox) {
             setTimeout(() => {
@@ -1016,7 +1033,7 @@
             });
 
             selectedServicesNamesInput.value = selectedServiceNames.join(',');
-            productDetailsJsonInput.value = JSON.stringify(selectedProducts); // ✅ Save full product list in hidden field
+            productDetailsJsonInput.value = JSON.stringify(selectedProducts); 
 
             if (selectedProducts.length === 0) {
                 const emptyMessage = document.createElement('li');
@@ -1060,6 +1077,51 @@
         // });
 
     </script>
+
+<!-- get form data after new product create -->
+<script>
+function saveQuotationFormToSession(callback) {
+    const form = document.getElementById('quotation-management-form');
+    const formData = new FormData(form);
+
+    fetch('/save_quotation_session/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: formData
+    }).then(response => {
+        if (response.ok && callback) {
+            callback();  // Open modal or redirect only after saving
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        for (let cookie of document.cookie.split(';')) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+<!-- <script>
+    window.addEventListener('beforeunload', function () {
+        const currentPath = window.location.pathname;
+        const isMainQuotationPage = currentPath === "/create_quotation";  // adjust if your URL is different
+
+        if (isMainQuotationPage) {
+            navigator.sendBeacon('/clear_quotation_session/');
+        }
+    });
+</script> -->
+
 
 
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">

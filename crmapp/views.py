@@ -860,19 +860,26 @@ from datetime import datetime
 from .models import quotation_management, QuotationTerm
 from .models import Product
 from .models import customer_details
-from .models import Branch  # ✅ Import branch model
-#eee
+from .models import Branch  
+
 
 # New----------------
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
-    products = Product.objects.all()
     terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
+    products = Product.objects.all()
 
     if request.method == 'POST':
+        custom_terms = request.POST.get('add_terms_conditions') or None
         customer_id = request.POST.get('customer_id')
         customer = None
+        data = request.POST.copy()
+        data['terms_and_conditions'] = request.POST.getlist('terms_and_conditions')
+        request.session['quotation_form_data'] = data
+
+        request.session.modified = True
+
         if customer_id:
             try:
                 customer = customer_details.objects.get(id=customer_id)
@@ -880,31 +887,34 @@ def quotation_management_create(request):
                 raise ValueError("Invalid customer ID.")
 
         else:
-            # Create new customer
-            customer_full_name = request.POST.get('customer_full_name')
             contact_no = request.POST.get('contact_no')
-            secondary_contact_no = request.POST.get('secondary_contact_no')or None
-            customer_email = request.POST.get('customer_email')
-            secondary_email = request.POST.get('secondary_email')or None
-            address = request.POST.get('address')
-            city = request.POST.get('city')
-            state = request.POST.get('state')
-            gps_location = request.POST.get('gps_location')
-            pincode = request.POST.get('pincode', '000000')
-            custom_terms = request.POST.get('add_terms_conditions')or None
+            customer = customer_details.objects.filter(primarycontact=contact_no).first()
+            if not customer:
+            # Create new customer
+                customer_full_name = request.POST.get('customer_full_name')
+                contact_no = request.POST.get('contact_no')
+                secondary_contact_no = request.POST.get('secondary_contact_no')or None
+                customer_email = request.POST.get('customer_email')
+                secondary_email = request.POST.get('secondary_email')or None
+                address = request.POST.get('address')
+                city = request.POST.get('city')
+                state = request.POST.get('state')
+                gps_location = request.POST.get('gps_location')
+                pincode = request.POST.get('pincode', '000000')
+                custom_terms = request.POST.get('add_terms_conditions')or None
 
-            customerid = generate_customerid(customer_full_name)
+                customerid = generate_customerid(customer_full_name)
 
-            # You can add validation here if necessary
-            customer = customer_details.objects.create(
-                customerid = customerid,
-                fullname=customer_full_name,
-                primarycontact=contact_no,
-                secondarycontact=secondary_contact_no,
-                primaryemail=customer_email,
-                secondaryemail=secondary_email,
-                shifttopartyaddress=address,
-            )
+                # You can add validation here if necessary
+                customer = customer_details.objects.create(
+                    customerid = customerid,
+                    fullname=customer_full_name,
+                    primarycontact=contact_no,
+                    secondarycontact=secondary_contact_no,
+                    primaryemail=customer_email,
+                    secondaryemail=secondary_email,
+                    shifttopartyaddress=address,
+                )
         try:
             # Core data
             customer_full_name = request.POST.get('customer_full_name')
@@ -1017,6 +1027,8 @@ def quotation_management_create(request):
             quotation.selected_services.set(selected_services)
             selected_term_ids = request.POST.getlist('terms_and_conditions')
             quotation.terms_and_conditions.set(selected_term_ids)
+            request.session.pop('quotation_form_data', None)
+            request.session.modified = True
 
             return redirect('/display_quotation')
 
@@ -1029,18 +1041,36 @@ def quotation_management_create(request):
                 'terms': terms,
                 'branches': branches
             })
-
+    form_data = request.session.get('quotation_form_data', {})
+    print('form_data',form_data)
+   
+    form = AddProductForm()
     return render(request, 'quotation_create_new.html', {
         'products': products,
         'category_choices': category_choices,
         'terms': terms,
-        'branches': Branch.objects.all()  # Add this line
+        'branches': Branch.objects.all(),
+        'form': form,
+        'form_data': form_data,
 })
     
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def save_quotation_session(request):
+    if request.method == 'POST':
+        request.session['quotation_form_data'] = request.POST.dict()
+        request.session.modified = True
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'invalid request'}, status=400)
+
+# @csrf_exempt
+# def clear_quotation_session(request):
+#     request.session.pop('quotation_form_data', None)
+#     return JsonResponse({'status': 'success'})
+
 from django.http import JsonResponse
 from .models import quotation_management
-
-
 
 def export_quotation_excel(request):
 
@@ -1194,7 +1224,7 @@ def generate_quotation_pdf_view(request, id):
     logo_path = request.build_absolute_uri(static('images/Logo.png'))
     fottor_path = request.build_absolute_uri(static('images/qutation_fottor_pdf.jpg'))
 
-    custom_terms_str = quotation.custom_terms
+    custom_terms_str = quotation.custom_terms or ''
     custom_terms_list = [term.strip() for term in custom_terms_str.split(',') if term.strip()]
 
     context = {
@@ -1725,7 +1755,7 @@ def main_followup_view(request, lead_id):
             if order_status == 'Close Win':
                 return redirect('service_management_create')
 
-        return redirect('today_work')
+        return redirect('pending_followups')
 
     context = {
         'lead': lead,
@@ -1752,7 +1782,6 @@ from itertools import chain
 def today_work(request):
     today = date.today()
 
-    print("today",today)
     salesperson_filter = request.GET.get('salesperson')
 
     # Filter today's follow-ups
@@ -1761,7 +1790,7 @@ def today_work(request):
 
     if salesperson_filter:
         followups = followups.filter(lead__salesperson=salesperson_filter)
-        lead_folloup = lead_folloup.filter(lead__salesperson=salesperson_filter)
+        lead_folloup = lead_folloup.filter(salesperson = salesperson_filter)
 
     # Combine followups and lead_folloup
     combined = list(chain(
@@ -1769,7 +1798,7 @@ def today_work(request):
         [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]  # avoid duplication
     ))
     
-    print("combined", combined)
+    count = len(combined)
     # Pagination
     paginator = Paginator(combined, 10)  # Show 10 records per page
     page_number = request.GET.get('page')
@@ -1786,7 +1815,8 @@ def today_work(request):
         'page_obj': page_obj,
         'salespersons': salespersons,
         'selected_salesperson': salesperson_filter,
-        'start_index': start_index
+        'start_index': start_index,
+        'count': count,
     })
 
 
@@ -1814,6 +1844,7 @@ def pending_followups(request):
     followup_to = request.GET.get('followup_to')
     sort_by = request.GET.get('sort', 'customername')
     order = request.GET.get('order', 'asc')
+    segment_filter = request.GET.get('segments')
 
     order_prefix = '-' if order == 'desc' else ''
 
@@ -1834,6 +1865,7 @@ def pending_followups(request):
 
     # Apply search and filters manually
     filtered = []
+    count_data = 0
     for item in combined_leads:
         lead = item.lead if hasattr(item, 'lead') else item
 
@@ -1853,8 +1885,12 @@ def pending_followups(request):
             continue
         if followup_from and followup_to and not (followup_from <= str(lead.firstfollowupdate) <= followup_to):
             continue
+        if segment_filter and lead.customersegment != segment_filter:
+            continue
 
         filtered.append(item)
+
+        count_data = len(filtered)
 
     # Sort
     def get_sort_value(obj):
@@ -1874,9 +1910,13 @@ def pending_followups(request):
     source_choices = [c[0] for c in lead_management._meta.get_field('sourceoflead').choices if c[0]]
     branch_choices = [c[0] for c in lead_management._meta.get_field('branch').choices if c[0]]
     salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
+    segments = [ choice[0] for choice in lead_management._meta.get_field('customersegment').choices if choice[0] != "NOT SELECTED" ]
 
+
+  
     return render(request, 'pending_followups.html', {
         'page_obj': page_obj,
+        "count_data":count_data,
         'search_query': search_query,
         'start_index': start_index,
         'lead_types': typeoflead_choices,
@@ -1885,7 +1925,10 @@ def pending_followups(request):
         'salespersons': salespersons,
         'selected_salesperson': salesperson_filter,
         'current_sort': sort_by,
-        'current_order': order
+        'current_order': order,
+        'segments': segments,
+        'selected_segment': segment_filter,
+        
     })
 
 
@@ -2285,6 +2328,7 @@ def display_lead_management(request):
     followup_to = request.GET.get('followup_to')
     sort_by = request.GET.get('sort', 'customername')
     order = request.GET.get('order', 'asc')
+    segment_filter = request.GET.get('segments')
 
     # 3. Apply search filter
     if search_query:
@@ -2307,7 +2351,8 @@ def display_lead_management(request):
         filtered_leads = filtered_leads.filter(enquirydate__range=[enquiry_from, enquiry_to])
     if followup_from and followup_to:
         filtered_leads = filtered_leads.filter(firstfollowupdate__range=[followup_from, followup_to])
-
+    if segment_filter:
+        filtered_leads = filtered_leads.filter(customersegment=segment_filter)
     # 5. Count for display
     branch_count = filtered_leads.count()
 
@@ -2339,14 +2384,21 @@ def display_lead_management(request):
     typeoflead_choices = [choice[0] for choice in lead_management._meta.get_field('typeoflead').choices if choice[0]]
     lead_types = sorted(set(typeoflead_choices))
     source_choices = [choice[0] for choice in lead_management._meta.get_field('sourceoflead').choices if choice[0]]
+    
     source_used = lead_management.objects.values_list('sourceoflead', flat=True).distinct()
     sources = sorted(set(source_choices + list(source_used)))
+
 
     branch_choices = [choice[0] for choice in lead_management._meta.get_field('branch').choices if choice[0]]
     branch_used = lead_management.objects.values_list('branch', flat=True).distinct()
     branches = sorted(set(branch_choices + list(branch_used)))
 
     salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
+
+    segments = lead_management.objects.exclude( customersegment__in=["NOT SELECTED", "", None] ).values_list('customersegment', flat=True).distinct()
+
+    
+
 
     # 10. No data message if needed
     no_data_message = ""
@@ -2372,11 +2424,13 @@ def display_lead_management(request):
         'sources': sources,
         'branches': branches,
         'salespersons': salespersons,
+        'segments':segments,
         'search_query': search_query,
         'current_sort': sort_by,
         'current_order': order,
         'no_data_message': no_data_message,
         'branch_count': branch_count,
+        'selected_segment': segment_filter,
     }
 
     return render(request, 'display_lead_management.html', context)
@@ -2469,23 +2523,22 @@ def delete_service_management(request, rid):
 
 # Delete Quotation
 
-def delete_quotation(request , rid):
+def delete_quotation(request, rid):
     if request.method == "POST":
         password = request.POST.get("password")
-        correct_password = "seva123"  # Replace with the actual password you want to use
+        correct_password = "seva123"  # Ideally, move to settings or env variable for security
 
         if password == correct_password:
             try:
-                m=quotation.objects.filter(id=rid)
-                m.delete()
-                messages.success(request, "Record deleted successfully.")
-            except quotation.DoesNotExist:
-                messages.error(request, "Record not found.")
+                quotation_obj = get_object_or_404(quotation_management, id=rid)
+                quotation_obj.delete()
+                messages.success(request, "Quotation deleted successfully.")
+            except Exception as e:
+                messages.error(request, f"An error occurred: {e}")
         else:
             messages.error(request, "Invalid password. Deletion failed.")
-
+    
     return redirect('/display_quotation')
-
 # Delete Invoice
 
 def delete_invoice(request , rid):
@@ -3098,16 +3151,28 @@ def inventory_summary(request):
     return render(request, 'inventory_summary.html', context)
 
 
-
 def add_product(request):
+    from_quotation = request.GET.get('from_quotation') == 'true'
+
     if request.method == 'POST':
         form = AddProductForm(request.POST)
         if form.is_valid():
             form.save()
-            return render(request, 'add_product_success.html')
+
+            if from_quotation:
+                # Redirect back to quotation form (retain user input via session or back button)
+                return redirect(reverse('create_quotation'))
+            else:
+                return render(request, 'add_product_success.html')
     else:
         form = AddProductForm()
-    return render(request, 'add_product.html', {'form': form})
+
+    # Render either as a modal or full page based on access
+    return render(request, 'add_product.html', {
+        'form': form,
+        'from_quotation': from_quotation
+    })
+
 
 def update_product(request):
     if request.method == 'POST':
@@ -3327,26 +3392,6 @@ def technician_dashboard(request):
     except TechnicianProfile.DoesNotExist:
         technician_profile = None
 
-    # Filter works completed in the past month
-    # one_month_ago = now() - timedelta(days=30)
-    # works_done_last_month = WorkAllocation.objects.filter(
-    #     technician=technician_profile,
-    #     allocated_datetime__gte=one_month_ago,
-    #     status='Completed'
-    # )
-
-    # # Prepare data for the chart
-    # work_dates = [work.allocated_datetime.strftime('%Y-%m-%d') for work in works_done_last_month]
-    # date_counts = {date: work_dates.count(date) for date in set(work_dates)}
-
-    # chart_data = {
-    #     'labels': list(date_counts.keys()),
-    #     'data': list(date_counts.values())
-    # }
-
-    # chart_data_json = json.dumps(chart_data)
-
-    # Update statuses and create TechWorkList entries
 
     techworklistobj = TechWorkList.objects.all()
     for i in techworklistobj:
@@ -4593,6 +4638,13 @@ def tax_invoice_pdf(request, id):
         response['Content-Disposition'] = f'inline; filename="TaxInvoice_{invoice.id}.pdf"'
 
     return response
+
+
+def delete_invoice(request, invoice_id):
+    invoice = get_object_or_404(TaxInvoice, id = invoice_id)
+    invoice.delete()
+    return redirect('/display_tax_invoice')
+
 
 
 import csv

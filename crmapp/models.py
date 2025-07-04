@@ -76,9 +76,7 @@ from django.utils import timezone
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
     product_name = models.CharField(max_length=255)
-    # price = models.DecimalField(max_digits=10, decimal_places=2)
-    # quantity = models.PositiveIntegerField()
-   
+
     CATEGORY_CHOICES = [
         ('Pest Control', 'Pest Control'),
         ('Fumigation', 'Fumigation'),
@@ -282,6 +280,14 @@ class lead_management(models.Model):
         ('Loss of Order', 'Loss of Order'),
     ]
 
+    SEGMENTS_CHOICES = [
+        ('Residential', 'Residential'),
+        ('Industrial', 'Industrial'),
+        ('Commercial', 'Commercial'),
+        ('Institutional', 'Institutional'),
+        ('Irrelevant Leads', 'Irrelevant Leads')
+    ]
+
     state = models.CharField(max_length=100, choices=STATE_CHOICES, default="Maharashtra")
     branch = models.CharField(max_length=20, choices=BRANCH_CHOICES, default='NA')
     sourceoflead = models.CharField(max_length=200, choices=[
@@ -296,13 +302,7 @@ class lead_management(models.Model):
     ], default="NOT SELECTED")
     salesperson = models.CharField(max_length=100)
     customername = models.CharField(max_length=100, null=True, blank=True)
-    customersegment = models.CharField(max_length=100, choices=[
-        ('Residential', 'Residential'),
-        ('Industrial', 'Industrial'),
-        ('Commercial', 'Commercial'),
-        ('Institutional', 'Institutional'),
-        ('Irrelevant Leads', 'Irrelevant Leads')
-    ], default="NOT SELECTED")
+    customersegment = models.CharField(max_length=100, choices=SEGMENTS_CHOICES)
     enquirydate = models.DateField(default=timezone.now)
     contactedby = models.CharField(max_length=100, null=True, blank=True)
     maincategory = models.CharField(max_length=200, null=True, blank=True)
