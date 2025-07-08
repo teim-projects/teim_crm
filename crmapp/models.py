@@ -282,8 +282,7 @@ class lead_management(models.Model):
 
     SEGMENTS_CHOICES = [
         ('Residential', 'Residential'),
-        ('Industrial', 'Industrial'),
-        ('Commercial', 'Commercial'),
+        ('Industrial / Commercial', 'Industrial / Commercial'),
         ('Institutional', 'Institutional'),
         ('Irrelevant Leads', 'Irrelevant Leads')
     ]

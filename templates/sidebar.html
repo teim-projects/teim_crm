@@ -900,6 +900,7 @@
         .form-step.active {
             display: block;
         }
+        
     </style>
 </head>
 
@@ -987,7 +988,8 @@
                         </a>
                         <a href="/display_tax_invoice">
                             <li data-link="/display_tax_invoice">5. Invoice</li>
-                        </a>
+                        </a> 
+                        
                         <a href="/payment-records/list/">
                             <li data-link="/payment-record/list/">6. Payment Records</li>
                         </a>
@@ -1016,9 +1018,7 @@
                         <a href="/create_quotation">
                             <li data-link="/quotation_create">4. Quotation</li>
                         </a>
-                        <a href="/tax-invoice/create">
-                            <li data-link="/tax-invoice/create">5. Invoice</li>
-                        </a>
+                        <li onclick="openInvoicePopup()" style="cursor: pointer;">5. Invoice</li>
                         <a href="/payment-records/create">
                             <li data-link="/tax-invoice/create">6. Payment Records</li>
                         </a>
@@ -1169,6 +1169,19 @@
             Meeting successfully scheduled!
         </div>
 
+        <!-- Invoice Popup Modal -->
+         <center>
+             <div id="invoicePopup" class="modal" style="display: none;">
+                 <div class="modal-content shadow p-4 rounded" style="width: 400px; margin: 10% auto; background: white; border: 1px solid #ccc;">
+                     <span class="close" onclick="closeInvoicePopup()" style="float:right; font-size: 20px; cursor: pointer;">&times;</span>
+                     <h5 class="text-center mb-4">Choose Invoice Type</h5>
+                     <div class="d-grid gap-2">
+                         <button onclick="location.href='/tax-invoice/create?use_quotation=true'" class="btn btn-primary mb-2">Invoice with Quotation</button>
+                         <button onclick="location.href='/tax-invoice/create'" class="btn btn-secondary">New Invoice</button>
+                        </div>
+                    </div>
+                </div>        
+        </center>
         <center>
             <button class="mb-5 mt-3 logoutbtn">
                 <a href="/logout">Logout</a>
@@ -1177,6 +1190,19 @@
                 </div>
             </button>
         </center>
+
+        <!-- Invoice Popup Modal -->
+        <div id="invoicePopup" class="modal" style="display: none;">
+            <div class="modal-content shadow p-4 rounded" style="width: 400px; margin: 10% auto; background: white; border: 1px solid #ccc;">
+                <span class="close" onclick="closeInvoicePopup()" style="float:right; font-size: 20px; cursor: pointer;">&times;</span>
+                <h5 class="text-center mb-4">Choose Invoice Type</h5>
+                <div class="d-grid gap-2">
+                    <button onclick="location.href='/tax-invoice/create?use_quotation=true'" class="btn btn-primary mb-2">Invoice with Quotation</button>
+                    <button onclick="location.href='/tax-invoice/create'" class="btn btn-secondary">New Invoice</button>
+                </div>
+            </div>
+        </div>
+
 
         <script>
             // Highlight current page link
@@ -1209,6 +1235,24 @@
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
    
+    <!-- Sidebar popup -->
+    <script>
+        function openInvoicePopup() {
+            document.getElementById("invoicePopup").style.display = "block";
+        }
+
+        function closeInvoicePopup() {
+            document.getElementById("invoicePopup").style.display = "none";
+        }
+
+        // Close modal when clicking outside the modal content
+        window.onclick = function(event) {
+            const modal = document.getElementById("invoicePopup");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 
 
 

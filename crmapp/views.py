@@ -2385,8 +2385,9 @@ def display_lead_management(request):
     lead_types = sorted(set(typeoflead_choices))
     source_choices = [choice[0] for choice in lead_management._meta.get_field('sourceoflead').choices if choice[0]]
     
-    source_used = lead_management.objects.values_list('sourceoflead', flat=True).distinct()
-    sources = sorted(set(source_choices + list(source_used)))
+    # source_used = lead_management.objects.values_list('sourceoflead', flat=True).distinct()
+    # sources = sorted(set(source_choices + list(source_used)))
+    sources = sorted(set(source_choices))
 
 
     branch_choices = [choice[0] for choice in lead_management._meta.get_field('branch').choices if choice[0]]
@@ -2395,7 +2396,9 @@ def display_lead_management(request):
 
     salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
 
-    segments = lead_management.objects.exclude( customersegment__in=["NOT SELECTED", "", None] ).values_list('customersegment', flat=True).distinct()
+    # segments = lead_management.objects.exclude( customersegment__in=["NOT SELECTED", "", None] ).values_list('customersegment', flat=True).distinct()
+    segments = [ choice[0] for choice in lead_management._meta.get_field('customersegment').choices if choice[0] != "NOT SELECTED" ]
+
 
     
 
@@ -4473,6 +4476,7 @@ from datetime import datetime
 
 
 def create_tax_invoice(request):
+    use_quotation = request.GET.get("use_quotation") == "true"
     if request.method == "POST":
         try:
             # 1. Get quotation and related data
@@ -4545,7 +4549,12 @@ def create_tax_invoice(request):
             return JsonResponse({'error': str(e)}, status=400)
 
     banks = BankAccounts.objects.all()
-    return render(request, "create_tax_invoice.html", {'banks': banks})
+    branches = Branch.objects.all()
+    selected_state = request.POST.get('soldtopartystate', '')
+    context = {'banks': banks , 'use_quotation':use_quotation,
+               'branches':branches , 'state_map':state_map,
+               'selected_state':selected_state} 
+    return render(request, "create_tax_invoice.html", context)
 
 def parse_date_or_none(date_str):
     """Utility to parse date from string or return None."""
