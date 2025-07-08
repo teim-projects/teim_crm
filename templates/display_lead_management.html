@@ -484,6 +484,31 @@
             margin: 10px !important;
 
         }
+
+         .input-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .input-wrapper input {
+        padding-right: 2.5rem; /* space for the clear button */
+    }
+
+    .input-wrapper .clear-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+
+    .input-wrapper .clear-btn:focus {
+        outline: none;
+    }
     </style>
 </head>
 
@@ -503,31 +528,26 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="row">
-                                            <div class="col-md-6 mt-3">
-                                                <input class="ml-2 form-control mt-3" type="text" name="type_of_lead"
-                                                    value="{{ search_query }}" list="phone_suggestions"
-                                                    placeholder="Search by Lead Type/Phone no.">
-
-                                                <datalist id="phone_suggestions">
-                                                    {% for phone in phone_numbers %}
-                                                    <option value="{{ phone }}">
-                                                        {% endfor %}
-                                                </datalist>
-                                            </div>
-                                            <div class="col-md-6  mt-4">
-                                                <div class="row">
-                                                    <div class="col-md-6 col-6">
-                                                        <button type="submit"
-                                                            class="buttonback3 buttonback2">🔍&nbsp;Search</button>
-                                                    </div>
-                                                    <div class="col-md-6 col-6">
-
-                                                    </div>
-                                                </div>
-
-
+                                        <div class="col-md-6 mt-3">
+                                            <div class="input-wrapper">
+                                                <input class="form-control mt-3" type="text" name="search" id="searchInput"
+                                                       value="{{ search_query }}" placeholder="Search by Lead Type / Phone No.">
+                                                {% if search_query %}
+                                                <button type="button" class="clear-btn" onclick="clearSearch()">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </button>
+                                                {% endif %}
                                             </div>
                                         </div>
+                                        <div class="col-md-6 mt-4">
+                                            <div class="row">
+                                                <div class="col-md-6 col-6">
+                                                    <button type="submit" class="buttonback3 buttonback2">🔍&nbsp;Search</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
 
 
                                     </div>
@@ -963,6 +983,14 @@
         }
 
     </script>
+    <script>
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            input.form.submit();  
+        }
+    </script>
+
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:400px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">

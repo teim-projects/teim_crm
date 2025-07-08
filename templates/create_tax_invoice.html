@@ -242,6 +242,7 @@
             </form>
             
         </div>
+
     {% else %}
         <div class="container " style="margin-top: 100px;">
             <form method="POST">
@@ -299,61 +300,69 @@
                     </div>
                 </div>
 
-                <!-- Customer Info (Read-only) -->
-                <div class="">
-                    <h5 class=" text-center text-body-secondary">Customer Details</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label>Customer Name <span class="star">*</span></label>
-                            <input type="text" id="customer_name" class="form-control" value="" >
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label>Contact <span class="star">*</span></label>
-                            <input type="text" id="primary_contact" class="form-control">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label>Email <span class="star">*</span></label>
-                            <input type="email" id="primary_email" class="form-control" >
-                        </div>
+                <h5 class=" text-center text-body-secondary">Customer Details</h5>
+
+               <!-- Hidden field to store customer ID -->
+                <input type="hidden" id="customer_id" name="customer_id">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Customer Name <span class="star">*</span></label>
+                        <input type="text" id="customer_name" name="customer_full_name" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Contact <span class="star">*</span></label>
+                        <input type="text" id="primary_contact" name="contact_no" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Email <span class="star">*</span></label>
+                        <input type="email" id="primary_email" name="customer_email" class="form-control">
                     </div>
                 </div>
 
-                <div class="row">
+               <div class="row">
                     <!-- Sold To Party -->
-                    <div class="col-md-6 mb-3">
-                        <label for="sold_address">Sold To Party Address <span class="star">*</span></label>
-                        <textarea id="sold_address" class="form-control" rows="2" ></textarea>
-
-                        <label>GSTIN/UIN <span class="star">*</span></label>
-                        <input type="text" id="gstin-uin" name='sold_gstin_uin' class="form-control">
-
-                        <label for="sold_state_select">Sold To Party State  & Code <span class="star">*</span></label>
-                        <select id="sold_state_select" name="soldtopartystate" class="form-control">
-                            <option value="">Select State</option>
-                            {% for state, data in state_map.items %}
-                                <option  value="{{ state }}-{{ data.code }}" data-code="{{ data.code }}">{{ state }} - {{ data.code }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        
-
+                    <div class="col-md-6">
+                        <h6 class="mb-2 text-body-secondary text-center">Sold To Party</h6>
+                        <div class="mb-3">
+                            <label for="sold_address">Address <span class="star">*</span></label>
+                            <textarea id="sold_address" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sold_gstin">GSTIN/UIN <span class="star">*</span></label>
+                            <input type="text" id="sold_gstin" name='sold_gstin_uin' class="form-control ">
+                        </div>
+                        <div class="mb-3">
+                            <label for="sold_state_select">State & Code <span class="star">*</span></label>
+                            <select id="sold_state_select" class="form-control" name="soldtopartystate">
+                                <option value="">Select State</option>
+                                {% for state, data in state_map.items %}
+                                    <option value="{{ state }}-{{ data.code }}">{{ state }} - {{ data.code }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
-
-                    <!-- Shift To Party -->
-                    <div class="col-md-6 mb-3">
-                        <label for="ship_address">Ship To Party Address <span class="star">*</span></label>
-                        <textarea id="ship_address" class="form-control" rows="2" readonly></textarea>
-
-                        <label>GSTIN/UIN <span class="star">*</span></label>
-                        <input type="text" id="gstin-uin" name='shift_gstin_uin' class="form-control">
-
-                        <label for="shift_state_select">Shift To Party State & Code <span class="star">*</span></label>
-                        <select  name="shifttopartystate" class="form-control">
-                            <option value="">Select State</option>
-                            {% for state, data in state_map.items %}
-                                <option value="{{ state }}-{{ data.code }}" data-code="{{ data.code }}">{{ state }} - {{ data.code }}</option>
-                            {% endfor %}
-                        </select>
+                
+                    <!-- Ship To Party -->
+                    <div class="col-md-6">
+                        <h6 class="mb-2 text-body-secondary text-center">Ship To Party</h6>
+                        <div class="mb-3">
+                            <label for="ship_address">Address <span class="star">*</span></label>
+                            <textarea id="ship_address" class="form-control" rows="2" readonly></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ship_gstin">GSTIN/UIN <span class="star">*</span></label>
+                            <input type="text" id="ship_gstin" class="form-control"  name='shift_gstin_uin'>
+                        </div>
+                        <div class="mb-3">
+                            <label for="shift_state_select">State & Code <span class="star">*</span></label>
+                            <select id="shift_state_select" class="form-control" name="shifttopartystate">
+                                <option value="">Select State</option>
+                                {% for state, data in state_map.items %}
+                                    <option value="{{ state }}-{{ data.code }}">{{ state }} - {{ data.code }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -479,12 +488,18 @@
     {% endif %}
 
 
-    <script>
+       <script>
         document.addEventListener('DOMContentLoaded', function () {
             const customerIdField = document.getElementById("customer_id");
-            const contactInput = document.querySelector('input[name="contact_no"]');
-            const emailField = document.querySelector('input[name="customer_email"]');
-            const nameField = document.querySelector('input[name="customer_full_name"]');
+            const contactInput = document.getElementById("primary_contact");
+            const emailField = document.getElementById("primary_email");
+            const nameField = document.getElementById("customer_name");
+            const soldAddressField = document.getElementById("sold_address");
+            const soldStateSelect = document.getElementById("sold_state_select");
+            
+
+            const shipAddressField = document.getElementById("ship_address");
+            const shiftStateSelect = document.getElementById("shift_state_select");
             
 
             contactInput.addEventListener('blur', function () {
@@ -504,11 +519,8 @@
                             return;
                         }
 
-                        if (data.customer_id) {
-                            customerIdField.value = data.customer_id;
-                        }
+                        customerIdField.value = data.customer_id || '';
 
-                        // Only update fields that are empty
                         if (!emailField.value && data.customer_email) {
                             emailField.value = data.customer_email;
                         }
@@ -516,18 +528,27 @@
                         if (!nameField.value && data.customer_full_name) {
                             nameField.value = data.customer_full_name;
                         }
-                        console.log(data.pincode)
-                        if (!addressField.value && data.soldtopartyaddress) {
-                            const pincode = data.sold_pincode;
-                            const fullAddress = `${data.soldtopartyaddress}, ${data.sold_city} - ${pincode}`;
-                            addressField.value = fullAddress;
-                            // Visual indicator
-                            addressField.style.borderLeft = "4px solid #03AED2";
-                            addressField.title = "Auto-filled from customer records";
+
+                        if (!soldAddressField.value && data.soldtopartyaddress) {
+                            soldAddressField.value = `${data.soldtopartyaddress}, ${data.sold_city} - ${data.sold_pincode}`;
+                            soldAddressField.style.borderLeft = "4px solid #03AED2";
+                            soldAddressField.title = "Auto-filled from customer records";
                             setTimeout(() => {
-                                addressField.style.borderLeft = "";
-                                addressField.title = "";
-                            }, 5000);
+                                soldAddressField.style.borderLeft = "";
+                                soldAddressField.title = "";
+                            }, 4000);
+                        }
+
+                        if (data.sold_state) {
+                            soldStateSelect.value = data.sold_state;
+                        }
+
+                        if (!shipAddressField.value && data.shifttopartyaddress) {
+                            shipAddressField.value = `${data.shifttopartyaddress}, ${data.city} - ${data.pincode}`;
+                        }
+
+                        if (data.state) {
+                            shiftStateSelect.value = data.state;
                         }
                     })
                     .catch(error => {

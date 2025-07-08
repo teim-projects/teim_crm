@@ -232,6 +232,7 @@
                     <th>Product / Service</th>
                     <th>Rate (Rs)</th>
                     <th>Qty</th>
+                    <th>Unit</th>
                     <!-- <th>GST (%)</th> -->
                     <th>Total (Rs)</th>
                 </tr>
@@ -244,6 +245,7 @@
                         {{ item.description }}</td>
                     <td>{{ item.price }}</td>
                     <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit }}</td>
                     <!-- <td>{{ item.gst }}</td> -->
                     <td>{{ item.total }}</td>
                 </tr>
@@ -303,8 +305,6 @@
                 {% endfor %}
                 {% for term in custom_terms_list %}
                 <li>{{ term }}</li>
-                {% empty %}
-                <li>No custom terms provided.</li>
                 {% endfor %}
             </ol>
             {% if quotation.apply_gst %}

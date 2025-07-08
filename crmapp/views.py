@@ -1030,7 +1030,8 @@ def quotation_management_create(request):
             request.session.pop('quotation_form_data', None)
             request.session.modified = True
 
-            return redirect('/display_quotation')
+            return redirect(f'/generate_quotation/quotation/pdf/{quotation.id}/view')
+
 
         except Exception as e:
             print(f"Error saving quotation: {e}")
@@ -1054,6 +1055,8 @@ def quotation_management_create(request):
         'form_data': form_data,
 })
     
+
+
 from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
@@ -2317,7 +2320,7 @@ def display_lead_management(request):
     filtered_leads = lead_management.objects.all()
 
     # 2. Get filters from request
-    search_query = request.GET.get('search', '').strip()
+    search_query = request.GET.get('search','').strip()
     typeoflead_filter = request.GET.get('typeoflead')
     source_filter = request.GET.get('sourceoflead')
     salesperson_filter = request.GET.get('salesperson')
@@ -4331,7 +4334,8 @@ def get_customer_details(request):
                 'soldtopartyaddress': customer.soldtopartyaddress,
                 'sold_city': customer.soldtopartycity,
                 'sold_state': customer.soldtopartystate,
-                'sold_pincode':customer.soldtopartypostal
+                'sold_pincode':customer.soldtopartypostal,
+              
                 
             }
             return JsonResponse(data)
