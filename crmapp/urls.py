@@ -138,8 +138,9 @@ urlpatterns = [
     path('display_reschedule/',views.display_reschedule, name='display_reschedule') ,
     path('branches/create/', views.create_branch, name='create_branch'),
     path('branches/', views.branch_list, name='branch_list'),
-    path('generate_quotation/quotation/pdf/<int:id>/download', views.generate_quotation_pdf_download, name='download_quotation_pdf'),
-    path('generate_quotation/quotation/pdf/<int:id>/view', views.generate_quotation_pdf_view, name='view_quotation_pdf'),
+    # path('generate_quotation/quotation/pdf/<int:id>/download', views.generate_quotation_pdf_download, name='download_quotation_pdf'),
+     path('quotation/pdf/<int:id>/', views.reportlab_quotation_pdf, name='quotation_pdf'),
+    path('generate_quotation/quotation/pdf/<int:id>/view',views.reportlab_quotation_pdf, name='view_quotation_pdf'),
     path('get_branch_details/<int:branch_id>/', views.get_branch_details, name='get_branch_details'),
 
 
@@ -167,6 +168,9 @@ urlpatterns = [
     path('payment-records/list/',views.payment_records_list, name="payment_record_lists"),
     path('payment-records/details/<int:pk>',views.payment_records_details, name="payment_records_details"),
     path('fetch_invoice_product_details/<int:id>/', views.fetch_tax_invoice_details, name='fetch_invoice_product_details'),
+
+    path('quotation/pdf/<int:id>/', views.reportlab_quotation_pdf, name='quotation_pdf'),
+   
 
 ]
 

@@ -116,7 +116,7 @@
             background-color: #cbcaca;
         }
 
-        /* Button Styling */
+        Button Styling
         .btn-like {
             display: inline-block;
             padding: 0.5rem 1rem;
@@ -487,17 +487,19 @@
                                 <thead>
                                     <tr>
                                         <th>Sr.No</th>
+                                        <th>Actions</th>
+                                        <!-- <th>Quotation <br> History</th> -->
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
-                                                href="?sort_by=customerid&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                                                Customer ID
-                                                {% if current_order == 'asc' %}
-                                                ▲
-                                                {% else %}
-                                                ▼
-                                                {% endif %}
-                                            </a>
-                                        </th>
+                                            href="?sort_by=customerid&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
+                                            Customer ID
+                                            {% if current_order == 'asc' %}
+                                            ▲
+                                            {% else %}
+                                            ▼
+                                            {% endif %}
+                                        </a>
+                                    </th>
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
                                                 href="?sort_by=fullname&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
@@ -511,15 +513,29 @@
                                         </th>
                                         <th>Email</th>
                                         <th>Contact No.</th>
-                                        <th>Edit</th>
-                                        <th>Delete</th>
-                                        <th>Quotation History</th>
+                                        <!-- <th>Edit</th>
+                                        <th>Delete</th> -->
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for x in page_obj %}
                                     <tr>
                                         <td>{{ forloop.counter|add:start_index }}</td>
+                                       <td>
+                                            <a href="/edit_customer/{{ x.id }}" class="btn btn-outline-success" role="button">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </a>
+
+                                            <a href="/delete_customer/{{ x.id }}" class="btn btn-outline-danger delete-link" role="button" >
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+
+                                            <a href="/quotation_history/{{ x.id }}/" id="linarbtn" class="btn linarbtn "
+                                                role="button"
+                                                style=" background: linear-gradient(to right, #2575fc, #6a11cb); color:white;  border-radius:20px;"><i class="fa-solid fa-clock-rotate-left"></i></a>
+                                        </td>
+                                        <!-- <td></td> -->
+
                                         <td>
                                             {{ x.customerid }}
                                             <div class="dropdown">
@@ -533,14 +549,8 @@
                                         <td>{{ x.fullname }}</td>
                                         <td>{{ x.primaryemail }}</td>
                                         <td>{{ x.primarycontact }}</td>
-                                        <td><a href="/edit_customer/{{ x.id }}" class="btn btn-outline-success"
-                                                style="width: 100px;" role="button">Edit</a></td>
-                                        <td><a href="/delete_customer/{{ x.id }}"
-                                                class="btn btn-outline-danger delete-link" role="button">Delete</a></td>
-                                        <td><a href="/quotation_history/{{ x.id }}/" id="linarbtn" class="btn linarbtn "
-                                                role="button"
-                                                style=" background: linear-gradient(to right, #2575fc, #6a11cb); color:white;  border-radius:20px;">Quotation
-                                                History</a></td>
+                                        
+                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>

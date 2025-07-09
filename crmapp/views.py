@@ -1186,69 +1186,69 @@ from xhtml2pdf import pisa
 import json
 import os
 
-def generate_quotation_pdf_view(request, id):
-    quotation = quotation_management.objects.get(id=id)
+# def generate_quotation_pdf_view(request, id):
+#     quotation = quotation_management.objects.get(id=id)
 
-    # Safely parse the product_details_json
-    product_data = quotation.product_details_json
-    if isinstance(product_data, str):
-        try:
-            product_data = json.loads(product_data)
-        except json.JSONDecodeError:
-            product_data = []
+#     # Safely parse the product_details_json
+#     product_data = quotation.product_details_json
+#     if isinstance(product_data, str):
+#         try:
+#             product_data = json.loads(product_data)
+#         except json.JSONDecodeError:
+#             product_data = []
 
-    # Add total for each product (price × quantity)
-    total_gst_value = 0
-    gst_count = 0
+#     # Add total for each product (price × quantity)
+#     total_gst_value = 0
+#     gst_count = 0
 
-    for product in product_data:
-        try:
-            product['total'] = round(float(product['price']) * float(product['quantity']), 2)
-        except (KeyError, ValueError, TypeError):
-            product['total'] = 0.0
+#     for product in product_data:
+#         try:
+#             product['total'] = round(float(product['price']) * float(product['quantity']), 2)
+#         except (KeyError, ValueError, TypeError):
+#             product['total'] = 0.0
 
-        # Sum GST values
-        try:
-            gst_value = float(product.get('gst', 0))
-            total_gst_value += gst_value
-            gst_count += 1
-        except (ValueError, TypeError):
-            continue
+#         # Sum GST values
+#         try:
+#             gst_value = float(product.get('gst', 0))
+#             total_gst_value += gst_value
+#             gst_count += 1
+#         except (ValueError, TypeError):
+#             continue
 
-    # Calculate average GST
-    average_gst = round(total_gst_value / gst_count, 2) if gst_count else 0.0
+#     # Calculate average GST
+#     average_gst = round(total_gst_value / gst_count, 2) if gst_count else 0.0
 
-    # Inject updated data
-    quotation.product_details_json = product_data
-    amount_in_words = price_in_words(quotation.total_price_with_gst)
+#     # Inject updated data
+#     quotation.product_details_json = product_data
+#     amount_in_words = price_in_words(quotation.total_price_with_gst)
 
-    # Paths for logo and footer
-    template_path = 'pdf_template.html'  
-    logo_path = request.build_absolute_uri(static('images/Logo.png'))
-    fottor_path = request.build_absolute_uri(static('images/qutation_fottor_pdf.jpg'))
+#     # Paths for logo and footer
+#     template_path = 'pdf_template.html'  
+#     logo_path = request.build_absolute_uri(static('images/Logo.png'))
+#     fottor_path = request.build_absolute_uri(static('images/qutation_fottor_pdf.jpg'))
 
-    custom_terms_str = quotation.custom_terms or ''
-    custom_terms_list = [term.strip() for term in custom_terms_str.split(',') if term.strip()]
+#     custom_terms_str = quotation.custom_terms or ''
+#     custom_terms_list = [term.strip() for term in custom_terms_str.split(',') if term.strip()]
 
-    context = {
-        'quotation': quotation,
-        'product_details': product_data,
-        'amount_in_words': amount_in_words,
-        'logo_path': logo_path,
-        'fottor_path': fottor_path,
-        'average_gst': average_gst  ,
-        'custom_terms_list': custom_terms_list,
-    }
+#     context = {
+#         'quotation': quotation,
+#         'product_details': product_data,
+#         'amount_in_words': amount_in_words,
+#         'logo_path': logo_path,
+#         'fottor_path': fottor_path,
+#         'average_gst': average_gst  ,
+#         'custom_terms_list': custom_terms_list,
+#     }
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="quotation.pdf"'
-    template = get_template(template_path)
-    html = template.render(context)
-    pisa_status = pisa.CreatePDF(html, dest=response)
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = 'inline; filename="quotation.pdf"'
+#     template = get_template(template_path)
+#     html = template.render(context)
+#     pisa_status = pisa.CreatePDF(html, dest=response)
 
-    if pisa_status.err:
-        return HttpResponse('Error generating PDF', status=500)
-    return response
+#     if pisa_status.err:
+#         return HttpResponse('Error generating PDF', status=500)
+#     return response
 
 
 
@@ -4875,3 +4875,284 @@ def payment_records_details(request , pk):
         "remain_amount":remain_amount,
     }
     return render(request, "payment_records_details.html", context)
+
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame, Paragraph, Spacer, Table, TableStyle, KeepTogether
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
+from django.templatetags.static import static
+from django.http import HttpResponse
+import io
+from .models import quotation_management
+from .custom_filters import price_in_words  
+from reportlab.lib.colors import HexColor   
+
+ 
+
+def draw_footer_and_logo(canvas, doc, logo_path, footer_path,branch):
+    # --- HEADER ---
+    try:
+        # Logo (left side)
+        logo = ImageReader(logo_path)
+        canvas.drawImage(logo, 20 * mm, A4[1] - 40 * mm, width=25 * mm, height=25 * mm, mask='auto')
+    except Exception as e:
+        print("Logo load failed:", e)
+
+    # Company info (right side, top-aligned)
+    canvas.setFont("Helvetica-Bold", 10)
+    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 20 * mm, branch.branch_name or "" )
+
+    canvas.setFont("Helvetica", 8.5)
+    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 26 * mm, branch.full_address or "")
+    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 32 * mm, f"{branch.email_1}, {branch.email_2}")
+    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 38 * mm,branch.contact_1 or "")
+    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 44 * mm,  f"GSTIN: {branch.gst_number} | PAN No: {branch.pan_number}")
+
+      # --- Horizontal Line (HR) ---
+    canvas.setLineWidth(0.8)
+    canvas.setStrokeColorRGB(0, 0, 0)
+    canvas.line(20 * mm, A4[1] - 48 * mm, A4[0] - 20 * mm, A4[1] - 48 * mm)
+    
+    # --- FOOTER ---
+    try:
+        footer = ImageReader(footer_path)
+        canvas.drawImage(footer, 0, 0, width=A4[0], height=28 * mm)
+    except Exception as e:
+        print("Footer load failed:", e)
+
+
+def reportlab_quotation_pdf(request, id):
+    quotation = quotation_management.objects.get(id=id)
+    branch = quotation.branch
+    logo_path = request.build_absolute_uri(static('images/Logo.png'))
+    footer_path = request.build_absolute_uri(static('images/qutation_fottor_pdf.jpg'))
+    light_blue = HexColor("#0070C0")
+    buffer = io.BytesIO()
+    doc = BaseDocTemplate(buffer, pagesize=A4,
+                          leftMargin=20 * mm, rightMargin=20 * mm,
+                          topMargin=50 * mm, bottomMargin=35 * mm)
+
+    doc.quotation_no = quotation.quotation_no
+    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
+
+    def _header_footer(canvas, doc_obj):
+        draw_footer_and_logo(canvas, doc_obj, logo_path, footer_path,branch)
+
+    doc.addPageTemplates([PageTemplate(id='quotation_template', frames=frame, onPage=_header_footer)])
+
+    styles = getSampleStyleSheet()
+    normal = styles['Normal']
+    bold = ParagraphStyle(name='bold', parent=normal, fontName='Helvetica-Bold')
+    small = ParagraphStyle(name='small', parent=normal, fontSize=9)
+    full_width = ParagraphStyle(name='full_width', parent=normal, leftIndent=0, firstLineIndent=0,
+                                rightIndent=0, spaceBefore=0, spaceAfter=0, fontSize=10, leading=12)
+
+    elements = []
+
+    # --- Customer + Quotation Details ---
+    left_style = ParagraphStyle(name='left', fontSize=9, leading=12)
+    right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=12)
+
+    customer_details = [
+        Paragraph(f"<b>Name :</b> {quotation.customer_full_name}", left_style),
+        Paragraph(f"<b>Phone :</b> {quotation.contact_no}", left_style),
+        Paragraph(f"<b>Email :</b> {quotation.customer_email}", left_style),
+        Paragraph(f"<b>Address :</b> {quotation.address}", left_style)
+    ]
+    left_table = Table([[item] for item in customer_details], colWidths=[95 * mm])
+    left_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('LINEBEFORE', (0, 0), (0, -1), 3, light_blue),
+    ]))
+
+    quotation_details = [
+        Paragraph("<b>Quotation</b>", ParagraphStyle(name='title', fontSize=14, alignment=2, leading=16)),
+        Paragraph(f"<b>{quotation.quotation_no}</b>", ParagraphStyle(name="temp_right_bold", parent=right_style, fontSize=12, fontName='Helvetica-Bold')),
+        Paragraph(f"<b>Date:</b> {quotation.quotation_date.strftime('%d %B %Y')}", right_style)
+    ]
+    right_table = Table([[item] for item in quotation_details], colWidths=[85 * mm])
+
+    combined_table = Table([[left_table, right_table]], colWidths=[95 * mm, 85 * mm])
+    combined_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 2),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 2),
+    ]))
+    elements.append(combined_table)
+    elements.append(Spacer(1, 10))
+
+    # --- Subject and Intro ---
+    elements.append(Paragraph(f"<b>Subject:</b> {quotation.subject}", full_width))
+    elements.append(Spacer(1, 5))
+    elements.append(Paragraph(
+        "<b>We Thank You for your enquiry for Commodity Fumigation with ALP and we are pleased to give the quotation accordingly as below:</b>",
+        full_width))
+    elements.append(Spacer(1, 10))
+
+    # --- Product Table ---
+    product_data = [["Sr. No.", "Product / Service", "Rate", "Qty", "Total"]]
+    for idx, item in enumerate(quotation.product_details_json, start=1):
+        try:
+            price = float(item['price'])
+            quantity = float(item['quantity'])
+            total = price * quantity
+        except (ValueError, KeyError, TypeError):
+            price = quantity = total = 0.0
+
+        product_data.append([
+            str(idx),
+            Paragraph(f"{item['name']}<br/><i>{item.get('description', '')}</i>", small),
+            f"{price:,.2f}",
+            f"{quantity:.0f} {item['unit']}",
+            f"{total:,.2f}"
+        ])
+
+    # Add empty rows if needed to maintain uniform height
+   
+    col_widths = [15 * mm, 80 * mm, 25 * mm, 20 * mm, 30 * mm]
+    total_width = sum(col_widths)
+
+    product_table = Table(product_data, colWidths=col_widths)
+    product_table.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D9D9D9')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+    ]))
+    elements.append(product_table)
+    # elements.append(Spacer(1, 8))
+
+    hr = Table([['']], colWidths=[total_width], rowHeights=16)
+    hr.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#D9D9D9')),
+        # ('HEIGHT', (0, 0), (-1, -1), 2),  # 4 points height (adjust if needed)
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
+
+    ]))
+    elements.append(hr)
+
+
+   
+     # -- Totals data (2 columns only) --
+    totals_data = []
+
+    totals_data.append(["Total:", f"{quotation.total_price:,.2f}"])
+
+    if quotation.apply_gst:
+        if quotation.igst:
+            totals_data.append(["IGST :", f"{quotation.igst:,.2f}"])
+        else:
+
+            totals_data.append(["CGST :", f"{quotation.cgst:,.2f}"])
+            totals_data.append(["SGST :", f"{quotation.sgst:,.2f}"])
+            totals_data.append(["Total Tax :", f"{quotation.gst_total:,.2f}"])
+
+   
+    totals_data.append([
+    Paragraph("<b>Grand Total:</b>", right_style),  
+    Paragraph(f"<b>{quotation.total_price_with_gst:,.2f}</b>", right_style)])
+
+    # --- Total in Words as last row, spanning both columns ---
+    amount_words = price_in_words(quotation.total_price_with_gst)
+    totals_data.append([Paragraph(f"<b>Total in Words:</b> {amount_words}", small), ""])
+
+    # --- Create totals table ---
+    totals_table = Table(totals_data, colWidths=[140 * mm, 30 * mm])
+    totals_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, -2), 'Helvetica'),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('SPAN', (0, -1), (1, -1)),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('GRID', (0, 0), (-1, -1), 0.3, colors.gray),
+    ]))
+
+    # --- Wrap in an outer table to right-align it ---
+    totals_wrapper = Table([[totals_table]], colWidths=[total_width])
+    totals_wrapper.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    elements.append(totals_wrapper)
+
+    # --- Terms & Footer ---
+   
+    # Title
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph("<b>Terms & Conditions</b>", bold))
+
+    # Combine all terms
+    all_terms = [t.description for t in quotation.terms_and_conditions.all()] + [
+        t.strip() for t in quotation.custom_terms.split(',') if t.strip()
+    ]
+
+    # Create paragraph list
+    terms_paragraphs = [[Paragraph(f"{idx}. {t}", small)] for idx, t in enumerate(all_terms, start=1)]
+
+    # Wrap inside table for styling
+    terms_table = Table(terms_paragraphs, colWidths=[doc.width])
+    terms_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LINEBEFORE', (0, 0), (0, -1), 3, light_blue),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+    ]))
+
+    elements.append(terms_table)
+
+    # GST Note (only when applicable)
+    if quotation.apply_gst:
+        elements.append(Spacer(1, 6))
+        elements.append(Paragraph(
+            "All above material and services will be attracted to GST extra as per product or service applicable.",
+            small
+        ))
+
+    # Thank You Block (always shown)
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(
+        "We thank you for the opportunity given to serve you & look forward to adding you to our family of customers.",
+        small
+    ))
+    elements.append(Spacer(1, 10))
+
+    elements.append(Paragraph("<b>Thanking You,</b>", small))
+    elements.append(Spacer(1, 4))
+    elements.append(Paragraph("<b>Seva Facility Services Pvt Ltd</b>", small))
+    elements.append(Spacer(1, 4))
+    elements.append(Paragraph(f"<b>Contact By:</b> {quotation.contact_by} - {quotation.contact_by_no}", small))
+
+
+    doc.build(elements)
+    buffer.seek(0)
+    
+    # Check for download param
+    download = request.GET.get("download", "false").lower() == "true"
+
+    response = HttpResponse(buffer, content_type='application/pdf')
+
+    if download:
+        response['Content-Disposition'] = f'attachment; filename="Quotation_{quotation.quotation_no}.pdf"'
+    else:
+        response['Content-Disposition'] = f'inline; filename="Quotation_{quotation.quotation_no}.pdf"'
+
+    return response
+
+

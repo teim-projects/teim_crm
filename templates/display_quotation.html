@@ -488,10 +488,10 @@
             <tr>
                 <td>{{ forloop.counter|add:start_index }}</td>
                 <td>
-                    <a href="/generate_quotation/quotation/pdf/{{ x.id }}/download"
+                    <a href="{% url 'view_quotation_pdf' x.id %}?download=true"
                        class="btn btn-sm btn-primary"><i class="fa-solid fa-download"></i></a>
                 
-                    <a href="/generate_quotation/quotation/pdf/{{ x.id }}/view"
+                    <a href="{% url 'view_quotation_pdf' x.id %}"
                        class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
                
                     <a href="{% url 'edit_quotation' x.id %}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>

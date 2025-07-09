@@ -410,7 +410,7 @@
                                             <td>
                                                 <form id="delete-form-{{ product.product_id }}" action="{% url 'delete_product' product.product_id %}" method="POST">
                                                     {% csrf_token %}
-                                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteModal('{{ product.product_id }}')">Delete</button>
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteModal('{{ product.product_id }}')"><i class="fa-solid fa-trash"></i></button>
                                                 </form>
                                             </td>
                                         </tr>

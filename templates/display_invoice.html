@@ -458,6 +458,7 @@
                                 <thead>
                                     <tr>
                                         <th>Sr.No</th>
+                                        <th  class="text-center">Actions</th>
 
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
@@ -478,40 +479,51 @@
                                         <th style="text-align: center;">Total Amount<br>(GST)</th>
                                         <th style="text-align: center;">Delivery<br> Date</th>
                                         <th style="text-align: center;">Dispatched<br> Doc No</th>
-                                        <th style="text-align: center;">Download<br>PDF</th>
-                                        <th style="text-align: center;">View<br>PDF</th>
+                                        <!-- <th style="text-align: center;">Download<br>PDF</th> -->
+                                        <!-- <th style="text-align: center;">View<br>PDF</th> -->
                                         <!-- <th>Edit</th> -->
-                                        <th>Delete</th>
+                                        <!-- <th>Delete</th> -->
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for x in page_obj %}
                                     <tr>
                                         <td>{{ forloop.counter|add:start_index }}</td>
+                                        <td>
+                                            <a href="{% url 'tax_invoice_pdf' x.id %}?download=true"
+                                               class="btn btn-sm btn-primary"><i class="fa-solid fa-download"></i></a>
+
+                                            <a href="{% url 'tax_invoice_pdf' x.id %}"
+                                               class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
+
+                                            <!-- <a href="{% url 'edit_quotation' x.id %}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a> -->
+
+                                            <a href="/delete_invoice/{{ x.id }}/" class="btn btn-sm btn-danger delete-link"><i class="fa-solid fa-trash"></i></a>
+                                        </td>
 
                                         <td>{{ x.customer.fullname }}</td>
                                         <td>{{ x.tax_invoice_no }}</td>
                                         <td style="text-align: right;">{{ x.grand_total }}</td>
                                         <td>{{ x.dated }}</td>
                                         <td>{{ x.dispatch_doc_no }}</td>
-                                        <td>
+                                        <!-- <td>
                                             <a href="{% url 'tax_invoice_pdf' x.id %}?download=true"
                                                 class="btn btn-sm btn-primary">Download PDF</a>
-                                        </td>
-
+                                        </td> -->
+<!-- 
                                         <td>
                                             <a href="{% url 'tax_invoice_pdf' x.id %}" class="btn btn-outline-secondary"
                                                 role="button" style="width: 100px;">View</a>
-                                        </td>
+                                        </td> -->
                                         <!-- <td>
                                             <a href="/edit_invoice/{{ x.id }}" class="btn btn-outline-success"
                                                 style="width: 100px;">Edit</a>
                                         </td> -->
-                                        <td>
+                                        <!-- <td>
                                             <a href="/delete_invoice/{{ x.id }}/"
                                                 class="btn btn-outline-danger delete-link"
                                                 style="width: 100px;">Delete</a>
-                                        </td>
+                                        </td> -->
                                     </tr>
                                     {% endfor %}
                                 </tbody>
