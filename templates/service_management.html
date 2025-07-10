@@ -387,46 +387,8 @@
 
 
                         <div class="col-md-12">
-                            <label for="state">Select State<span class="star">*</span></label>
-                            <select id="state" name="state" class="form-control" required>
-                                <option value="">Select State</option>
-                                <option value="Andhra Pradesh">Andhra Pradesh</option>
-                                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                                <option value="Assam">Assam</option>
-                                <option value="Bihar">Bihar</option>
-                                <option value="Chhattisgarh">Chhattisgarh</option>
-                                <option value="Goa">Goa</option>
-                                <option value="Gujarat">Gujarat</option>
-                                <option value="Haryana">Haryana</option>
-                                <option value="Himachal Pradesh">Himachal Pradesh</option>
-                                <option value="Jharkhand">Jharkhand</option>
-                                <option value="Karnataka">Karnataka</option>
-                                <option value="Kerala">Kerala</option>
-                                <option value="Madhya Pradesh">Madhya Pradesh</option>
-                                <option value="Maharashtra">Maharashtra</option>
-                                <option value="Manipur">Manipur</option>
-                                <option value="Meghalaya">Meghalaya</option>
-                                <option value="Mizoram">Mizoram</option>
-                                <option value="Nagaland">Nagaland</option>
-                                <option value="Odisha">Odisha</option>
-                                <option value="Punjab">Punjab</option>
-                                <option value="Rajasthan">Rajasthan</option>
-                                <option value="Sikkim">Sikkim</option>
-                                <option value="Tamil Nadu">Tamil Nadu</option>
-                                <option value="Telangana">Telangana</option>
-                                <option value="Tripura">Tripura</option>
-                                <option value="Uttar Pradesh">Uttar Pradesh</option>
-                                <option value="Uttarakhand">Uttarakhand</option>
-                                <option value="West Bengal">West Bengal</option>
-                                <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-                                <option value="Chandigarh">Chandigarh</option>
-                                <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and
-                                    Daman and Diu</option>
-                                <option value="Lakshadweep">Lakshadweep</option>
-                                <option value="Puducherry">Puducherry</option>
-                                <option value="Ladakh">Ladakh</option>
-                                <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-                            </select>
+                            <label for="state">State<span class="star">*</span></label>
+                            <input type="text" id="state" name="state" required class="form-control">
                         </div>
 
 
@@ -468,12 +430,17 @@
                         <label>Payment Terms<span class="star">*</span></label>
                         <input class="form-control" type="text" name="payment_terms"
                             value="100% Advance payment OR Whatever mutually Decided" readonly>
-                        <label>Sales Person Name<span class="star">*</span></label>
-                        <input type="text" name="sales_person_name" class="form-control" required>
+                        <label>Sales Person Name <span class="star">*</span></label>
+                        <select name="sales_person_name" id="sales_person_select" class="form-control" required>
+                            <option value="">-- Select Sales Person --</option>
+                            {% for person in sales_persons %}
+                                <option value="{{ person.name }}" data-contact="{{ person.mobile_no }}">{{ person.full_name }}</option>
+                            {% endfor %}
+                        </select>
 
-                        <label>Sales Person Contact No<span class="star">*</span></label>
-                        <input type="text" name="sales_person_contact_no" pattern="\d{10}"
-                            title="Please enter a valid 10-digit phone number" class="form-control" required>
+                        <label>Sales Person Contact No <span class="star">*</span></label>
+                        <input type="text" id="sales_person_contact_no" name="sales_person_contact_no" class="form-control"
+                               pattern="\d{10}" title="Please enter a valid 10-digit phone number" required readonly>
 
                         <label>Delivery Time<span class="star">*</span></label>
                         <input type="time" class="form-control" name="delivery_time" required>
@@ -549,18 +516,21 @@
             });
         });
     </script>
-    <!-- <script>
-        function updateCustomerDetails() {
-            const customerSelect = document.getElementById("customer_id");
-            const selectedOption = customerSelect.options[customerSelect.selectedIndex];
 
-            const contact = selectedOption.getAttribute("data-contact");
-            const email = selectedOption.getAttribute("data-email");
+    <!-- sales contact autofill -->
+     <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const select = document.getElementById("sales_person_select");
+        const contactInput = document.getElementById("sales_person_contact_no");
 
-            document.getElementById("customer_contact").value = contact || '';
-            document.getElementById("customer_email").value = email || '';
-        }
-    </script> -->
+        select.addEventListener("change", function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const contact = selectedOption.getAttribute("data-contact") || '';
+            contactInput.value = contact;
+        });
+    });
+</script>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -568,6 +538,7 @@
             const nameInput = document.getElementById("customer_full_name");
             const emailInput = document.getElementById("customer_email");
             const cityInput = document.getElementById("city");
+            const stateInput = document.getElementById("state");
             const pincodeInput = document.getElementById("pincode");
             const addressInput = document.getElementById("address");
 
@@ -602,6 +573,9 @@
                         }
                         if (data.shifttopartyaddress) {
                             addressInput.value = data.shifttopartyaddress;
+                        }
+                        if (data.state) {
+                            stateInput.value = data.state;
                         }
                     })
                     .catch(error => {

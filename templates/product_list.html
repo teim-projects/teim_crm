@@ -27,338 +27,228 @@
     <link href="https://fonts.googleapis.com/css2?family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Cardo:ital@0;1&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
 
 
-    <style>
-        /* Body Styling */
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #dedede;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+  <style>
+    /* === Body & Typography === */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #dedede;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
 
-        /* Title Styling */
-        h1 {
-            color: #03AED2;
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            font-weight: 500;
-            padding: 20px;
-            text-align: center;
-        }
+h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(to right, #2575fc, #6a11cb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    border-bottom: 3px solid rgb(80, 16, 177);
+}
 
-        /* Content Layout */
-        .table-wrapper {
-        
-           
-             padding: 20px;
-            /* border: 1px solid black ; */
-            margin-top: 91px !important;
-            border-radius: 15px;
-         
-        }
-        .container-table {
-            margin-top: 10px !important;
+/* === Layout Wrappers === */
+.table-wrapper {
+    padding: 20px;
+    margin-top: 91px !important;
+    border-radius: 15px;
+}
 
-            overflow-x: auto; /* Horizontal scrollbar */
-            width: calc(100%); /* Adjust width to account for scrollbar */
-            margin: auto;
-            max-width: 100%;
-            padding: 0 20px; /* Add padding for spacing */
-            
-        }
+.container-table {
+    margin-top: 10px !important;
+    overflow-x: auto;
+    width: 100%;
+    padding: 0 20px;
+}
 
-        /* Table Styling */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            border-radius: 8px;
-            overflow: hidden;
-        }
+/* === Table Styling === */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+}
 
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border: 1px solid #7c7c7c;
-            white-space: nowrap; /* Prevent wrapping */
-        }
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border: 1px solid #7c7c7c;
+    white-space: nowrap;
+}
 
-        th {
-            font-family: "Cardo", serif;
-            font-weight: 500;
-            font-size: 17px;
-            font-style: normal;
-            color: #ffffff;
-            font-weight: bold;
-        }
+th {
+    font-family: "Cardo", serif;
+    font-weight: bold;
+    font-size: 17px;
+    color: #ffffff;
+}
 
-        td {
-            font-family: "Outfit", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 400;
-            font-style: normal;
-            background-color: #f9f9f9;
-        }
+td {
+    font-family: "Outfit", sans-serif;
+    font-weight: 400;
+    background-color: #f9f9f9;
+}
 
-        tr:nth-child(even) td {
-            background-color: #cbcaca;
-        }
+tr:nth-child(even) td {
+    background-color: #cbcaca;
+}
 
-        /* Button Styling */
-        .btn-like {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            color: #fff;
-            background-color: #343434;
-            border: none;
-            border-radius: 0.25rem;
-            text-decoration: none;
-            margin-right: 5px;
-        }
+/* === Buttons === */
+.btn-like {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: #28a745;
+    color: #fff;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    border: none;
+}
 
-        .btn-like:hover {
-            background-color: #343434;
-        }
+.btn-like.delete-link {
+    background-color: #dc3545;
+}
 
-        /* Search Bar Styling */
-        .navbar {
-            padding: 10px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
+.btn-like:hover,
+.btn-like.delete-link:hover {
+    background-color: #218838;
+}
 
-        .pagination {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            list-style-type: none;
-            padding: 0;
-            margin: 20px 0;
-        }
-        .pagination li {
-            margin: 10px 5px;
-        }
-        .pagination a, .pagination span {
-            padding: 10px 12px;
-            text-decoration: none;
-            color: #007bff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .pagination .current {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        .pagination a:hover {
-            background-color: #007bff;
-            color: white;
-        }
+/* === Pagination === */
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+}
 
-        .form-inline .form-control {
-            border: 1px solid #075efe;
-            color: #000000;
-            border-radius: 20px;
-            background-color: #ddd;
-        }
-        
-        .form-inline .btn-outline-success {
-            color: #000000;
-          
-        }
+.pagination li {
+    margin: 10px 5px;
+}
 
-        .form-inline .btn-outline-success:hover {
-            background-color: #01ca29;
-            color: #ffffff;
-        }
+.pagination .current {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
 
-        .edit-delete-buttons {
-            white-space: nowrap; /* Prevent wrapping for buttons */
-            text-align: center; /* Center align buttons */
-        }
-        .edit-delete-buttons a {
-            display: inline-block; /* Ensure inline block to prevent overflow */
-            width: auto; /* Set width to auto */
-            margin-right: 5px;
-        }
+/* === Modal Styling === */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0; top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(0,0,0,0.6);
+}
 
-        
-        .btn-like {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            text-align: center;
-            vertical-align: middle;
-            cursor: pointer;
-            background-color: #28a745;
-            border: 1px solid transparent;
-            color: #fff;
-            border-radius: 0.25rem;
-            text-decoration: none; /* Remove underline */
-        }
+.modal-content {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffffff;
+    width: 50%;
+    max-width: 600px;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    animation: fadeIn 0.3s ease-in-out;
+}
 
-        .btn-like.delete-link {
-            background-color: #dc3545;
-        }
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
 
-        .btn-like:hover,
-        .btn-like.delete-link:hover {
-            background-color: #218838;
-        }
+.modal-buttons button {
+    padding: 12px 25px;
+    font-size: 1rem;
+    border-radius: 5px;
+}
 
+/* === Sidebar Modal Panel (optional panel) === */
+#modal {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    z-index: 1000;
+    width: 40%;
+    height: 100%;
+    background-color: white;
+    box-shadow: -2px 0 7px rgba(0, 0, 0, 0.2);
+    border-radius: 30px;
+    transition: 0.3s;
+    overflow-y: auto;
+    padding: 20px;
+}
 
-        .modal {
-        display: none; /* Hidden by default */
-        position: fixed; /* Fixed position ensures it remains relative to the viewport */
-        z-index: 1; /* High z-index to overlay other content */
-        left: 0;
-        top: 0;
-        width: 100%; /* Full width for the overlay */
-        height: 100%; /* Full height for the overlay */
-        overflow: hidden; /* Prevent scrolling of background content */
-        background-color: rgba(0,0,0,0.6); /* Dark overlay */
+#modal.active {
+    right: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 16px;
+    cursor: pointer;
+    float: right;
+}
+
+/* === Dropdown === */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 50px;
+    z-index: 1;
+    border-radius: 30px;
+}
+
+.dropdown-content a {
+    color: rgb(0, 0, 0);
+    padding: 6px 10px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* === Animations === */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .table-wrapper {
+        margin-left: 0;
+        margin-top: 90px !important;
+        padding: 20px;
     }
 
-    .modal-content {
-        position: fixed; /* Fix the modal's position */
-        left: 50%; /* Center horizontally */
-        top: 50%; /* Center vertically */
-        transform: translate(-50%, -50%); /* Adjust for modal's own dimensions */
-        background-color: #ffffff; /* White background for content */
-        width: 50%; /* Adjust modal size */
-        max-width: 600px; /* Restrict maximum width */
-        padding: 30px; /* Padding inside the modal */
-        border-radius: 10px; /* Rounded corners for aesthetics */
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Subtle shadow for prominence */
-        text-align: center; /* Center-align text */
-        animation: fadeIn 0.3s ease-in-out; /* Smooth fade-in animation */
+    #modal {
+        width: 80%;
     }
+}
 
-    .modal-buttons {
-        display: flex; /* Use flexbox for buttons */
-        justify-content: center; /* Center-align buttons */
-        gap: 15px; /* Spacing between buttons */
-    }
-
-    .modal-buttons button {
-        padding: 12px 25px; /* Larger buttons for better UI */
-        font-size: 1rem; /* Readable font size */
-        border-radius: 5px; /* Rounded button edges */
-    }
-
-        .view-btn {
-            background-color: #303030;
-            color: rgb(246, 246, 246);
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 20px;
-            border-color: #000000;
-        }
-        #modal {
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-            right: -100%;
-            width: 40%;
-            height: 100%;
-            background-color: white;
-            box-shadow: -2px 0 7px rgba(0, 0, 0, 0.2);
-            border-radius: 30px;
-            transition: 0.3s;
-            overflow-y: auto;
-            padding: 20px;
-            
-        }
-
-        #modal.active {
-            right: 0;
-        }
-        .close-btn {
-            background: none;
-            border: none;
-            color: red;
-            font-size: 16px;
-            cursor: pointer;
-            float: right;
-        }
-
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-
-    /* Style for the dropdown content */
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #f9f9f9;
-        /* box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); */
-        min-width: 50px;
-        z-index: 1;
-        border-radius: 30px;
-    }
-
-    .dropdown-content a {
-        color: rgb(0, 0, 0);
-        padding: 6px 10px;
-        text-decoration: none;
-        display: block;
-    }
-
-
-    /* Show dropdown on hover */
-    .dropdown:hover .dropdown-content {
-        display: block;
-    }
-
-    /* Smooth fade-in animation */
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
-    }
-
-
-/* On small screens, set margin to 0 when sidebar is hidden */
-        @media (max-width: 768px) {
-            .table-wrapper {
-                margin-left: 0;
-                margin-top: 90px !important;
-               
-                padding: 20px; /* Add some padding for better appearance */
-            }
-
-            .open-sidebar .table-wrapper {
-                margin-left: 300px; /* Adjust content when sidebar is open */
-            }
-
-            #modal {
-                width: 80%;
-            }
-
-        }
-        h1{
-            background: linear-gradient(to right, #2575fc, #6a11cb);
-            /* Gradient definition */
-            -webkit-background-clip: text;
-            /* Clip the gradient to the text boundaries */
-            -webkit-text-fill-color: transparent;
-            border-bottom: 3px solid rgb(80, 16, 177);
-            /*Script MT */
-        }
-        
-        a#linarbtn:hover {
-            box-shadow: 0px 0px 10px #6a11cb;
-        }
-         
-    </style>
+  </style>
 </head>
 <body>
     {% include 'sidebar.html' %}
@@ -381,9 +271,11 @@
                                     <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
                                 {% endfor %}
                             </select>
-                                                        <p class="text-right text-danger">Scroll to view more content ➡️</p>
 
                         </div>
+                        <p class="text-primary text-end me-3">
+                           {{ page_obj.paginator.count }} product{{ page_obj.paginator.count|pluralize }} 
+                        </p>
                 
                         <!-- Table -->
                         <div class="p mb-3">
@@ -399,27 +291,29 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for product in products %}
+                                    {% for product in page_obj %}
                                         <tr>
-                                            <td class="text-center">{{ product.product_id }}</td>
+                                            <td class="text-center">
+                                                 {{ page_obj.start_index|add:forloop.counter0 }}
+                                            </td>
                                             <td class="text-center">{{ product.category }}</td>
                                             <td class="text-center">{{ product.product_name }}</td>
                                             <td class="text-center">
-    <div  >
-        <!-- Edit Button -->
-        <a href="#" class="btn btn-warning btn-sm" title="Edit">
-            <i class="fa-solid fa-pen-to-square"></i>
-        </a>
-
-        <!-- Delete Button -->
-        <form id="delete-form-{{ product.product_id }}" action="{% url 'delete_product' product.product_id %}" method="POST" style="display: inline;">
-            {% csrf_token %}
-            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteModal('{{ product.product_id }}')" title="Delete">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </form>
-    </div>
-</td>
+                                            <div  >
+                                                <!-- Edit Button -->
+                                                <a href="{% url 'update_product' product.product_id %}" class="btn btn-warning btn-sm" title="Edit">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </a>
+                                            
+                                                <!-- Delete Button -->
+                                                <form id="delete-form-{{ product.product_id }}" action="{% url 'delete_product' product.product_id %}" method="POST" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteModal('{{ product.product_id }}')" title="Delete">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            </td>
 
                                         </tr>
                                     {% endfor %}
@@ -449,11 +343,42 @@
                         </div>
                 
                         <!-- Pagination -->
-                        <div class="pagination text-info">
-                            <button id="prev-btn" disabled style="background-color: #007BFF; border-radius:2px; width:80px;border:none;">Previous</button>
-                            <span id="page-info" style="border:none;">Page 1 of {{ total_pages }}</span>
-                            <button id="next-btn" style="background-color: #007BFF; border-radius:2px; width:80px;border:none;">Next</button>
+                       <div class="pagination text-center mt-3">
+                            <ul class="pagination justify-content-center">
+                            
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&category={{ selected_category }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo;</span>
+                                </li>
+                                {% endif %}
+                            
+                                <li class="page-item disabled">
+                                    <span class="page-link">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+                            
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&category={{ selected_category }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">&raquo;</span>
+                                </li>
+                                {% endif %}
+                            
+                            </ul>
                         </div>
+
 
                     </div>
                 </div>

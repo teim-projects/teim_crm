@@ -702,25 +702,28 @@ def export_customer_excel(request):
 
 
 
-from django.shortcuts import render
-from .models import Product
-
-from django.shortcuts import render
-from .models import Product
+@login_required
 def product_list(request):
     category_filter = request.GET.get('category', 'all')
     if category_filter and category_filter != 'all':
         products = Product.objects.filter(category=category_filter)
     else:
         products = Product.objects.all()
+    
+    paginator = Paginator(products, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
 
     categories = Product.CATEGORY_CHOICES
     categories = [choice[0] for choice in categories]
 
     context = {
         'products': products,
+        'page_obj': page_obj,
         'categories': categories,
         'selected_category': category_filter,
+        'product_count': paginator.count,
     }
     return render(request, 'product_list.html', context)
 
@@ -742,9 +745,8 @@ from .models import service_management, customer_details
 def service_management_create(request):
     customers = customer_details.objects.all()
     category_choices = Product.CATEGORY_CHOICES  # Pass category choices to the template
-    print("category choice0", category_choices)
     products = Product.objects.all()  # Adjust filter as necessary
-    print("product in all ", products)
+    sales_persons = SalesPerson.objects.all()
 
     if request.method == 'POST':
         try:
@@ -843,7 +845,7 @@ def service_management_create(request):
                 'customers' : customers,
             })
 
-    return render(request, 'service_management.html', {'category_choices': category_choices, 'products': products,'customers' : customers})
+    return render(request, 'service_management.html', {'category_choices': category_choices, 'products': products,'customers' : customers , 'sales_persons':sales_persons})
 
 
 
@@ -1773,11 +1775,6 @@ def main_followup_view(request, lead_id):
         
     }
     return render(request, 'main_followup.html', context)
-
-
-
-
-
 
 
 from django.shortcuts import render
@@ -3162,6 +3159,7 @@ def inventory_summary(request):
     return render(request, 'inventory_summary.html', context)
 
 
+@login_required
 def add_product(request):
     from_quotation = request.GET.get('from_quotation') == 'true'
 
@@ -3185,22 +3183,16 @@ def add_product(request):
     })
 
 
-def update_product(request):
-    if request.method == 'POST':
-        form = UpdateProductForm(request.POST)
-        if form.is_valid():
-            product = form.cleaned_data['product']
-            price = form.cleaned_data['price']
-            add_quantity = form.cleaned_data['add_quantity']
 
-            if price is not None:
-                product.price = price
-            if add_quantity is not None:
-                product.quantity += add_quantity
-            product.save()
-            return render(request, 'update_product_success.html', {'product': product})
-    else:
-        form = UpdateProductForm()
+@login_required
+def update_product(request, product_id):
+    product = get_object_or_404(Product, product_id=product_id)
+    form = UpdateProductForm(request.POST or None, instance=product)
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('/products/')  
+
     return render(request, 'update_product.html', {'form': form})
 
 @login_required
