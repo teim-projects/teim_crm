@@ -5098,7 +5098,7 @@ def reportlab_quotation_pdf(request, id):
 
     # Combine all terms
     all_terms = [t.description for t in quotation.terms_and_conditions.all()] + [
-        t.strip() for t in quotation.custom_terms.split(',') if t.strip()
+        t.strip() for t in (quotation.custom_terms or '').split(',') if t.strip()
     ]
 
     # Create paragraph list
