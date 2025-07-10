@@ -1756,9 +1756,9 @@ def main_followup_view(request, lead_id):
         # Update the lead's status
        # Update the lead's status
         lead.typeoflead = typeoflead
-        main_followup.order_status = order_status  # ✅ important to reflect in lead model
+        main_followup.order_status = order_status  
         if order_status in ['Close Win', 'Close Loss']:
-            lead.stage = 0  # mark lead as closed
+            lead.stage = 0  
             lead.save()
             if order_status == 'Close Win':
                 return redirect('service_management_create')

@@ -291,23 +291,6 @@
                     }
                 });
             </script>
-
-            <!-- <script>
-                document.addEventListener('DOMContentLoaded', () => {
-                    const filterForm = document.getElementById('filterForm');
-                    if (filterForm) {
-                        filterForm.querySelectorAll('select, input').forEach(element => {
-                            element.addEventListener('change', () => {
-                                filterForm.submit();
-                            });
-                        });
-                    }
-                });
-            </script> -->
-
-
-
-
             <!-- Data Table -->
             <div class="table-responsive">
                 <div class="table-wrapper table-responsive rounded shadow-sm border">
@@ -405,31 +388,41 @@
                             {% endfor %}
                         </tbody>
                     </table>
-
                 </div>
-
-                <!-- Pagination -->
-                <div class="row mt-4">
-                    <div class="col-12 text-center">
-                        <div class="text-secondary mb-2">
-                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                        </div>
-                        <div class="d-inline-flex gap-2 justify-content-center flex-wrap">
-                            {% if page_obj.has_previous %}
-                            <a class="btn btn-outline-secondary btn-sm"
-                                href="?page={{ page_obj.previous_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">
-                                Previous
-                            </a>
-                            {% endif %}
-                            {% if page_obj.has_next %}
-                            <a class="btn btn-outline-secondary btn-sm"
-                                href="?page={{ page_obj.next_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">
-                                Next
-                            </a>
-                            {% endif %}
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                        
+                            <div class="d-inline-flex gap-2 justify-content-center flex-wrap">
+                                {% with request.GET.urlencode as full_query %}
+                                    {% with full_query|cut:"page="|cut:"&&" as cleaned_query %}
+                                        <div class="row mt-4">
+                                            <div class="col-12 text-center">
+                                                <div class="text-secondary mb-2">
+                                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                                </div>
+                                                <div class="d-inline-flex gap-2 justify-content-center flex-wrap">
+                                                    {% if page_obj.has_previous %}
+                                                        <a class="btn btn-outline-secondary btn-sm"
+                                                           href="?page={{ page_obj.previous_page_number }}{% if cleaned_query %}&{{ cleaned_query }}{% endif %}">
+                                                            Previous
+                                                        </a>
+                                                    {% endif %}
+                                                    {% if page_obj.has_next %}
+                                                        <a class="btn btn-outline-secondary btn-sm"
+                                                           href="?page={{ page_obj.next_page_number }}{% if cleaned_query %}&{{ cleaned_query }}{% endif %}">
+                                                            Next
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endwith %}
+                                {% endwith %}
+                                    
+                                    
+                            </div>
                         </div>
                     </div>
-                </div>
 
                 {% include 'buttons.html' %}
             </div>
