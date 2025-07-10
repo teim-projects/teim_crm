@@ -434,7 +434,7 @@
                         <select name="sales_person_name" id="sales_person_select" class="form-control" required>
                             <option value="">-- Select Sales Person --</option>
                             {% for person in sales_persons %}
-                                <option value="{{ person.name }}" data-contact="{{ person.mobile_no }}">{{ person.full_name }}</option>
+                                <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}">{{ person.full_name }}</option>
                             {% endfor %}
                         </select>
 
@@ -585,7 +585,7 @@
         });
     </script>
 
-    <script>
+    <!-- <script>
         let selectedProducts = [];
         let totalPrice = 0;
         const GST_RATE = 0.18;
@@ -805,9 +805,238 @@
             document.getElementById("customer_email").value = email || '';
         }
 
+    </script> -->
+
+   <script>
+        let selectedProducts = [];
+        let totalPrice = 0;
+        const GST_RATE = 0.18;
+        function fetchProducts(selectElement) {
+            document.getElementById('products-container').innerHTML = '';
+        
+            const selectedCategories = Array.from(selectElement.selectedOptions).map(option => option.value);
+        
+            if (selectedCategories.length > 0) {
+                const categoriesQuery = selectedCategories.join(',');
+                fetch(`/get_products?categories=${categoriesQuery}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.products.forEach(product => {
+                            const productDiv = document.createElement('div');
+                            const productId = String(product.product_id);
+                        
+                            // Find if this product was previously selected
+                            const existing = selectedProducts.find(p => p.id === productId);
+                            const isChecked = existing ? 'checked' : '';
+                            const displayDesc = existing ? 'block' : 'none';
+                        
+                            productDiv.innerHTML = `
+                                <input type="checkbox" name="selected_services" value="${productId}"
+                                    data-price="${product.price}" data-name="${product.product_name}"
+                                    ${isChecked}
+                                    onchange="updateSelectedServices(this)">
+                                ${product.product_name}<br>
+                        
+                                <input type="number" style="max-width: 200px"
+                                    class="product-price-input"
+                                    data-product-id="${productId}"
+                                    value="${existing ? existing.price : product.price}"
+                                    placeholder='Price'
+                                    onchange="updateProductPrice(this, '${productId}')">
+                        
+                                <input type="number" style="max-width: 200px; margin-left: 30px"
+                                    class="product-quantity-input"
+                                    data-product-id="${productId}"
+                                    value="${existing ?  existing.quantity : product.quantity}"
+                                    placeholder='Quantity'
+                                    onchange="updateProductQuantity(this, '${productId}')">
+                        
+                                <div id="desc-container-${productId}" style="margin-top: 10px; display:${displayDesc};">
+                                    <label>Description:</label><br>
+                                    <textarea class="form-control description-input"
+                                        data-product-id="${productId}"
+                                        oninput="updateProductDescription(this, '${productId}')"
+                                        placeholder='Description'
+                                        style="width: 300px;">${existing ? existing.description : ''}</textarea>
+                                </div>
+                            `;
+                            
+                            document.getElementById('products-container').appendChild(productDiv);
+                        });
+                    
+                        // Refresh prices after re-rendering
+                        updateSelectedServicesList();
+                        updateTotalPrice();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching products:', error);
+                    });
+            }
+        }
+
+
+        function updateSelectedServices(checkbox) {
+            const productId = checkbox.value;
+            const productName = checkbox.getAttribute('data-name');
+            const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
+            const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
+            const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"]`);
+            const descContainer = document.getElementById(`desc-container-${productId}`);
+
+            const productPrice = parseFloat(priceInput.value) || 0;
+            const productQuantity = parseFloat(quantityInput.value) || 0;
+            const description = descriptionInput?.value || '';
+
+            if (checkbox.checked) {
+                if (descContainer) descContainer.style.display = 'block';
+
+                // Avoid duplicates
+                const alreadyAdded = selectedProducts.find(p => p.id === productId);
+                if (!alreadyAdded) {
+                    selectedProducts.push({
+                        id: productId,
+                        name: productName,
+                        price: productPrice,
+                        quantity: productQuantity,
+                        description: description
+                    });
+                }
+            } else {
+                if (descContainer) descContainer.style.display = 'none';
+                if (descriptionInput) descriptionInput.value = '';
+
+                selectedProducts = selectedProducts.filter(product => product.id !== productId);
+            }
+
+            console.log('Updated Selected Products:', selectedProducts);
+            updateSelectedServicesList();
+            updateTotalPrice();
+        }
+
+
+
+        function updateSelectedServicesList() {
+            const selectedServicesList = document.getElementById('selected_services');
+            const selectedServicesNamesInput = document.getElementById('selected_services_names');
+
+            selectedServicesList.innerHTML = ''; // Clear the list
+            let selectedServiceNames = [];
+
+            selectedProducts.forEach(product => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${product.name}: Rs. ${product.price} x ${product.quantity}`;
+                selectedServicesList.appendChild(listItem);
+                selectedServiceNames.push(product.name); // Collecting product names
+            });
+
+            selectedServicesNamesInput.value = selectedServiceNames.join(',');
+
+            if (selectedProducts.length === 0) {
+                const emptyMessage = document.createElement('li');
+                emptyMessage.textContent = 'No products selected';
+                selectedServicesList.appendChild(emptyMessage);
+            }
+        }
+
+        function updateTotalPrice() {
+            totalPrice = selectedProducts.reduce((total, product) => total + product.price * product.quantity, 0);
+            const totalPriceInput = document.getElementById('total_price');
+            totalPriceInput.value = totalPrice.toFixed(2);
+
+            if (document.getElementById('apply_gst').checked) {
+                applyGST();
+            } else {
+                clearGSTFields();
+            }
+        }
+
+        function updateProductDescription(textarea, productId) {
+            const newDescription = textarea.value;
+
+            selectedProducts.forEach(product => {
+                if (product.id === productId) {
+                    product.description = newDescription;
+                }
+            });
+
+            updateSelectedServicesList();
+        }
+
+
+        function toggleGST() {
+            const isGSTApplied = document.getElementById('apply_gst').checked;
+
+            if (isGSTApplied) {
+                applyGST();
+                document.getElementById('gst-price-container').style.display = 'block';
+                document.getElementById('gst-number-container').style.display = 'block';
+            } else {
+                clearGSTFields();
+                document.getElementById('gst-price-container').style.display = 'none';
+                document.getElementById('gst-number-container').style.display = 'none';
+            }
+        }
+
+        function applyGST() {
+            const gstPriceInput = document.getElementById('gst_price');
+            const totalWithGSTInput = document.getElementById('total_with_gst');
+
+            const gstPrice = totalPrice * GST_RATE;
+            const totalWithGST = totalPrice + gstPrice;
+
+            gstPriceInput.value = gstPrice.toFixed(2);
+            totalWithGSTInput.value = totalWithGST.toFixed(2);
+        }
+
+        function clearGSTFields() {
+            document.getElementById('gst_price').value = '';
+            document.getElementById('total_with_gst').value = '';
+        }
+
+        function updateProductPrice(priceInput, productId) {
+            const newPrice = parseFloat(priceInput.value) || 0; // Handle invalid input gracefully
+            selectedProducts.forEach(product => {
+                if (product.id === productId) {
+                    product.price = newPrice;
+                }
+            });
+            updateSelectedServicesList();
+            updateTotalPrice();
+        }
+
+        function updateProductQuantity(quantityInput, productId) {
+            // Fetch the new quantity from the input field
+            const newQuantity = parseFloat(quantityInput.value) || 1; // Default to 1 if invalid or empty
+
+            // Update the quantity in the selectedProducts array
+            selectedProducts.forEach(product => {
+                if (product.id === productId) {
+                    product.quantity = newQuantity;
+                }
+            });
+
+            // Debug log to verify the updated quantity
+            console.log(`Updated Quantity for Product ID ${productId}:`, newQuantity);
+
+            // Update the list of selected services and total price
+            updateSelectedServicesList();
+            updateTotalPrice();
+        }
+
+        function updateCustomerDetails() {
+            const customerSelect = document.getElementById("customer_id");
+            const selectedOption = customerSelect.options[customerSelect.selectedIndex];
+
+            const contact = selectedOption.getAttribute("data-contact");
+            const email = selectedOption.getAttribute("data-email");
+
+            document.getElementById("customer_contact").value = contact || '';
+            document.getElementById("customer_email").value = email || '';
+        }
+
     </script>
 
-
+    
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">
