@@ -23,9 +23,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-
-
-
         }
 
 
@@ -34,8 +31,6 @@
             background-color: #ffffff;
             box-shadow: 0 4px 20px rgba(3, 174, 210, 0.2);
             width: 100%;
-
-
             margin-top: 50px;
         }
 
@@ -176,17 +171,6 @@
         }
 
 
-        /* Style for textarea to allow resizing vertically */
-
-
-
-
-
-
-
-
-
-
         /* Style for form wrapper to center form and add padding */
         form {
             justify-content: center;
@@ -194,7 +178,7 @@
             margin: 0 auto;
             padding: 10px;
             background-color: #ffffff;
-        }
+        } 
 
 
         /* Style for error messages */
@@ -204,19 +188,11 @@
             margin-bottom: 10px;
         }
 
-
-
-
-
         /* Style for checkbox label */
         .form-check-label {
             margin-left: 5px;
             font-size: 14px;
         }
-
-
-
-
 
         .btn-info {
             background-color: #03AED2;
@@ -313,6 +289,13 @@
                                 <!-- STEP 1 -->
                                 <div class="form-step active">
                                     <div class="row">
+                                        <!-- Add Customer Button (opens modal) -->
+                                        <div class="add_customer mb-3 text-end  ">
+                                          <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                                            <img src="{% static 'images/add-user.png' %}" alt="Add Customer" width="30" height="30">
+                                          </button>
+                                        </div>
+
                                         <div class="col-md-6">
                                             <label>Customer Contact<span class="star">*</span></label>
                                             <input type="text" id="customer_contact" name="contact_no" required
@@ -566,6 +549,124 @@
                             </div>
 
                         </div>
+                  <!-- BEGIN: Add Customer Modal -->
+                        <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+                          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header justify-content-center">
+                                    <h5 class="modal-title">Add New Customer</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                          
+                              <div class="modal-body">
+                                <form method="POST" action="{% url 'customer_details_create' %}?next={% url 'create_quotation' %}">
+                                  {% csrf_token %}
+                                
+                                  <!-- First Row: Basic Customer Details -->
+                                  <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                      <label>Primary Contact No <span class="text-danger">*</span></label>
+                                      <input type="text" class="form-control" name="primarycontact" placeholder="Primary Contact No" pattern="\d{10}" required>
+                                    </div>
+                                
+                                    <div class="col-md-6 mb-3">
+                                      <label>Customer ID <span class="text-danger">*</span></label>
+                                      <input type="text" class="form-control" name="customerid" value="{{ customerid }}" readonly required>
+                                    </div>
+                                
+                                    <div class="col-md-6 mb-3">
+                                      <label>Full Name <span class="text-danger">*</span></label>
+                                      <input type="text" class="form-control" name="fullname" placeholder="Full Name" required>
+                                    </div>
+                                
+                                    <div class="col-md-6 mb-3">
+                                      <label>Primary Email <span class="text-danger">*</span></label>
+                                      <input type="email" class="form-control" name="primaryemail" placeholder="Primary Email" required>
+                                    </div>
+                                
+                                    <div class="col-md-6 mb-3">
+                                      <label>Secondary Email</label>
+                                      <input type="email" class="form-control" name="secondaryemail" placeholder="Secondary Email">
+                                    </div>
+                                
+                                    <div class="col-md-6 mb-3">
+                                      <label>Secondary Contact No</label>
+                                      <input type="text" class="form-control" name="secondarycontact" placeholder="Secondary Contact No" pattern="\d{10}">
+                                    </div>
+                                
+                                    <div class="col-md-6 mb-3">
+                                      <label>Contact Person Name <span class="text-danger">*</span></label>
+                                      <input type="text" class="form-control" name="contactperson" placeholder="Contact person name" required>
+                                    </div>
+                                
+                                    <div class="col-md-6 mb-3">
+                                      <label>Designation <span class="text-danger">*</span></label>
+                                      <input type="text" class="form-control" name="customersegment" placeholder="Designation" required>
+                                    </div>
+                                  </div>
+                              
+                                  <hr>
+                              
+                                  <!-- Second Row: Two-Column Split -->
+                                  <div class="row">
+                                    <!-- Shift To Party -->
+                                    <div class="col-md-6">
+                                      <h6 class="mb-3 text-success">Shift To Party</h6>
+                                      <div class="mb-3">
+                                        <label>Address <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="shifttopartyaddress" placeholder="Shift To Party Address" required>
+                                      </div>
+                                      <div class="mb-3">
+                                        <label>City <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="shifttopartycity" placeholder="City" required>
+                                      </div>
+                                      <div class="mb-3">
+                                        <label>State / Province <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="shifttopartystate" placeholder="State / Province" required>
+                                      </div>
+                                      <div class="mb-3">
+                                        <label>Postal / Zip Code <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="shifttopartypostal" placeholder="Zip Code" required>
+                                      </div>
+                                    </div>
+                                
+                                    <!-- Sold To Party -->
+                                    <div class="col-md-6">
+                                      <h6 class="mb-3 text-warning">Sold To Party</h6>
+                                      <div class="mb-3">
+                                        <label>Address <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="soldtopartyaddress" placeholder="Sold To Party Address" required>
+                                      </div>
+                                      <div class="mb-3">
+                                        <label>City <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="soldtopartycity" placeholder="City" required>
+                                      </div>
+                                      <div class="mb-3">
+                                        <label>State / Province <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="soldtopartystate" placeholder="State / Province" required>
+                                      </div>
+                                      <div class="mb-3">
+                                        <label>Postal / Zip Code <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="soldtopartypostal" placeholder="Zip Code" required>
+                                      </div>
+                                    </div>
+                                  </div>
+                              
+                                  <!-- Submit & Footer -->
+                                  <div class="modal-footer  justify-content-center">
+                                    <input type="submit" class="btn btn-success" value="Submit">
+                                  </div>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- END: Add Customer Modal -->
+
+                   
+
+
                     </div>
                 </div>
                 <div class="col-md-2"></div>
@@ -575,6 +676,29 @@
     </div>
     <!-- JavaScript for Multistep Form -->
 
+    <!-- customer form  -->
+    <!-- <script>
+      let currentStep = 1;
+
+      function showStep(step) {
+        document.querySelectorAll('.step').forEach(div => div.classList.add('d-none'));
+        document.getElementById(`step${step}`).classList.remove('d-none');
+      }
+
+      function nextStep() {
+        if (currentStep < 3) {
+          currentStep++;
+          showStep(currentStep);
+        }
+      }
+
+      function prevStep() {
+        if (currentStep > 1) {
+          currentStep--;
+          showStep(currentStep);
+        }
+      }
+    </script> -->
 
 
     <script>

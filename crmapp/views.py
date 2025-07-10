@@ -670,6 +670,11 @@ def customer_details_create(request):
             soldtopartypostal=soldtopartypostal,
             customerid=customerid
         )
+
+        # Conditional redirect
+        next_url = request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
         return redirect('/display_customer')
     
 
@@ -4994,7 +4999,7 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Spacer(1, 10))
 
     # --- Product Table ---
-    product_data = [["Sr. No.", "Product / Service", "Rate", "Qty", "Total"]]
+    product_data = [["Sr. No.", "Product / Service", "Rate (Rs)", "Qty", "Total (Rs)"]]
     for idx, item in enumerate(quotation.product_details_json, start=1):
         try:
             price = float(item['price'])
