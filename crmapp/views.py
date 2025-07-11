@@ -2703,7 +2703,6 @@ def edit_service_management(request, rid):
 
     else:
         service_obj = get_object_or_404(service_management, id=rid)
-
         technician_ids = request.POST.getlist('technicians')
         print("technician_ids :", technician_ids)
         ucustomer_id = request.POST.get('ucustomer')
@@ -2759,7 +2758,7 @@ def edit_service_management(request, rid):
 
         # Step 4: Update service fields
         try:
-            customer = customer_details.objects.get(customerid=ucustomer_id)
+            customer = customer_details.objects.get(id=ucustomer_id)
         except customer_details.DoesNotExist:
             return HttpResponse("Customer not found")
 

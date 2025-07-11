@@ -360,7 +360,8 @@
   <div class="row">
     <div class="col-md-6 mb-4">
       <div class="form-outline">
-        <input type="text" id="ucustomer" class="form-control form-control-lg" placeholder="Customer Name" name="ucustomer" value="{{ x.customer }}" readonly />
+        <input type="hidden" name="ucustomer" value="{{ x.customer.id }}">
+        <input type="text" id="ucustomer" class="form-control form-control-lg" placeholder="Customer Name"  value="{{ x.customer }}" readonly />
       </div>
     </div>
   </div>

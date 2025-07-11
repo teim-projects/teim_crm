@@ -532,27 +532,9 @@
           
 
 
-                            <!-- <div class="filter-container">
-                                <form method="get" action="">
-                                    <label for="contract_type" class="innernlinearnames">Filter by Contract
-                                        Type:</label>
-                                    <select name="contract_type" id="contract_type" onchange="this.form.submit()"
-                                        id="Selecttag" style=" width: 150px; padding: 3px; border-radius: 7px; border: none;
-                                        box-shadow: inset 0px 0px 3px blue !important; ">
-                                        <option value="">All</option>
-                                        <option value="AMC" {% if contract_type == 'AMC' %}selected{% endif %}>AMC
-                                        </option>
-                                        <option value="One Time" {% if contract_type == 'One Time' %}selected{% endif %}>
-                                            One Time</option>
-                                        <option value="Warranty" {% if contract_type == 'Warranty' %}selected{% endif %}>
-                                            Warranty</option>
-                                    </select>
-                                </form>
-                            </div> -->
+                            
                         </div>
-                        <div class="p mb-3">
-                            <p class="scroll-instruction">Scroll to view more content ➡️ </p>
-                        </div>
+                        
                         <div class="container-table">
                             <table class="table table-bordered">
                                 <thead>
@@ -624,21 +606,38 @@
                         </div>
 
 
-                        <div class="pagination">
+                        <div class="row mt-4">
+                            <div class="col-12 text-center mt-4">
+                                {% with request.GET.urlencode as full_query %}
+                                    {% with full_query|cut:"page="|cut:"&&" as cleaned_query %}
+                                        <div class="d-inline-flex gap-3 justify-content-center align-items-center flex-wrap">
 
-                            {% if page_obj.has_previous %}
-                            <li><a href="?page=1">&laquo; First</a></li>
-                            <li><a href="?page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
-                            {% endif %}
-
-                            <span class="current">{{ page_obj.number }}</span>
-
-                            {% if page_obj.has_next %}
-                            <li><a href="?page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
-                            <li><a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
-                            {% endif %}
-
+                                            {% if page_obj.has_previous %}
+                                                <a class="btn btn-outline-secondary btn-sm"
+                                                   href="?page={{ page_obj.previous_page_number }}{% if cleaned_query %}&{{ cleaned_query }}{% endif %}">
+                                                    ←
+                                                </a>
+                                            {% else %}
+                                                <button class="btn btn-outline-secondary btn-sm" disabled>←</button>
+                                            {% endif %}
+                                            
+                                            <span class="fw-bold text-primary">Page {{ page_obj.number }}</span>
+                                            
+                                            {% if page_obj.has_next %}
+                                                <a class="btn btn-outline-secondary btn-sm"
+                                                   href="?page={{ page_obj.next_page_number }}{% if cleaned_query %}&{{ cleaned_query }}{% endif %}">
+                                                    →
+                                                </a>
+                                            {% else %}
+                                                <button class="btn btn-outline-secondary btn-sm" disabled>→</button>
+                                            {% endif %}
+                                            
+                                        </div>
+                                    {% endwith %}
+                                {% endwith %}
+                            </div>
                         </div>
+
                         {% include 'buttons.html' %}
 
                     </div>
