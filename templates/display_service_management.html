@@ -446,19 +446,99 @@
                                     value="{{ request.GET.search }}">
                                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
                                     style="width: 150px;">Search</button>
-
                             </form>
-                            <div class="filter-container">
+                        </div>
+                    <!-- Filters -->
+                    <div>
+                            <!-- Button to toggle the filter form -->
+                            <button id="toggleFilterBtn" class="btn btn-primary mb-3 mt-3">Show Filters</button> 
+                                <div class="d-flex justify-content-end mb-3">
+                                    <div class="count">
+                                        <span class="text-primary fw-bold"> Records: {{ count_data }}</span>
+                                    </div>
+                                </div>
+                            
+                            
+                            <!-- Container to hold the filter form -->
+                            <div id="filterContainer"
+                                style="max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; opacity: 0;">
+                                <form method="get" id="filterForm" class="row mb-4" style="gap: 10px;">
+                                    <div class="row ">
+                                        <!-- Segment -->
+                                        <div class="col-md-3">
+                                            <label>Segment</label>
+                                            <select name="segments" class="form-control custom-select">
+                                                <option value="">All Segments</option>
+                                                {% for sg in segments %}
+                                                    <option value="{{ sg }}" {% if selected_segment == sg %}selected{% endif %}>{{ sg }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    
+                                        <!-- Salesperson -->
+                                        <div class="col-md-3">
+                                            <label>Salesperson</label>
+                                            <select name="salesperson" class="form-control custom-select">
+                                                <option value="">All Salespersons</option>
+                                                {% for sp in salespersons %}
+                                                <option value="{{ sp }}" {% if request.GET.salesperson == sp %}selected {% endif %}>
+                                                    {{ sp }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <!-- contract type -->
+                                        <div class="col-md-3">
+                                            <label>Contract Type</label>
+                                            <select name="contract_type" class="form-control custom-select">
+                                                <option value="">All Contract Type</option>
+                                                {% for ct in contract_type %}
+                                                <option value="{{ ct }}" {% if request.GET.contract_type == ct %}selected {% endif %}>
+                                                    {{ ct }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                                                    
+                                    </div>
+                                
+                                    <div class="row mt-3">
+                                        <!-- Enquiry Date Section -->
+                                       <div class="col-md-6 ">
+                                            <div class="row date-box p-2">
+                                                <h6 class="text-center datehid text-primary">Service Date</h6>
+                                            
+                                                <div class="col-md-6">
+                                                    <label class="text-center">From</label>
+                                                    <input type="date" name="service_from" class="form-control custom-select mb-1"
+                                                        value="{{ request.GET.service_from }}">
+                                                </div>
+                                                <div class="col-md-6 ">
+                                                    <label class="text-center">To</label>
+                                                    <input type="date" name="service_to" class="form-control custom-select"
+                                                        value="{{ request.GET.service_to }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="col-md-12 text-end mt-3">
+                                        <button type="submit" class="btn btn-success">Apply Filters</button>
+                                        <a href="{% url 'display_service_management' %}" class="btn btn-secondary ms-2">Reset</a>
+                                    </div>
+                                
+                                </form>
+                    </div>
+                        
+          
+
+
+                            <!-- <div class="filter-container">
                                 <form method="get" action="">
                                     <label for="contract_type" class="innernlinearnames">Filter by Contract
                                         Type:</label>
                                     <select name="contract_type" id="contract_type" onchange="this.form.submit()"
-                                        id="Selecttag" style=" width: 150px;
-    padding: 3px;
-    border-radius: 7px;
-    border: none;
-    box-shadow: inset 0px 0px 3px blue !important;
-">
+                                        id="Selecttag" style=" width: 150px; padding: 3px; border-radius: 7px; border: none;
+                                        box-shadow: inset 0px 0px 3px blue !important; ">
                                         <option value="">All</option>
                                         <option value="AMC" {% if contract_type == 'AMC' %}selected{% endif %}>AMC
                                         </option>
@@ -468,7 +548,7 @@
                                             Warranty</option>
                                     </select>
                                 </form>
-                            </div>
+                            </div> -->
                         </div>
                         <div class="p mb-3">
                             <p class="scroll-instruction">Scroll to view more content ➡️ </p>
@@ -660,6 +740,28 @@
             document.getElementById('modal').classList.remove('active');
         }
     </script>
+
+
+<!-- Filter js -->
+            <script>
+                const toggleBtn = document.getElementById('toggleFilterBtn');
+                const filterContainer = document.getElementById('filterContainer');
+
+                toggleBtn.addEventListener('click', () => {
+                    if (filterContainer.style.maxHeight && filterContainer.style.maxHeight !== '0px') {
+                        // Hide form
+                        filterContainer.style.maxHeight = '0';
+                        filterContainer.style.opacity = '0';
+                        toggleBtn.textContent = 'Show Filters';
+                    } else {
+                        // Show form
+                        filterContainer.style.maxHeight = filterContainer.scrollHeight + 'px';
+                        filterContainer.style.opacity = '1';
+                        toggleBtn.textContent = 'Hide Filters';
+                    }
+                });
+            </script>
+
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">

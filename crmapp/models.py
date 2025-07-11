@@ -476,10 +476,15 @@ class TechnicianProfile(models.Model):
 
 
 class service_management(models.Model):
+    SEGMENTS_CHOICES = [
+        ('Residential', 'Residential'),
+        ('Industrial / Commercial', 'Industrial / Commercial'),
+        ('Institutional', 'Institutional'),
+        ('Irrelevant Leads', 'Irrelevant Leads')
+    ]
     customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, null=True, blank=True)
     selected_services = models.ManyToManyField(Product, related_name="selected_services")
-    # gst_checkbox = models.BooleanField(default=False)
-    # gst_status = models.CharField(max_length=10, default='NON-GST')
+    segment = models.CharField(max_length=100, choices=SEGMENTS_CHOICES, null=True, blank=True)
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)    

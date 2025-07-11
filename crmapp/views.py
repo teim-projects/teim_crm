@@ -2119,44 +2119,81 @@ def display_service_management(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
     sort_by = request.GET.get('sort_by', 'customerid')  
-    contract_type = request.GET.get('contract_type', '')
+    selected_contract_type = request.GET.get('contract_type', '')
+
+    selected_segment = request.GET.get('segments', '')
+    selected_salesperson = request.GET.get('salesperson', '')
+    service_from = request.GET.get('service_from', '')
+    service_to = request.GET.get('service_to', '')
+
+    m = service_management.objects.all()
 
     if query:
-        m = service_management.objects.filter(customer__customerid__icontains=query) | service_management.objects.filter(customer__primarycontact__icontains=query)
-    else:
-        m = service_management.objects.all()
+        m = m.filter(
+            Q(customer__customerid__icontains=query) | 
+            Q(customer__primarycontact__icontains=query)
+        )
+
+    # Apply Segment filter
+    if selected_segment:
+        m = m.filter(segment=selected_segment)
+
+    # Apply Salesperson filter
+    if selected_salesperson:
+        m = m.filter(sales_person_name = selected_salesperson)
 
     # Filter by contract type if provided
-    if contract_type:
-        m = m.filter(contract_type=contract_type)
+    if selected_contract_type:
+        m = m.filter(contract_type=selected_contract_type)
+
+    # Apply Service Date Range Filter
+    if service_from:
+        try:
+            service_from_date = datetime.strptime(service_from, '%Y-%m-%d').date()
+            m = m.filter(service_date__gte=service_from_date)
+        except ValueError:
+            pass  
+        
+    if service_to:
+        try:
+            service_to_date = datetime.strptime(service_to, '%Y-%m-%d').date()
+            m = m.filter(service_date__lte=service_to_date)
+        except ValueError:
+            pass
 
     # Sorting logic
     if sort_by == 'firstname':
-        if sort_order == 'desc':
-            m = m.order_by('-customer__firstname')  
-        else:
-            m = m.order_by('customer__firstname')  
+        m = m.order_by('-customer__firstname' if sort_order == 'desc' else 'customer__firstname')
     else:
-        if sort_order == 'desc':
-            m = m.order_by('-customer__customerid')  
-        else:
-            m = m.order_by('customer__customerid')
+        m = m.order_by('-customer__customerid' if sort_order == 'desc' else 'customer__customerid')
 
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
 
+    count_data = m.count()
+
+    # Get distinct segments and salespersons for dropdowns
+    segments_choices = service_management._meta.get_field('segment').choices
+    segments = [choice[0] for choice in segments_choices]
+    salespersons = SalesPerson.objects.all()
+    contract_types = ['One Time', 'AMC', 'Warranty']
+
     context = {
         'current_order': sort_order,
         'current_sort_by': sort_by,
         'page_obj': page_obj,
         'start_index': start_index,
-        'contract_type': contract_type,
+        'contract_type': contract_types,
+        'count_data':count_data,
+        'segments': segments,
+        'salespersons': salespersons,
+        'selected_segment': selected_segment,
     }
     context['data'] = m
-
     return render(request, 'display_service_management.html', context)
+
 
 def get_service_details(request, service_id):
     service = get_object_or_404(service_management, id=service_id)
