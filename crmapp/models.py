@@ -50,7 +50,7 @@ class customer_details(models.Model):
     primarycontact=models.BigIntegerField( unique=True)
     secondarycontact=models.BigIntegerField(null=True , blank=True)
     contactperson=models.CharField(max_length=100)
-    customersegment=models.CharField(max_length=100)
+    designation=models.CharField(max_length=100)
     shifttopartyaddress=models.CharField(max_length=1000)
     shifttopartycity=models.CharField(max_length=100)
     shifttopartystate=models.CharField(max_length=100)
@@ -60,6 +60,9 @@ class customer_details(models.Model):
     soldtopartystate=models.CharField(max_length=100)
     soldtopartypostal=models.CharField(max_length=100)
     customerid = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    customer_type = models.CharField(max_length=100, null=True, blank=True)
+    or_name = models.CharField(max_length=100, null=True, blank=True)
+    or_contact = models.BigIntegerField(null=True, blank=True)
 
 
    
@@ -301,6 +304,7 @@ class lead_management(models.Model):
     ], default="NOT SELECTED")
     salesperson = models.CharField(max_length=100)
     customername = models.CharField(max_length=100, null=True, blank=True)
+    customer_type = models.CharField(max_length=100, null=True, blank=True)
     customersegment = models.CharField(max_length=100, choices=SEGMENTS_CHOICES)
     enquirydate = models.DateField(default=timezone.now)
     contactedby = models.CharField(max_length=100, null=True, blank=True)
@@ -309,12 +313,16 @@ class lead_management(models.Model):
     primarycontact = models.BigIntegerField(null=True, blank=True)
     secondarycontact = models.BigIntegerField(null=True, blank=True)
     customeremail = models.EmailField(null=True, blank=True)
+    or_name = models.CharField(max_length=100, null=True, blank=True)
+    or_contact = models.BigIntegerField(null=True, blank=True)
     customeraddress = models.CharField(max_length=1000, null=True, blank=True)
     location = models.URLField(null=True, blank=True)
     city = models.CharField(max_length=100, default="Unknown City")
     typeoflead = models.CharField(max_length=100, null=True, choices=TYPEOFLEAD_CHOICES)
     firstfollowupdate = models.DateField(default=timezone.now)
     stage = models.IntegerField(default=1)
+    
+
 
     def __str__(self):
         return self.customername or "Unnamed Lead"
@@ -572,6 +580,9 @@ class quotation_management(models.Model):
     subject = models.CharField(max_length=1000, null=True, blank=True)
     quotation_date = models.DateField(default=timezone.now)
     custom_terms = models.TextField(blank=True, null=True)
+    or_name = models.CharField(max_length=100, null=True, blank=True)
+    or_contact = models.CharField(max_length=10, null=True, blank=True)
+
     
     terms_and_conditions = models.ManyToManyField(QuotationTerm, blank=True)
     gst_number = models.CharField(

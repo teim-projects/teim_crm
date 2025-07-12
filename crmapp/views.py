@@ -619,12 +619,15 @@ def customer_details_create(request):
                     'fullname': lead.customername or '',
                     'primaryemail': lead.customeremail or '',
                     'secondarycontact': lead.secondarycontact or '',
-                    'contactperson': lead.contactedby or '',
-                    'customersegment': lead.customersegment or '',
+                    'contactperson': lead.salesperson or '',
+                    'contactedby': lead.contactedby or '',
                     'shifttopartyaddress': lead.customeraddress or '',
                     'shifttopartycity': lead.city or '',
                     'soldtopartyaddress': lead.customeraddress or '',
                     'soldtopartycity': lead.city or '',
+                    'customer_type':lead.customer_type or '',
+                    'or_name':lead.or_name or '',
+                    'or_contact': lead.or_contact or '',
                 }
                 return JsonResponse({'status': 'exists', 'data': data})
             return JsonResponse({'status': 'not_found'})
@@ -637,7 +640,7 @@ def customer_details_create(request):
         primarycontact = request.POST['primarycontact']
         secondarycontact = request.POST['secondarycontact'] or None
         contactperson = request.POST['contactperson']
-        customersegment = request.POST['customersegment']
+        designstion = request.POST['designstion']
         shifttopartyaddress = request.POST['shifttopartyaddress']
         shifttopartycity = request.POST['shifttopartycity']
         shifttopartystate = request.POST['shifttopartystate']
@@ -646,6 +649,10 @@ def customer_details_create(request):
         soldtopartycity = request.POST['soldtopartycity']
         soldtopartystate = request.POST['soldtopartystate']
         soldtopartypostal = request.POST['soldtopartypostal']
+        customer_type =  request.POST['customer_type']
+        or_name = request.POST['or_name']
+        or_contact = request.POST['or_contact']
+
 
         if not fullname or not primaryemail or not primarycontact:
             return render(request, "customer_details.html", {'msg1': 'Field cannot be empty'})
@@ -659,7 +666,7 @@ def customer_details_create(request):
             primarycontact=primarycontact,
             secondarycontact=secondarycontact,
             contactperson=contactperson,
-            customersegment=customersegment,
+            designation=designstion,
             shifttopartyaddress=shifttopartyaddress,
             shifttopartycity=shifttopartycity,
             shifttopartystate=shifttopartystate,
@@ -668,7 +675,10 @@ def customer_details_create(request):
             soldtopartycity=soldtopartycity,
             soldtopartystate=soldtopartystate,
             soldtopartypostal=soldtopartypostal,
-            customerid=customerid
+            customerid=customerid,
+            customer_type = customer_type,
+            or_name = or_name,
+            or_contact = or_contact,
         )
 
         # Conditional redirect
@@ -939,7 +949,8 @@ def quotation_management_create(request):
             subject = request.POST.get('subject')
             branch_id = request.POST.get('branch_id')
             product_details_json = request.POST.get('product_details_json')
-
+            or_name = request.POST.get('or_name')
+            or_contact = request.POST.get('or_contact')
             # Handle quotation date
             date_str = request.POST.get('quotation_date')
             if date_str:
@@ -1029,6 +1040,8 @@ def quotation_management_create(request):
                 branch_id=branch_id if branch_id else None,
                 product_details_json=json.loads(product_details_json),
                 custom_terms = custom_terms,
+                or_name = or_name,
+                or_contact = or_contact,
             )
 
             quotation.selected_services.set(selected_services)
@@ -1653,7 +1666,9 @@ def lead_management_create(request):
             
             secondarycontact = request.POST.get('secondarycontact')
             secondarycontact = int(secondarycontact) if secondarycontact and secondarycontact.isdigit() else None
-
+            or_contact = request.POST.get('or_contact')
+            or_contact = int(or_contact) if or_contact and or_contact.isdigit() else None
+            or_name = request.POST.get('or_name')
             # Other fields
             customeremail = request.POST.get('customeremail')
             customeraddress = request.POST.get('customeraddress')
@@ -1661,6 +1676,7 @@ def lead_management_create(request):
             city = request.POST.get('city', 'Unknown City')
             state = request.POST.get('state')
             typeoflead = request.POST.get('typeoflead')
+            customer_type = request.POST.get('customer_type')
             
             firstfollowupdate_str = request.POST.get('firstfollowupdate')
             firstfollowupdate = datetime.strptime(firstfollowupdate_str, '%Y-%m-%d').date() if firstfollowupdate_str else None
@@ -1687,6 +1703,9 @@ def lead_management_create(request):
                 branch=branch,
                 typeoflead=typeoflead,
                 firstfollowupdate=firstfollowupdate,
+                or_contact = or_contact,
+                or_name = or_name,
+                customer_type = customer_type,
             )
 
             return redirect('/display_lead_management')
@@ -2371,6 +2390,7 @@ def display_lead_management(request):
     sort_by = request.GET.get('sort', 'customername')
     order = request.GET.get('order', 'asc')
     segment_filter = request.GET.get('segments')
+    customer_type = request.GET.get('customer_type')
 
     # 3. Apply search filter
     if search_query:
@@ -2395,6 +2415,8 @@ def display_lead_management(request):
         filtered_leads = filtered_leads.filter(firstfollowupdate__range=[followup_from, followup_to])
     if segment_filter:
         filtered_leads = filtered_leads.filter(customersegment=segment_filter)
+    if customer_type:
+        filtered_leads = filtered_leads.filter(customer_type=customer_type)
     # 5. Count for display
     branch_count = filtered_leads.count()
 
@@ -2441,7 +2463,7 @@ def display_lead_management(request):
     # segments = lead_management.objects.exclude( customersegment__in=["NOT SELECTED", "", None] ).values_list('customersegment', flat=True).distinct()
     segments = [ choice[0] for choice in lead_management._meta.get_field('customersegment').choices if choice[0] != "NOT SELECTED" ]
 
-
+    c_types = ['Organization','Individual']
     
 
 
@@ -2476,6 +2498,7 @@ def display_lead_management(request):
         'no_data_message': no_data_message,
         'branch_count': branch_count,
         'selected_segment': segment_filter,
+        'c_types' : c_types,
     }
 
     return render(request, 'display_lead_management.html', context)
@@ -4360,6 +4383,7 @@ def get_customer_details(request):
                 'customer_id': customer.id,
                 'customer_full_name': customer.fullname,
                 'customer_email': customer.primaryemail,
+                'contactperson':customer.contactperson,
                 'shifttopartyaddress': customer.shifttopartyaddress,
                 'city': customer.shifttopartycity,
                 'state': customer.shifttopartystate,
@@ -4368,8 +4392,9 @@ def get_customer_details(request):
                 'sold_city': customer.soldtopartycity,
                 'sold_state': customer.soldtopartystate,
                 'sold_pincode':customer.soldtopartypostal,
-              
-                
+                'customer_type': customer.customer_type,
+                'or_name':customer.or_name,
+                'or_contact':customer.or_contact,  
             }
             return JsonResponse(data)
         except customer_details.DoesNotExist:
@@ -4992,8 +5017,12 @@ def reportlab_quotation_pdf(request, id):
         Paragraph(f"<b>Name :</b> {quotation.customer_full_name}", left_style),
         Paragraph(f"<b>Phone :</b> {quotation.contact_no}", left_style),
         Paragraph(f"<b>Email :</b> {quotation.customer_email}", left_style),
-        Paragraph(f"<b>Address :</b> {quotation.address}", left_style)
+        Paragraph(f"<b>Address :</b> {quotation.address}", left_style),
     ]
+    if quotation.or_name:
+        customer_details.append(
+            Paragraph(f"<b>Person :</b> {quotation.or_name} - {quotation.or_contact}", left_style)
+        )
     left_table = Table([[item] for item in customer_details], colWidths=[95 * mm])
     left_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),

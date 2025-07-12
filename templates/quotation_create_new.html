@@ -324,9 +324,26 @@
                                             value="{{ form_data.secondary_contact_no }}" ><br>
                                         </div>
                                         <div class="col-md-6">
+                                            <label>Customer Type<span class="star">*</span></label>
+                                            <input type="text" class="form-control" name="customer_type" id="view_customer_type" 
+                                                   value="{{ form_data.customer_type }}" readonly>
+                                        </div>
+                                        
+                                        <div class="col-md-6 org-fields">
+                                            <label>Sub-Name</label>
+                                            <input type="text" name="or_name" class="form-control">
+                                        </div>
+                                        
+                                        <div class="col-md-6 org-fields">
+                                            <label>Sub-Contact No</label>
+                                            <input type="text" name="or_contact" class="form-control">
+                                        </div>
+
+                                        
+                                        <div class="col-md-6">
                                             <label>Sales Person<span class="star">*</span></label>
                                             <input type="text" id="contact_by" name="contact_by" required
-                                                class="form-control" value="{{ form_data.contact_by }}">
+                                                class="form-control" value="{{ form_data.contactperson }}">
                                         </div>
                                         <div class="col-md-6">
                                             <label>Contact No<span class="star">*</span></label>
@@ -594,15 +611,33 @@
                                       <label>Secondary Contact No</label>
                                       <input type="text" class="form-control" name="secondarycontact" placeholder="Secondary Contact No" pattern="\d{10}">
                                     </div>
+
+                                    <div class="col-md-4 mb-4">
+                                        <label>Customer Type<span class="star">*</span></label>
+                                        <select name="customer_type" class="form-control" id="customer_type_select" onchange="toggleOrganizationFields()">
+                                          <option value="Individual" {% if customer_type == 'Individual' %}selected{% endif %}>Individual</option>
+                                          <option value="Organization" {% if customer_type == 'Organization' %}selected{% endif %}>Organization</option>
+                                        </select>
+
+                                    </div>
+                                    <div class="or_name col-md-4 mb-4" style="display: none;">
+                                      <label>Name <span class="star">*</span></label>
+                                      <input type="text" name="or_name"  class="form-control">
+                                    </div>
+                                    <div class="or_contact col-md-4 mb-4" style="display: none;">
+                                      <label>Contact <span class="star">*</span></label>
+                                      <input type="number" name="or_contact" class="form-control">
+                                    </div>
+                            
                                 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
                                       <label>Contact Person Name <span class="text-danger">*</span></label>
                                       <input type="text" class="form-control" name="contactperson" placeholder="Contact person name" required>
                                     </div>
                                 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
                                       <label>Designation <span class="text-danger">*</span></label>
-                                      <input type="text" class="form-control" name="customersegment" placeholder="Designation" required>
+                                      <input type="text" class="form-control" name="designstion" placeholder="Designation" required>
                                     </div>
                                   </div>
                               
@@ -699,6 +734,48 @@
         }
       }
     </script> -->
+<!-- customer type -->
+ <script>
+    function toggleOrganizationFields() {
+  const selectValue = document.getElementById('customer_type_select').value;
+  const orgFields = document.querySelectorAll('.or_name, .or_contact'); // multiple classes
+  
+  orgFields.forEach(field => {
+    field.style.display = (selectValue === 'Organization') ? 'block' : 'none';
+  });
+}
+
+// Run on page load
+window.onload = function () {
+  toggleOrganizationFields();
+}
+
+</script>
+
+<!-- Customer type but in quotation form -->
+<script>
+function toggleOrgFieldsByCustomerType() {
+    const customerTypeInput = document.getElementById("view_customer_type");
+    if (!customerTypeInput) return;
+
+    const customerType = customerTypeInput.value.trim();
+    console.log("Customer type value (dynamic):", customerType);
+
+    const orgFields = document.querySelectorAll(".org-fields");
+    const show = (customerType === "Organization");
+
+    orgFields.forEach(el => {
+        el.style.display = show ? "block" : "none";
+    });
+}
+
+// Run on initial page load
+document.addEventListener("DOMContentLoaded", function () {
+    toggleOrgFieldsByCustomerType();
+});
+</script>
+
+
 
 
     <script>
@@ -794,7 +871,8 @@
             const emailField = document.querySelector('input[name="customer_email"]');
             const nameField = document.querySelector('input[name="customer_full_name"]');
             const addressField = document.querySelector('textarea[name="address"]');
-
+            const contactpersonField = document.querySelector('input[name="contact_by"]');
+            const customerTypeField = document.querySelector('input[name="customer_type"]');
             contactInput.addEventListener('blur', function () {
                 const contactNo = this.value.trim();
                 if (!contactNo) return;
@@ -824,7 +902,13 @@
                         if (!nameField.value && data.customer_full_name) {
                             nameField.value = data.customer_full_name;
                         }
-                        console.log(data.pincode)
+                        if (!contactpersonField.value && data.contactperson) {
+                            contactpersonField.value = data.contactperson;
+                        }
+                        if (!customerTypeField.value && data.customer_type) {
+                            customerTypeField.value = data.customer_type;
+                            toggleOrgFieldsByCustomerType(); 
+                        }
                         if (!addressField.value && data.soldtopartyaddress) {
                             const pincode = data.sold_pincode;
                             const fullAddress = `${data.soldtopartyaddress}, ${data.sold_city} - ${pincode}`;
@@ -842,6 +926,7 @@
                         console.error('Error:', error);
                     });
             });
+           
         });
     </script>
 

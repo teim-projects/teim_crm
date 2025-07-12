@@ -162,6 +162,24 @@
                 <input type="email" name="customeremail" class="form-control" required />
               </div>
               <div class="col-md-6 mb-4">
+                <label>Customer Type<span class="star">*</span></label>
+                <select name="customer_type" class="form-control" id="customer_type_select" onchange="toggleOrganizationFields()">
+                  <option value="Individual" selected>Individual</option>
+                  <option value="Organization">Organization</option>
+                </select>
+              </div>
+
+              <div class="or_name col-md-6 mb-4" style="display: none;">
+                <label>Name <span class="star">*</span></label>
+                <input type="text" name="or_name"  class="form-control">
+              
+                <label>Contact <span class="star">*</span></label>
+                <input type="number" name="or_contact" class="form-control">
+              </div>
+
+
+
+              <div class="col-md-6 mb-4">
                 <label>Select State <span class="star">*</span></label>
                 <select id="state" name="state" class="form-control" required>
                   <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -220,7 +238,7 @@
             </div>
           </div>
 
-          <!-- Step 2: Customer Details -->
+          <!-- Step 2:  -->
           <div class="form-step">
             <div class="row">
               <div class="col-md-6 mb-4">
@@ -325,7 +343,23 @@
     </div>
   </div>
 
+  <!-- organiization dropdown -->
+<script>
+    function toggleOrganizationFields() {
+      const selectValue = document.getElementById('customer_type_select').value;
+      const orgFields = document.querySelector('.or_name');
+      if (selectValue === 'Organization') {
+        orgFields.style.display = 'block';
+      } else {
+        orgFields.style.display = 'none';
+      }
+    }
 
+    // Optional: Run on page load if editing form
+    window.onload = function () {
+      toggleOrganizationFields();
+    }
+</script>
   <script>
     const stateCityMap = {
       "Andhra Pradesh": [

@@ -38,7 +38,7 @@ urlpatterns = [
     # path('quotation_create',views.quotation_create, name='quotation_create'),
     path('invoice_create',views.invoice_create),
     # path('inventory_create',views.inventory_create),
-    path('lead_management_create', views.lead_management_create),
+    path('lead_management_create', views.lead_management_create, name='lead_management_create'),
     path('check_phone_number/', views.check_phone_number, name='check_phone_number'),
     path('followup/<int:lead_id>/', views.main_followup_view, name='main_followup_view'),
     path('today-work/', views.today_work, name='today_work'),

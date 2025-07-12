@@ -44,7 +44,7 @@
             width: 100%;
             max-width: 800px;
             margin-top: 25px;
-             margin-bottom: 100px;
+            margin-bottom: 100px;
         }
 
         h3 {
@@ -96,6 +96,11 @@
             padding: 40px;
         }
 
+        label {
+            margin-top: 10px !important;
+            color: #3498db;
+        }
+
         @media (max-width: 768px) {
             .main-container {
                 margin-top: 100px;
@@ -122,38 +127,7 @@
 
     {% include 'sidebar.html' %}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('input[name="primarycontact"]').on('change', function () {
-                const mobile = $(this).val();
-                if (mobile.length === 10) {
-                    $.ajax({
-                        url: "",
-                        data: {
-                            'primarycontact': mobile
-                        },
-                        dataType: 'json',
-                        success: function (response) {
-                            if (response.status === 'exists') {
-                                const data = response.data;
-                                $('input[name="fullname"]').val(data.fullname);
-                                $('input[name="primaryemail"]').val(data.primaryemail);
-                                $('input[name="secondarycontact"]').val(data.secondarycontact);
-                                $('input[name="contactperson"]').val(data.contactperson);
-                                $('input[name="customersegment"]').val(data.customersegment);
-                                $('input[name="shifttopartyaddress"]').val(data.shifttopartyaddress);
-                                $('input[name="shifttopartycity"]').val(data.shifttopartycity);
-                                $('input[name="soldtopartyaddress"]').val(data.soldtopartyaddress);
-                                $('input[name="soldtopartycity"]').val(data.soldtopartycity);
-                            } else {
-                                alert("No lead data found for this number.");
-                            }
-                        }
-                    });
-                }
-            });
-        });
-    </script>
+    
     <div class="main-container">
         <div class="card   card-registration  ">
             <div class="card-body">
@@ -183,7 +157,7 @@
                                 <input type="text" class="form-control" name="customerid" value="{{ customerid }}"
                                     readonly required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-0">
                                 <label>Full Name <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="fullname" placeholder="Full Name"
                                     required><br>
@@ -204,24 +178,41 @@
                                 <input type="text" class="form-control" name="secondarycontact"
                                     placeholder="Secondary Contact No" pattern="\d{10}">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Contact Person Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="contactperson"
-                                    placeholder="Contact person name" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label>Designation <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="customersegment" placeholder="Designation"
-                                    required>
+                            <div class="row">
+                                <div class="col-md-4 mb-4">
+                                    <label>Customer Type<span class="star">*</span></label>
+                                    <select name="customer_type" class="form-control" id="customer_type_select" onchange="toggleOrganizationFields()">
+                                      <option value="Individual" {% if customer_type == 'Individual' %}selected{% endif %}>Individual</option>
+                                      <option value="Organization" {% if customer_type == 'Organization' %}selected{% endif %}>Organization</option>
+                                    </select>
+
+                                  </div>
+                                    <div class="or_name col-md-4 mb-4" style="display: none;">
+                                      <label>Name <span class="star">*</span></label>
+                                      <input type="text" name="or_name"  class="form-control">
+                                    </div>
+                                    <div class="or_contact col-md-4 mb-4" style="display: none;">
+                                      <label>Contact <span class="star">*</span></label>
+                                      <input type="number" name="or_contact" class="form-control">
+                                    </div>
+                            
+
+                                    <div class="col-md-4 mb-3">
+                                        <label>Contact Person Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="contactperson"
+                                            placeholder="Contact person name" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label>Designation <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="designstion" placeholder="Designation"
+                                            required>
+                                    </div>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-3"></div>
-                            <div class="col-md-3 "></div>
-                            <div class="col-md-3 "></div>
-                            <div class="col-md-3 col-12"> <button type="button" class="btn btn-primary float-end"
-                                    onclick="nextStep()" style="width: 100%;">Next</button></div>
-
+                 
+                            <div class="col-12 d-flex justify-content-center  "> <button type="button" class="btn btn-primary float-end"
+                                       onclick="nextStep()" style="width: 200px">Next</button></div>
                         </div>
 
 
@@ -318,6 +309,43 @@
                 </form>
 
                 <!-- Step form JS -->
+
+                <script>
+        $(document).ready(function () {
+            $('input[name="primarycontact"]').on('change', function () {
+                const mobile = $(this).val();
+                if (mobile.length === 10) {
+                    $.ajax({
+                        url: "",
+                        data: {
+                            'primarycontact': mobile
+                        },
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.status === 'exists') {
+                                const data = response.data;
+                                $('input[name="fullname"]').val(data.fullname);
+                                $('input[name="primaryemail"]').val(data.primaryemail);
+                                $('input[name="secondarycontact"]').val(data.secondarycontact);
+                                $('input[name="contactperson"]').val(data.contactperson);
+                                $('input[name="customersegment"]').val(data.customersegment);
+                                $('input[name="shifttopartyaddress"]').val(data.shifttopartyaddress);
+                                $('input[name="shifttopartycity"]').val(data.shifttopartycity);
+                                $('input[name="soldtopartyaddress"]').val(data.soldtopartyaddress);
+                                $('input[name="soldtopartycity"]').val(data.soldtopartycity);
+                                $('select[name="customer_type"]').val(data.customer_type || 'Individual');
+                                $('input[name="or_name"]').val(data.or_name);
+                                $('input[name="or_contact"]').val(data.or_contact);
+                                toggleOrganizationFields();
+                            } else {
+                                alert("No lead data found for this number.");
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
                 <script>
                     let currentStep = 0;
                     const steps = document.querySelectorAll('.step');
@@ -383,6 +411,26 @@
             });
         });
     </script>
+
+
+<!-- customer type -->
+ <script>
+    function toggleOrganizationFields() {
+  const selectValue = document.getElementById('customer_type_select').value;
+  const orgFields = document.querySelectorAll('.or_name, .or_contact'); // multiple classes
+  
+  orgFields.forEach(field => {
+    field.style.display = (selectValue === 'Organization') ? 'block' : 'none';
+  });
+}
+
+// Run on page load
+window.onload = function () {
+  toggleOrganizationFields();
+}
+
+</script>
+
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:100px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">

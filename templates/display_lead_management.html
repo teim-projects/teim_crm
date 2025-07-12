@@ -622,6 +622,18 @@
                                                 {% endfor %}
                                             </select>
                                         </div>
+                                        
+                                        <!-- Customer Type -->
+                                        <div class="col-md-3">
+                                            <label>Customer Type</label>
+                                            <select name="customer_type" class="form-control custom-select">
+                                                <option value="">All Types</option>
+                                                {% for type in c_types %}
+                                                <option value="{{ type }}" {% if request.GET.customer_type == type %}selected{% endif %}>
+                                                    {{ type }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
 
                                         <!-- Segment -->
                                             <div class="col-md-3">
