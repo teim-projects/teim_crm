@@ -14,6 +14,7 @@ urlpatterns = [
     path('sales-persons/', views.sales_person_list, name='sales_person_list'),
     path('edit-sales-person/<int:pk>/', views.edit_sales_person, name='edit_sales_person'),
     path('delete-sales-person/<int:pk>/', views.delete_sales_person, name='delete_sales_person'),
+    path('sales-persons/export/', views.export_sales_person_csv, name='export_sales_person_csv'),
     path('customer_details_create',views.customer_details_create, name='customer_details_create'),
     path('service_management_create',views.service_management_create, name='service_management_create'),
 
@@ -85,6 +86,7 @@ urlpatterns = [
     path('add_product/', views.add_product, name='add_product'),
     path('update_product/<int:product_id>', views.update_product, name='update_product'),
     path('products/', views.product_list, name='product_list'),
+    path('product-list/export/', views.export_product_list_csv, name='export_product_list_csv'),
     path('get_customer_name/', views.get_customer_name, name='get_customer_name'),
     path('create/', views.create_technician_profile, name='create_technician_profile'),
     path('technicians/', views.display_technician, name='display_technician'),

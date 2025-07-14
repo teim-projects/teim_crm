@@ -574,6 +574,28 @@ def sales_person_list(request):
     return render(request, 'sales_person_list.html', {'sales_persons': sales_persons})
 
 
+def export_sales_person_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="sales_persons.csv"'
+
+    writer = csv.writer(response)
+    
+    # Header row
+    writer.writerow(['Full Name', 'Date of Joining', 'Mobile No', 'Email', 'Date of Birth'])
+
+    # Data rows
+    for sp in SalesPerson.objects.all():
+        writer.writerow([
+            sp.full_name,
+            sp.date_of_joining.strftime('%Y-%m-%d'),
+            sp.mobile_no,
+            sp.email,
+            sp.date_of_birth.strftime('%Y-%m-%d'),
+        ])
+
+    return response
+
+
 # Edit Sales Person
 def edit_sales_person(request, pk):
     person = get_object_or_404(SalesPerson, pk=pk)
@@ -688,7 +710,7 @@ def customer_details_create(request):
         return redirect('/display_customer')
     
 
-
+@login_required
 def export_customer_excel(request):
 
     response = HttpResponse(content_type='text/csv')
@@ -738,7 +760,23 @@ def product_list(request):
     return render(request, 'product_list.html', context)
 
 
+def export_product_list_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="product_list.csv"'
 
+    writer = csv.writer(response)
+    
+    # Header row
+    writer.writerow(['Name', 'Category'])
+
+    # Data rows
+    for p in Product.objects.all():
+        writer.writerow([
+            p.product_name,
+            p.category
+        ])
+
+    return response
 
 
 def delete_product(request, product_id):
