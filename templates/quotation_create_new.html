@@ -527,7 +527,7 @@
                                             <button type="button" class="btn btn-secondary prev-step mt-2"
                                                 style="width: 150px;">Previous</button>
                                             <button class="btn btn-info mt-2" type="submit"
-                                                style="width: 150px;">Submit</button>
+                                                style="width: 150px;" target="_blank">Submit</button>
                                         </div>
                                     </form>
 
@@ -1361,6 +1361,12 @@ function getCookie(name) {
     </div>
 
 
+{% if show_pdf_script %}
+<script>
+    // Automatically open the PDF in a new tab
+    window.open("{{ pdf_url }}", "_blank");
+</script>
+{% endif %}
 
 </body>
 

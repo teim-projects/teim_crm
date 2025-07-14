@@ -329,7 +329,7 @@
                                             {% elif x.order_status == "Close Loss" %}
                                                 <span class="badge bg-danger">Close Loss</span>
                                             {% else %}
-                                                <a href="{% url 'main_followup_view' x.lead.id %}" class="btn btn-sm btn-outline-primary">
+                                                <a href="{% url 'main_followup_view' x.lead.id %}?{{ request.GET.urlencode }}"  class="btn btn-sm btn-outline-primary">
                                                    <i class="fa-solid fa-clipboard-list"></i>
                                                 </a>
                                             {% endif %}
@@ -340,32 +340,32 @@
                                         </div>
                                     </td>
 
-                                <td>{{ x.lead.sourceoflead }}</td>
-                                <td>{{ x.lead.salesperson }}</td>
-                                <td>{{ x.lead.customername }}</td>
-                                <td>{{ x.lead.primarycontact }}</td>
-                                <td>{{ x.lead.customersegment }}</td>
-                                <td>{{ x.lead.typeoflead }}</td>
-                                <td>{{ x.lead.branch }}</td>
-                                <td>{{ x.lead.enquirydate }}</td>
-                                <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
-                                <td>{{ x.next_followup_date }}</td>
+                                    <td>{{ x.lead.sourceoflead }}</td>
+                                    <td>{{ x.lead.salesperson }}</td>
+                                    <td>{{ x.lead.customername }}</td>
+                                    <td>{{ x.lead.primarycontact }}</td>
+                                    <td>{{ x.lead.customersegment }}</td>
+                                    <td>{{ x.lead.typeoflead }}</td>
+                                    <td>{{ x.lead.branch }}</td>
+                                    <td>{{ x.lead.enquirydate }}</td>
+                                    <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
+                                    <td>{{ x.next_followup_date }}</td>
                               
 
                                 {% else %}
                                 <!-- lead_management -->
-                               <td class="text-nowrap">
-                                    <div class="btn-group btn-group-sm gap-1" role="group" aria-label="Action Buttons">
-                                        <a href="{% url 'main_followup_view' x.id %}" class="btn btn-outline-primary" title="Follow-up">
-                                            <i class="fa-solid fa-clipboard-list"></i>
-                                        </a>
-                                        <a href="/edit_lead_management/{{ x.id }}" class="btn btn-success" title="Edit">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </a>
-                                        <a href="/delete_lead_management/{{ x.id }}" class="btn btn-danger delete-link" title="Delete">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </a>
-                                    </div>
+                                <td class="text-nowrap">
+                                     <div class="btn-group btn-group-sm gap-1" role="group" aria-label="Action Buttons">
+                                         <a href="{% url 'main_followup_view' x.id %}?{{ request.GET.urlencode }}"  class="btn btn-outline-primary" title="Follow-up">
+                                             <i class="fa-solid fa-clipboard-list"></i>
+                                         </a>
+                                         <a href="/edit_lead_management/{{ x.id }}" class="btn btn-success" title="Edit">
+                                             <i class="fa-solid fa-pen-to-square"></i>
+                                         </a>
+                                         <a href="/delete_lead_management/{{ x.id }}" class="btn btn-danger delete-link" title="Delete">
+                                             <i class="fa-solid fa-trash"></i>
+                                         </a>
+                                     </div>
                                 </td>
 
                                 <td>{{ x.sourceoflead }}</td>
@@ -378,8 +378,8 @@
                                 <td>{{ x.enquirydate }}</td>
                                 <td>{{ x.customeraddress|truncatewords:3 }}</td>
                                 <td>{{ x.firstfollowupdate }}</td>
-                                
-                                {% endif %}
+
+                                 {% endif %}
                             </tr>
                             {% empty %}
                             <tr>

@@ -1050,7 +1050,18 @@ def quotation_management_create(request):
             request.session.pop('quotation_form_data', None)
             request.session.modified = True
 
-            return redirect(f'/generate_quotation/quotation/pdf/{quotation.id}/view')
+            # return redirect(f'/generate_quotation/quotation/pdf/{quotation.id}/view')
+            return render(request, 'quotation_create_new.html', {
+                # Existing context
+                'pdf_url': f'/generate_quotation/quotation/pdf/{quotation.id}/view',
+                'show_pdf_script': True,
+                'products': products,
+                'category_choices': category_choices,
+                'terms': terms,
+                'branches': branches,
+                'form': AddProductForm(),  # include this if used in template
+                'form_data': {},           # clear form if needed
+            })
 
 
         except Exception as e:
@@ -1784,7 +1795,11 @@ def main_followup_view(request, lead_id):
             if order_status == 'Close Win':
                 return redirect('service_management_create')
 
-        return redirect('pending_followups')
+        query_string = request.GET.urlencode()
+        redirect_url = reverse('pending_followups')
+        if query_string:
+            redirect_url += f"?{query_string}"
+        return redirect(redirect_url)
 
     context = {
         'lead': lead,
@@ -2000,25 +2015,31 @@ def display_customer(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
     sort_by = request.GET.get('sort_by', 'customerid')
+    customer_type = request.GET.get('customer_type')
 
+    # Base queryset
+    m = customer_details.objects.all()
+
+    # Apply search filters
     if query:
-        m = (customer_details.objects.filter(customerid__icontains=query) |
-             customer_details.objects.filter(primarycontact__icontains=query)|
-             customer_details.objects.filter(fullname__icontains=query))
-    else:
-        m = customer_details.objects.all()
+        m = m.filter(
+            Q(customerid__icontains=query) |
+            Q(primarycontact__icontains=query) |
+            Q(fullname__icontains=query)
+        )
 
+    # Apply customer type filter
+    if customer_type:
+        m = m.filter(customer_type=customer_type)
+
+    filter_count = m.count()
+    # Apply sorting
     if sort_by == 'firstname':
-        if sort_order == 'desc':
-            m = m.order_by('-firstname')  
-        else:
-            m = m.order_by('firstname')  
+        m = m.order_by('-firstname' if sort_order == 'desc' else 'firstname')
     else:
-        if sort_order == 'desc':
-            m = m.order_by('-customerid')  
-        else:
-            m = m.order_by('customerid')
+        m = m.order_by('-customerid' if sort_order == 'desc' else 'customerid')
 
+    # Pagination
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -2029,11 +2050,13 @@ def display_customer(request):
         'current_sort_by': sort_by,
         'page_obj': page_obj,
         'start_index': start_index,
-        'data': page_obj.object_list,  
+        'data': page_obj.object_list,
+        'selected_type': customer_type,  
+        'search_query': query,   
+        'filter_count' : filter_count,         
     }
 
     return render(request, 'display_customer.html', context)
-
 
 def import_customers(request):
     if request.method == 'POST':
@@ -2144,6 +2167,7 @@ def display_service_management(request):
     selected_salesperson = request.GET.get('salesperson', '')
     service_from = request.GET.get('service_from', '')
     service_to = request.GET.get('service_to', '')
+    customer_type = request.GET.get('customer_type')
 
     m = service_management.objects.all()
 
@@ -2165,6 +2189,10 @@ def display_service_management(request):
     if selected_contract_type:
         m = m.filter(contract_type=selected_contract_type)
 
+    # Filter by customer type 
+    if customer_type:
+        m=m.filter(customer__customer_type=customer_type)
+
     # Apply Service Date Range Filter
     if service_from:
         try:
@@ -2179,7 +2207,7 @@ def display_service_management(request):
             m = m.filter(service_date__lte=service_to_date)
         except ValueError:
             pass
-
+    
     # Sorting logic
     if sort_by == 'firstname':
         m = m.order_by('-customer__firstname' if sort_order == 'desc' else 'customer__firstname')
@@ -2209,6 +2237,7 @@ def display_service_management(request):
         'segments': segments,
         'salespersons': salespersons,
         'selected_segment': selected_segment,
+        
     }
     context['data'] = m
     return render(request, 'display_service_management.html', context)
@@ -2275,7 +2304,7 @@ def display_quotation(request):
     sort_order = request.GET.get('order', 'asc')
     sort_order = sort_order if sort_order in ['asc', 'desc'] else 'asc'
     sort_by = request.GET.get('sort_by', 'customer_full_name')
-
+    customer_type = request.GET.get('customer_type')
     valid_sort_fields = ['quotation_no','customer_full_name', 'quotation_date', 'total_price', 'total_price_with_gst']
 
     m = quotation_management.objects.all()
@@ -2286,7 +2315,11 @@ def display_quotation(request):
             Q(customer__customerid__icontains=query) |
             Q(contact_no__icontains=query)
         )
+    # Filter by customer type 
+    if customer_type:
+        m=m.filter(customer__customer_type=customer_type)
 
+    filter_count = m.count()
     if sort_by in valid_sort_fields:
         order_prefix = '-' if sort_order == 'desc' else ''
         m = m.order_by(f'{order_prefix}{sort_by}')
@@ -2304,6 +2337,7 @@ def display_quotation(request):
         'page_obj': page_obj,
         'start_index': start_index,
         'search_query': query,
+        'filter_count':filter_count,
     }
     return render(request, 'display_quotation.html', context)
 

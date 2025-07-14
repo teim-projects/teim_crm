@@ -424,25 +424,45 @@
                     <div class="table-wrapper addnewshadow">
                         <h1> Quotation Information</h1>
 
-                        <div class="navbar">
-                            <form class="form-inline" method="get">
-                                <input class="form-control mr-sm-2" type="search" name="search"
-                                    placeholder="Search by Cust.ID \ Mobile " aria-label="Search"
-                                    value="{{ request.GET.search }}">
-                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
-                                    style="width: 150px;">Search</button>
+                        <div class="container-fluid">
+                            <div class="row align-items-center mb-3 g-2">
+                            
+                                <!-- Search Bar -->
+                                <div class="col-md-3">
+                                    <form class="d-flex" method="get">
+                                        <input class="form-control me-2" type="search" name="search"
+                                            placeholder="Search by Cust.ID / Mobile"
+                                            aria-label="Search"
+                                            value="{{ request.GET.search }}">
+                                        <button class="btn btn-outline-success" type="submit" style="min-width: 100px;">Search</button>
+                                    </form>
+                                </div>
+                            
+                                <!-- Customer Type Dropdown -->
+                                <div class="col-md-2">
+                                    <form method="get">
+                                        <select class="form-select" name="customer_type" id="customer_type" onchange="this.form.submit()">
+                                            <option value="">All Type</option>
+                                            <option value="Individual" {% if request.GET.customer_type == 'Individual' %}selected{% endif %}>Individual</option>
+                                            <option value="Organization" {% if request.GET.customer_type == 'Organization' %}selected{% endif %}>Organization</option>
+                                        </select>
+                                    </form>
+                                </div>
+                                <div class="col-md-5">
 
-                            </form>
-
-                            <!-- Export Button -->
-                            <div class="col-md-2 mt-2 mt-md-0">
-                                <a href="{% url 'export_quotation' %}">
-                                    <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
-                                </a>
+                                </div>
+                                <!-- Export Button -->
+                                <div class="col-md-2">
+                                    <a href="{% url 'export_quotation' %}">
+                                        <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
+                                    </a>
+                                </div>
+                            
                             </div>
                         </div>
+
                         <div class="p mb-3">
-                            <p class="scroll-instruction">Scroll to view more content ➡️ </p>
+                            <p class="text-primary text-end">Total Quotation's : <strong> {{ filter_count }}</strong></p>
                         </div>
                         <div class="table-responsive">
     <table class="table table-bordered table-hover align-middle text-nowrap">

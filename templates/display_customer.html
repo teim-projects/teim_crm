@@ -449,10 +449,10 @@
                     <div class="table-wrapper addnewshadow">
                         <h1>Customer Details</h1>
 
-                        <div class="row align-items-center mb-3">
+                       <div class="row align-items-center mb-3">
 
                             <!-- Search Form -->
-                            <div class="col-md-4 justify-content">
+                            <div class="col-md-3">
                                 <form class="d-flex" method="get">
                                     <input class="form-control me-2" type="search" name="search"
                                         placeholder="Search by Cust.ID/Phone no / Name." aria-label="Search"
@@ -461,26 +461,37 @@
                                 </form>
                             </div>
 
-
-                            <!-- Export Button -->
-                            <div class="col-md-2 mt-2 mt-md-0">
-                                <a href="{% url 'export_customers' %}">
-                                    <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
-                                </a>
+                            <div class="col-md-2">
+                                <form method="get">
+                                    <div class="input-group ">
+                                          <select class="form-control " name="customer_type" id="customer_type" onchange="this.form.submit()">
+                                            <option value="">All Customers</option>
+                                            <option value="Individual" {% if request.GET.customer_type == 'Individual' %} selected {% endif %} >Individual</option>
+                                            <option value="Organization" {% if request.GET.customer_type == 'Organization' %} selected {% endif %}>Organization</option>
+                                          </select>
+                                    </div>
+                                </form>
                             </div>
 
-                            <!-- Import Button -->
-                            <div class="col-md-2 mt-2 mt-md-0">
-                                <a href="{% url 'import_customers' %}">
-                                    <button type="button" class="btn btn-secondary w-100">📥 &nbsp;Import
-                                        Customers</button>
-                                </a>
+                            <div class="col-md-1"></div>
+                        
+                            <!-- Export & Import Buttons -->
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-end gap-2 flex-wrap mt-2">
+                                    <a href="{% url 'export_customers' %}">
+                                        <button type="button" class="btn btn-primary">📤 &nbsp;Export Excel</button>
+                                    </a>
+                                    <a href="{% url 'import_customers' %}">
+                                        <button type="button" class="btn btn-secondary">📥 &nbsp;Import Customers</button>
+                                    </a>
+                                </div>
                             </div>
-
+                        
                         </div>
 
+
                         <div class="p mb-3">
-                            <p class="scroll-instruction">Scroll to view more content ➡️ </p>
+                            <p class="text-primary text-end">Total Customers : <strong> {{ filter_count }}</strong></p>
                         </div>
                         <div class="container-table">
                             <table class="table table-bordered" style="border-top: 1px solid black !important;">

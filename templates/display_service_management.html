@@ -498,6 +498,15 @@
                                                 {% endfor %}
                                             </select>
                                         </div>
+                                          <!-- Customer Type -->
+                                        <div class="col-md-3">
+                                            <label>Customer Type</label>
+                                            <select name="customer_type" class="form-control custom-select">
+                                                <option value="">All</option>
+                                                <option value="Individual" {% if request.GET.customer_type == 'Individual' %}selected{% endif %}>Individual</option>
+                                                <option value="Organization" {% if request.GET.customer_type == 'Organization' %}selected{% endif %}>Organization</option>
+                                            </select>
+                                        </div>
                                                                     
                                     </div>
                                 
