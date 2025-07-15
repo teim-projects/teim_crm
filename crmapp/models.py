@@ -578,6 +578,7 @@ class quotation_management(models.Model):
     total_price_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     subject = models.CharField(max_length=1000, null=True, blank=True)
+    thank_u_note = models.CharField(max_length=1000, null=True, blank=True)
     quotation_date = models.DateField(default=timezone.now)
     custom_terms = models.TextField(blank=True, null=True)
     or_name = models.CharField(max_length=100, null=True, blank=True)

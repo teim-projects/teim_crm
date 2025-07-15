@@ -989,6 +989,7 @@ def quotation_management_create(request):
             product_details_json = request.POST.get('product_details_json')
             or_name = request.POST.get('or_name')
             or_contact = request.POST.get('or_contact')
+            thank_u_note = request.POST.get('thank_u_note')
             # Handle quotation date
             date_str = request.POST.get('quotation_date')
             if date_str:
@@ -1080,6 +1081,7 @@ def quotation_management_create(request):
                 custom_terms = custom_terms,
                 or_name = or_name,
                 or_contact = or_contact,
+                thank_u_note = thank_u_note,
             )
 
             quotation.selected_services.set(selected_services)
@@ -3112,6 +3114,10 @@ def edit_lead_management(request, rid):
         utypeoflead = request.POST.get('utypeoflead', '')
         ucontactedby = request.POST.get('ucontactedby', '')
         uenquirydate = request.POST.get('uenquirydate', '')
+        ucustomer_type = request.POST.get('ucustomer_type','')
+        uor_name = request.POST.get('uor_name','')
+        uor_contact = request.POST.get('uor_contact','')
+
 
         try:
             uenquirydate = datetime.strptime(uenquirydate, '%Y-%m-%d').date() if uenquirydate else timezone.now().date()
@@ -3152,7 +3158,10 @@ def edit_lead_management(request, rid):
             customeraddress = ucustomeraddress,
             location = ulocation,
             city = ucity,
-            firstfollowupdate=ufirstfollowupdate
+            firstfollowupdate=ufirstfollowupdate,
+            customer_type = ucustomer_type,
+            or_name = uor_name,
+            or_contact = uor_contact,
         )
         
        
@@ -5123,7 +5132,7 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Paragraph(f"<b>Subject:</b> {quotation.subject}", full_width))
     elements.append(Spacer(1, 5))
     elements.append(Paragraph(
-        "<b>We Thank You for your enquiry for Commodity Fumigation with ALP and we are pleased to give the quotation accordingly as below:</b>",
+        f"<b>{ quotation.thank_u_note }:</b>",
         full_width))
     elements.append(Spacer(1, 10))
 
