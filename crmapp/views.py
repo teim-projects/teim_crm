@@ -2737,15 +2737,10 @@ def delete_lead_management(request , rid):
 # Edit Customer Details
 
 def edit_customer(request , rid):
-    
-
     if request.method =='GET':
-
         m=customer_details.objects.filter(id=rid)
-
         context={}
         context['data']=m
-    
         return render(request , 'edit_customer.html' , context)
     
     else:
@@ -2757,7 +2752,7 @@ def edit_customer(request , rid):
         if not usecondarycontact:
             usecondarycontact = None
         ucontactperson=request.POST['ucontactperson']
-        ucustomersegment=request.POST['ucustomersegment']
+        udesignation=request.POST['udesignation']
         ushifttopartyaddress=request.POST['ushifttopartyaddress']
         ushifttopartycity=request.POST['ushifttopartycity']
         ushifttopartystate=request.POST['ushifttopartystate']
@@ -2766,13 +2761,14 @@ def edit_customer(request , rid):
         usoldtopartycity=request.POST['usoldtopartycity']
         usoldtopartystate=request.POST['usoldtopartystate']
         usoldtopartypostal=request.POST['usoldtopartypostal']
-        
+        ucustomer_type = request.POST['ucustomer_type']
+        uor_name = request.POST['uor_name']
+        uor_contact = request.POST['uor_contact']        
 
         m=customer_details.objects.filter(id=rid)
 
-        m.update(fullname=ufullname , primaryemail=uprimaryemail,  secondaryemail=usecondaryemail , primarycontact=uprimarycontact , secondarycontact=usecondarycontact , contactperson=ucontactperson , customersegment=ucustomersegment , shifttopartyaddress=ushifttopartyaddress , shifttopartycity=ushifttopartycity , shifttopartystate=ushifttopartystate , shifttopartypostal=ushifttopartypostal , soldtopartyaddress=usoldtopartyaddress , soldtopartycity=usoldtopartycity , soldtopartystate=usoldtopartystate , soldtopartypostal=usoldtopartypostal)
+        m.update(fullname=ufullname , primaryemail=uprimaryemail,  secondaryemail=usecondaryemail , primarycontact=uprimarycontact , secondarycontact=usecondarycontact , contactperson=ucontactperson , designation=udesignation , shifttopartyaddress=ushifttopartyaddress , shifttopartycity=ushifttopartycity , shifttopartystate=ushifttopartystate , shifttopartypostal=ushifttopartypostal , soldtopartyaddress=usoldtopartyaddress , soldtopartycity=usoldtopartycity , soldtopartystate=usoldtopartystate , soldtopartypostal=usoldtopartypostal, customer_type = ucustomer_type, or_name = uor_name, or_contact = uor_contact)
 
-       
         return redirect( '/display_customer')
     
 
@@ -2910,6 +2906,10 @@ def edit_quotation(request, rid):
         branch_id = request.POST.get('branch_id')
         selected_term_ids = request.POST.getlist('terms_and_conditions')  # get selected terms
         custom_terms = request.POST.get('add_terms_conditions')
+        
+        or_name = request.POST.get('or_name')
+        or_contact = request.POST.get('or_contact')
+        thank_u_note = request.POST.get('thank_u_note')
 
         for product in existing_products:
             product_id = str(product['id'])
@@ -2990,6 +2990,9 @@ def edit_quotation(request, rid):
         quotation.gst_status = gst_status
         quotation.apply_gst = enable_gst
         quotation.custom_terms = custom_terms
+        quotation.or_name = or_name
+        quotation.or_contact = or_contact
+        quotation.thank_u_note = thank_u_note
         quotation.save()
 
         # Save terms
@@ -3000,6 +3003,7 @@ def edit_quotation(request, rid):
     else:
         terms = QuotationTerm.objects.all()
         branches = Branch.objects.all()
+        
         try:
             product_details = json.loads(quotation.product_details_json)
         except Exception:

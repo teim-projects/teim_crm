@@ -340,6 +340,22 @@
                                             <input type="text" name="secondary_contact_no" class="form-control"><br>
                                         </div>
                                         <div class="col-md-6">
+                                            <label>Customer Type<span class="star">*</span></label>
+                                            <input type="text" class="form-control" name="customer_type" id="customer_type_select" 
+                                                   value="{{ quotation.customer.customer_type }}" readonly>
+                                        </div>
+
+                                        <div class="col-md-6 org-fields">
+                                            <label>Sub-Name</label>
+                                            <input type="text" name="or_name" class="form-control">
+                                        </div>
+
+                                        <div class="col-md-6 org-fields">
+                                            <label>Sub-Contact No</label>
+                                            <input type="text" name="or_contact" class="form-control">
+                                        </div>
+
+                                        <div class="col-md-6">
                                             <label>Contact By<span class="star">*</span></label>
                                             <input type="text" id="contact_by" name="contact_by" value="{{ quotation.contact_by }}" required
                                                 class="form-control">
@@ -359,6 +375,10 @@
                                             <label>Quotation Date:</label>
                                             <input type="date" name="quotation_date" class="form-control" 
                                             value="{{ quotation.quotation_date|date:'Y-m-d' }}"><br>
+                                        </div>
+                                        <div class="col-12">
+                                            <label>Thank you note<span class="star">*</span></label>
+                                            <textarea name="thank_u_note" rows="2" placeholder="Enter Thank you note...." ></textarea>
                                         </div>
                                         <div class="col-12">
                                             <label>Billing Address (Auto-filled from customer record):</label>
@@ -629,6 +649,22 @@
         </div>
     </div>
     <!-- JavaScript for Multistep Form -->
+<script>
+  function toggleOrganizationFields() {
+    const selectValue = document.getElementById('customer_type_select').value;
+    const orgFields = document.querySelectorAll('.org-fields');
+
+    orgFields.forEach(field => {
+      field.style.display = (selectValue === 'Organization') ? 'block' : 'none';
+    });
+  }
+
+  // Run on page load
+  window.onload = function () {
+    toggleOrganizationFields();
+  }
+</script>
+
 
 <script>
 function calculateQuotationSummary() {

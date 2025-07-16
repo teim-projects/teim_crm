@@ -66,7 +66,7 @@ urlpatterns = [
     path('export-leads-excel/', views.export_leads_excel, name='export_leads_excel'), 
      # Make sure this line exists
 
-    path('edit_customer/<rid>', views.edit_customer),
+    path('edit_customer/<rid>', views.edit_customer, name="edit_customer"),
     path('edit_service_management/<rid>', views.edit_service_management, name='edit_service_management'),
     path('edit_quotation/<int:rid>', views.edit_quotation, name="edit_quotation"),
     path('edit_invoice/<rid>', views.edit_invoice),
