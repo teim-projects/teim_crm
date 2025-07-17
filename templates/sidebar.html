@@ -905,298 +905,299 @@
 </head>
 
 <body>
+    {% if request.user.is_authenticated %}
+        {% with request.user.userprofile.role as role %}
+            <div class="header">
 
+                <div class="hamburger" id="hamburger">
+                    <i class="fas fa-bars"></i>
 
-    <div class="header">
-
-        <div class="hamburger" id="hamburger">
-            <i class="fas fa-bars"></i>
-
-        </div>
-        <div class="navbar-header ">
-            <a class="navbar-brand " href="https://sevafacility.com/" target="_blank">
-                <img src="{% static 'images/Logo.webp' %}" alt="Logo" style="height: 90px;   margin-bottom: 5px; "
-                    class="navbar-header_logo">
-            </a>
-        </div>
-        
-        <div class="navbar-header tem">
-            <a class="navbar-brand " href="https://chronoanalytics.in/" target="_blank">
-                <img src="{% static 'images/crono.png' %}" alt="Logo" class="imgg"
-                    style="height: 50px;   margin-bottom: 8px; ">
-            </a>
-        </div>
-    </div>
-
-
-    <div class="sidebar">
-
-        <div class="close-button" id="closeButton">
-            <i class="fas fa-times"></i>
-        </div>
-
-        <div class="logo">
-            <a href="https://sevafacility.com/">
-                <img src="{% static 'images/Logo.webp' %}" alt="Logo">
-
-            </a>
-        </div>
-
-        <ul>
-            <a href="/index" style="text-decoration: none;">
-                <li data-link="/index"><i class="fas fa-home"></i> Dashboard</li>
-            </a>
-            <a href="{% url 'today_work' %}" style="text-decoration: none;">
-                <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Today Work</li>
-            </a>
-
-            <a href="{% url 'pending_followups' %}" style="text-decoration: none;">
-                <li><i class="fas fa-clock"></i> Pending Follow-ups</li>
-            </a>
-
-
-            <li class="has-submenu"><i class="fas fa-info-circle"></i> View Records <span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/display_lead_management">
-                            <li data-link="/display_lead_management">1.Lead Management Records</li>
-                        </a>
-                        <a href="/display_customer">
-                            <li data-link="/display_customer">2. Customer Details</li>
-                        </a>
-                        <a href="/display_service_management">
-                            <li data-link="/display_service_management">3. Service Management</li>
-                        </a>
-                        <a href="/display_quotation">
-                            <li data-link="/display_quotation">4. Quotation</li>
-                        </a>
-                        <a href="/display_tax_invoice">
-                            <li data-link="/display_tax_invoice">5. Invoice</li>
-                        </a> 
-                        
-                        <a href="/payment-records/list/">
-                            <li data-link="/payment-record/list/">6. Payment Records</li>
-                        </a>
-                        <a href="/display_reschedule">
-                            <li data-link="/display_reschedule">7. Reschedule log</li>
-                        </a>
-                        <a href="/schedule_meetings/display_meeting">
-                            <li data-link="/schedule_meetings/display_meeting">8. Meeting Records Log</li>
-                        </a>
-                    </ul>
                 </div>
-            </li>
-
-            <li class="has-submenu"><i class="fas fa-folder-open"></i> Transaction <span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/lead_management_create">
-                            <li data-link="/lead_management_create">1. Lead Management</li>
-                        </a>
-                        <a href="/customer_details_create">
-                            <li data-link="/customer_details_create">2. Customer Details</li>
-                        </a>
-                        <a href="/service_management_create">
-                            <li data-link="/service_management_create">3. Service Management</li>
-                        </a>
-                        <a href="/create_quotation">
-                            <li data-link="/quotation_create">4. Quotation</li>
-                        </a>
-                        <li onclick="openInvoicePopup()" style="cursor: pointer;">5. Invoice</li>
-                        <a href="/payment-records/create">
-                            <li data-link="/tax-invoice/create">6. Payment Records</li>
-                        </a>
-                    </ul>
+                <div class="navbar-header ">
+                    <a class="navbar-brand " href="https://sevafacility.com/" target="_blank">
+                        <img src="{% static 'images/Logo.webp' %}" alt="Logo" style="height: 90px;   margin-bottom: 5px; "
+                            class="navbar-header_logo">
+                    </a>
                 </div>
-            </li>
-
-            <li class="has-submenu"><i class="fas fa-box"></i> Products <span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/add_product">
-                            <li data-link="/add_product">1. Add Products</li>
-                        </a>
-                        <a href="/products">
-                            <li data-link="/products">3. All Products</li>
-                        </a>
-                    </ul>
+                
+                <div class="navbar-header tem">
+                    <a class="navbar-brand " href="https://chronoanalytics.in/" target="_blank">
+                        <img src="{% static 'images/crono.png' %}" alt="Logo" class="imgg"
+                            style="height: 50px;   margin-bottom: 8px; ">
+                    </a>
                 </div>
-            </li>
+            </div>
 
 
-            <li class="has-submenu"><i class="fas fa-user-tie"></i> Sales Person <span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/add-sales-person/">
-                            <li data-link="/add-sales-person/">1. Add Sales Person</li>
-                        </a>
-                        <a href="/sales-persons/">
-                            <li data-link="/sales-persons/">2. View Sales Persons</li>
-                        </a>
-                    </ul>
+            <div class="sidebar">
+
+                <div class="close-button" id="closeButton">
+                    <i class="fas fa-times"></i>
                 </div>
-            </li>
-            <li class="has-submenu">
-                <i class="fas fa-file-invoice"></i> Branches <span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/branches/create/">
-                            <li data-link="/add_invoice_term/">
-                                <i class="fas fa-plus-circle"></i> Create Branch
-                            </li>
-                        </a>
 
-                        <a href="/branches/">
-                            <li data-link="/view_invoice_terms/">
-                                <i class="fas fa-eye"></i> View Branch
-                            </li>
-                        </a>
+                <div class="logo">
+                    <a href="https://sevafacility.com/">
+                        <img src="{% static 'images/Logo.webp' %}" alt="Logo">
 
-                    </ul>
+                    </a>
                 </div>
-            </li>
 
-            <li class="has-submenu"><i class="fa-solid fa-building-columns"></i> Bank Accounts <span
-                    class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/bank/create/">
-                            <li data-link="bank/create/">1. Create Bank Account</li>
-                        </a>
-                        <a href="/bank/list/">
-                            <li data-link="/bank/list/">2. Show Bank Accounts </li>
-                        </a>
-                    </ul>
-                </div>
-            </li>
+                <ul>
+                    <a href="/index" style="text-decoration: none;">
+                        <li data-link="/index"><i class="fas fa-home"></i> Dashboard</li>
+                    </a>
+                    <a href="{% url 'today_work' %}" style="text-decoration: none;">
+                        <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Today Work</li>
+                    </a>
+
+                    <a href="{% url 'pending_followups' %}" style="text-decoration: none;">
+                        <li><i class="fas fa-clock"></i> Pending Follow-ups</li>
+                    </a>
 
 
-            <!-- QUOTATION TERMS -->
-            <li class="has-submenu">
-                <i class="fas fa-file-alt"></i> Quotation Terms <span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/add_quotation_term/">
-                            <li data-link="/add_quotation_term/">1. Add Quotation Term</li>
-                        </a>
-                        <a href="/view_quotation_terms/">
-                            <li data-link="/view_quotation_terms/">2. View Quotation Terms</li>
-                        </a>
-                    </ul>
-                </div>
-            </li>
-
-            <!-- INVOICE TERMS -->
-            <li class="has-submenu">
-                <i class="fas fa-file-invoice"></i> Invoice Terms <span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/add_invoice_term/">
-                            <li data-link="/add_invoice_term/">1. Add Invoice Term</li>
-                        </a>
-                        <a href="/view_invoice_terms/">
-                            <li data-link="/view_invoice_terms/">2. View Invoice Terms</li>
-                        </a>
-                    </ul>
-                </div>
-            </li>
-
-
-
-            <li class="has-submenu"><i class="fas fa-user-cog"></i> Technicians <span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="/create">
-                            <li data-link="/create">1. Create Technician</li>
-                        </a>
-                        <a href="/technicians">
-                            <li data-link="/technicians">2. Show Technician</li>
-                        </a>
-                        <a href="/technician_work_list">
-                            <li data-link="/technician_work_list">3. Work History</li>
-                        </a>
-                        <a href="/completed_work">
-                            <li data-link="/completed_work">4. Completed Work List</li>
-                        </a>
-                    </ul>
-                </div>
-            </li>
-
-
-            <a href="/display_allocation" style="text-decoration: none;">
-                <li class="has-submenu" data-link="/display_allocation"><i class="fas fa-tasks"></i> Allocate Work</li>
-            </a>
-
-            <a href="/ocrapp/scan/" style="text-decoration: none;">
-                <li class="has-submenu" data-link="/ocrapp/scan/"><i class="fas fa-id-card"></i> Scan Card</li>
-            </a>
-
-            <a href="/schedule_meetings/schedule/" style="text-decoration: none;">
-                <li class="has-submenu" data-link="/schedule_meetings/schedule/"><i class="fas fa-calendar-plus"></i>
-                    Schedule Meet</li>
-            </a>
-
-            <a href="/schedule_meetings/meeting_list/" style="text-decoration: none;">
-                <li class="has-submenu" data-link="/schedule_meetings/meeting_list/"><i class="fas fa-book"></i> Meet
-                    Notes</li>
-            </a>
-
-            <a href="/open_ai/chatbot/" style="text-decoration: none;">
-                <li class="has-submenu" data-link="/open_ai/chatbot/"><i class="fa-solid fa-comments"></i> Chat Bot</li>
-            </a>
-        </ul>
-
-        <div class="notification" id="notification">
-            Meeting successfully scheduled!
-        </div>
-
-        <!-- Invoice Popup Modal -->
-         <center>
-             <div id="invoicePopup" class="modal" style="display: none;">
-                 <div class="modal-content shadow p-4 rounded" style="width: 400px; margin: 10% auto; background: white; border: 1px solid #ccc;">
-                     <span class="close" onclick="closeInvoicePopup()" style="float:right; font-size: 20px; cursor: pointer;">&times;</span>
-                     <h5 class="text-center mb-4">Choose Invoice Type</h5>
-                     <div class="d-grid gap-2">
-                         <button onclick="location.href='/tax-invoice/create?use_quotation=true'" class="btn btn-primary mb-2">Invoice with Quotation</button>
-                         <button onclick="location.href='/tax-invoice/create'" class="btn btn-secondary">New Invoice</button>
+                    <li class="has-submenu"><i class="fas fa-info-circle"></i> View Records <span class="arrow-down"></span>
+                        <div class="submenu">
+                            <ul>
+                                <a href="/display_lead_management">
+                                    <li data-link="/display_lead_management">1.Lead Management Records</li>
+                                </a>
+                                <a href="/display_customer">
+                                    <li data-link="/display_customer">2. Customer Details</li>
+                                </a>
+                                <a href="/display_service_management">
+                                    <li data-link="/display_service_management">3. Service Management</li>
+                                </a>
+                                <a href="/display_quotation">
+                                    <li data-link="/display_quotation">4. Quotation</li>
+                                </a>
+                                <a href="/display_tax_invoice">
+                                    <li data-link="/display_tax_invoice">5. Invoice</li>
+                                </a> 
+                                
+                                <a href="/payment-records/list/">
+                                    <li data-link="/payment-record/list/">6. Payment Records</li>
+                                </a>
+                                <a href="/display_reschedule">
+                                    <li data-link="/display_reschedule">7. Reschedule log</li>
+                                </a>
+                                <a href="/schedule_meetings/display_meeting">
+                                    <li data-link="/schedule_meetings/display_meeting">8. Meeting Records Log</li>
+                                </a>
+                            </ul>
                         </div>
-                    </div>
-                </div>        
-        </center>
-        <center>
-            <button class="mb-5 mt-3 logoutbtn">
-                <a href="/logout">Logout</a>
-                <div class="arrow-wrapper">
-                    <div class="arrow"></div>
+                    </li>
+
+                    <li class="has-submenu"><i class="fas fa-folder-open"></i> Transaction <span class="arrow-down"></span>
+                        <div class="submenu">
+                            <ul>
+                                <a href="/lead_management_create">
+                                    <li data-link="/lead_management_create">1. Lead Management</li>
+                                </a>
+                                <a href="/customer_details_create">
+                                    <li data-link="/customer_details_create">2. Customer Details</li>
+                                </a>
+                                <a href="/service_management_create">
+                                    <li data-link="/service_management_create">3. Service Management</li>
+                                </a>
+                                <a href="/create_quotation">
+                                    <li data-link="/quotation_create">4. Quotation</li>
+                                </a>
+                                <li onclick="openInvoicePopup()" style="cursor: pointer;">5. Invoice</li>
+                                <a href="/payment-records/create">
+                                    <li data-link="/tax-invoice/create">6. Payment Records</li>
+                                </a>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="has-submenu"><i class="fas fa-box"></i> Products <span class="arrow-down"></span>
+                        <div class="submenu">
+                            <ul>
+                                <a href="/add_product">
+                                    <li data-link="/add_product">1. Add Products</li>
+                                </a>
+                                <a href="/products">
+                                    <li data-link="/products">2. All Products</li>
+                                </a>
+                            </ul>
+                        </div>
+                    </li>
+
+                    {% if role == 'admin' %}
+                    <li class="has-submenu"><i class="fas fa-user-tie"></i> Sales Person <span class="arrow-down"></span>
+                        <div class="submenu">
+                            <ul>
+                                <a href="/add-sales-person/">
+                                    <li data-link="/add-sales-person/">1. Add Sales Person</li>
+                                </a>
+                                <a href="/sales-persons/">
+                                    <li data-link="/sales-persons/">2. View Sales Persons</li>
+                                </a>
+                            </ul>
+                        </div>
+                    </li>
+                    <li class="has-submenu">
+                        <i class="fas fa-file-invoice"></i> Branches <span class="arrow-down"></span>
+                        <div class="submenu">
+                            <ul>
+                                <a href="/branches/create/">
+                                    <li data-link="/add_invoice_term/">
+                                        <i class="fas fa-plus-circle"></i> Create Branch
+                                    </li>
+                                </a>
+
+                                <a href="/branches/">
+                                    <li data-link="/view_invoice_terms/">
+                                        <i class="fas fa-eye"></i> View Branch
+                                    </li>
+                                </a>
+
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="has-submenu"><i class="fa-solid fa-building-columns"></i> Bank Accounts <span
+                            class="arrow-down"></span>
+                        <div class="submenu">
+                            <ul>
+                                <a href="/bank/create/">
+                                    <li data-link="bank/create/">1. Create Bank Account</li>
+                                </a>
+                                <a href="/bank/list/">
+                                    <li data-link="/bank/list/">2. Show Bank Accounts </li>
+                                </a>
+                            </ul>
+                        </div>
+                    </li>
+                    {% endif %}
+
+                    <!-- QUOTATION TERMS -->
+                    <li class="has-submenu">
+                        <i class="fas fa-file-alt"></i> Quotation Terms <span class="arrow-down"></span>
+                        <div class="submenu">
+                            <ul>
+                                <a href="/add_quotation_term/">
+                                    <li data-link="/add_quotation_term/">1. Add Quotation Term</li>
+                                </a>
+                                <a href="/view_quotation_terms/">
+                                    <li data-link="/view_quotation_terms/">2. View Quotation Terms</li>
+                                </a>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- INVOICE TERMS -->
+                    <li class="has-submenu">
+                        <i class="fas fa-file-invoice"></i> Invoice Terms <span class="arrow-down"></span>
+                        <div class="submenu">
+                            <ul>
+                                <a href="/add_invoice_term/">
+                                    <li data-link="/add_invoice_term/">1. Add Invoice Term</li>
+                                </a>
+                                <a href="/view_invoice_terms/">
+                                    <li data-link="/view_invoice_terms/">2. View Invoice Terms</li>
+                                </a>
+                            </ul>
+                        </div>
+                    </li>
+
+
+
+                    <li class="has-submenu"><i class="fas fa-user-cog"></i> Technicians <span class="arrow-down"></span>
+                        <div class="submenu">
+                            <ul>
+                                <a href="/create">
+                                    <li data-link="/create">1. Create Technician</li>
+                                </a>
+                                <a href="/technicians">
+                                    <li data-link="/technicians">2. Show Technician</li>
+                                </a>
+                                <a href="/technician_work_list">
+                                    <li data-link="/technician_work_list">3. Work History</li>
+                                </a>
+                                <a href="/completed_work">
+                                    <li data-link="/completed_work">4. Completed Work List</li>
+                                </a>
+                            </ul>
+                        </div>
+                    </li>
+
+
+                    <a href="/display_allocation" style="text-decoration: none;">
+                        <li class="has-submenu" data-link="/display_allocation"><i class="fas fa-tasks"></i> Allocate Work</li>
+                    </a>
+
+                    <a href="/ocrapp/scan/" style="text-decoration: none;">
+                        <li class="has-submenu" data-link="/ocrapp/scan/"><i class="fas fa-id-card"></i> Scan Card</li>
+                    </a>
+
+                    <a href="/schedule_meetings/schedule/" style="text-decoration: none;">
+                        <li class="has-submenu" data-link="/schedule_meetings/schedule/"><i class="fas fa-calendar-plus"></i>
+                            Schedule Meet</li>
+                    </a>
+
+                    <a href="/schedule_meetings/meeting_list/" style="text-decoration: none;">
+                        <li class="has-submenu" data-link="/schedule_meetings/meeting_list/"><i class="fas fa-book"></i> Meet
+                            Notes</li>
+                    </a>
+
+                    <a href="/open_ai/chatbot/" style="text-decoration: none;">
+                        <li class="has-submenu" data-link="/open_ai/chatbot/"><i class="fa-solid fa-comments"></i> Chat Bot</li>
+                    </a>
+                </ul>
+
+                <div class="notification" id="notification">
+                    Meeting successfully scheduled!
                 </div>
-            </button>
-        </center>
 
-        
+                <!-- Invoice Popup Modal -->
+                <center>
+                    <div id="invoicePopup" class="modal" style="display: none;">
+                        <div class="modal-content shadow p-4 rounded" style="width: 400px; margin: 10% auto; background: white; border: 1px solid #ccc;">
+                            <span class="close" onclick="closeInvoicePopup()" style="float:right; font-size: 20px; cursor: pointer;">&times;</span>
+                            <h5 class="text-center mb-4">Choose Invoice Type</h5>
+                            <div class="d-grid gap-2">
+                                <button onclick="location.href='/tax-invoice/create?use_quotation=true'" class="btn btn-primary mb-2">Invoice with Quotation</button>
+                                <button onclick="location.href='/tax-invoice/create'" class="btn btn-secondary">New Invoice</button>
+                                </div>
+                            </div>
+                        </div>        
+                </center>
+                <center>
+                    <button class="mb-5 mt-3 logoutbtn">
+                        <a href="/logout">Logout</a>
+                        <div class="arrow-wrapper">
+                            <div class="arrow"></div>
+                        </div>
+                    </button>
+                </center>
 
-        <script>
-            // Highlight current page link
-            const path = window.location.pathname;
-            const allLinks = document.querySelectorAll('li[data-link]');
-            allLinks.forEach(link => {
-                if (link.getAttribute('data-link') === path) {
-                    link.classList.add('active');
-                }
-            });
+                
 
-            // Show notification if scheduled
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('schedule_success') === '1') {
-                const notification = document.getElementById('notification');
-                notification.style.display = 'block';
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 3000);
-            }
-        </script>
-    </div>
+                <script>
+                    // Highlight current page link
+                    const path = window.location.pathname;
+                    const allLinks = document.querySelectorAll('li[data-link]');
+                    allLinks.forEach(link => {
+                        if (link.getAttribute('data-link') === path) {
+                            link.classList.add('active');
+                        }
+                    });
 
+                    // Show notification if scheduled
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('schedule_success') === '1') {
+                        const notification = document.getElementById('notification');
+                        notification.style.display = 'block';
+                        setTimeout(() => {
+                            notification.style.display = 'none';
+                        }, 3000);
+                    }
+                </script>
+            </div>
 
+        {% endwith %}
+    {% endif %}
     <div class="overlay" id="overlay"></div>
     <!-- Particles JS Container -->
     <div id="particles-js" style="position: fixed; width: 100%; height: 100%; top: 20; left: 0; z-index: -5;"></div>

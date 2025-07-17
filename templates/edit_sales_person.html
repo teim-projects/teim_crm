@@ -49,7 +49,7 @@
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Date of Joining <span class="star">*</span></label>
-            <input type="date" name="date_of_joining" class="form-control" value="{{ person.date_of_joining }}" required>
+            <input type="date" name="date_of_joining" class="form-control" value="{{ person.date_of_joining|date:'Y-m-d' }}" required>
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Mobile No <span class="star">*</span></label>
@@ -59,24 +59,28 @@
             <label class="form-label">Email <span class="star">*</span></label>
             <input type="email" name="email" class="form-control" value="{{ person.email }}" required>
           </div>
+            <div class="col-md-6 mb-3 form-group">
+                <label for="password">Password (leave blank to keep unchanged):</label>
+                <input type="password" name="password" class="form-control" id="password">
+            </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Date of Birth <span class="star">*</span></label>
-            <input type="date" name="date_of_birth" class="form-control" value="{{ person.date_of_birth }}" required>
+            <input type="date" name="date_of_birth" class="form-control"  value="{{ person.date_of_birth|date:'Y-m-d' }}" required>
           </div>
           <div class="col-md-6"></div>
-
+<div class="row">
           <div class="col-md-6 mt-3 mb-3  ">
-  <a href="{% url 'sales_person_list' %}" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">
-    <i class="bi bi-arrow-left-circle me-2"></i> Back to List
-  </a>
-</div>
+            <a href="{% url 'sales_person_list' %}" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">
+              <i class="bi bi-arrow-left-circle me-2"></i> Back to List
+            </a>
+        </div>
 
-<div class="col-md-6 mt-3 mb-3">
-            <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">
-              <i class="bi bi-save"></i> Update
-            </button>
+        <div class="col-md-6 mt-3 mb-3">
+             <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">
+                Update
+             </button>
+        </div>
 </div>
-
         </div>
       </form>
     </div>

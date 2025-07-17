@@ -6,7 +6,7 @@ from django.utils import timezone
 from crmapp.models import customer_details, service_management ,TaxInvoice, quotation ,invoice , lead_management , Product , Inventory_summary , Inventory_add  
 from django .db.models import Q
 import random
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.http import HttpResponse
 from django import contrib
 from django.contrib.auth.models import User
@@ -39,7 +39,10 @@ from datetime import datetime
 import json
 from django.utils.dateparse import parse_date
 from django.db.models import Count
-
+from django.contrib.auth.models import User
+from .models import UserProfile, SalesPerson
+from django.utils.dateparse import parse_date
+from django.shortcuts import render, redirect
 
 state_map = {
         'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
@@ -92,183 +95,182 @@ import json
 from datetime import datetime
 from django.db.models import Count, Sum, Q
 from django.shortcuts import render
+from .decorators import role_required
 
+@role_required(['admin', 'sales'])
 def index(request):
-    # Fetch data for Service Management
-    service_data = service_management.objects.values('selected_services').annotate(total_charges=Sum('total_charges'))
+        # Fetch data for Service Management
+        service_data = service_management.objects.values('selected_services').annotate(total_charges=Sum('total_charges'))
 
-    # Fetch data for Quotations
-    quotation_data = quotation.objects.values('quotation_date').annotate(total_amount=Sum('total_amount'))
+        # Fetch data for Quotations
+        quotation_data = quotation.objects.values('quotation_date').annotate(total_amount=Sum('total_amount'))
 
-    # Fetch data for Invoices
-    invoice_data = invoice.objects.values('company_name').annotate(total_amount=Sum('total_amount'))
+        # Fetch data for Invoices
+        invoice_data = invoice.objects.values('company_name').annotate(total_amount=Sum('total_amount'))
 
-    # Fetch data for Lead Management
-    lead_data1 = lead_management.objects.values('typeoflead').annotate(count=Count('id'))
+        # Fetch data for Lead Management
+        lead_data1 = lead_management.objects.values('typeoflead').annotate(count=Count('id'))
 
-    # Lead type chart data (filtered by enquirydate range)
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    if start_date and end_date:
-        filtered_leads = lead_management.objects.filter(enquirydate__range=[start_date, end_date])
-    else:
-        filtered_leads = lead_management.objects.all()
+        # Lead type chart data (filtered by enquirydate range)
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        if start_date and end_date:
+            filtered_leads = lead_management.objects.filter(enquirydate__range=[start_date, end_date])
+        else:
+            filtered_leads = lead_management.objects.all()
 
-    lead_data = {
-        "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
-        "datasets": [{
-            "data": [
-                filtered_leads.filter(typeoflead='Hot').count(),
-                filtered_leads.filter(typeoflead='Warm').count(),
-                filtered_leads.filter(typeoflead='Cold').count(),
-                filtered_leads.filter(typeoflead='NotInterested').count(),
-                filtered_leads.filter(typeoflead='LossofOrder').count()
-            ],
-            "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-        }]
-    }
-    lead_data_json = json.dumps(lead_data)
+        lead_data = {
+            "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
+            "datasets": [{
+                "data": [
+                    filtered_leads.filter(typeoflead='Hot').count(),
+                    filtered_leads.filter(typeoflead='Warm').count(),
+                    filtered_leads.filter(typeoflead='Cold').count(),
+                    filtered_leads.filter(typeoflead='NotInterested').count(),
+                    filtered_leads.filter(typeoflead='LossofOrder').count()
+                ],
+                "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+            }]
+        }
+        lead_data_json = json.dumps(lead_data)
 
- 
-
-    # Follow-up remark chart data (from main_followup model)
-    start_date_followup = request.GET.get('start_date_followup')
-    end_date_followup = request.GET.get('end_date_followup')
-
-    # Filter main_followup records by enquirydate if date range is provided
-     # Adjust import according to your app structure
-
-    followup_queryset = main_followup.objects.all()
-    if start_date_followup and end_date_followup:
-        try:
-            start_dt_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
-            end_dt_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
-            # Assuming main_followup has a date field like enquirydate or followup_date to filter by
-            followup_queryset = followup_queryset.filter(enquirydate__range=[start_dt_followup, end_dt_followup])
-        except ValueError:
-            pass  # Ignore if date parsing fails
-
-    # Count by followup_remark choices
-    followup_counts = followup_queryset.values('followup_remark').annotate(count=Count('id'))
-    # Prepare labels and counts based on your choices order
-    followup_labels = [
-        'Call not received',
-        'Give next Follow up date',
-        'Call Out of Coverage Area',
-    ]
-    # Create data list aligned with labels order
-    followup_data_list = []
-    for label in followup_labels:
-        entry = next((item for item in followup_counts if item['followup_remark'] == label), None)
-        followup_data_list.append(entry['count'] if entry else 0)
-
-    # Bar chart data for products by category
-    pest_control_count = Product.objects.filter(category='Pest Control').count()
-    fumigation_count = Product.objects.filter(category='Fumigation').count()
-    product_sell_count = Product.objects.filter(category='Product Sell').count()
-
-    bar_chart_data = {
-        "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
-        "datasets": [{
-            "label": "Number of Products per Category",
-            "data": [pest_control_count, fumigation_count, product_sell_count],
-            "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
-        }]
-    }
-
-    # Contract Type Distribution chart filtering
-    start_date_service = request.GET.get('start_date_service')
-    end_date_service = request.GET.get('end_date_service')
-
-    if start_date_service and end_date_service:
-        start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
-        end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
-        service_data = service_management.objects.filter(
-            Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
-        ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
-    else:
-        service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
-
-    labellist = [entry["contract_type"] for entry in service_data]
-    countlist = [entry["count"] for entry in service_data]
-
-    # Quotation and Invoice counts filtered by date and type
-    start_date_qo = request.GET.get('start_date_qo')
-    end_date_qo = request.GET.get('end_date_qo')
-    filter_type = request.GET.get('filter_type')
-
-    quotations_count = 0
-    orders_count = 0
-
-    if start_date_qo and end_date_qo:
-        start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
-        end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
-        if filter_type == 'quotation':
-            quotations_count = quotation.objects.filter(
-                Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
-            ).count()
-            orders_count = invoice.objects.count()
-        elif filter_type == 'invoice':
-            orders_count = invoice.objects.filter(
-                Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
-            ).count()
-            quotations_count = quotation.objects.count()
-    else:
-        quotations_count = quotation.objects.count()
-        orders_count = invoice.objects.count()
-
-    start_date = request.GET.get("start_date_order")
-    print("start_date", start_date)
-
-    end_date = request.GET.get("end_date_order")
-    print("end_date",end_date)
-    followups = main_followup.objects.all()
-    # print("followups",followups)
-
-    if start_date and end_date:
-        try:
-            start = datetime.strptime(start_date, "%Y-%m-%d").date()
-            end = datetime.strptime(end_date, "%Y-%m-%d")+ timedelta(days=1) 
-            followups = followups.filter(created_at__range=(start, end))
-            # print("followup_filter", followups)
-        except ValueError:
-            pass  
-
-    # Create labels and data
-    order_status_labels = ['Close Win', 'Close Loss', 'Not Closed']
-    queryset = followups.values('order_status').annotate(count=Count('id'))
-
-    order_status_data = []
-    for label in order_status_labels:
-        match = next((item for item in queryset if item['order_status'] == label), None)
-        order_status_data.append(match['count'] if match else 0)
     
 
-    context = {
-        'lead_data': lead_data_json,
-        'service_data': service_data,
-        'quotation_data': quotation_data,
-        'invoice_data': invoice_data,
-        'labellist': json.dumps(labellist),
-        'countlist': json.dumps(countlist),
-        "quotationlist": json.dumps(["Quotations", "Orders"]),
-        "order": json.dumps([quotations_count, orders_count]),
-        'bar_chart_data': json.dumps(bar_chart_data),
+        # Follow-up remark chart data (from main_followup model)
+        start_date_followup = request.GET.get('start_date_followup')
+        end_date_followup = request.GET.get('end_date_followup')
 
-       
-        "order_status_labels": order_status_labels,
-        "order_status_data": order_status_data,
-        # Follow-up chart context
-        'follow_up_labels': json.dumps(followup_labels),
-        'follow_up_data': json.dumps(followup_data_list),
-    }
+        # Filter main_followup records by enquirydate if date range is provided
+         # Adjust import according to your app structure
 
-    return render(request, 'index.html', context)
+        followup_queryset = main_followup.objects.all()
+        if start_date_followup and end_date_followup:
+            try:
+                start_dt_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
+                end_dt_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
+                # Assuming main_followup has a date field like enquirydate or followup_date to filter by
+                followup_queryset = followup_queryset.filter(enquirydate__range=[start_dt_followup, end_dt_followup])
+            except ValueError:
+                pass  # Ignore if date parsing fails
 
-   
+        # Count by followup_remark choices
+        followup_counts = followup_queryset.values('followup_remark').annotate(count=Count('id'))
+        # Prepare labels and counts based on your choices order
+        followup_labels = [
+            'Call not received',
+            'Give next Follow up date',
+            'Call Out of Coverage Area',
+        ]
+        # Create data list aligned with labels order
+        followup_data_list = []
+        for label in followup_labels:
+            entry = next((item for item in followup_counts if item['followup_remark'] == label), None)
+            followup_data_list.append(entry['count'] if entry else 0)
 
-import random
+        # Bar chart data for products by category
+        pest_control_count = Product.objects.filter(category='Pest Control').count()
+        fumigation_count = Product.objects.filter(category='Fumigation').count()
+        product_sell_count = Product.objects.filter(category='Product Sell').count()
 
+        bar_chart_data = {
+            "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
+            "datasets": [{
+                "label": "Number of Products per Category",
+                "data": [pest_control_count, fumigation_count, product_sell_count],
+                "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
+            }]
+        }
+
+        # Contract Type Distribution chart filtering
+        start_date_service = request.GET.get('start_date_service')
+        end_date_service = request.GET.get('end_date_service')
+
+        if start_date_service and end_date_service:
+            start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
+            end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
+            service_data = service_management.objects.filter(
+                Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
+            ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+        else:
+            service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+
+        labellist = [entry["contract_type"] for entry in service_data]
+        countlist = [entry["count"] for entry in service_data]
+
+        # Quotation and Invoice counts filtered by date and type
+        start_date_qo = request.GET.get('start_date_qo')
+        end_date_qo = request.GET.get('end_date_qo')
+        filter_type = request.GET.get('filter_type')
+
+        quotations_count = 0
+        orders_count = 0
+
+        if start_date_qo and end_date_qo:
+            start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
+            end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
+            if filter_type == 'quotation':
+                quotations_count = quotation.objects.filter(
+                    Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
+                ).count()
+                orders_count = invoice.objects.count()
+            elif filter_type == 'invoice':
+                orders_count = invoice.objects.filter(
+                    Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
+                ).count()
+                quotations_count = quotation.objects.count()
+        else:
+            quotations_count = quotation.objects.count()
+            orders_count = invoice.objects.count()
+
+        start_date = request.GET.get("start_date_order")
+        print("start_date", start_date)
+
+        end_date = request.GET.get("end_date_order")
+        print("end_date",end_date)
+        followups = main_followup.objects.all()
+        # print("followups",followups)
+
+        if start_date and end_date:
+            try:
+                start = datetime.strptime(start_date, "%Y-%m-%d").date()
+                end = datetime.strptime(end_date, "%Y-%m-%d")+ timedelta(days=1) 
+                followups = followups.filter(created_at__range=(start, end))
+                # print("followup_filter", followups)
+            except ValueError:
+                pass  
+
+        # Create labels and data
+        order_status_labels = ['Close Win', 'Close Loss', 'Not Closed']
+        queryset = followups.values('order_status').annotate(count=Count('id'))
+
+        order_status_data = []
+        for label in order_status_labels:
+            match = next((item for item in queryset if item['order_status'] == label), None)
+            order_status_data.append(match['count'] if match else 0)
+
+
+        context = {
+            'lead_data': lead_data_json,
+            'service_data': service_data,
+            'quotation_data': quotation_data,
+            'invoice_data': invoice_data,
+            'labellist': json.dumps(labellist),
+            'countlist': json.dumps(countlist),
+            "quotationlist": json.dumps(["Quotations", "Orders"]),
+            "order": json.dumps([quotations_count, orders_count]),
+            'bar_chart_data': json.dumps(bar_chart_data),
+
+
+            "order_status_labels": order_status_labels,
+            "order_status_data": order_status_data,
+            # Follow-up chart context
+            'follow_up_labels': json.dumps(followup_labels),
+            'follow_up_data': json.dumps(followup_data_list),
+        }
+
+        return render(request, 'index.html', context)
+
+@role_required(['admin', 'sales'])
 def generate_customerid(fullname):
     names = fullname.strip().split()
 
@@ -291,7 +293,7 @@ from django.http import JsonResponse
 from .models import customer_details
 from django.db.models import Count, Max, Q
 
-
+@role_required(['admin', 'sales'])
 def get_customer_name(request):
     customer_id = request.GET.get('customer_id', None)
     if customer_id:
@@ -349,14 +351,14 @@ def user_login(request):
         return render(request, 'login.html')
     
     else:
-        uname = request.POST.get('uname')  # Use .get() to avoid MultiValueDictKeyError
+        uname = request.POST.get('uname') 
         upass = request.POST.get('upass')
 
         u = authenticate(username=uname, password=upass)
 
         if u is not None:
             login(request, u)
-
+            print(request.user.userprofile.role)
             start_date = request.GET.get('start_date')
             end_date = request.GET.get('end_date')
 
@@ -528,17 +530,11 @@ def user_login(request):
             return render(request, "login.html", context)
         
 
-    
+@login_required
+@role_required(['admin', 'sales','technician'])
 def user_logout(request):
-
     logout(request)
-
     return redirect("/")
-
-
-
-
-
 
 
 
@@ -548,6 +544,9 @@ from .models import SalesPerson
 from django.utils.dateparse import parse_date
 
 # Add Sales Person
+
+@login_required
+@role_required(['admin'])
 def add_sales_person(request):
     if request.method == 'POST':
         full_name = request.POST.get('full_name')
@@ -555,25 +554,38 @@ def add_sales_person(request):
         mobile_no = request.POST.get('mobile_no')
         email = request.POST.get('email')
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
 
+        # Create Django User (username as email or phone, password default or random)
+        username = mobile_no
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+
+        # Assign role to user via UserProfile
+        UserProfile.objects.create(user=user, role='sales', phone=mobile_no)
+
+        # Create SalesPerson record
         SalesPerson.objects.create(
             full_name=full_name,
             date_of_joining=date_of_joining,
             mobile_no=mobile_no,
             email=email,
-            date_of_birth=date_of_birth
+            date_of_birth=date_of_birth,
+            
         )
+
         return redirect('sales_person_list')
 
     return render(request, 'add_sales_person.html')
 
-
 # List Sales Persons
+@login_required
+@role_required(['admin'])
 def sales_person_list(request):
     sales_persons = SalesPerson.objects.all()
     return render(request, 'sales_person_list.html', {'sales_persons': sales_persons})
 
-
+@login_required
+@role_required(['admin'])
 def export_sales_person_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="sales_persons.csv"'
@@ -597,22 +609,59 @@ def export_sales_person_csv(request):
 
 
 # Edit Sales Person
+@login_required
+@role_required(['admin'])
 def edit_sales_person(request, pk):
     person = get_object_or_404(SalesPerson, pk=pk)
 
     if request.method == 'POST':
-        person.full_name = request.POST.get('full_name')
-        person.date_of_joining = parse_date(request.POST.get('date_of_joining'))
-        person.mobile_no = request.POST.get('mobile_no')
-        person.email = request.POST.get('email')
-        person.date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        full_name = request.POST.get('full_name')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        mobile_no = request.POST.get('mobile_no')
+        email = request.POST.get('email')
+        date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
+
+        # Update SalesPerson
+        person.full_name = full_name
+        person.date_of_joining = date_of_joining
+        person.mobile_no = mobile_no
+        person.email = email
+        person.date_of_birth = date_of_birth
         person.save()
+
+        # Check for existing user
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            # Update existing user
+            user.first_name = full_name
+            user.username = mobile_no
+            user.email = email
+            if password:
+                user.set_password(password)
+            user.save()
+        else:
+            # Create new user
+            user = User.objects.create_user(
+                username=mobile_no,
+                email=email,
+                password=password or User.objects.make_random_password(),
+                first_name=full_name
+            )
+
+        # Update or create UserProfile
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        user_profile.role = 'sales'
+        user_profile.phone = mobile_no
+        user_profile.save()
+
         return redirect('sales_person_list')
 
     return render(request, 'edit_sales_person.html', {'person': person})
 
-
-# Delete Sales Person
+@login_required
+@role_required(['admin'])
 def delete_sales_person(request, pk):
     person = get_object_or_404(SalesPerson, pk=pk)
 
@@ -623,14 +672,11 @@ def delete_sales_person(request, pk):
     return render(request, 'delete_sales_person.html', {'person': person})
 
 
-
-
-
-
-
 from django.http import JsonResponse
 from .models import customer_details, lead_management
 
+@login_required
+@role_required(['admin','sales'])
 def customer_details_create(request):
     if request.method == 'GET':
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -711,6 +757,7 @@ def customer_details_create(request):
     
 
 @login_required
+@role_required(['admin','sales'])
 def export_customer_excel(request):
 
     response = HttpResponse(content_type='text/csv')
@@ -735,6 +782,7 @@ def export_customer_excel(request):
 
 
 @login_required
+@role_required(['admin','sales'])
 def product_list(request):
     category_filter = request.GET.get('category', 'all')
     if category_filter and category_filter != 'all':
@@ -759,7 +807,8 @@ def product_list(request):
     }
     return render(request, 'product_list.html', context)
 
-
+@login_required
+@role_required(['admin','sales'])
 def export_product_list_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="product_list.csv"'
@@ -778,7 +827,8 @@ def export_product_list_csv(request):
 
     return response
 
-
+@login_required
+@role_required(['admin','sales'])
 def delete_product(request, product_id):
     product = get_object_or_404(Product, product_id=product_id)
     product.delete()
@@ -789,7 +839,8 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from .models import service_management, customer_details
 
-
+@login_required
+@role_required(['admin','sales'])
 def service_management_create(request):
     customers = customer_details.objects.all()
     category_choices = Product.CATEGORY_CHOICES  # Pass category choices to the template
@@ -919,6 +970,8 @@ from .models import Branch
 
 
 # New----------------
+@login_required
+@role_required(['admin','sales'])
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
     terms = QuotationTerm.objects.all() 
@@ -1145,7 +1198,8 @@ def save_quotation_session(request):
 
 from django.http import JsonResponse
 from .models import quotation_management
-
+@login_required
+@role_required(['admin','sales'])
 def export_quotation_excel(request):
 
     response = HttpResponse(content_type='text/csv')
@@ -1256,71 +1310,6 @@ from crmapp.custom_filters import price_in_words
 from xhtml2pdf import pisa
 import json
 import os
-
-# def generate_quotation_pdf_view(request, id):
-#     quotation = quotation_management.objects.get(id=id)
-
-#     # Safely parse the product_details_json
-#     product_data = quotation.product_details_json
-#     if isinstance(product_data, str):
-#         try:
-#             product_data = json.loads(product_data)
-#         except json.JSONDecodeError:
-#             product_data = []
-
-#     # Add total for each product (price × quantity)
-#     total_gst_value = 0
-#     gst_count = 0
-
-#     for product in product_data:
-#         try:
-#             product['total'] = round(float(product['price']) * float(product['quantity']), 2)
-#         except (KeyError, ValueError, TypeError):
-#             product['total'] = 0.0
-
-#         # Sum GST values
-#         try:
-#             gst_value = float(product.get('gst', 0))
-#             total_gst_value += gst_value
-#             gst_count += 1
-#         except (ValueError, TypeError):
-#             continue
-
-#     # Calculate average GST
-#     average_gst = round(total_gst_value / gst_count, 2) if gst_count else 0.0
-
-#     # Inject updated data
-#     quotation.product_details_json = product_data
-#     amount_in_words = price_in_words(quotation.total_price_with_gst)
-
-#     # Paths for logo and footer
-#     template_path = 'pdf_template.html'  
-#     logo_path = request.build_absolute_uri(static('images/Logo.png'))
-#     fottor_path = request.build_absolute_uri(static('images/qutation_fottor_pdf.jpg'))
-
-#     custom_terms_str = quotation.custom_terms or ''
-#     custom_terms_list = [term.strip() for term in custom_terms_str.split(',') if term.strip()]
-
-#     context = {
-#         'quotation': quotation,
-#         'product_details': product_data,
-#         'amount_in_words': amount_in_words,
-#         'logo_path': logo_path,
-#         'fottor_path': fottor_path,
-#         'average_gst': average_gst  ,
-#         'custom_terms_list': custom_terms_list,
-#     }
-
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = 'inline; filename="quotation.pdf"'
-#     template = get_template(template_path)
-#     html = template.render(context)
-#     pisa_status = pisa.CreatePDF(html, dest=response)
-
-#     if pisa_status.err:
-#         return HttpResponse('Error generating PDF', status=500)
-#     return response
-
 
 
 def get_products_by_category(request):
@@ -1613,23 +1602,7 @@ def finalfollowup_create(request,lead_id,next_stage):
         }
     return render(request, 'final_followup.html', context)
 
-# def inventory_create(request):
-#     if request.method=='GET':
-#         return render(request ,'inventory.html')
-    
-    
-#     else:
-#         itemnumber=request.POST['itemnumber']
-#         itemname=request.POST['itemname']
-#         price=request.POST['price']
-#         quantity=request.POST['quantity']
-        
-    
-#         m=inventory.objects.create(itemnumber=itemnumber, itemname=itemname , price=price ,quantity=quantity )
 
-#         m.save()
-#         return redirect( '/index')
-    
 
 
 from django.http import JsonResponse
@@ -1659,7 +1632,8 @@ from datetime import datetime
 
 # change
 
-
+@login_required
+@role_required(['admin','sales'])
 def lead_management_create(request):
     salespersons = SalesPerson.objects.all()
 
@@ -1858,6 +1832,8 @@ from datetime import date
 from django.core.paginator import Paginator
 from itertools import chain
 
+@login_required
+@role_required(['admin','sales'])
 def today_work(request):
     today = date.today()
 
@@ -1908,6 +1884,8 @@ from django.shortcuts import render
 from django.db.models import Q
 from .models import lead_management, main_followup, SalesPerson
 
+@login_required
+@role_required(['admin','sales'])
 def pending_followups(request):
     today = date.today()
 
@@ -2020,6 +1998,8 @@ from .models import lead_management, firstfollowup, secondfollowup, thirdfollowu
 
 from django.db.models import Q  # For complex queries
 
+@login_required
+@role_required(['admin','sales'])
 def display_followup(request):
     search_query = request.GET.get('q', '')  # Get the search query
     
@@ -2154,6 +2134,8 @@ def handle_customer_csv(file):
 
 
 from crmapp.models import Reschedule
+@login_required
+@role_required(['admin','sales'])
 def display_reschedule(request):
     query = request.GET.get('search', '').strip()
     sort_order = request.GET.get('order', 'asc')
@@ -2196,7 +2178,8 @@ def display_reschedule(request):
 
     return render(request, 'display_reschedule.html', context)
 
-
+@login_required
+@role_required(['admin','sales'])
 def display_service_management(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
@@ -2286,6 +2269,7 @@ def display_service_management(request):
 def get_service_details(request, service_id):
     service = get_object_or_404(service_management, id=service_id)
     return render(request, 'service_details_modal.html', {'service': service})
+
 
 def display_allocation(request):
     query = request.GET.get('search', '')
@@ -2763,7 +2747,7 @@ def edit_customer(request , rid):
         usoldtopartypostal=request.POST['usoldtopartypostal']
         ucustomer_type = request.POST['ucustomer_type']
         uor_name = request.POST['uor_name']
-        uor_contact = request.POST['uor_contact']        
+        uor_contact = request.POST['uor_contact'] or None      
 
         m=customer_details.objects.filter(id=rid)
 
@@ -3119,8 +3103,8 @@ def edit_lead_management(request, rid):
         ucontactedby = request.POST.get('ucontactedby', '')
         uenquirydate = request.POST.get('uenquirydate', '')
         ucustomer_type = request.POST.get('ucustomer_type','')
-        uor_name = request.POST.get('uor_name','')
-        uor_contact = request.POST.get('uor_contact','')
+        uor_name = request.POST.get('uor_name') or None
+        uor_contact = request.POST.get('uor_contact') or None
 
 
         try:
@@ -3340,6 +3324,7 @@ def update_product(request, product_id):
     return render(request, 'update_product.html', {'form': form})
 
 @login_required
+@role_required(['admin','sales'])
 def create_technician_profile(request):
     if not request.user.is_staff:
         return redirect('not_authorized')
@@ -3377,16 +3362,24 @@ def create_technician_profile(request):
                 'form_data': request.POST
             })
 
-        # Create a user account for the technician
+        # ✅ Create Django User
+        username = contact_number
         user = User.objects.create_user(
-            username=contact_number,
-            email=email,
+            username=username,
             password=password,
+            email=email,
             first_name=first_name,
             last_name=last_name
         )
 
-        # Create the TechnicianProfile linked to the user
+        # ✅ Assign role to user via UserProfile
+        UserProfile.objects.create(
+            user=user,
+            role='technician',
+            phone=contact_number
+        )
+
+        # ✅ Create the TechnicianProfile linked to the user
         TechnicianProfile.objects.create(
             user=user,
             first_name=first_name,
@@ -3400,7 +3393,7 @@ def create_technician_profile(request):
             date_of_joining=date_of_joining
         )
 
-        return redirect('/technicians')  # Replace with your success page or URL name
+        return redirect('/technicians')  # Replace with your success page or named URL
 
     return render(request, 'create_technician_profile.html')
 
@@ -3417,6 +3410,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import TechnicianProfile
 
 # Display technicians with demo passwords
+@login_required
+@role_required(['admin','sales'])
 def display_technician(request):
     technicians = TechnicianProfile.objects.all()
 
@@ -3445,33 +3440,66 @@ def display_technician(request):
 
 
 # Edit technician
+@login_required
+@role_required(['admin','sales'])
 def edit_technician(request, technician_id):
     technician = get_object_or_404(TechnicianProfile, id=technician_id)
     user = technician.user
 
     if request.method == 'POST':
-        technician.first_name = request.POST.get('first_name')
-        technician.last_name = request.POST.get('last_name')
-        technician.email = request.POST.get('email')
-        technician.contact_number = request.POST.get('contact_number')
-        technician.address = request.POST.get('address')
-        technician.city = request.POST.get('city')
-        technician.state = request.POST.get('state')
-        technician.postal_code = request.POST.get('postal_code')
-        technician.date_of_joining = request.POST.get('date_of_joining')
+        # Collect POST data
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        contact_number = request.POST.get('contact_number')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        state = request.POST.get('state')
+        postal_code = request.POST.get('postal_code')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
         password = request.POST.get('password')
 
-        if password:
-            user.password = make_password(password)
+        # ✅ Create or update User
+        if user:
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            user.username = contact_number
+            if password:
+                user.set_password(password)
             user.save()
+        else:
+            user = User.objects.create_user(
+                username=contact_number,
+                password=password or User.objects.make_random_password(),
+                email=email,
+                first_name=first_name,
+                last_name=last_name
+            )
+            technician.user = user  # Link new user to technician
 
+        # ✅ Create or update UserProfile
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        user_profile.role = 'technician'
+        user_profile.phone = contact_number
+        user_profile.save()
+
+        # ✅ Update TechnicianProfile
+        technician.first_name = first_name
+        technician.last_name = last_name
+        technician.email = email
+        technician.contact_number = contact_number
+        technician.address = address
+        technician.city = city
+        technician.state = state
+        technician.postal_code = postal_code
+        technician.date_of_joining = date_of_joining
         technician.save()
+
         messages.success(request, "Technician updated successfully.")
         return redirect('display_technician')
 
-    return render(request, 'edit_technician.html', {'technician': technician, 'password': user.password})
-
-
+    return render(request, 'edit_technician.html', {'technician': technician})
 # Delete technician
 def delete_technician(request, technician_id):
     technician = get_object_or_404(TechnicianProfile, id=technician_id)
@@ -3532,6 +3560,7 @@ from django.utils.timezone import make_aware
 from datetime import datetime
 
 @login_required
+@role_required(['technician'])
 def technician_dashboard(request):
     user = request.user
     try:
