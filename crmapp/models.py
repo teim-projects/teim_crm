@@ -20,6 +20,7 @@ class UserProfile(models.Model):
         ('admin', 'Admin'),
         ('sales', 'Sales'),
         ('technician', 'Technician'),
+        ('customer', 'Customer'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)

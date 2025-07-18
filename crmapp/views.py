@@ -270,7 +270,7 @@ def index(request):
 
         return render(request, 'index.html', context)
 
-@role_required(['admin', 'sales'])
+
 def generate_customerid(fullname):
     names = fullname.strip().split()
 
@@ -346,22 +346,211 @@ def signup(request):
 from django.db.models import Count, Max, Q
 from django.db.models.functions import Lower
 
+# def user_login(request):
+#     if request.method == "GET":
+#         return render(request, 'login.html')
+    
+#     else:
+#         uname = request.POST.get('uname') 
+#         upass = request.POST.get('upass')
+
+#         u = authenticate(username=uname, password=upass,  )
+
+#         if u is not None:
+#             login(request, u)
+#             start_date = request.GET.get('start_date')
+#             end_date = request.GET.get('end_date')
+
+#             latest_followups_qs = main_followup.objects.values('lead').annotate(
+#                 latest_id=Max('id')
+#             ).values_list('latest_id', flat=True)
+
+#             if start_date and end_date:
+#                 filtered_leads = main_followup.objects.filter(
+#                     id__in=latest_followups_qs,
+#                     lead__enquirydate__range=[start_date, end_date]
+#                 )
+#             else:
+#                 filtered_leads = main_followup.objects.filter(id__in=latest_followups_qs)
+
+#             # Prepare lead type chart data
+#             lead_data = {
+#             "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
+#             "datasets": [{
+#             "data": [
+#             filtered_leads.filter(typeoflead='Hot').count(),
+#             filtered_leads.filter(typeoflead='Warm').count(),
+#             filtered_leads.filter(typeoflead='Cold').count(),
+#             filtered_leads.filter(typeoflead='NotInterested').count(),
+#             filtered_leads.filter(typeoflead='LossofOrder').count()
+#              ],
+#                 "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+#             }]
+#             }
+
+
+#             # Serialize the data to JSON
+#             lead_data_json = json.dumps(lead_data)
+
+#             # Retrieve the start and end dates from query parameters
+#             start_date_followup = request.GET.get('start_date_followup')
+#             end_date_followup = request.GET.get('end_date_followup')
+
+#             # Default to today's date if no date range is provided
+#             if start_date_followup:
+#                 start_date_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
+#             if end_date_followup:
+#                 end_date_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
+
+#             # Define the stages
+#             stages = {
+#                 1: "No Follow-Up Done",
+#                 2: "First Follow-Up Done",
+#                 3: "Second Follow-Up Done",
+#                 4: "Third Follow-Up Done",
+#                 5: "Final Follow-Up Done"
+#             }
+
+#             # Filter the lead_management table by the date range if provided
+#             if start_date_followup and end_date_followup:
+#                 stage_counts = lead_management.objects.filter(enquirydate__range=[start_date_followup, end_date_followup]) \
+#                     .values('stage') \
+#                     .annotate(count=Count('id')) \
+#                     .order_by('stage')
+#             else:
+#                 # If no date range, fetch all data
+#                 stage_counts = lead_management.objects.values('stage') \
+#                     .annotate(count=Count('id')) \
+#                     .order_by('stage')
+
+#             # Prepare the labels and data for the chart
+
+
+#             pest_control_count = Product.objects.filter(category='Pest Control').count()
+#             fumigation_count = Product.objects.filter(category='Fumigation').count()
+#             product_sell_count = Product.objects.filter(category='Product Sell').count()
+
+#             # Bar chart data
+#             bar_chart_data = {
+#                 "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
+#                 "datasets": [{
+#                     "label": "Number of Products per Category",
+#                     "data": [pest_control_count, fumigation_count, product_sell_count],
+#                     "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
+#                 }]
+#             }
+
+    
+#             # Extract service-specific date filters
+#             start_date_service = request.GET.get('start_date_service')
+#             end_date_service = request.GET.get('end_date_service')
+
+#             # Filter service management data by service_date range if present
+#             if start_date_service and end_date_service:
+#                 start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
+#                 end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
+
+#                 # Apply date filter on service_date field for contract type distribution
+#                 service_data = service_management.objects.filter(
+#                     Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
+#                 ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+#             else:
+#                 # Default data if no service date filter is applied
+#                 service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+
+#             # Prepare data for the Contract Type Distribution chart
+#             labellist = [entry["contract_type"] for entry in service_data]
+#             countlist = [entry["count"] for entry in service_data]
+
+#             # Extract query parameters
+#             start_date_qo = request.GET.get('start_date_qo')
+#             end_date_qo = request.GET.get('end_date_qo')
+#             filter_type = request.GET.get('filter_type')
+
+#             # Initialize counts
+#             quotations_count = 0
+#             orders_count = 0
+
+#             # Apply date filters if present
+#             if start_date_qo and end_date_qo:
+#                 # Parse dates
+#                 start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
+#                 end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
+
+#                 if filter_type == 'quotation':
+#                     # Filter quotations by date range
+#                     quotations_count = quotation.objects.filter(
+#                         Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
+#                     ).count()
+#                     orders_count = invoice.objects.count()  # Unfiltered
+#                 elif filter_type == 'invoice':
+#                     # Filter invoices by date range
+#                     orders_count = invoice.objects.filter(
+#                         Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
+#                     ).count()
+#                     quotations_count = quotation.objects.count()  # Unfiltered
+#             else:
+#                 # Default counts without filters
+#                 quotations_count = quotation.objects.count()
+#                 orders_count = invoice.objects.count()
+            
+            
+#             # Prepare context
+#             context = {
+#                 # 'total_leads': leads.count(),
+#                 # 'hot_leads': hot_leads,
+#                 # 'warm_leads': warm_leads,
+#                 # 'cold_leads': cold_leads,
+#                 # 'not_interested': not_interested,
+#                 # 'loss_of_order': loss_of_order,
+#                 'lead_data': lead_data_json,
+#                 'service_data': service_data,
+#                 # 'quotation_data': quotation_data,
+#                 # 'invoice_data': invoice_data,
+#                 # 'lead_data1': lead_data1,
+#                 'labellist': json.dumps(labellist),  # Serialize labels
+#                 'countlist': json.dumps(countlist),  # Serialize counts
+#                 "quotationlist": json.dumps(["Quotations", "Orders"]),
+#                 "order": json.dumps([quotations_count, orders_count]),
+#                 'lead_data': json.dumps(lead_data),
+#                 'bar_chart_data': json.dumps(bar_chart_data),
+                
+#             }
+            
+#             # return render(request, 'index.html', context)
+#             return redirect('index')
+
+
+#             # return render(request, "index.html")
+        
+
+#         else:
+#             context = {'msg1': 'Wrong Username Or Password'}
+#             return render(request, "login.html", context)
+
+
 def user_login(request):
     if request.method == "GET":
         return render(request, 'login.html')
-    
-    else:
-        uname = request.POST.get('uname') 
-        upass = request.POST.get('upass')
 
-        u = authenticate(username=uname, password=upass)
+    uname = request.POST.get('uname') 
+    upass = request.POST.get('upass')
+    user = authenticate(username=uname, password=upass)
 
-        if u is not None:
-            login(request, u)
-            print(request.user.userprofile.role)
+    if user:
+        try:
+            role = user.userprofile.role
+            if role not in ['admin', 'sales']:
+                messages.error(request, "Only admin and sales users are allowed to log in.")
+                return render(request, 'login.html')
+
+            # Login only if role is valid
+            login(request, user)
+
+            # Proceed with dashboard data collection
+            # ------------------- LEAD CHART DATA -------------------
             start_date = request.GET.get('start_date')
             end_date = request.GET.get('end_date')
-
             latest_followups_qs = main_followup.objects.values('lead').annotate(
                 latest_id=Max('id')
             ).values_list('latest_id', flat=True)
@@ -374,64 +563,40 @@ def user_login(request):
             else:
                 filtered_leads = main_followup.objects.filter(id__in=latest_followups_qs)
 
-            # Prepare lead type chart data
             lead_data = {
-            "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
-            "datasets": [{
-            "data": [
-            filtered_leads.filter(typeoflead='Hot').count(),
-            filtered_leads.filter(typeoflead='Warm').count(),
-            filtered_leads.filter(typeoflead='Cold').count(),
-            filtered_leads.filter(typeoflead='NotInterested').count(),
-            filtered_leads.filter(typeoflead='LossofOrder').count()
-             ],
-                "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-            }]
+                "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
+                "datasets": [{
+                    "data": [
+                        filtered_leads.filter(typeoflead='Hot').count(),
+                        filtered_leads.filter(typeoflead='Warm').count(),
+                        filtered_leads.filter(typeoflead='Cold').count(),
+                        filtered_leads.filter(typeoflead='NotInterested').count(),
+                        filtered_leads.filter(typeoflead='LossofOrder').count()
+                    ],
+                    "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                }]
             }
 
-
-            # Serialize the data to JSON
-            lead_data_json = json.dumps(lead_data)
-
-            # Retrieve the start and end dates from query parameters
+            # ------------------- LEAD STAGES -------------------
             start_date_followup = request.GET.get('start_date_followup')
             end_date_followup = request.GET.get('end_date_followup')
 
-            # Default to today's date if no date range is provided
             if start_date_followup:
                 start_date_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
             if end_date_followup:
                 end_date_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
 
-            # Define the stages
-            stages = {
-                1: "No Follow-Up Done",
-                2: "First Follow-Up Done",
-                3: "Second Follow-Up Done",
-                4: "Third Follow-Up Done",
-                5: "Final Follow-Up Done"
-            }
-
-            # Filter the lead_management table by the date range if provided
             if start_date_followup and end_date_followup:
                 stage_counts = lead_management.objects.filter(enquirydate__range=[start_date_followup, end_date_followup]) \
-                    .values('stage') \
-                    .annotate(count=Count('id')) \
-                    .order_by('stage')
+                    .values('stage').annotate(count=Count('id')).order_by('stage')
             else:
-                # If no date range, fetch all data
-                stage_counts = lead_management.objects.values('stage') \
-                    .annotate(count=Count('id')) \
-                    .order_by('stage')
+                stage_counts = lead_management.objects.values('stage').annotate(count=Count('id')).order_by('stage')
 
-            # Prepare the labels and data for the chart
-
-
+            # ------------------- PRODUCT CATEGORY -------------------
             pest_control_count = Product.objects.filter(category='Pest Control').count()
             fumigation_count = Product.objects.filter(category='Fumigation').count()
             product_sell_count = Product.objects.filter(category='Product Sell').count()
 
-            # Bar chart data
             bar_chart_data = {
                 "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
                 "datasets": [{
@@ -441,94 +606,68 @@ def user_login(request):
                 }]
             }
 
-    
-            # Extract service-specific date filters
+            # ------------------- SERVICE MANAGEMENT -------------------
             start_date_service = request.GET.get('start_date_service')
             end_date_service = request.GET.get('end_date_service')
 
-            # Filter service management data by service_date range if present
             if start_date_service and end_date_service:
                 start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
                 end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
 
-                # Apply date filter on service_date field for contract type distribution
                 service_data = service_management.objects.filter(
                     Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
                 ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
             else:
-                # Default data if no service date filter is applied
                 service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
 
-            # Prepare data for the Contract Type Distribution chart
             labellist = [entry["contract_type"] for entry in service_data]
             countlist = [entry["count"] for entry in service_data]
 
-            # Extract query parameters
+            # ------------------- QUOTATIONS / ORDERS -------------------
             start_date_qo = request.GET.get('start_date_qo')
             end_date_qo = request.GET.get('end_date_qo')
             filter_type = request.GET.get('filter_type')
 
-            # Initialize counts
             quotations_count = 0
             orders_count = 0
 
-            # Apply date filters if present
             if start_date_qo and end_date_qo:
-                # Parse dates
                 start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
                 end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
 
                 if filter_type == 'quotation':
-                    # Filter quotations by date range
                     quotations_count = quotation.objects.filter(
                         Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
                     ).count()
-                    orders_count = invoice.objects.count()  # Unfiltered
+                    orders_count = invoice.objects.count()
                 elif filter_type == 'invoice':
-                    # Filter invoices by date range
                     orders_count = invoice.objects.filter(
                         Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
                     ).count()
-                    quotations_count = quotation.objects.count()  # Unfiltered
+                    quotations_count = quotation.objects.count()
             else:
-                # Default counts without filters
                 quotations_count = quotation.objects.count()
                 orders_count = invoice.objects.count()
-            
-            
-            # Prepare context
+
+            # ------------------- CONTEXT -------------------
             context = {
-                # 'total_leads': leads.count(),
-                # 'hot_leads': hot_leads,
-                # 'warm_leads': warm_leads,
-                # 'cold_leads': cold_leads,
-                # 'not_interested': not_interested,
-                # 'loss_of_order': loss_of_order,
-                'lead_data': lead_data_json,
+                'lead_data': json.dumps(lead_data),
                 'service_data': service_data,
-                # 'quotation_data': quotation_data,
-                # 'invoice_data': invoice_data,
-                # 'lead_data1': lead_data1,
-                'labellist': json.dumps(labellist),  # Serialize labels
-                'countlist': json.dumps(countlist),  # Serialize counts
+                'labellist': json.dumps(labellist),
+                'countlist': json.dumps(countlist),
                 "quotationlist": json.dumps(["Quotations", "Orders"]),
                 "order": json.dumps([quotations_count, orders_count]),
-                'lead_data': json.dumps(lead_data),
                 'bar_chart_data': json.dumps(bar_chart_data),
-                
             }
-            
-            # return render(request, 'index.html', context)
-            return redirect('index')
 
+            return render(request, "index.html", context)
 
-            # return render(request, "index.html")
-        
+        except UserProfile.DoesNotExist:
+            messages.error(request, "User profile not found.")
+            return render(request, 'login.html')
+    else:
+        return render(request, "login.html", {'msg1': 'Wrong Username Or Password'})
 
-        else:
-            context = {'msg1': 'Wrong Username Or Password'}
-            return render(request, "login.html", context)
-        
 
 @login_required
 @role_required(['admin', 'sales','technician'])
@@ -676,7 +815,6 @@ from django.http import JsonResponse
 from .models import customer_details, lead_management
 
 @login_required
-@role_required(['admin','sales'])
 def customer_details_create(request):
     if request.method == 'GET':
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -695,7 +833,7 @@ def customer_details_create(request):
                     'soldtopartycity': lead.city or '',
                     'customer_type':lead.customer_type or '',
                     'or_name':lead.or_name or '',
-                    'or_contact': lead.or_contact or '',
+                    'or_contact': lead.or_contact or None,
                 }
                 return JsonResponse({'status': 'exists', 'data': data})
             return JsonResponse({'status': 'not_found'})
@@ -719,7 +857,7 @@ def customer_details_create(request):
         soldtopartypostal = request.POST['soldtopartypostal']
         customer_type =  request.POST['customer_type']
         or_name = request.POST['or_name']
-        or_contact = request.POST['or_contact']
+        or_contact = request.POST['or_contact'] or None
 
 
         if not fullname or not primaryemail or not primarycontact:
@@ -3514,19 +3652,43 @@ def not_authorized(request):
     return render(request, 'not_authorized.html')
 
 
+# def technician_login(request):
+#     if request.method == 'POST':
+#         contact_number = request.POST.get('contact_number')
+#         password = request.POST.get('password')
+        
+#         user = authenticate(request, username=contact_number, password=password)
+#         if user is not None:
+#             login(request, user)
+#             return redirect('technician_dashboard')
+#         else:
+#             return render(request, 'technician_login.html', {'error': 'Invalid login credentials'})
+
+#     return render(request, 'technician_login.html')
+
 def technician_login(request):
     if request.method == 'POST':
         contact_number = request.POST.get('contact_number')
         password = request.POST.get('password')
         
         user = authenticate(request, username=contact_number, password=password)
+
         if user is not None:
-            login(request, user)
-            return redirect('technician_dashboard')
+            try:
+                if user.userprofile.role == 'technician':
+                    login(request, user)
+                    return redirect('technician_dashboard')
+                else:
+                    error = 'Access denied: Not a technician.'
+            except UserProfile.DoesNotExist:
+                error = 'User profile not found.'
         else:
-            return render(request, 'technician_login.html', {'error': 'Invalid login credentials'})
+            error = 'Invalid login credentials.'
+        
+        return render(request, 'technician_login.html', {'error': error})
 
     return render(request, 'technician_login.html')
+
 
 # @login_required
 # def technician_dashboard(request):
