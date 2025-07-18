@@ -1,48 +1,57 @@
-from decimal import Decimal
-from django.shortcuts import render , redirect , HttpResponse , get_object_or_404
-from httpcore import request
-from .forms import InventoryServiceForm, InventoryAddForm ,  AddProductForm, UpdateProductForm
-from django.utils import timezone
-from crmapp.models import customer_details, service_management ,TaxInvoice, quotation ,invoice , lead_management , Product , Inventory_summary , Inventory_add  
-from django .db.models import Q
-import random
-from django.http import HttpResponseForbidden, JsonResponse
-from django.http import HttpResponse
-from django import contrib
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate,login,logout , admin
-from django.db.models import Sum, Count
-from crmapp.models import lead_management
-from crmapp.models import firstfollowup
-from crmapp.models import secondfollowup
-from crmapp.models import thirdfollowup
-from crmapp.models import finalfollowup
 import csv
+import json
+import random
 import datetime
-import matplotlib.pyplot as plt
 from io import BytesIO
+from decimal import Decimal
 import base64
-from django.shortcuts import render
-from crmapp.models import lead_management
 
-from django.shortcuts import render
-from django.http import JsonResponse
+import matplotlib.pyplot as plt
+import openpyxl
+
+from django import contrib
+from django.conf import settings
+from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.db.models import Q, Sum, Count, Max
+from django.db.models.functions import Lower
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
+
+from .forms import (
+    InventoryServiceForm,
+    InventoryAddForm,
+    AddProductForm,
+    UpdateProductForm,
+    LeadImportForm
+)
+
+from .models import (
+    customer_details,
+    service_management,
+    quotation,
+    invoice,
+    Product,
+    Inventory_summary,
+    Inventory_add,
+    UserProfile,
+    SalesPerson,
+    TechnicianProfile,
+    lead_management,
+    firstfollowup,
+    secondfollowup,
+    thirdfollowup,
+    finalfollowup
+)
+
+from .decorators import role_required
 from schedule_meetings.models import Meeting
 
-import openpyxl
-from .forms import LeadImportForm
-from django.contrib import messages
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.decorators import login_required
-from .models import TechnicianProfile
-from datetime import datetime
-import json
-from django.utils.dateparse import parse_date
-from django.db.models import Count
-from django.contrib.auth.models import User
-from .models import UserProfile, SalesPerson
-from django.utils.dateparse import parse_date
-from django.shortcuts import render, redirect
 
 state_map = {
         'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
@@ -91,12 +100,7 @@ def landing_page(request):
     return render(request , 'landing_page.html')
 
 
-import json
-from datetime import datetime
-from django.db.models import Count, Sum, Q
-from django.shortcuts import render
-from .decorators import role_required
-
+@login_required
 @role_required(['admin', 'sales'])
 def index(request):
         # Fetch data for Service Management
@@ -223,10 +227,7 @@ def index(request):
             orders_count = invoice.objects.count()
 
         start_date = request.GET.get("start_date_order")
-        print("start_date", start_date)
-
         end_date = request.GET.get("end_date_order")
-        print("end_date",end_date)
         followups = main_followup.objects.all()
         # print("followups",followups)
 
@@ -270,7 +271,6 @@ def index(request):
 
         return render(request, 'index.html', context)
 
-
 def generate_customerid(fullname):
     names = fullname.strip().split()
 
@@ -288,11 +288,6 @@ def generate_customerid(fullname):
     return first_part + last_part + random_number
 
 
-
-from django.http import JsonResponse
-from .models import customer_details
-from django.db.models import Count, Max, Q
-
 @role_required(['admin', 'sales'])
 def get_customer_name(request):
     customer_id = request.GET.get('customer_id', None)
@@ -307,7 +302,6 @@ def get_customer_name(request):
 
 
 
-from django.conf import settings
 def signup(request):
     if request.method == "GET":
         return render(request, 'signup.html')
@@ -341,10 +335,6 @@ def signup(request):
             context = {'msg3': 'User Registered Successfully'}
             return render(request, "signup.html", context)
 
-
-
-from django.db.models import Count, Max, Q
-from django.db.models.functions import Lower
 
 # def user_login(request):
 #     if request.method == "GET":
@@ -528,7 +518,6 @@ from django.db.models.functions import Lower
 #             context = {'msg1': 'Wrong Username Or Password'}
 #             return render(request, "login.html", context)
 
-
 def user_login(request):
     if request.method == "GET":
         return render(request, 'login.html')
@@ -547,120 +536,9 @@ def user_login(request):
             # Login only if role is valid
             login(request, user)
 
-            # Proceed with dashboard data collection
-            # ------------------- LEAD CHART DATA -------------------
-            start_date = request.GET.get('start_date')
-            end_date = request.GET.get('end_date')
-            latest_followups_qs = main_followup.objects.values('lead').annotate(
-                latest_id=Max('id')
-            ).values_list('latest_id', flat=True)
 
-            if start_date and end_date:
-                filtered_leads = main_followup.objects.filter(
-                    id__in=latest_followups_qs,
-                    lead__enquirydate__range=[start_date, end_date]
-                )
-            else:
-                filtered_leads = main_followup.objects.filter(id__in=latest_followups_qs)
-
-            lead_data = {
-                "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
-                "datasets": [{
-                    "data": [
-                        filtered_leads.filter(typeoflead='Hot').count(),
-                        filtered_leads.filter(typeoflead='Warm').count(),
-                        filtered_leads.filter(typeoflead='Cold').count(),
-                        filtered_leads.filter(typeoflead='NotInterested').count(),
-                        filtered_leads.filter(typeoflead='LossofOrder').count()
-                    ],
-                    "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-                }]
-            }
-
-            # ------------------- LEAD STAGES -------------------
-            start_date_followup = request.GET.get('start_date_followup')
-            end_date_followup = request.GET.get('end_date_followup')
-
-            if start_date_followup:
-                start_date_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
-            if end_date_followup:
-                end_date_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
-
-            if start_date_followup and end_date_followup:
-                stage_counts = lead_management.objects.filter(enquirydate__range=[start_date_followup, end_date_followup]) \
-                    .values('stage').annotate(count=Count('id')).order_by('stage')
-            else:
-                stage_counts = lead_management.objects.values('stage').annotate(count=Count('id')).order_by('stage')
-
-            # ------------------- PRODUCT CATEGORY -------------------
-            pest_control_count = Product.objects.filter(category='Pest Control').count()
-            fumigation_count = Product.objects.filter(category='Fumigation').count()
-            product_sell_count = Product.objects.filter(category='Product Sell').count()
-
-            bar_chart_data = {
-                "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
-                "datasets": [{
-                    "label": "Number of Products per Category",
-                    "data": [pest_control_count, fumigation_count, product_sell_count],
-                    "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
-                }]
-            }
-
-            # ------------------- SERVICE MANAGEMENT -------------------
-            start_date_service = request.GET.get('start_date_service')
-            end_date_service = request.GET.get('end_date_service')
-
-            if start_date_service and end_date_service:
-                start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
-                end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
-
-                service_data = service_management.objects.filter(
-                    Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
-                ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
-            else:
-                service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
-
-            labellist = [entry["contract_type"] for entry in service_data]
-            countlist = [entry["count"] for entry in service_data]
-
-            # ------------------- QUOTATIONS / ORDERS -------------------
-            start_date_qo = request.GET.get('start_date_qo')
-            end_date_qo = request.GET.get('end_date_qo')
-            filter_type = request.GET.get('filter_type')
-
-            quotations_count = 0
-            orders_count = 0
-
-            if start_date_qo and end_date_qo:
-                start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
-                end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
-
-                if filter_type == 'quotation':
-                    quotations_count = quotation.objects.filter(
-                        Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
-                    ).count()
-                    orders_count = invoice.objects.count()
-                elif filter_type == 'invoice':
-                    orders_count = invoice.objects.filter(
-                        Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
-                    ).count()
-                    quotations_count = quotation.objects.count()
-            else:
-                quotations_count = quotation.objects.count()
-                orders_count = invoice.objects.count()
-
-            # ------------------- CONTEXT -------------------
-            context = {
-                'lead_data': json.dumps(lead_data),
-                'service_data': service_data,
-                'labellist': json.dumps(labellist),
-                'countlist': json.dumps(countlist),
-                "quotationlist": json.dumps(["Quotations", "Orders"]),
-                "order": json.dumps([quotations_count, orders_count]),
-                'bar_chart_data': json.dumps(bar_chart_data),
-            }
-
-            return render(request, "index.html", context)
+            # return render(request, "index.html", context)
+            return redirect('index')
 
         except UserProfile.DoesNotExist:
             messages.error(request, "User profile not found.")
@@ -670,20 +548,11 @@ def user_login(request):
 
 
 @login_required
-@role_required(['admin', 'sales','technician'])
 def user_logout(request):
     logout(request)
     return redirect("/")
 
-
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import SalesPerson
-from django.utils.dateparse import parse_date
-
 # Add Sales Person
-
 @login_required
 @role_required(['admin'])
 def add_sales_person(request):
@@ -811,8 +680,6 @@ def delete_sales_person(request, pk):
     return render(request, 'delete_sales_person.html', {'person': person})
 
 
-from django.http import JsonResponse
-from .models import customer_details, lead_management
 
 @login_required
 def customer_details_create(request):
@@ -895,7 +762,6 @@ def customer_details_create(request):
     
 
 @login_required
-@role_required(['admin','sales'])
 def export_customer_excel(request):
 
     response = HttpResponse(content_type='text/csv')
@@ -916,11 +782,7 @@ def export_customer_excel(request):
     return response
 
 
-
-
-
 @login_required
-@role_required(['admin','sales'])
 def product_list(request):
     category_filter = request.GET.get('category', 'all')
     if category_filter and category_filter != 'all':
@@ -946,7 +808,6 @@ def product_list(request):
     return render(request, 'product_list.html', context)
 
 @login_required
-@role_required(['admin','sales'])
 def export_product_list_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="product_list.csv"'
@@ -966,16 +827,11 @@ def export_product_list_csv(request):
     return response
 
 @login_required
-@role_required(['admin','sales'])
 def delete_product(request, product_id):
     product = get_object_or_404(Product, product_id=product_id)
     product.delete()
     return redirect('/products')
 
-
-from django.shortcuts import render, redirect
-from django.utils import timezone
-from .models import service_management, customer_details
 
 @login_required
 @role_required(['admin','sales'])
