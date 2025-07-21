@@ -443,6 +443,9 @@
                                 <thead>
                                     <tr>
                                         <th>Sr No.</th>
+                                        <th>Allocate Work</th>
+                                        <th>Reschedule</th>
+                                        <th>Cancel</th>
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
                                                 href="?sort_by=customerid&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
@@ -471,9 +474,7 @@
                                         <th>GPS Location</th>
                                         <th>Delivery Time</th>
                                         <th>Service Date</th>
-                                        <th>Allocate Work</th>
-                                        <th>Reschedule</th>
-                                        <th>Cancel</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -481,18 +482,9 @@
                                     <tr>
 
                                         <td>{{ forloop.counter|add:start_index }}</td>
-                                        <td>{{ x.customer }}</td>
-                                        <td>{{ x.customer.fullname }}</td>
-                                        <td>{{ x.customer.primarycontact }}</td>
-                                        <td>{{ x.total_price }}</td>
-                                        <td>{{ x.total_price_with_gst }}</td>
-                                        <td><a href="{{ x.gps_location }}" target="_blank">View Location</a></td>
-                                        <td>{{ x.delivery_time }}</td>
-                                        <td>{{ x.service_date }}</td>
-                                        <!-- Allocated button  -->
                                         <td>
                                             {% if x.id in allocated_service_ids %}
-                                            <button class="btn btn-secondary" disabled>Already Allocated</button>
+                                            <button class="btn btn-secondary "style="font-size: 13px;" disabled>Already Allocated</button>
                                             {% else %}
                                             <a href="/allocate/{{ x.id }}/" class="btn btn-primary">Allocate Work</a>
                                             {% endif %}
@@ -505,7 +497,17 @@
                                         </td>
 
                                         <td><a href="/delete_service_management/{{ x.id }}"
-                                                class="btn btn-danger delete-link" role="button">Cancel</a></td>
+                                                class="btn btn-danger delete-link" role="button"><i class="fa-solid fa-trash"></i></a></td>
+                                        <td>{{ x.customer }}</td>
+                                        <td>{{ x.customer.fullname }}</td>
+                                        <td>{{ x.customer.primarycontact }}</td>
+                                        <td>{{ x.total_price }}</td>
+                                        <td>{{ x.total_price_with_gst }}</td>
+                                        <td><a href="{{ x.gps_location }}" target="_blank">View Location</a></td>
+                                        <td>{{ x.delivery_time }}</td>
+                                        <td>{{ x.service_date }}</td>
+                                        <!-- Allocated button  -->
+                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>

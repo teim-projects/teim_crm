@@ -67,7 +67,11 @@ urlpatterns = [
      # Make sure this line exists
 
     path('edit_customer/<rid>', views.edit_customer, name="edit_customer"),
+    # this is for reschudle 
     path('edit_service_management/<rid>', views.edit_service_management, name='edit_service_management'),
+    # this is for edit service record
+    path('edit_service_records/<int:rid>/', views.edit_service_records, name='edit_service_records'),
+    path('delete_service_records/<int:rid>/', views.delete_service_records , name='delete_service_records'),
     path('edit_quotation/<int:rid>', views.edit_quotation, name="edit_quotation"),
     path('edit_invoice/<rid>', views.edit_invoice),
     # path('edit_inventory/<rid>', views.edit_inventory),

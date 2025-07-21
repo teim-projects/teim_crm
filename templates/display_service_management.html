@@ -549,6 +549,7 @@
                                 <thead>
                                     <tr>
                                         <th>Sr.No.</th>
+                                        <th>Actions</th>
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
                                                 href="?sort_by=customerid&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
@@ -560,6 +561,7 @@
                                                 {% endif %}
                                             </a>
                                         </th>
+                                        
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
                                                 href="?sort_by=fullname&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
@@ -585,6 +587,15 @@
                                     {% for x in page_obj %}
                                     <tr>
                                         <td>{{ forloop.counter|add:start_index }}</td>
+                                        <td>
+                                        <a href="{% url 'edit_service_records' x.id %}" class="btn btn-sm btn-outline-success me-1">
+                                          <i class="fa-solid fa-pen-to-square"></i>
+                                        </a>
+                                        <a href="{% url 'delete_service_records' x.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?');">
+                                          <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                        </td>
+
                                         <td>
                                             {{ x.customer.customerid }}
                                             <div class="dropdown">

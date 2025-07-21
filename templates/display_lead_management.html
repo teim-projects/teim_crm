@@ -764,9 +764,7 @@
 
                         </div>
 
-                        <div class="p mb-3">
-                            <p class="scroll-instruction">Scroll to view more content ➡️ </p>
-                        </div>
+                        
                         <div class="container-table">
 
                             <table class="table table-bordered">
@@ -819,8 +817,8 @@
                                             
                                                 {% if x.latest_followup %}
                                                     {% if x.latest_followup.order_status == "Close Win" %}
-                                                        <span class="badge bg-success text-white">Close Win</span>
-                                                    {% elif x.latest_followup.order_status == "Close Loss" %}
+                                                        <span class="badge bg-success text-white">Close  <br> Win</span>
+                                                    {% elif x.latest_followup.order_status == "Close <br> Loss" %}
                                                         <span class="badge bg-danger text-white">Close Loss</span>
                                                     {% else %}
                                                         <a href="{% url 'main_followup_view' x.id %}" class="btn btn-sm btn-outline-primary" title="Follow Up">

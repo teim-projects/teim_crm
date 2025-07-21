@@ -177,9 +177,7 @@
         <div class="technician-container container ">
             <h2 class="text-center mt-3 mb-3">Technician Work List</h2>
             <div>
-                <div class="p mb-3">
-                    <p class="scroll-instruction">Scroll to view more content ➡️ </p>
-                </div>
+               
                 <!-- Create a scrollable container for the table -->
                 <div class="table-container" style="max-height: 400px; overflow-y: auto;">
                     <table>
@@ -212,12 +210,12 @@
                                 <td>{{ work.status }}</td>
                                 <td class="actions">
                                     <a href="{% url 'edit_work' work.id %}" class="btn btn-edit btn-outline-info"
-                                        style="width:100px;">Edit</a>
+                                        ><i class="fa-solid fa-pen-to-square"></i></a>
                                     <form action="{% url 'delete_work' work.id %}" method="post"
                                         style="display:inline;">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-delete btn-outline-danger"
-                                            style="width:100px;">Delete</button>
+                                           ><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>

@@ -838,7 +838,7 @@ def delete_product(request, product_id):
 def service_management_create(request):
     customers = customer_details.objects.all()
     category_choices = Product.CATEGORY_CHOICES  # Pass category choices to the template
-    products = Product.objects.all()  # Adjust filter as necessary
+    products = Product.objects.all()  
     sales_persons = SalesPerson.objects.all()
 
     if request.method == 'POST':
@@ -2754,6 +2754,14 @@ def edit_customer(request , rid):
 
 from .models import Reschedule
 from datetime import datetime
+
+# This edit and delete records are in view_records --> service_management
+def edit_service_records(request, rid):
+    return render(request, 'edit_service_records.html')
+
+def delete_service_records(request, rid):
+    pass
+# This function is for edit service management in reshdule 
 def edit_service_management(request, rid):
     if request.method == 'GET':
         service_obj = get_object_or_404(service_management, id=rid)
