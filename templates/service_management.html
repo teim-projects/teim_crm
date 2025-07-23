@@ -309,7 +309,10 @@
                             </div>
                         </div>
 
-
+                        <div class="form-check my-2">
+                            <input type="checkbox" class="form-check-input" id="apply_gst" name="apply_gst" onchange="toggleGST()">
+                            <label for="apply_gst" class="form-check-label">Apply GST</label>
+                        </div>
                         <!-- Service Type -->
                         <label>Service Type<span class="star">*</span></label>
                         <select id="servicetype" name="servicetype" class="form-control" onchange="fetchProducts(this)">
@@ -335,18 +338,12 @@
                         <input type="number" id="total_price" name="total_price" step="0.01" readonly
                             class="form-control">
 
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="apply_gst" name="apply_gst"
-                                onchange="toggleGST()">
-                            <label for="apply_gst" class="form-check-label">Apply GST (18%)</label>
-                        </div>
-
                         <!-- GST Details -->
                         <div id="gst_fields" style="display: none;">
                             <input type="text" name="gst_number" placeholder="Enter GST Number" class="form-control">
                         </div>
 
-                        <label>GST (18%)</label>
+                        <label>GST</label>
                         <input type="number" id="gst_price" name="gst_price" step="0.01" readonly class="form-control">
 
                         <label>Total Price (with GST)</label>
@@ -585,293 +582,103 @@
         });
     </script>
 
-    <!-- <script>
-        let selectedProducts = [];
-        let totalPrice = 0;
-        const GST_RATE = 0.18;
-
-        function fetchProducts(selectElement) {
-            document.getElementById('products-container').innerHTML = '';
-
-            const selectedCategories = Array.from(selectElement.selectedOptions).map(option => option.value);
-
-            if (selectedCategories.length > 0) {
-                const categoriesQuery = selectedCategories.join(',');
-                fetch(`/get_products?categories=${categoriesQuery}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.products.forEach(product => {
-                            const productDiv = document.createElement('div');
-                            productDiv.innerHTML = `
-                                <input type="checkbox" name="selected_services" value="${product.product_id}"
-                                data-price="${product.price}" data-name="${product.product_name}"
-                                onchange="updateSelectedServices(this)">
-                                ${product.product_name}
-                                <br>
-                               
-                               <input type="number" style="max-width: 200px"
-                                    class="product-price-input" 
-                                    data-product-id="${product.product_id}" 
-                                    value="${product.price}"
-                                    placeholder="Product Price" 
-                                    min="0" step="0.01" 
-                                    onchange="updateProductPrice(this, '${product.product_id}')">
-
-                                <input type="number" style="max-width: 200px; margin-left: 30px "
-                                    class="product-quantity-input" 
-                                    data-product-id="${product.product_id}" 
-                                    value="${product.quantity}"
-                                    placeholder="Quantity" 
-                                    min="1" step="0.01" 
-                                    onchange="updateProductQuantity(this, '${product.product_id}')">
-
-                                 <div id="desc-container-${product.product_id}" style="display:none; margin-top: 10px;">
-                                    <label>Description:</label><br>
-                                    <textarea class="form-control description-input"
-                                    data-product-id="${product.product_id}"
-                                    placeholder="Enter description" rows="2"
-                                    oninput="updateProductDescription(this, '${product.product_id}')"
-                                    style="width: 300px;"></textarea>
-                                </div>
-
-
-
-                            `;
-                            document.getElementById('products-container').appendChild(productDiv);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching products:', error);
-                    });
-            }
-        }
-
-        function updateSelectedServices(checkbox) {
-            const productId = checkbox.value;
-            const productName = checkbox.getAttribute('data-name');
-            const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
-            const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
-            const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"]`);
-            const descContainer = document.getElementById(`desc-container-${productId}`);
-
-            const productPrice = parseFloat(priceInput.value) || 0;
-            const productQuantity = parseFloat(quantityInput.value) || 1;
-            const description = descriptionInput?.value || '';
-
-            if (checkbox.checked) {
-                if (descContainer) descContainer.style.display = 'block';
-
-                // Avoid duplicates
-                const alreadyAdded = selectedProducts.find(p => p.id === productId);
-                if (!alreadyAdded) {
-                    selectedProducts.push({
-                        id: productId,
-                        name: productName,
-                        price: productPrice,
-                        quantity: productQuantity,
-                        description: description
-                    });
-                }
-            } else {
-                if (descContainer) descContainer.style.display = 'none';
-                if (descriptionInput) descriptionInput.value = '';
-
-                selectedProducts = selectedProducts.filter(product => product.id !== productId);
-            }
-
-            console.log('Updated Selected Products:', selectedProducts);
-            updateSelectedServicesList();
-            updateTotalPrice();
-        }
-
-
-
-        function updateSelectedServicesList() {
-            const selectedServicesList = document.getElementById('selected_services');
-            const selectedServicesNamesInput = document.getElementById('selected_services_names');
-
-            selectedServicesList.innerHTML = ''; // Clear the list
-            let selectedServiceNames = [];
-
-            selectedProducts.forEach(product => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${product.name}: Rs. ${product.price} x ${product.quantity}`;
-                selectedServicesList.appendChild(listItem);
-                selectedServiceNames.push(product.name); // Collecting product names
-            });
-
-            selectedServicesNamesInput.value = selectedServiceNames.join(',');
-
-            if (selectedProducts.length === 0) {
-                const emptyMessage = document.createElement('li');
-                emptyMessage.textContent = 'No products selected';
-                selectedServicesList.appendChild(emptyMessage);
-            }
-        }
-
-        function updateTotalPrice() {
-            totalPrice = selectedProducts.reduce((total, product) => total + product.price * product.quantity, 0);
-            const totalPriceInput = document.getElementById('total_price');
-            totalPriceInput.value = totalPrice.toFixed(2);
-
-            if (document.getElementById('apply_gst').checked) {
-                applyGST();
-            } else {
-                clearGSTFields();
-            }
-        }
-
-        function updateProductDescription(textarea, productId) {
-            const newDescription = textarea.value;
-
-            selectedProducts.forEach(product => {
-                if (product.id === productId) {
-                    product.description = newDescription;
-                }
-            });
-
-            updateSelectedServicesList();
-        }
-
-
-        function toggleGST() {
-            const isGSTApplied = document.getElementById('apply_gst').checked;
-
-            if (isGSTApplied) {
-                applyGST();
-                document.getElementById('gst-price-container').style.display = 'block';
-                document.getElementById('gst-number-container').style.display = 'block';
-            } else {
-                clearGSTFields();
-                document.getElementById('gst-price-container').style.display = 'none';
-                document.getElementById('gst-number-container').style.display = 'none';
-            }
-        }
-
-        function applyGST() {
-            const gstPriceInput = document.getElementById('gst_price');
-            const totalWithGSTInput = document.getElementById('total_with_gst');
-
-            const gstPrice = totalPrice * GST_RATE;
-            const totalWithGST = totalPrice + gstPrice;
-
-            gstPriceInput.value = gstPrice.toFixed(2);
-            totalWithGSTInput.value = totalWithGST.toFixed(2);
-        }
-
-        function clearGSTFields() {
-            document.getElementById('gst_price').value = '';
-            document.getElementById('total_with_gst').value = '';
-        }
-
-        function updateProductPrice(priceInput, productId) {
-            const newPrice = parseFloat(priceInput.value) || 0; // Handle invalid input gracefully
-            selectedProducts.forEach(product => {
-                if (product.id === productId) {
-                    product.price = newPrice;
-                }
-            });
-            updateSelectedServicesList();
-            updateTotalPrice();
-        }
-
-        function updateProductQuantity(quantityInput, productId) {
-            // Fetch the new quantity from the input field
-            const newQuantity = parseInt(quantityInput.value) || 1; // Default to 1 if invalid or empty
-
-            // Update the quantity in the selectedProducts array
-            selectedProducts.forEach(product => {
-                if (product.id === productId) {
-                    product.quantity = newQuantity;
-                }
-            });
-
-            // Debug log to verify the updated quantity
-            console.log(`Updated Quantity for Product ID ${productId}:`, newQuantity);
-
-            // Update the list of selected services and total price
-            updateSelectedServicesList();
-            updateTotalPrice();
-        }
-
-        function updateCustomerDetails() {
-            const customerSelect = document.getElementById("customer_id");
-            const selectedOption = customerSelect.options[customerSelect.selectedIndex];
-
-            const contact = selectedOption.getAttribute("data-contact");
-            const email = selectedOption.getAttribute("data-email");
-
-            document.getElementById("customer_contact").value = contact || '';
-            document.getElementById("customer_email").value = email || '';
-        }
-
-    </script> -->
-
+  
    <script>
         let selectedProducts = [];
         let totalPrice = 0;
-        const GST_RATE = 0.18;
+        const GST_RATE = 0;
         function fetchProducts(selectElement) {
-            document.getElementById('products-container').innerHTML = '';
-        
             const selectedCategories = Array.from(selectElement.selectedOptions).map(option => option.value);
-        
-            if (selectedCategories.length > 0) {
-                const categoriesQuery = selectedCategories.join(',');
-                fetch(`/get_products?categories=${categoriesQuery}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.products.forEach(product => {
-                            const productDiv = document.createElement('div');
-                            const productId = String(product.product_id);
-                        
-                            // Find if this product was previously selected
-                            const existing = selectedProducts.find(p => p.id === productId);
-                            const isChecked = existing ? 'checked' : '';
-                            const displayDesc = existing ? 'block' : 'none';
-                        
-                            productDiv.innerHTML = `
-                                <input type="checkbox" name="selected_services" value="${productId}"
-                                    data-price="${product.price}" data-name="${product.product_name}"
-                                    ${isChecked}
-                                    onchange="updateSelectedServices(this)">
-                                ${product.product_name}<br>
-                        
-                                <input type="number" style="max-width: 200px"
-                                    class="product-price-input"
-                                    data-product-id="${productId}"
-                                    value="${existing ? existing.price : product.price}"
-                                    placeholder='Price'
-                                    onchange="updateProductPrice(this, '${productId}')">
-                        
-                                <input type="number" style="max-width: 200px; margin-left: 30px"
-                                    class="product-quantity-input"
-                                    data-product-id="${productId}"
-                                    value="${existing ?  existing.quantity : product.quantity}"
-                                    placeholder='Quantity'
-                                    onchange="updateProductQuantity(this, '${productId}')">
-                        
-                                <div id="desc-container-${productId}" style="margin-top: 10px; display:${displayDesc};">
-                                    <label>Description:</label><br>
-                                    <textarea class="form-control description-input"
-                                        data-product-id="${productId}"
-                                        oninput="updateProductDescription(this, '${productId}')"
-                                        placeholder='Description'
-                                        style="width: 300px;">${existing ? existing.description : ''}</textarea>
-                                </div>
-                            `;
-                            
-                            document.getElementById('products-container').appendChild(productDiv);
-                        });
+            if (selectedCategories.length === 0) return;
+                
+            const categoriesQuery = selectedCategories.join(',');
+                
+            fetch(`/get_products?categories=${categoriesQuery}`)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('products-container');
+                
+                    // Get all currently rendered product elements
+                    const allProductDivs = Array.from(container.children);
+                
+                    // Remove products NOT selected and NOT part of selectedProducts
+                    allProductDivs.forEach(div => {
+                        const checkbox = div.querySelector('input[name="selected_services"]');
+                        const productId = checkbox?.value;
+                        const isSelected = selectedProducts.some(p => p.id === productId);
+                        const isInNewData = data.products.some(p => String(p.product_id) === productId);
                     
-                        // Refresh prices after re-rendering
-                        updateSelectedServicesList();
-                        updateTotalPrice();
-                    })
-                    .catch(error => {
-                        console.error('Error fetching products:', error);
+                        if (!isSelected && !isInNewData) {
+                            container.removeChild(div);
+                        }
                     });
-            }
+                
+                    // Get currently rendered product IDs
+                    const renderedProductIds = Array.from(container.querySelectorAll('input[name="selected_services"]'))
+                        .map(input => input.value);
+                
+                    // Render only new products
+                    data.products.forEach(product => {
+                        const productId = String(product.product_id);
+                    
+                        if (renderedProductIds.includes(productId)) return;
+                    
+                        const existing = selectedProducts.find(p => p.id === productId);
+                        const isChecked = existing ? 'checked' : '';
+                        const displayDesc = existing ? 'block' : 'none';
+                    
+                        const productDiv = document.createElement('div');
+                        productDiv.innerHTML = `
+                            <input type="checkbox" name="selected_services" value="${productId}"
+                                data-price="${product.price}" data-name="${product.product_name}"
+                                ${isChecked}
+                                onchange="updateSelectedServices(this)">
+                            ${product.product_name}<br>
+                    
+                            <input type="number" style="max-width: 200px"
+                                class="product-price-input"
+                                data-product-id="${productId}"
+                                value="${existing ? existing.price : product.price}"
+                                placeholder='Price'
+                                name="price_${productId}"
+                                onchange="updateProductPrice(this, '${productId}')">
+                    
+                            <input type="number" style="max-width: 200px; margin-left: 30px"
+                                class="product-quantity-input"
+                                data-product-id="${productId}"
+                                name="quantity_${productId}"
+                                value="${existing ? existing.quantity : product.quantity}"
+                                placeholder='Quantity'
+                                onchange="updateProductQuantity(this, '${productId}')">
+                    
+                            <input type="number" style="max-width: 200px"
+                                class="product-gst-input"
+                                name="gst_${productId}"
+                                data-product-id="${productId}"
+                                value="${existing ? existing.gst : product.gst}"
+                                placeholder='GST'
+                                onchange="updateProductGst(this, '${productId}')">
+                    
+                            <div id="desc-container-${productId}" style="margin-top: 10px; display:${displayDesc};">
+                                <label>Description:</label><br>
+                                <textarea class="form-control description-input"
+                                    data-product-id="${productId}"
+                                    name="description_${productId}"
+                                    oninput="updateProductDescription(this, '${productId}')"
+                                    placeholder='Description'
+                                    style="width: 300px;">${existing ? existing.description : ''}</textarea>
+                            </div>
+                        `;
+                        
+                        container.appendChild(productDiv);
+                    });
+                
+                    updateSelectedServicesList();
+                    updateTotalPrice();
+                })
+                .catch(error => {
+                    console.error('Error fetching products:', error);
+                });
         }
 
 
@@ -879,6 +686,7 @@
             const productId = checkbox.value;
             const productName = checkbox.getAttribute('data-name');
             const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
+            const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`)
             const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
             const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"]`);
             const descContainer = document.getElementById(`desc-container-${productId}`);
@@ -898,7 +706,8 @@
                         name: productName,
                         price: productPrice,
                         quantity: productQuantity,
-                        description: description
+                        description: description,
+                        gst: parseFloat(gstInput.value) || 0 
                     });
                 }
             } else {
@@ -924,7 +733,10 @@
 
             selectedProducts.forEach(product => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `${product.name}: Rs. ${product.price} x ${product.quantity}`;
+                const gstEnabled = document.getElementById('apply_gst').checked;
+                const gstAmount = gstEnabled ? ` + GST(${product.gst}%)` : '';
+                listItem.textContent = `${product.name}: Rs. ${product.price} x ${product.quantity}${gstAmount}`;
+
                 selectedServicesList.appendChild(listItem);
                 selectedServiceNames.push(product.name); // Collecting product names
             });
@@ -963,30 +775,37 @@
         }
 
 
-        function toggleGST() {
-            const isGSTApplied = document.getElementById('apply_gst').checked;
+      function toggleGST() {
+        const isGSTApplied = document.getElementById('apply_gst').checked;
+        const gstContainer = document.getElementById('gst-fields-container');
 
-            if (isGSTApplied) {
-                applyGST();
-                document.getElementById('gst-price-container').style.display = 'block';
-                document.getElementById('gst-number-container').style.display = 'block';
-            } else {
-                clearGSTFields();
-                document.getElementById('gst-price-container').style.display = 'none';
-                document.getElementById('gst-number-container').style.display = 'none';
-            }
+        if (isGSTApplied) {
+            applyGST();
+            gstContainer.style.display = 'block';
+        } else {
+            clearGSTFields();
+            gstContainer.style.display = 'none';
+        }
         }
 
-        function applyGST() {
+       function applyGST() {
+            let gstTotal = 0;
+            selectedProducts.forEach(product => {
+                const price = product.price || 0;
+                const quantity = product.quantity || 1;
+                const gstRate = (product.gst || 0) / 100;  // Convert % to decimal
+                gstTotal += price * quantity * gstRate;
+            });
+        
             const gstPriceInput = document.getElementById('gst_price');
             const totalWithGSTInput = document.getElementById('total_with_gst');
-
-            const gstPrice = totalPrice * GST_RATE;
-            const totalWithGST = totalPrice + gstPrice;
-
-            gstPriceInput.value = gstPrice.toFixed(2);
+        
+            const totalWithGST = totalPrice + gstTotal;
+        
+            gstPriceInput.value = gstTotal.toFixed(2);
             totalWithGSTInput.value = totalWithGST.toFixed(2);
         }
+
 
         function clearGSTFields() {
             document.getElementById('gst_price').value = '';
@@ -1003,7 +822,16 @@
             updateSelectedServicesList();
             updateTotalPrice();
         }
-
+        function updateProductGst(gstInput, productId) {
+            const newGst = parseFloat(gstInput.value) || 0; // Handle invalid input gracefully
+            selectedProducts.forEach(product => {
+                if (product.id === productId) {
+                    product.gst = newGst;
+                }
+            });
+            updateSelectedServicesList();
+            updateTotalPrice();
+        }
         function updateProductQuantity(quantityInput, productId) {
             // Fetch the new quantity from the input field
             const newQuantity = parseFloat(quantityInput.value) || 1; // Default to 1 if invalid or empty

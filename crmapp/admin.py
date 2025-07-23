@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import PaymentsRecord
-from .models import UserProfile
+from .models import PaymentsRecord ,UserProfile, service_management, ServiceProduct
+
 # Register your models here.
 
 @admin.register(PaymentsRecord)
@@ -17,3 +17,6 @@ class PaymentsRecordAdmin(admin.ModelAdmin):
     readonly_fields = ['ageing']  
 
 admin.site.register(UserProfile)
+
+admin.site.register(service_management)
+admin.site.register(ServiceProduct)

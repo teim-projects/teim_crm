@@ -504,7 +504,8 @@ class service_management(models.Model):
         ('Irrelevant Leads', 'Irrelevant Leads')
     ]
     customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, null=True, blank=True)
-    selected_services = models.ManyToManyField(Product, related_name="selected_services")
+    # selected_services = models.ManyToManyField(Product, related_name="selected_services")
+    selected_services = models.ManyToManyField(Product, through='ServiceProduct', related_name="selected_services")
     segment = models.CharField(max_length=100, choices=SEGMENTS_CHOICES, null=True, blank=True)
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -527,12 +528,27 @@ class service_management(models.Model):
     lead_date = models.DateField(default=timezone.now)
     service_date = models.DateField(null=True, blank=True)
     technicians = models.ManyToManyField(TechnicianProfile, blank=True, related_name='assigned_services')
-
+    gst_status = models.CharField(
+        max_length=10,
+        choices=[('GST', 'GST'), ('NON-GST', 'NON-GST')],
+        default='GST'
+    )
 
     def __str__(self):
         selected_services = ', '.join([str(service) for service in self.selected_services.all()])
         return f'Service Management - {self.customer} ({selected_services})'
 
+class ServiceProduct(models.Model):
+    service = models.ForeignKey('service_management', on_delete=models.CASCADE, related_name='service_products')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=1)
+    gst_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    total_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    
+    def __str__(self):
+        return f"{self.product.product_name} ({self.quantity} @ ₹{self.price} + GST {self.gst_percentage}%)"
 
 class Branch(models.Model):
     branch_name = models.CharField(max_length=100)
