@@ -71,6 +71,7 @@ urlpatterns = [
     path('edit_service_management/<rid>', views.edit_service_management, name='edit_service_management'),
     # this is for edit service record
     path('edit_service_records/<int:rid>/', views.edit_service_records, name='edit_service_records'),
+    path('delete-service-product/<int:pid>/', views.delete_service_product, name='delete_service_product'),
     path('delete_service_records/<int:rid>/', views.delete_service_records , name='delete_service_records'),
     path('edit_quotation/<int:rid>', views.edit_quotation, name="edit_quotation"),
     path('edit_invoice/<rid>', views.edit_invoice),

@@ -641,6 +641,7 @@
                                 value="${existing ? existing.price : product.price}"
                                 placeholder='Price'
                                 name="price_${productId}"
+                                step="0.01"
                                 onchange="updateProductPrice(this, '${productId}')">
                     
                             <input type="number" style="max-width: 200px; margin-left: 30px"
@@ -649,6 +650,7 @@
                                 name="quantity_${productId}"
                                 value="${existing ? existing.quantity : product.quantity}"
                                 placeholder='Quantity'
+                                step="0.01"
                                 onchange="updateProductQuantity(this, '${productId}')">
                     
                             <input type="number" style="max-width: 200px"
@@ -657,6 +659,7 @@
                                 data-product-id="${productId}"
                                 value="${existing ? existing.gst : product.gst}"
                                 placeholder='GST'
+                                step="0.01"
                                 onchange="updateProductGst(this, '${productId}')">
                     
                             <div id="desc-container-${productId}" style="margin-top: 10px; display:${displayDesc};">

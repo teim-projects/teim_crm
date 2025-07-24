@@ -542,10 +542,10 @@ class ServiceProduct(models.Model):
     service = models.ForeignKey('service_management', on_delete=models.CASCADE, related_name='service_products')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity = models.PositiveIntegerField(default=1)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1.0)
     gst_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     total_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
+    description = models.TextField(null=True, blank=True)
     
     def __str__(self):
         return f"{self.product.product_name} ({self.quantity} @ ₹{self.price} + GST {self.gst_percentage}%)"
@@ -689,7 +689,7 @@ class TechWorkList(models.Model):
     customer_signature_photo = models.ImageField(upload_to='photos/signatures/', blank=True, null=True)
     payment_photos = models.ManyToManyField(UploadedFile, related_name='payment_photos', blank=True)
     completion_datetime = models.DateTimeField(default=timezone.now)
-
+    
     def __str__(self):
         return f"Work by {self.technician.username}"
 

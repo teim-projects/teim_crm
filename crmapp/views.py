@@ -834,8 +834,6 @@ def delete_product(request, product_id):
     return redirect('/products')
 
 
-# @login_required
-# @role_required(['admin','sales'])
 # def service_management_create(request):
 #     customers = customer_details.objects.all()
 #     category_choices = Product.CATEGORY_CHOICES  # Pass category choices to the template
@@ -942,6 +940,8 @@ def delete_product(request, product_id):
 #     return render(request, 'service_management.html', {'category_choices': category_choices, 'products': products,'customers' : customers , 'sales_persons':sales_persons})
 
 
+@login_required
+@role_required(['admin','sales'])
 def service_management_create(request):
     customers = customer_details.objects.all()
     category_choices = Product.CATEGORY_CHOICES
@@ -1010,7 +1010,7 @@ def service_management_create(request):
                 price = request.POST.get(f'price_{product_id}', '').strip()
                 quantity = request.POST.get(f'quantity_{product_id}').strip()
                 gst_percentage = request.POST.get(f'gst_{product_id}').strip()
-                # description = request.POST.get(f'description_{product_id}', '')
+                description = request.POST.get(f'description_{product_id}', '').strip()
                 print(f"Product ID: {product_id}, Price: {price}, Quantity: {quantity}, GST: {gst_percentage}")
 
                 if not price or not quantity or not gst_percentage:
@@ -1019,16 +1019,15 @@ def service_management_create(request):
             
                 product = Product.objects.get(product_id=product_id)
             
+                
                 ServiceProduct.objects.create(
                     service=instance,
                     product=product,
-                    price=float(price),
-                    quantity=float(quantity),
-                    gst_percentage=float(gst_percentage) or 0,
-                    # description=description
+                    price=Decimal(price),
+                    quantity=Decimal(quantity),
+                    gst_percentage=Decimal(gst_percentage) or Decimal('0.00'),
+                    description = description,
                 )
-
-
 
             return redirect('/display_service_management')
 
@@ -2861,12 +2860,143 @@ def edit_customer(request , rid):
 from .models import Reschedule
 from datetime import datetime
 
-# This edit and delete records are in view_records --> service_management
+
+@csrf_exempt
 def edit_service_records(request, rid):
-    return render(request, 'edit_service_records.html')
+    service = get_object_or_404(service_management, id=rid)
+    selected_products = ServiceProduct.objects.filter(service_id=service).select_related('product')
+    customer = get_object_or_404(customer_details, id=service.customer_id)
+    category_choices = Product.CATEGORY_CHOICES
+    products = Product.objects.all()
+    sales_persons = SalesPerson.objects.all()
+    frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
+
+    if request.method == "POST":
+        try:
+            total_price = Decimal('0.00')
+            total_charges = Decimal('0.00')
+            total_with_gst = Decimal('0.00')
+
+            # --- Update existing ServiceProducts ---
+            for sp in selected_products:
+                price = Decimal(request.POST.get(f'price_{sp.id}', sp.price))
+                quantity = Decimal(request.POST.get(f'quantity_{sp.id}', sp.quantity))
+                gst = Decimal(request.POST.get(f'gst_{sp.id}', sp.gst_percentage))
+                description = request.POST.get(f'description_{sp.id}', sp.description)
+
+                line_total = price * quantity
+                line_total_charges = line_total * gst / Decimal('100')
+                line_total_with_gst = line_total + line_total_charges
+
+                sp.price = price
+                sp.quantity = quantity
+                sp.gst_percentage = gst
+                sp.description = description
+                sp.total_with_gst = line_total_with_gst
+                sp.save()
+
+                total_price += line_total
+                total_charges += line_total_charges
+                total_with_gst += line_total_with_gst
+
+            # --- Add new selected products ---
+            selected_service_ids = request.POST.getlist('selected_services')
+            existing_product_ids = selected_products.values_list('product__product_id', flat=True)
+
+            for product_id in selected_service_ids:
+                if product_id in existing_product_ids:
+                    continue  # Skip if already exists
+
+                price = request.POST.get(f'price_{product_id}', '').strip()
+                quantity = request.POST.get(f'quantity_{product_id}', '').strip()
+                gst_percentage = request.POST.get(f'gst_{product_id}', '').strip()
+                description = request.POST.get(f'description_{product_id}', '').strip()
+
+                if not price or not quantity or not gst_percentage:
+                    continue
+
+                try:
+                    product = Product.objects.get(product_id=product_id)
+                    price = Decimal(price)
+                    quantity = Decimal(quantity)
+                    gst = Decimal(gst_percentage)
+
+                    line_total = price * quantity
+                    line_total_charges = line_total * gst / Decimal('100')
+                    line_total_with_gst = line_total + line_total_charges
+
+                    ServiceProduct.objects.create(
+                        service=service,
+                        product=product,
+                        price=price,
+                        quantity=quantity,
+                        gst_percentage=gst,
+                        total_with_gst=line_total_with_gst,
+                        description=description,
+                    )
+
+                    total_price += line_total
+                    total_with_gst += line_total_with_gst
+
+                except Product.DoesNotExist:
+                    print(f"Product with ID {product_id} does not exist.")
+                    continue
+
+            # --- Save updated totals to service ---
+            service.total_price = total_price
+            service.total_charges = total_charges
+            service.total_price_with_gst = total_with_gst
+            service.contract_type = request.POST.get('contract_type')
+            service.contract_status = request.POST.get('contract_status')
+            service.property_type = request.POST.get('property_type')
+            service.warranty_period = request.POST.get('warranty_period')
+            service.state = request.POST.get('state')
+            service.city = request.POST.get('city')
+            service.address = request.POST.get('address')
+            service.pincode = request.POST.get('pincode')
+            service.gps_location = request.POST.get('gps_location')
+            service.frequency_count = request.POST.get('frequency_count')
+            service.sales_person_name = request.POST.get('sales_person_name')
+            service.sales_person_contact_no = request.POST.get('sales_person_contact_no')
+            service.lead_date = request.POST.get('lead_date')
+            service.delivery_time = request.POST.get('delivery_time')
+            service.service_date = request.POST.get('service_date')
+            service.save()
+
+            messages.success(request, "Service record updated successfully.")
+            return redirect('display_service_management')
+
+        except Exception as e:
+            messages.error(request, f"Error updating service record: {str(e)}")
+
+    context = {
+        'service': service,
+        'selected_products': selected_products,
+        'customer': customer,
+        'category_choices': category_choices,
+        'products': products,
+        'sales_persons': sales_persons,
+        'frequency_choices': frequency_choices,
+    }
+    return render(request, 'edit_service_records.html', context)
 
 def delete_service_records(request, rid):
-    pass
+    service_management.objects.get(id = rid).delete()
+    return redirect('display_service_management')
+
+# This is for the delete product inside the edit field 
+
+@csrf_exempt
+def delete_service_product(request, pid):
+    if request.method == 'POST':
+        try:
+            product = get_object_or_404(ServiceProduct, id=pid)
+            product.delete()
+            return JsonResponse({'success': True, 'message': 'Product deleted'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+
 # This function is for edit service management in reshdule 
 def edit_service_management(request, rid):
     if request.method == 'GET':
@@ -2977,7 +3107,7 @@ from .models import quotation_management, QuotationTerm, Product  # adjust as ne
 
 def edit_quotation(request, rid):
     quotation = quotation_management.objects.get(id=rid)
-
+   
     if request.method == "POST":
         delete_ids = request.POST.getlist('delete_product_ids[]')
         existing_products = quotation.product_details_json or []
@@ -3095,6 +3225,7 @@ def edit_quotation(request, rid):
     else:
         terms = QuotationTerm.objects.all()
         branches = Branch.objects.all()
+        branch = Branch.objects.get(id = quotation.branch_id)
         
         try:
             product_details = json.loads(quotation.product_details_json)
@@ -3111,6 +3242,7 @@ def edit_quotation(request, rid):
         return render(request, 'edit_quotation.html', {
             'quotation': quotation,
             'all_terms': terms,
+            'branch':branch,
             'branches': branches,
             'product_details': json.dumps(product_details),
             'selected_categories': selected_categories,

@@ -280,7 +280,7 @@
                 <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;"
                     class="mb-4">X</span>
 
-                <h3 style="  font-weight: 600; margin: 10px;" class="mt-5">Service Management Record</h3>
+                <h3 style="  font-weight: 600; margin: 10px;" class="mt-5">Edit Service Management Record</h3>
                 <form method="POST" id="service-management-form">
                     {% csrf_token %}
 
@@ -289,27 +289,84 @@
                     <!-- STEP 1: Customer & Services -->
                     <div class="form-step">
                         <!-- Customer Selection -->
-
-
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label>Customer Contact<span class="star">*</span></label>
-                                <input type="text" id="customer_contact" name="customer_contact" required
-                                    class="form-control">
+                                <input type="text" id="customer_contact" name="customer_contact" value="{{ customer.primarycontact }}" required readonly class="form-control">
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label>Customer Name<span class="star">*</span></label>
-                                <input type="text" id="customer_full_name" name="customer_full_name" readonly required
+                                <input type="text" id="customer_full_name" name="customer_full_name" value="{{ customer.fullname }}"  readonly required
                                     class="form-control">
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label>Customer Email<span class="star">*</span></label>
-                                <input type="text" id="customer_email" name="customer_email" readonly required
-                                    class="form-control">
+                                <input type="text" id="customer_email" name="customer_email" value="{{ customer.primaryemail }}"  readonly required class="form-control">
                             </div>
                         </div>
 
+                       <div class="row form-check my-2">
+                        <div class="col">
+                            <label class="form-check-label" for="apply_gst"> Apply GST</label>
+                            <input type="checkbox" class="form-check-input" id="apply_gst" name="apply_gst" onchange="toggleGST()"
+                            {% if service.gst_status == 'GST' %}checked{% endif %} >
+                        </div>         
+                        </div>
 
+                        <div class="container">
+                            <table class="table table-bordered table-md align-middle small">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>GST (%)</th>
+                                        <th class="text-end">Description</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in selected_products %}
+                                    <tr>
+                                        <td>{{ p.product.product_name }}</td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm quantity-input" name="quantity_{{ p.id }}" value="{{ p.quantity }}" step="any">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm price-input" name="price_{{ p.id }}" value="{{ p.price }}" step="any">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm gst-input" name="gst_{{ p.id }}" value="{{ p.gst_percentage }}" step="any">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm text-end" name="description_{{ p.id }}" value="{{ p.description }}">
+                                        </td>
+                                       <td class="text-center">
+                                            <button class="btn btn-danger btn-sm" onclick="deleteProduct({{ p.id }})" title="Delete Product">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </td>
+
+
+
+                                    </tr>
+                                    {% endfor %}
+                                     <!-- Total Row -->
+                                    <tr>
+                                        <td colspan="4" class="text-end">Total (Without GST)</td>
+                                        <td colspan="2" id="totalWithoutGST">₹{{ service.total_price|floatformat:2 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-end">Total (With GST)</td>
+                                        <td colspan="2" id="totalWithGST">₹{{ service.total_price_with_gst }}</td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center my-1">
+                            <label class="h5">New Service</label>
+                        </div>
                         <!-- Service Type -->
                         <label>Service Type<span class="star">*</span></label>
                         <select id="servicetype" name="servicetype" class="form-control" onchange="fetchProducts(this)">
@@ -330,28 +387,32 @@
                         <ul id="selected_services" class="selected-products-list"></ul>
                         <input type="hidden" id="selected_services_names" name="selected_services_names">
 
-                        <!-- Price Fields -->
-                        <label>Total Price (without GST)<span class="star">*</span></label>
-                        <input type="number" id="total_price" name="total_price" step="0.01" readonly
-                            class="form-control">
-
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="apply_gst" name="apply_gst"
-                                onchange="toggleGST()">
-                            <label for="apply_gst" class="form-check-label">Apply GST (18%)</label>
+                        <div class="row g-2 align-items-end">
+                            <!-- Total Price (without GST) -->
+                            <div class="col-md-4">
+                                <label for="total_price" class="form-label">Total Price <br> (without GST)</label>
+                                <input type="number" id="total_price" name="total_price" step="0.01" readonly class="form-control">
+                            </div>
+                        
+                            <!-- GST Number
+                            <div class="col-md-3" id="gst_fields" style="display: none;">
+                                <label for="gst_number" class="form-label">GST Number</label>
+                                <input type="text" id="gst_number" name="gst_number" placeholder="Enter GST Number" class="form-control">
+                            </div> -->
+                        
+                            <!-- GST Price -->
+                            <div class="col-md-4">
+                                <label for="gst_price" class="form-label">GST</label>
+                                <input type="number" id="gst_price" name="gst_price" step="0.01" readonly class="form-control">
+                            </div>
+                        
+                            <!-- Total Price with GST -->
+                            <div class="col-md-4">
+                                <label for="total_with_gst" class="form-label">Total Price (with GST)</label>
+                                <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" readonly class="form-control">
+                            </div>
                         </div>
 
-                        <!-- GST Details -->
-                        <div id="gst_fields" style="display: none;">
-                            <input type="text" name="gst_number" placeholder="Enter GST Number" class="form-control">
-                        </div>
-
-                        <label>GST (18%)</label>
-                        <input type="number" id="gst_price" name="gst_price" step="0.01" readonly class="form-control">
-
-                        <label>Total Price (with GST)</label>
-                        <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" readonly
-                            class="form-control">
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
@@ -368,40 +429,41 @@
                     <div class="form-step d-none">
                         <label>Contract Type<span class="star">*</span></label>
                         <select name="contract_type" class="form-control" required>
-                            <option value="One Time">One Time</option>
-                            <option value="AMC">AMC</option>
-                            <option value="Warranty">Warranty</option>
+                            <option value="One Time" {% if service.contract_type == "One Time" %}selected{% endif %}>One Time</option>
+                            <option value="AMC" {% if service.contract_type == "AMC" %}selected{% endif %}>AMC</option>
+                            <option value="Warranty" {% if service.contract_type == "Warranty" %}selected{% endif %}>Warranty</option>
                         </select>
+
 
                         <label>Contract Status<span class="star">*</span></label>
                         <select name="contract_status" class="form-control" required>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
+                            <option value="Yes"  {% if service.contract_status == "Yes" %}selected{% endif %}>Yes</option>
+                            <option value="No"  {% if service.contract_status == "No" %}selected{% endif %}>No</option>
                         </select>
 
                         <label>Property Type<span class="star">*</span></label>
-                        <textarea name="property_type" class="form-control" required></textarea>
+                        <textarea name="property_type" class="form-control"  required>{{ service.property_type }}</textarea>
 
                         <label for="warranty_period">Warranty Period<span class="star">*</span></label>
-                        <input type="text" name="warranty_period" class="form-control" required><br>
+                        <input type="text" name="warranty_period" value="{{ service.warranty_period }}" class="form-control" required><br>
 
 
                         <div class="col-md-12">
                             <label for="state">State<span class="star">*</span></label>
-                            <input type="text" id="state" name="state" required class="form-control">
+                            <input type="text" id="state" name="state" value="{{ service.state }}" required class="form-control">
                         </div>
 
 
                         <label>City<span class="star">*</span></label>
-                        <input type="text" id="city" name="city" class="form-control" required><br>
+                        <input type="text" id="city" name="city" value="{{ service.city }}" class="form-control" required><br>
                         <label>Pincode<span class="star">*</span></label>
-                        <input type="text" id="pincode" name="pincode" maxlength="6" class="form-control" required>
+                        <input type="text" id="pincode" name="pincode" value="{{ service.pincode }}" maxlength="6" class="form-control" required>
 
                         <label>Address<span class="star">*</span></label>
-                        <textarea name="address" id="address" class="form-control" required></textarea>
+                        <textarea name="address" id="address"  class="form-control" required>{{ service.address }}</textarea>
 
                         <label>GPS Location<span class="star">*</span></label>
-                        <input type="url" name="gps_location" class="form-control" required>
+                        <input type="url" name="gps_location" class="form-control" value="{{ service.gps_location }}" required>
 
 
                         <div class="row">
@@ -420,8 +482,9 @@
                     <div class="form-step d-none">
                         <label>Select Frequency Count<span class="star">*</span></label>
                         <select name="frequency_count" class="form-control">
-                            <option value="1">1</option>
-                            <option value="2">2</option> <!-- up to 12 -->
+                            {% for freq in frequency_choices %}
+                                <option value="{{ freq }}" {% if service.frequency_count == freq %}selected{% endif %}>{{ freq }}</option>
+                            {% endfor %}
                             <option value="Fortnight">Fortnight</option>
                             <option value="Weekly">Weekly</option>
                             <option value="Daily">Daily</option>
@@ -434,22 +497,26 @@
                         <select name="sales_person_name" id="sales_person_select" class="form-control" required>
                             <option value="">-- Select Sales Person --</option>
                             {% for person in sales_persons %}
-                                <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}">{{ person.full_name }}</option>
+                                <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}"
+                                    {% if service.sales_person_name == person.full_name %}selected{% endif %}>
+                                    {{ person.full_name }}
+                                </option>
                             {% endfor %}
                         </select>
 
                         <label>Sales Person Contact No <span class="star">*</span></label>
                         <input type="text" id="sales_person_contact_no" name="sales_person_contact_no" class="form-control"
-                               pattern="\d{10}" title="Please enter a valid 10-digit phone number" required readonly>
-
+                               pattern="\d{10}" value="{{ service.sales_person_contact_no }}" title="Please enter a valid 10-digit phone number" required readonly>
                         <label>Delivery Time<span class="star">*</span></label>
-                        <input type="time" class="form-control" name="delivery_time" required>
-
+                        <input type="time" class="form-control" name="delivery_time" value="{{ service.delivery_time|time:'H:i' }}" required>
+                                            
                         <label>Lead Date<span class="star">*</span></label>
-                        <input type="date" name="lead_date" class="form-control" required>
-
+                        <input type="date" name="lead_date" class="form-control" 
+                               value="{{ service.lead_date|date:'Y-m-d' }}" required>
+                                            
                         <label>Service Date<span class="star">*</span></label>
-                        <input type="date" name="service_date" class="form-control" required>
+                        <input type="date" name="service_date" class="form-control" 
+                               value="{{ service.service_date|date:'Y-m-d' }}" required>
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
@@ -482,6 +549,44 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    
+    
+    <!-- edit tabel -->
+     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const quantityInputs = document.querySelectorAll(".quantity-input");
+            const priceInputs = document.querySelectorAll(".price-input");
+            const gstInputs = document.querySelectorAll(".gst-input");
+        
+            function calculateTotals() {
+                let totalWithoutGST = 0;
+                let totalWithGST = 0;
+            
+                quantityInputs.forEach((qtyInput, index) => {
+                    const price = parseFloat(priceInputs[index].value) || 0;
+                    const quantity = parseFloat(qtyInput.value) || 0;
+                    const gst = parseFloat(gstInputs[index].value) || 0;
+                
+                    const lineTotal = price * quantity;
+                    const lineGST = (lineTotal * gst) / 100;
+                
+                    totalWithoutGST += lineTotal;
+                    totalWithGST += lineTotal + lineGST;
+                });
+            
+                document.getElementById("totalWithoutGST").textContent = `₹${totalWithoutGST.toFixed(2)}`;
+                document.getElementById("totalWithGST").textContent = `₹${totalWithGST.toFixed(2)}`;
+            }
+        
+            // Attach input listeners
+            [...quantityInputs, ...priceInputs, ...gstInputs].forEach(input => {
+                input.addEventListener("input", calculateTotals);
+            });
+        
+            // Initial calculation
+            calculateTotals();
+        });
+        </script>
 
 
     <script>
@@ -585,293 +690,140 @@
         });
     </script>
 
-    <!-- <script>
-        let selectedProducts = [];
-        let totalPrice = 0;
-        const GST_RATE = 0.18;
-
-        function fetchProducts(selectElement) {
-            document.getElementById('products-container').innerHTML = '';
-
-            const selectedCategories = Array.from(selectElement.selectedOptions).map(option => option.value);
-
-            if (selectedCategories.length > 0) {
-                const categoriesQuery = selectedCategories.join(',');
-                fetch(`/get_products?categories=${categoriesQuery}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.products.forEach(product => {
-                            const productDiv = document.createElement('div');
-                            productDiv.innerHTML = `
-                                <input type="checkbox" name="selected_services" value="${product.product_id}"
-                                data-price="${product.price}" data-name="${product.product_name}"
-                                onchange="updateSelectedServices(this)">
-                                ${product.product_name}
-                                <br>
-                               
-                               <input type="number" style="max-width: 200px"
-                                    class="product-price-input" 
-                                    data-product-id="${product.product_id}" 
-                                    value="${product.price}"
-                                    placeholder="Product Price" 
-                                    min="0" step="0.01" 
-                                    onchange="updateProductPrice(this, '${product.product_id}')">
-
-                                <input type="number" style="max-width: 200px; margin-left: 30px "
-                                    class="product-quantity-input" 
-                                    data-product-id="${product.product_id}" 
-                                    value="${product.quantity}"
-                                    placeholder="Quantity" 
-                                    min="1" step="0.01" 
-                                    onchange="updateProductQuantity(this, '${product.product_id}')">
-
-                                 <div id="desc-container-${product.product_id}" style="display:none; margin-top: 10px;">
-                                    <label>Description:</label><br>
-                                    <textarea class="form-control description-input"
-                                    data-product-id="${product.product_id}"
-                                    placeholder="Enter description" rows="2"
-                                    oninput="updateProductDescription(this, '${product.product_id}')"
-                                    style="width: 300px;"></textarea>
-                                </div>
-
-
-
-                            `;
-                            document.getElementById('products-container').appendChild(productDiv);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching products:', error);
-                    });
+<script>
+function deleteProduct(productId) {
+    if (confirm("Are you sure you want to delete this product?")) {
+        fetch(`/delete-service-product/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
             }
-        }
-
-        function updateSelectedServices(checkbox) {
-            const productId = checkbox.value;
-            const productName = checkbox.getAttribute('data-name');
-            const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
-            const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
-            const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"]`);
-            const descContainer = document.getElementById(`desc-container-${productId}`);
-
-            const productPrice = parseFloat(priceInput.value) || 0;
-            const productQuantity = parseFloat(quantityInput.value) || 1;
-            const description = descriptionInput?.value || '';
-
-            if (checkbox.checked) {
-                if (descContainer) descContainer.style.display = 'block';
-
-                // Avoid duplicates
-                const alreadyAdded = selectedProducts.find(p => p.id === productId);
-                if (!alreadyAdded) {
-                    selectedProducts.push({
-                        id: productId,
-                        name: productName,
-                        price: productPrice,
-                        quantity: productQuantity,
-                        description: description
-                    });
-                }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();  // Refresh the table
             } else {
-                if (descContainer) descContainer.style.display = 'none';
-                if (descriptionInput) descriptionInput.value = '';
-
-                selectedProducts = selectedProducts.filter(product => product.id !== productId);
+                alert("Error: " + data.error);
             }
+        });
+    }
+}
+</script>
 
-            console.log('Updated Selected Products:', selectedProducts);
-            updateSelectedServicesList();
-            updateTotalPrice();
-        }
-
-
-
-        function updateSelectedServicesList() {
-            const selectedServicesList = document.getElementById('selected_services');
-            const selectedServicesNamesInput = document.getElementById('selected_services_names');
-
-            selectedServicesList.innerHTML = ''; // Clear the list
-            let selectedServiceNames = [];
-
-            selectedProducts.forEach(product => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${product.name}: Rs. ${product.price} x ${product.quantity}`;
-                selectedServicesList.appendChild(listItem);
-                selectedServiceNames.push(product.name); // Collecting product names
-            });
-
-            selectedServicesNamesInput.value = selectedServiceNames.join(',');
-
-            if (selectedProducts.length === 0) {
-                const emptyMessage = document.createElement('li');
-                emptyMessage.textContent = 'No products selected';
-                selectedServicesList.appendChild(emptyMessage);
-            }
-        }
-
-        function updateTotalPrice() {
-            totalPrice = selectedProducts.reduce((total, product) => total + product.price * product.quantity, 0);
-            const totalPriceInput = document.getElementById('total_price');
-            totalPriceInput.value = totalPrice.toFixed(2);
-
-            if (document.getElementById('apply_gst').checked) {
-                applyGST();
-            } else {
-                clearGSTFields();
-            }
-        }
-
-        function updateProductDescription(textarea, productId) {
-            const newDescription = textarea.value;
-
-            selectedProducts.forEach(product => {
-                if (product.id === productId) {
-                    product.description = newDescription;
-                }
-            });
-
-            updateSelectedServicesList();
-        }
-
-
-        function toggleGST() {
-            const isGSTApplied = document.getElementById('apply_gst').checked;
-
-            if (isGSTApplied) {
-                applyGST();
-                document.getElementById('gst-price-container').style.display = 'block';
-                document.getElementById('gst-number-container').style.display = 'block';
-            } else {
-                clearGSTFields();
-                document.getElementById('gst-price-container').style.display = 'none';
-                document.getElementById('gst-number-container').style.display = 'none';
-            }
-        }
-
-        function applyGST() {
-            const gstPriceInput = document.getElementById('gst_price');
-            const totalWithGSTInput = document.getElementById('total_with_gst');
-
-            const gstPrice = totalPrice * GST_RATE;
-            const totalWithGST = totalPrice + gstPrice;
-
-            gstPriceInput.value = gstPrice.toFixed(2);
-            totalWithGSTInput.value = totalWithGST.toFixed(2);
-        }
-
-        function clearGSTFields() {
-            document.getElementById('gst_price').value = '';
-            document.getElementById('total_with_gst').value = '';
-        }
-
-        function updateProductPrice(priceInput, productId) {
-            const newPrice = parseFloat(priceInput.value) || 0; // Handle invalid input gracefully
-            selectedProducts.forEach(product => {
-                if (product.id === productId) {
-                    product.price = newPrice;
-                }
-            });
-            updateSelectedServicesList();
-            updateTotalPrice();
-        }
-
-        function updateProductQuantity(quantityInput, productId) {
-            // Fetch the new quantity from the input field
-            const newQuantity = parseInt(quantityInput.value) || 1; // Default to 1 if invalid or empty
-
-            // Update the quantity in the selectedProducts array
-            selectedProducts.forEach(product => {
-                if (product.id === productId) {
-                    product.quantity = newQuantity;
-                }
-            });
-
-            // Debug log to verify the updated quantity
-            console.log(`Updated Quantity for Product ID ${productId}:`, newQuantity);
-
-            // Update the list of selected services and total price
-            updateSelectedServicesList();
-            updateTotalPrice();
-        }
-
-        function updateCustomerDetails() {
-            const customerSelect = document.getElementById("customer_id");
-            const selectedOption = customerSelect.options[customerSelect.selectedIndex];
-
-            const contact = selectedOption.getAttribute("data-contact");
-            const email = selectedOption.getAttribute("data-email");
-
-            document.getElementById("customer_contact").value = contact || '';
-            document.getElementById("customer_email").value = email || '';
-        }
-
-    </script> -->
-
+  
    <script>
         let selectedProducts = [];
         let totalPrice = 0;
-        const GST_RATE = 0.18;
+        const GST_RATE = 0;
         function fetchProducts(selectElement) {
-            document.getElementById('products-container').innerHTML = '';
-        
             const selectedCategories = Array.from(selectElement.selectedOptions).map(option => option.value);
-        
-            if (selectedCategories.length > 0) {
-                const categoriesQuery = selectedCategories.join(',');
-                fetch(`/get_products?categories=${categoriesQuery}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.products.forEach(product => {
-                            const productDiv = document.createElement('div');
-                            const productId = String(product.product_id);
-                        
-                            // Find if this product was previously selected
-                            const existing = selectedProducts.find(p => p.id === productId);
-                            const isChecked = existing ? 'checked' : '';
-                            const displayDesc = existing ? 'block' : 'none';
-                        
-                            productDiv.innerHTML = `
-                                <input type="checkbox" name="selected_services" value="${productId}"
-                                    data-price="${product.price}" data-name="${product.product_name}"
-                                    ${isChecked}
-                                    onchange="updateSelectedServices(this)">
-                                ${product.product_name}<br>
-                        
-                                <input type="number" style="max-width: 200px"
-                                    class="product-price-input"
-                                    data-product-id="${productId}"
-                                    value="${existing ? existing.price : product.price}"
-                                    placeholder='Price'
-                                    onchange="updateProductPrice(this, '${productId}')">
-                        
-                                <input type="number" style="max-width: 200px; margin-left: 30px"
-                                    class="product-quantity-input"
-                                    data-product-id="${productId}"
-                                    value="${existing ?  existing.quantity : product.quantity}"
-                                    placeholder='Quantity'
-                                    onchange="updateProductQuantity(this, '${productId}')">
-                        
-                                <div id="desc-container-${productId}" style="margin-top: 10px; display:${displayDesc};">
-                                    <label>Description:</label><br>
-                                    <textarea class="form-control description-input"
-                                        data-product-id="${productId}"
-                                        oninput="updateProductDescription(this, '${productId}')"
-                                        placeholder='Description'
-                                        style="width: 300px;">${existing ? existing.description : ''}</textarea>
-                                </div>
-                            `;
-                            
-                            document.getElementById('products-container').appendChild(productDiv);
-                        });
+            if (selectedCategories.length === 0) return;
+                
+            const categoriesQuery = selectedCategories.join(',');
+                
+            fetch(`/get_products?categories=${categoriesQuery}`)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('products-container');
+                
+                    // Get all currently rendered product elements
+                    const allProductDivs = Array.from(container.children);
+                
+                    // Remove products NOT selected and NOT part of selectedProducts
+                    allProductDivs.forEach(div => {
+                        const checkbox = div.querySelector('input[name="selected_services"]');
+                        const productId = checkbox?.value;
+                        const isSelected = selectedProducts.some(p => p.id === productId);
+                        const isInNewData = data.products.some(p => String(p.product_id) === productId);
                     
-                        // Refresh prices after re-rendering
-                        updateSelectedServicesList();
-                        updateTotalPrice();
-                    })
-                    .catch(error => {
-                        console.error('Error fetching products:', error);
+                        if (!isSelected && !isInNewData) {
+                            container.removeChild(div);
+                        }
                     });
-            }
+                
+                    // Get currently rendered product IDs
+                    const renderedProductIds = Array.from(container.querySelectorAll('input[name="selected_services"]'))
+                        .map(input => input.value);
+                
+                    // Render only new products
+                    data.products.forEach(product => {
+                        const productId = String(product.product_id);
+                    
+                        if (renderedProductIds.includes(productId)) return;
+                    
+                        const existing = selectedProducts.find(p => p.id === productId);
+                        const isChecked = existing ? 'checked' : '';
+                        const displayDesc = existing ? 'block' : 'none';
+                    
+                        const productDiv = document.createElement('div');
+                        productDiv.innerHTML = `
+                            <div class="mb-2 border rounded p-2">
+                                <!-- Product Name in One Row -->
+                                <div class="row align-items-center mb-1">
+                                    <div class="col-auto">
+                                        <input type="checkbox" name="selected_services" value="${productId}"
+                                            data-price="${product.price}" data-name="${product.product_name}"
+                                            ${isChecked}
+                                            onchange="updateSelectedServices(this)">
+                                    </div>
+                                    <div class="col">
+                                        <strong>${product.product_name}</strong>
+                                    </div>
+                                </div>
+                            
+                                <!-- Other Fields in Another Row -->
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-md-3">
+                                        <input type="number" class="form-control form-control-sm product-price-input"
+                                            data-product-id="${productId}"
+                                            value="${existing ? existing.price : product.price}"
+                                            placeholder="Price"
+                                            name="price_${productId}"
+                                            step="0.01"
+                                            onchange="updateProductPrice(this, '${productId}')">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm product-quantity-input"
+                                            data-product-id="${productId}"
+                                            name="quantity_${productId}"
+                                            value="${existing ? existing.quantity : product.quantity}"
+                                            placeholder="Quantity"
+                                            step="0.01"
+                                            onchange="updateProductQuantity(this, '${productId}')">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm product-gst-input"
+                                            name="gst_${productId}"
+                                            data-product-id="${productId}"
+                                            value="${existing ? existing.gst : product.gst}"
+                                            placeholder="GST %"
+                                            step="0.01"
+                                            onchange="updateProductGst(this, '${productId}')">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <textarea class="form-control form-control-sm description-input"
+                                            data-product-id="${productId}"
+                                            name="description_${productId}"
+                                            oninput="updateProductDescription(this, '${productId}')"
+                                            placeholder="Description"
+                                            style="resize: none;">${existing ? existing.description : ''}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                        
+                        container.appendChild(productDiv);
+                    });
+                
+                    updateSelectedServicesList();
+                    updateTotalPrice();
+                })
+                .catch(error => {
+                    console.error('Error fetching products:', error);
+                });
         }
 
 
@@ -879,6 +831,7 @@
             const productId = checkbox.value;
             const productName = checkbox.getAttribute('data-name');
             const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
+            const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`)
             const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
             const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"]`);
             const descContainer = document.getElementById(`desc-container-${productId}`);
@@ -898,7 +851,8 @@
                         name: productName,
                         price: productPrice,
                         quantity: productQuantity,
-                        description: description
+                        description: description,
+                        gst: parseFloat(gstInput.value) || 0 
                     });
                 }
             } else {
@@ -924,7 +878,10 @@
 
             selectedProducts.forEach(product => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `${product.name}: Rs. ${product.price} x ${product.quantity}`;
+                const gstEnabled = document.getElementById('apply_gst').checked;
+                const gstAmount = gstEnabled ? ` + GST(${product.gst}%)` : '';
+                listItem.textContent = `${product.name}: Rs. ${product.price} x ${product.quantity}${gstAmount}`;
+
                 selectedServicesList.appendChild(listItem);
                 selectedServiceNames.push(product.name); // Collecting product names
             });
@@ -963,30 +920,37 @@
         }
 
 
-        function toggleGST() {
-            const isGSTApplied = document.getElementById('apply_gst').checked;
+      function toggleGST() {
+        const isGSTApplied = document.getElementById('apply_gst').checked;
+        const gstContainer = document.getElementById('gst-fields-container');
 
-            if (isGSTApplied) {
-                applyGST();
-                document.getElementById('gst-price-container').style.display = 'block';
-                document.getElementById('gst-number-container').style.display = 'block';
-            } else {
-                clearGSTFields();
-                document.getElementById('gst-price-container').style.display = 'none';
-                document.getElementById('gst-number-container').style.display = 'none';
-            }
+        if (isGSTApplied) {
+            applyGST();
+            gstContainer.style.display = 'block';
+        } else {
+            clearGSTFields();
+            gstContainer.style.display = 'none';
+        }
         }
 
-        function applyGST() {
+       function applyGST() {
+            let gstTotal = 0;
+            selectedProducts.forEach(product => {
+                const price = product.price || 0;
+                const quantity = product.quantity || 1;
+                const gstRate = (product.gst || 0) / 100;  // Convert % to decimal
+                gstTotal += price * quantity * gstRate;
+            });
+        
             const gstPriceInput = document.getElementById('gst_price');
             const totalWithGSTInput = document.getElementById('total_with_gst');
-
-            const gstPrice = totalPrice * GST_RATE;
-            const totalWithGST = totalPrice + gstPrice;
-
-            gstPriceInput.value = gstPrice.toFixed(2);
+        
+            const totalWithGST = totalPrice + gstTotal;
+        
+            gstPriceInput.value = gstTotal.toFixed(2);
             totalWithGSTInput.value = totalWithGST.toFixed(2);
         }
+
 
         function clearGSTFields() {
             document.getElementById('gst_price').value = '';
@@ -1003,7 +967,16 @@
             updateSelectedServicesList();
             updateTotalPrice();
         }
-
+        function updateProductGst(gstInput, productId) {
+            const newGst = parseFloat(gstInput.value) || 0; // Handle invalid input gracefully
+            selectedProducts.forEach(product => {
+                if (product.id === productId) {
+                    product.gst = newGst;
+                }
+            });
+            updateSelectedServicesList();
+            updateTotalPrice();
+        }
         function updateProductQuantity(quantityInput, productId) {
             // Fetch the new quantity from the input field
             const newQuantity = parseFloat(quantityInput.value) || 1; // Default to 1 if invalid or empty

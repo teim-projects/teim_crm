@@ -331,12 +331,12 @@
                                         
                                         <div class="col-md-6 org-fields">
                                             <label>Sub-Name</label>
-                                            <input type="text" name="or_name" class="form-control">
+                                            <input type="text" name="or_name" value="{{ form_data.or_name}}" class="form-control">
                                         </div>
                                         
                                         <div class="col-md-6 org-fields">
                                             <label>Sub-Contact No</label>
-                                            <input type="text" name="or_contact" class="form-control">
+                                            <input type="text" name="or_contact" value="{{ form_data.or_contact }}" class="form-control">
                                         </div>
 
                                         
@@ -878,6 +878,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const addressField = document.querySelector('textarea[name="address"]');
             const contactpersonField = document.querySelector('input[name="contact_by"]');
             const customerTypeField = document.querySelector('input[name="customer_type"]');
+            const or_nameField = document.querySelector('input[name="or_name"]');
+            const or_contactField = document.querySelector('input[name="or_contact"]');
             contactInput.addEventListener('blur', function () {
                 const contactNo = this.value.trim();
                 if (!contactNo) return;
@@ -913,6 +915,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (!customerTypeField.value && data.customer_type) {
                             customerTypeField.value = data.customer_type;
                             toggleOrgFieldsByCustomerType(); 
+                        }
+                        if (!or_nameField.value && data.or_name) {
+                            or_nameField.value = data.or_name;
+                        }
+                        if (!or_contactField.value && data.or_contact) {
+                            or_contactField.value = data.or_contact;
                         }
                         if (!addressField.value && data.soldtopartyaddress) {
                             const pincode = data.sold_pincode;

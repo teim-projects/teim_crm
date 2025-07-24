@@ -378,7 +378,7 @@
                                         </div>
                                         <div class="col-12">
                                             <label>Thank you note<span class="star">*</span></label>
-                                            <textarea name="thank_u_note" rows="2" placeholder="Enter Thank you note...." ></textarea>
+                                            <textarea name="thank_u_note" rows="2" placeholder="Enter Thank you note...." >{{ quotation.thank_u_note }}</textarea>
                                         </div>
                                         <div class="col-12">
                                             <label>Billing Address (Auto-filled from customer record):</label>
@@ -491,7 +491,7 @@
                                   
                                     <div class="row">
                                         <div class="col-12">
-                                            <label>Service Type <span class="star">*</span></label>
+                                            <label>Service Type</label>
                                             <select id="servicetype" name="servicetype" class="form-control"
                                                 onchange="fetchProducts(this)">
                                                 <option value="">Select service types</option>
@@ -522,19 +522,19 @@
                                         </div>
 
                                         <div class="col-md-6 mb-3">
-                                            <label>Total Price (without GST)<span class="star">*</span></label>
+                                            <label>Total Price (without GST)</label>
                                             <input type="number" id="total_price" name="total_price" step="0.01"
                                                 readonly class="form-control">
                                         </div>
 
                                         <div class="col-md-6 mb-3">
                                             <label>GST Type</label>
-                                            <select id="gst_type" name="gst_type" class="form-control"
-                                                onchange="calculateGST()">
-                                                <option value="cgst_sgst">CGST + SGST</option>
-                                                <option value="igst">IGST</option>
+                                            <select id="gst_type" name="gst_type" class="form-control" onchange="calculateGST()" >
+                                                <option value="cgst_sgst" {% if quotation.cgst != 0 %}selected{% endif %} >CGST + SGST</option>
+                                                <option value="igst" {% if quotation.cgst == 0 %}selected{% endif %} >IGST</option>
                                             </select>
                                         </div>
+
 
                                         <div class="col-md-6 mb-3">
                                             <label>Total GST Amount</label>
@@ -587,11 +587,10 @@
                                     <div class="row">
                                         <div class="col-md-12 mb-3">
                                             <label>Select Branch<span class="star">*</span></label>
-                                            <select id="branch_select" name="branch_id" class="form-control" required
-                                                onchange="fetchBranchDetails(this.value)">
+                                            <select id="branch_select" name="branch_id" class="form-control" required onchange="fetchBranchDetails(this.value)">
                                                 <option value="">Select Branch</option>
                                                 {% for branch in branches %}
-                                                <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+                                                    <option value="{{ branch.id }}" {% if branch.id == quotation.branch_id %}selected{% endif %}>{{ branch.branch_name }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -599,32 +598,32 @@
                                         <!-- These fields will be auto-filled and read-only -->
                                         <div class="col-md-6 mb-3">
                                             <label>Contact 1</label>
-                                            <input type="text" id="branch_contact_1" class="form-control" readonly>
+                                            <input type="text" id="branch_contact_1" value="{{ branch.contact_1 }}" class="form-control" readonly>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label>Contact 2</label>
-                                            <input type="text" id="branch_contact_2" class="form-control" readonly>
+                                            <input type="text" id="branch_contact_2" value="{{ branch.contact_1 }}" class="form-control" readonly>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label>Email 1</label>
-                                            <input type="email" id="branch_email_1" class="form-control" readonly>
+                                            <input type="email" id="branch_email_1" value="{{ branch.email_1 }}" class="form-control" readonly>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label>Email 2</label>
-                                            <input type="email" id="branch_email_2" class="form-control" readonly>
+                                            <input type="email" id="branch_email_2" value="{{ branch.email_1 }}" class="form-control" readonly>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label>GST Number</label>
-                                            <input type="text" id="branch_gst" class="form-control" readonly>
+                                            <input type="text" id="branch_gst" value="{{ branch.gst_number }}" class="form-control" readonly>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label>PAN Number</label>
-                                            <input type="text" id="branch_pan" class="form-control" readonly>
+                                            <input type="text" id="branch_pan" value="{{ branch.pan_number }}" class="form-control" readonly>
                                         </div>
                                         <div class="col-12 mb-3">
                                             <label>Full Address</label>
-                                            <textarea id="branch_address" class="form-control" rows="2"
-                                                readonly></textarea>
+                                            <textarea id="branch_address" class="form-control"  rows="2"
+                                                readonly>{{ branch.full_address }}</textarea>
                                         </div>
                                     </div>
                                     <form id="quotation-management-form" method="post"
@@ -1021,7 +1020,6 @@ function showCombinedGrandTotal() {
                                 <label>Description</label>
                                     <input type="text" class="form-control product-description-input" 
                                         data-product-id="${product.product_id}" 
-                                        value="${product.description}"
                                         placeholder="Description"
                                         onchange="updateProductDescription(this, '${product.product_id}')">
 
@@ -1031,7 +1029,6 @@ function showCombinedGrandTotal() {
                                 <label>Unit</label>
                                     <input type="text" class="form-control product-unit-input" 
                                         data-product-id="${product.product_id}" 
-                                        value="${product.unit}"
                                         placeholder="Unit"
                                         onchange="updateProductUnit(this, '${product.product_id}')">
 
