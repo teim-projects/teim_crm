@@ -262,6 +262,52 @@
             font-weight: bold;
             color: #0d6efd;
         }
+
+        /* Toggle switch styling */
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 50px;
+          height: 24px;
+        }
+        
+        .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          background-color: #ccc;
+          border-radius: 34px;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          transition: 0.4s;
+        }
+        
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 18px;
+          width: 18px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          border-radius: 50%;
+          transition: 0.4s;
+        }
+        
+        input:checked + .slider {
+          background-color: #28a745;
+        }
+        
+        input:checked + .slider:before {
+          transform: translateX(26px);
+        }
     </style>
 </head>
 
@@ -305,13 +351,21 @@
                             </div>
                         </div>
 
-                       <div class="row form-check my-2">
-                        <div class="col">
+                       
+                        <div class="col-4 my-2 d-flex align-items-center">
+                            <label class="me-2 mb-0">Apply GST</label>
+                            <label class="switch mb-0">
+                                <input type="checkbox" id="apply_gst" name="apply_gst" onchange="toggleGST()"
+                                 {% if service.gst_status == 'GST' %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <!-- <div class="col">
                             <label class="form-check-label" for="apply_gst"> Apply GST</label>
                             <input type="checkbox" class="form-check-input" id="apply_gst" name="apply_gst" onchange="toggleGST()"
                             {% if service.gst_status == 'GST' %}checked{% endif %} >
-                        </div>         
-                        </div>
+                        </div>          -->
+                        
 
                         <div class="container">
                             <table class="table table-bordered table-md align-middle small">
@@ -320,7 +374,7 @@
                                         <th>Product</th>
                                         <th>Quantity</th>
                                         <th>Price</th>
-                                        <th>GST (%)</th>
+                                        <th  class="gst-column">GST (%)</th>
                                         <th class="text-end">Description</th>
                                         <th>Delete</th>
                                     </tr>
@@ -330,12 +384,13 @@
                                     <tr>
                                         <td>{{ p.product.product_name }}</td>
                                         <td>
-                                            <input type="number" class="form-control form-control-sm quantity-input" name="quantity_{{ p.id }}" value="{{ p.quantity }}" step="any">
+                                            <input type="number" class="form-control form-control-sm quantity-input" 
+                                            name="quantity_{{ p.id }}" value="{{ p.quantity }}" step="any">
                                         </td>
                                         <td>
                                             <input type="number" class="form-control form-control-sm price-input" name="price_{{ p.id }}" value="{{ p.price }}" step="any">
                                         </td>
-                                        <td>
+                                        <td class="gst-column">
                                             <input type="number" class="form-control form-control-sm gst-input" name="gst_{{ p.id }}" value="{{ p.gst_percentage }}" step="any">
                                         </td>
                                         <td>
@@ -368,7 +423,7 @@
                             <label class="h5">New Service</label>
                         </div>
                         <!-- Service Type -->
-                        <label>Service Type<span class="star">*</span></label>
+                        <label>Service Type</label>
                         <select id="servicetype" name="servicetype" class="form-control" onchange="fetchProducts(this)">
                             <option value="">Select service types</option>
                             {% for category, display_name in category_choices %}
@@ -427,44 +482,63 @@
 
                     <!-- STEP 2: Contract & Property Details -->
                     <div class="form-step d-none">
-                        <label>Contract Type<span class="star">*</span></label>
-                        <select name="contract_type" class="form-control" required>
-                            <option value="One Time" {% if service.contract_type == "One Time" %}selected{% endif %}>One Time</option>
-                            <option value="AMC" {% if service.contract_type == "AMC" %}selected{% endif %}>AMC</option>
-                            <option value="Warranty" {% if service.contract_type == "Warranty" %}selected{% endif %}>Warranty</option>
-                        </select>
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Contract Type<span class="star">*</span></label>
+                                <select name="contract_type" class="form-control" required>
+                                    <option value="One Time" {% if service.contract_type == "One Time" %}selected{% endif %}>One Time</option>
+                                    <option value="AMC" {% if service.contract_type == "AMC" %}selected{% endif %}>AMC</option>
+                                    <option value="Warranty" {% if service.contract_type == "Warranty" %}selected{% endif %}>Warranty</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label>Contract Status<span class="star">*</span></label>
+                                <select name="contract_status" class="form-control" required>
+                                    <option value="Yes"  {% if service.contract_status == "Yes" %}selected{% endif %}>Yes</option>
+                                    <option value="No"  {% if service.contract_status == "No" %}selected{% endif %}>No</option>
+                                </select>        
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Property Type<span class="star">*</span></label>
+                                <textarea name="property_type" class="form-control" rows="1" required>{{ service.property_type }}</textarea>    
+                            </div>
+                            <div class="col-md-6">
+                                 <label for="warranty_period">Warranty Period<span class="star">*</span></label>
+                                 <input type="text" name="warranty_period" value="{{ service.warranty_period }}" class="form-control" required><br>
+                            </div>
+                            
+                        </div>
+                        <div class="row mt-0">
 
+                            <div class="col-md-6">
+                                <label>Address<span class="star">*</span></label>
+                                <textarea name="address" id="address"  class="form-control" required>{{ service.address }}</textarea>
+                            </div>
+                            <div class="col-6">
+                                <label>GPS Location<span class="star">*</span></label>
+                                <input type="url" name="gps_location" class="form-control" value="{{ service.gps_location }}" required>
+                            </div>
+                            
+                        </div>
+                        <div class="row">
 
-                        <label>Contract Status<span class="star">*</span></label>
-                        <select name="contract_status" class="form-control" required>
-                            <option value="Yes"  {% if service.contract_status == "Yes" %}selected{% endif %}>Yes</option>
-                            <option value="No"  {% if service.contract_status == "No" %}selected{% endif %}>No</option>
-                        </select>
-
-                        <label>Property Type<span class="star">*</span></label>
-                        <textarea name="property_type" class="form-control"  required>{{ service.property_type }}</textarea>
-
-                        <label for="warranty_period">Warranty Period<span class="star">*</span></label>
-                        <input type="text" name="warranty_period" value="{{ service.warranty_period }}" class="form-control" required><br>
-
-
-                        <div class="col-md-12">
-                            <label for="state">State<span class="star">*</span></label>
-                            <input type="text" id="state" name="state" value="{{ service.state }}" required class="form-control">
+                            <div class="col-md-4">
+                                <label for="state">State<span class="star">*</span></label>
+                                <input type="text" id="state" name="state" value="{{ service.state }}" required class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label>City<span class="star">*</span></label>
+                                <input type="text" id="city" name="city" value="{{ service.city }}" class="form-control" required><br>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Pincode<span class="star">*</span></label>
+                                <input type="text" id="pincode" name="pincode" value="{{ service.pincode }}" maxlength="6" class="form-control" required>
+                            </div>
                         </div>
 
-
-                        <label>City<span class="star">*</span></label>
-                        <input type="text" id="city" name="city" value="{{ service.city }}" class="form-control" required><br>
-                        <label>Pincode<span class="star">*</span></label>
-                        <input type="text" id="pincode" name="pincode" value="{{ service.pincode }}" maxlength="6" class="form-control" required>
-
-                        <label>Address<span class="star">*</span></label>
-                        <textarea name="address" id="address"  class="form-control" required>{{ service.address }}</textarea>
-
-                        <label>GPS Location<span class="star">*</span></label>
-                        <input type="url" name="gps_location" class="form-control" value="{{ service.gps_location }}" required>
-
+                        
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
@@ -552,7 +626,7 @@
     
     
     <!-- edit tabel -->
-     <script>
+     <!-- <script>
         document.addEventListener("DOMContentLoaded", function () {
             const quantityInputs = document.querySelectorAll(".quantity-input");
             const priceInputs = document.querySelectorAll(".price-input");
@@ -586,8 +660,58 @@
             // Initial calculation
             calculateTotals();
         });
-        </script>
+        </script> -->
 
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const quantityInputs = document.querySelectorAll(".quantity-input");
+    const priceInputs = document.querySelectorAll(".price-input");
+    const gstInputs = document.querySelectorAll(".gst-input");
+    const applyGSTCheckbox = document.getElementById("apply_gst");
+
+    function calculateTotals() {
+        let totalWithoutGST = 0;
+        let totalWithGST = 0;
+        const isGSTApplied = applyGSTCheckbox.checked;
+
+        quantityInputs.forEach((qtyInput, index) => {
+            const price = parseFloat(priceInputs[index].value) || 0;
+            const quantity = parseFloat(qtyInput.value) || 0;
+            const gst = parseFloat(gstInputs[index].value) || 0;
+
+            const lineTotal = price * quantity;
+            const lineGST = isGSTApplied ? (lineTotal * gst) / 100 : 0;
+
+            totalWithoutGST += lineTotal;
+            totalWithGST += lineTotal + lineGST;
+        });
+
+        document.getElementById("totalWithoutGST").textContent = `₹${totalWithoutGST.toFixed(2)}`;
+        document.getElementById("totalWithGST").textContent = `₹${totalWithGST.toFixed(2)}`;
+    }
+
+    function toggleGST() {
+        const isGSTApplied = applyGSTCheckbox.checked;
+
+        // Show/hide GST column
+        document.querySelectorAll(".gst-column").forEach(el => {
+            el.style.display = isGSTApplied ? "" : "none";
+        });
+
+        calculateTotals();
+    }
+
+    // Initial listeners
+    [...quantityInputs, ...priceInputs, ...gstInputs].forEach(input => {
+        input.addEventListener("input", calculateTotals);
+    });
+
+    applyGSTCheckbox.addEventListener("change", toggleGST);
+
+    // Initial run
+    toggleGST();  // Ensures GST column is shown/hidden on page load
+});
+</script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
