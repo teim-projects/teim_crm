@@ -554,46 +554,61 @@
 
                     <!-- STEP 3: Sales & Delivery -->
                     <div class="form-step d-none">
-                        <label>Select Frequency Count<span class="star">*</span></label>
-                        <select name="frequency_count" class="form-control">
-                            {% for freq in frequency_choices %}
-                                <option value="{{ freq }}" {% if service.frequency_count == freq %}selected{% endif %}>{{ freq }}</option>
-                            {% endfor %}
-                            <option value="Fortnight">Fortnight</option>
-                            <option value="Weekly">Weekly</option>
-                            <option value="Daily">Daily</option>
-                        </select>
+                        <div class="row">
+                            <div class="col-4">
+                                <label>Select Frequency Count<span class="star">*</span></label>
+                                <select name="frequency_count" class="form-control">
+                                    {% for freq in frequency_choices %}
+                                    <option value="{{ freq }}" {% if service.frequency_count == freq %}selected{% endif %}>{{ freq }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-8">
+                                <label>Payment Terms<span class="star">*</span></label>
+                                <input class="form-control" type="text" name="payment_terms"
+                                value="100% Advance payment OR Whatever mutually Decided" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
 
-                        <label>Payment Terms<span class="star">*</span></label>
-                        <input class="form-control" type="text" name="payment_terms"
-                            value="100% Advance payment OR Whatever mutually Decided" readonly>
-                        <label>Sales Person Name <span class="star">*</span></label>
-                        <select name="sales_person_name" id="sales_person_select" class="form-control" required>
-                            <option value="">-- Select Sales Person --</option>
-                            {% for person in sales_persons %}
-                                <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}"
+                                <label>Sales Person Name <span class="star">*</span></label>
+                                <select name="sales_person_name" id="sales_person_select" class="form-control" required>
+                                    <option value="">-- Select Sales Person --</option>
+                                    {% for person in sales_persons %}
+                                    <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}"
                                     {% if service.sales_person_name == person.full_name %}selected{% endif %}>
                                     {{ person.full_name }}
                                 </option>
-                            {% endfor %}
-                        </select>
-
-                        <label>Sales Person Contact No <span class="star">*</span></label>
-                        <input type="text" id="sales_person_contact_no" name="sales_person_contact_no" class="form-control"
-                               pattern="\d{10}" value="{{ service.sales_person_contact_no }}" title="Please enter a valid 10-digit phone number" required readonly>
-                        <label>Delivery Time<span class="star">*</span></label>
-                        <input type="time" class="form-control" name="delivery_time" value="{{ service.delivery_time|time:'H:i' }}" required>
-                                            
-                        <label>Lead Date<span class="star">*</span></label>
-                        <input type="date" name="lead_date" class="form-control" 
-                               value="{{ service.lead_date|date:'Y-m-d' }}" required>
-                                            
-                        <label>Service Date<span class="star">*</span></label>
-                        <input type="date" name="service_date" class="form-control" 
-                               value="{{ service.service_date|date:'Y-m-d' }}" required>
-
+                                {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label>Sales Person Contact No <span class="star">*</span></label>
+                                <input type="text" id="sales_person_contact_no" name="sales_person_contact_no" class="form-control"
+                                pattern="\d{10}" value="{{ service.sales_person_contact_no }}" title="Please enter a valid 10-digit phone number" required readonly>
+                                
+                            </div>
+                        </div>
                         <div class="row">
-                            <div class="col-md-12 text-center col-12">
+                            <div class="col-4">
+                                <label>Delivery Time<span class="star">*</span></label>
+                                <input type="time" class="form-control" name="delivery_time" value="{{ service.delivery_time|time:'H:i' }}" required> 
+                            </div>
+                            <div class="col-4">
+                                <label>Lead Date<span class="star">*</span></label>
+                                <input type="date" name="lead_date" class="form-control" 
+                                value="{{ service.lead_date|date:'Y-m-d' }}" required>
+                            </div>
+                            <div class="col-4">
+                                <label>Service Date<span class="star">*</span></label>
+                                <input type="date" name="service_date" class="form-control" 
+                                value="{{ service.service_date|date:'Y-m-d' }}" required>
+                            </div>
+                            
+                        </div>
+                            <div class="row">
+                                <div class="col-md-12 text-center col-12">
                                 <button type="button" class="btn btn-secondary prev-step mt-3"
                                     style="width: 150px;">Previous</button>
 

@@ -834,111 +834,6 @@ def delete_product(request, product_id):
     return redirect('/products')
 
 
-# def service_management_create(request):
-#     customers = customer_details.objects.all()
-#     category_choices = Product.CATEGORY_CHOICES  # Pass category choices to the template
-#     products = Product.objects.all()  
-#     sales_persons = SalesPerson.objects.all()
-
-#     if request.method == 'POST':
-#         try:
-#             # Parse and validate form data
-#             customer_contact = request.POST['customer_contact']
-#             customer = customer_details.objects.get(primarycontact=customer_contact)
-#             address=request.POST.get('address', 'Null')
-#             print('add',address)
-#             lead_date = request.POST.get('lead_date')
-#             service_date = request.POST.get('service_date')
-#             lead_date = datetime.strptime(lead_date, '%Y-%m-%d').date() if lead_date else None
-#             service_date = datetime.strptime(service_date, '%Y-%m-%d').date() if service_date else None
-            
-#             # Extract and validate selected services
-#             selected_service_names = request.POST.get('selected_services_names', '').strip()
-#             if not selected_service_names:
-#                 raise ValueError("No services selected. Please select at least one service.")
-
-#             selected_service_names_list = selected_service_names.split(',') if selected_service_names else []
-#             print(f"Selected Product Names: {selected_service_names_list}")
-
-#             # Validate price fields
-#             total_price = request.POST.get('total_price', '').strip()
-#             total_with_gst = request.POST.get('total_with_gst', '').strip()
-
-#             if not total_price or not total_price.replace('.', '', 1).isdigit():
-#                 raise ValueError("Invalid total price. Please provide a valid number.")
-#             if total_with_gst and not total_with_gst.replace('.', '', 1).isdigit():
-#                 raise ValueError("Invalid total price with GST. Please provide a valid number.")
-
-#             total_price = float(total_price)
-#             total_with_gst = float(total_with_gst) if total_with_gst else None
-
-#             # Determine if GST should be applied
-#             apply_gst = request.POST.get('apply_gst') == 'on'
-#             gst_number = request.POST.get('gst_number', '') if apply_gst else ''
-#             if apply_gst :
-#                 gst_status = 'GST'
-#             else :
-#                 total_with_gst = total_price   
-#                 gst_status = 'NON-GST'    
-#             delivery_time = request.POST['delivery_time']
-
-#             # Create and save the service management instance
-#             instance = service_management(
-
-#                 customer=customer,
-#                 address = address,
-#                 # gst_checkbox=apply_gst,  # Store whether GST is applied
-#                 # gst_number=gst_number,  # Save GST number only if provided
-#                 # gst_status = gst_status,
-#                 total_price=total_price,
-#                 total_price_with_gst=total_with_gst,
-#                 contract_type=request.POST.get('contract_type', 'NOT SELECTED'),
-#                 contract_status=request.POST.get('contract_status', 'NOT SELECTED'),
-#                 property_type=request.POST.get('property_type'),
-#                 warranty_period=request.POST.get('warranty_period'),
-#                 state=request.POST.get('state', 'Null'),
-#                 city=request.POST.get('city', 'Null'),
-#                 pincode=request.POST.get('pincode', '000000'),
-               
-#                 gps_location=request.POST.get('gps_location'),
-#                 frequency_count=request.POST.get('frequency_count', 'NOT SELECTED'),
-#                 payment_terms=request.POST.get('payment_terms', '100% Advance payment OR Whatever mutually Decided'),
-#                 sales_person_name=request.POST.get('sales_person_name'),
-#                 sales_person_contact_no=request.POST.get('sales_person_contact_no'),
-#                 delivery_time=delivery_time,
-#                 lead_date=lead_date,
-#                 service_date=service_date,
-#             )
-#             print("city",request.POST.get('city'))
-#             print("pincode",request.POST.get('pincode'))
-#             # Save the instance first before assigning many-to-many fields
-#             instance.save()
-#             print("Instance saved:", instance.customer)
-#             # technician = TechnicianProfile.objects.all()
-#             # Fetch and assign selected products
-#             products = Product.objects.filter(product_name__in=selected_service_names_list)
-#             if not products.exists():
-#                 raise ValueError("Selected products not found in the database.")
-
-#             print("Selected products:", products)
-#             instance.selected_services.set(products)
-#             instance.save()
-
-
-#             return redirect('/display_service_management')  # Redirect after successful submission
-
-#         except Exception as e:
-#             # Handle any errors
-#             print(f"Error: {e}")
-#             return render(request, 'service_management.html', {
-#                 'error': str(e),
-#                 'category_choices': category_choices,
-#                 'products': products,
-#                 'customers' : customers,
-#             })
-
-#     return render(request, 'service_management.html', {'category_choices': category_choices, 'products': products,'customers' : customers , 'sales_persons':sales_persons})
-
 
 @login_required
 @role_required(['admin','sales'])
@@ -947,6 +842,7 @@ def service_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
     sales_persons = SalesPerson.objects.all()
+    frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
     # print(request.POST)
     if request.method == 'POST':
         try:
@@ -1044,7 +940,8 @@ def service_management_create(request):
         'category_choices': category_choices,
         'products': products,
         'customers': customers,
-        'sales_persons': sales_persons
+        'sales_persons': sales_persons,
+        'frequency_choices': frequency_choices,
     })
 
 from django.shortcuts import render, redirect

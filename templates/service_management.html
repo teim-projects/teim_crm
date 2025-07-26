@@ -385,26 +385,34 @@
                         </div>
 
                         <!-- Selected Services List -->
+                        
                         <label>Selected Services</label>
                         <ul id="selected_services" class="selected-products-list"></ul>
                         <input type="hidden" id="selected_services_names" name="selected_services_names">
+                        <div class="row">
+                            <div class="col-5">
+                                 <!-- Price Fields -->
+                                 <label>Total Price (without GST)<span class="star">*</span></label>
+                                 <input type="number" id="total_price" name="total_price" step="0.01" readonly
+                                 class="form-control">
+                            </div>
+                            
 
-                        <!-- Price Fields -->
-                        <label>Total Price (without GST)<span class="star">*</span></label>
-                        <input type="number" id="total_price" name="total_price" step="0.01" readonly
-                            class="form-control">
-
-                        <!-- GST Details -->
-                        <div id="gst_fields" style="display: none;">
-                            <input type="text" name="gst_number" placeholder="Enter GST Number" class="form-control">
+                                <!-- GST Details -->
+                                <div id="gst_fields" style="display: none;">
+                                    <input type="text" name="gst_number" placeholder="Enter GST Number" class="form-control">
+                                </div>
+                           
+                            <div class="col-3">
+                                <label>GST</label>
+                                <input type="number" id="gst_price" name="gst_price" step="0.01" readonly class="form-control">
+                            </div>
+                            <div class="col-4">
+                                <label>Total Price (with GST)</label>
+                                <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" readonly
+                                class="form-control">
+                            </div>
                         </div>
-
-                        <label>GST</label>
-                        <input type="number" id="gst_price" name="gst_price" step="0.01" readonly class="form-control">
-
-                        <label>Total Price (with GST)</label>
-                        <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" readonly
-                            class="form-control">
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
@@ -419,36 +427,49 @@
 
                     <!-- STEP 2: Contract & Property Details -->
                     <div class="form-step d-none">
-                        <label>Contract Type<span class="star">*</span></label>
-                        <select name="contract_type" class="form-control" required>
-                            <option value="One Time">One Time</option>
-                            <option value="AMC">AMC</option>
-                            <option value="Warranty">Warranty</option>
-                        </select>
-
-                        <label>Contract Status<span class="star">*</span></label>
-                        <select name="contract_status" class="form-control" required>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                        </select>
-
-                        <label>Property Type<span class="star">*</span></label>
-                        <textarea name="property_type" class="form-control" required></textarea>
-
-                        <label for="warranty_period">Warranty Period<span class="star">*</span></label>
-                        <input type="text" name="warranty_period" class="form-control" required><br>
-
-
-                        <div class="col-md-12">
-                            <label for="state">State<span class="star">*</span></label>
-                            <input type="text" id="state" name="state" required class="form-control">
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Contract Type<span class="star">*</span></label>
+                                <select name="contract_type" class="form-control" required>
+                                    <option value="One Time">One Time</option>
+                                    <option value="AMC">AMC</option>
+                                    <option value="Warranty">Warranty</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label>Contract Status<span class="star">*</span></label>
+                                <select name="contract_status" class="form-control" required>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
                         </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Property Type<span class="star">*</span></label>
+                                <textarea name="property_type" class="form-control" rows="1" required></textarea>
+                            </div>
+                            <div class="col-6">
+                                <label for="warranty_period">Warranty Period<span class="star">*</span></label>
+                                <input type="text" name="warranty_period" class="form-control" required><br>
+                            </div>
+                        </div>
+                        <div class="row">
 
-
-                        <label>City<span class="star">*</span></label>
-                        <input type="text" id="city" name="city" class="form-control" required><br>
-                        <label>Pincode<span class="star">*</span></label>
-                        <input type="text" id="pincode" name="pincode" maxlength="6" class="form-control" required>
+                            <div class="col-4">
+                                <label for="state">State<span class="star">*</span></label>
+                                <input type="text" id="state" name="state" required class="form-control">
+                            </div>
+                            
+                            <div class="col-4">
+                                <label>City<span class="star">*</span></label>
+                                <input type="text" id="city" name="city" class="form-control" required><br>
+                            </div>
+                            <div class="col-4">
+                                <label>Pincode<span class="star">*</span></label>
+                                <input type="text" id="pincode" name="pincode" maxlength="6" class="form-control" required>
+                            </div>
+                        </div>
 
                         <label>Address<span class="star">*</span></label>
                         <textarea name="address" id="address" class="form-control" required></textarea>
@@ -471,29 +492,37 @@
 
                     <!-- STEP 3: Sales & Delivery -->
                     <div class="form-step d-none">
-                        <label>Select Frequency Count<span class="star">*</span></label>
-                        <select name="frequency_count" class="form-control">
-                            <option value="1">1</option>
-                            <option value="2">2</option> <!-- up to 12 -->
-                            <option value="Fortnight">Fortnight</option>
-                            <option value="Weekly">Weekly</option>
-                            <option value="Daily">Daily</option>
-                        </select>
-
-                        <label>Payment Terms<span class="star">*</span></label>
-                        <input class="form-control" type="text" name="payment_terms"
-                            value="100% Advance payment OR Whatever mutually Decided" readonly>
-                        <label>Sales Person Name <span class="star">*</span></label>
-                        <select name="sales_person_name" id="sales_person_select" class="form-control" required>
-                            <option value="">-- Select Sales Person --</option>
-                            {% for person in sales_persons %}
-                                <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}">{{ person.full_name }}</option>
-                            {% endfor %}
-                        </select>
-
-                        <label>Sales Person Contact No <span class="star">*</span></label>
-                        <input type="text" id="sales_person_contact_no" name="sales_person_contact_no" class="form-control"
-                               pattern="\d{10}" title="Please enter a valid 10-digit phone number" required readonly>
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Select Frequency Count<span class="star">*</span></label>
+                                <select name="frequency_count" class="form-control">
+                                    {% for freq in frequency_choices %}
+                                    <option value="{{ freq }}">{{ freq }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label>Payment Terms<span class="star">*</span></label>
+                                <input class="form-control" type="text" name="payment_terms"
+                                value="100% Advance payment OR Whatever mutually Decided" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Sales Person Name <span class="star">*</span></label>
+                                <select name="sales_person_name" id="sales_person_select" class="form-control" required>
+                                    <option value="">-- Select Sales Person --</option>
+                                    {% for person in sales_persons %}
+                                    <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}">{{ person.full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label>Sales Person Contact No <span class="star">*</span></label>
+                                <input type="text" id="sales_person_contact_no" name="sales_person_contact_no" class="form-control"
+                                pattern="\d{10}" title="Please enter a valid 10-digit phone number" required readonly>
+                            </div>
+                        </div>
 
                         <label>Delivery Time<span class="star">*</span></label>
                         <input type="time" class="form-control" name="delivery_time" required>
