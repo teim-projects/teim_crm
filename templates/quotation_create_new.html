@@ -341,9 +341,18 @@
 
                                         
                                         <div class="col-md-6">
-                                            <label>Sales Person<span class="star">*</span></label>
-                                            <input type="text" id="contact_by" name="contact_by" required
-                                                class="form-control" value="{{ form_data.contactperson }}">
+                                            <label>Sales Person <span class="star">*</span></label>
+                                            <select name="sales_person_list" id="sales_person_select" class="form-control">
+                                                <option value="">Select Sales Person</option>
+                                                {% for sales_person in sales_person_list %}
+                                                    <option value="{{ sales_person.id }}" 
+                                                            data-contact="{{ sales_person.mobile_no }}"
+                                                            {% if sales_person.id|stringformat:"s" == form_data.sales_person_list %}selected{% endif %}>
+                                                        {{ sales_person.full_name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+
                                         </div>
                                         <div class="col-md-6">
                                             <label>Contact No<span class="star">*</span></label>
@@ -363,8 +372,9 @@
                                         </div>
                                         <div class="col-12">
                                             <label>Thank you note<span class="star">*</span></label>
-                                            <textarea name="thank_u_note" rows="2" placeholder="Enter Thank you note...." ></textarea>
+                                            <textarea name="thank_u_note" rows="2" placeholder="Enter Thank you note....">{{ form_data.thank_u_note }}</textarea>
                                         </div>
+
                                         <div class="col-12">
                                             <label>Billing Address (Auto-filled from customer record)<span class="star">*</span></label>
                                             <textarea name="address" id="customer_address" class="form-control" rows="2"
@@ -430,8 +440,12 @@
                                             </div>
 
                                             <label>Select Products</label>
+                                            <div class="search mb-2">
+                                                <input type="search" id="product-search" class="form-control" placeholder="Search products..." oninput="filterProducts()">
+                                            </div>
                                             <div id="products-container"></div>
 
+                                           
                                             <label>Selected Services</label>
                                             <ul id="selected_services" class="selected-products-list"></ul>
                                             <input type="hidden" name="selected_services_names"
@@ -739,6 +753,31 @@
         }
       }
     </script> -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const salesPersonSelect = document.getElementById('sales_person_select');
+        const contactInput = document.getElementById('contact_by_no');
+
+        salesPersonSelect.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const contactNumber = selectedOption.getAttribute('data-contact');
+
+            if (contactNumber) {
+                contactInput.value = contactNumber;
+            } else {
+                contactInput.value = '';
+            }
+        });
+
+        // Auto-trigger in case form_data already selected a person
+        const initialSelected = salesPersonSelect.querySelector('option[selected]');
+        if (initialSelected) {
+            contactInput.value = initialSelected.getAttribute('data-contact') || '';
+        }
+    });
+</script>
+
 <!-- customer type -->
  <script>
     function toggleOrganizationFields() {
@@ -1045,7 +1084,22 @@ document.addEventListener("DOMContentLoaded", function () {
             calculateTotal();
         }
         
-        
+        function filterProducts() {
+            const searchValue = document.getElementById('product-search').value.toLowerCase();
+            const productItems = document.querySelectorAll('#products-container .product-item');
+
+            productItems.forEach(item => {
+                const name = item.getAttribute('data-name');
+                if (name.includes(searchValue)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+
+
         function fetchProducts(selectElement) {
             document.getElementById('products-container').innerHTML = '';
             const selectedCategories = Array.from(selectElement.selectedOptions).map(option => option.value);
@@ -1058,6 +1112,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         data.products.forEach(product => {
                             const productDiv = document.createElement('div');
                             productDiv.className = 'product-item mb-3 p-2 border rounded';
+                            productDiv.setAttribute('data-name', product.product_name.toLowerCase());
                             productDiv.innerHTML = `
                         <div class="d-flex align-items-center mb-2">
                             <input type="checkbox" name="selected_services" value="${product.product_id}"

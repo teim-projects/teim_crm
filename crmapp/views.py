@@ -5,6 +5,7 @@ import datetime
 from io import BytesIO
 from decimal import Decimal
 import base64
+from time import time
 
 import matplotlib.pyplot as plt
 import openpyxl
@@ -965,6 +966,7 @@ from .models import customer_details
 from .models import Branch  
 
 
+
 # New----------------
 @login_required
 @role_required(['admin','sales'])
@@ -973,7 +975,7 @@ def quotation_management_create(request):
     terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
     products = Product.objects.all()
-
+    sales_person_list = SalesPerson.objects.all()
     if request.method == 'POST':
         custom_terms = request.POST.get('add_terms_conditions') or None
         customer_id = request.POST.get('customer_id')
@@ -983,7 +985,6 @@ def quotation_management_create(request):
         request.session['quotation_form_data'] = data
 
         request.session.modified = True
-
         if customer_id:
             try:
                 customer = customer_details.objects.get(id=customer_id)
@@ -1006,7 +1007,6 @@ def quotation_management_create(request):
                 gps_location = request.POST.get('gps_location')
                 pincode = request.POST.get('pincode', '000000')
                 custom_terms = request.POST.get('add_terms_conditions')or None
-
                 customerid = generate_customerid(customer_full_name)
 
                 # You can add validation here if necessary
@@ -1148,8 +1148,8 @@ def quotation_management_create(request):
                 'category_choices': category_choices,
                 'terms': terms,
                 'branches': branches,
-                'form': AddProductForm(),  # include this if used in template
-                'form_data': {},           # clear form if needed
+                'form': AddProductForm(),  
+                'form_data': {},           
             })
 
 
@@ -1169,6 +1169,7 @@ def quotation_management_create(request):
     return render(request, 'quotation_create_new.html', {
         'products': products,
         'category_choices': category_choices,
+        'sales_person_list': sales_person_list,
         'terms': terms,
         'branches': Branch.objects.all(),
         'form': form,
@@ -4627,6 +4628,32 @@ def create_branch(request):
 def branch_list(request):
     branches = Branch.objects.all().order_by('-created_at')
     return render(request, 'branch_list.html', {'branches': branches})
+
+def delete_branch(request, branch_id):
+    branch = get_object_or_404(Branch, id=branch_id)
+    branch.delete()
+    return redirect('branch_list')
+
+def edit_branch(request, branch_id):
+    branch = get_object_or_404(Branch, id=branch_id)
+
+    if request.method == 'POST':
+        branch.branch_name = request.POST.get('branch_name')
+        branch.contact_1 = request.POST.get('contact_1')
+        branch.contact_2 = request.POST.get('contact_2') or None
+        branch.email_1 = request.POST.get('email_1')
+        branch.email_2 = request.POST.get('email_2') or None
+        branch.gst_number = request.POST.get('gst_number')
+        branch.pan_number = request.POST.get('pan_number')
+        branch.state = request.POST.get('state')
+        branch.code = request.POST.get('code')
+        branch.shortcut = request.POST.get('shortcut')
+        branch.full_address = request.POST.get('full_address')
+
+        branch.save()
+        return redirect('branch_list')
+
+    return render(request, 'edit_branch.html', {'branch': branch, "state_map":state_map})
 
 
 def get_branch_details(request, branch_id):
