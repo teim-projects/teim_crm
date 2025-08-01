@@ -326,7 +326,7 @@
                                         <div class="col-md-6">
                                             <label>Customer Type<span class="star">*</span></label>
                                             <input type="text" class="form-control" name="customer_type" id="view_customer_type" 
-                                                   value="{{ form_data.customer_type }}" readonly>
+                                                value="{{ form_data.customer_type }}" readonly>
                                         </div>
                                         
                                         <div class="col-md-6 org-fields">
@@ -345,7 +345,7 @@
                                             <select name="sales_person_list" id="sales_person_select" class="form-control">
                                                 <option value="">Select Sales Person</option>
                                                 {% for sales_person in sales_person_list %}
-                                                    <option value="{{ sales_person.id }}" 
+                                                    <option value="{{ sales_person.full_name }}" 
                                                             data-contact="{{ sales_person.mobile_no }}"
                                                             {% if sales_person.id|stringformat:"s" == form_data.sales_person_list %}selected{% endif %}>
                                                         {{ sales_person.full_name }}
@@ -370,10 +370,12 @@
                                             <input type="date" name="quotation_date" class="form-control" 
                                             value="{{ form_data.quotation_date }}"><br>
                                         </div>
-                                        <div class="col-12">
+                                        <div class="col-12 position-relative">
                                             <label>Thank you note<span class="star">*</span></label>
-                                            <textarea name="thank_u_note" rows="2" placeholder="Enter Thank you note....">{{ form_data.thank_u_note }}</textarea>
+                                            <textarea id="thank_u_note" name="thank_u_note" rows="2" placeholder="Enter Thank you note..">{{ form_data.thank_u_note }}</textarea>
+                                            <ul id="thank-suggestions" class="autocomplete-box" style="display: none;"></ul>
                                         </div>
+                                        {{ thank_notes|json_script:"thank-notes-json" }}
 
                                         <div class="col-12">
                                             <label>Billing Address (Auto-filled from customer record)<span class="star">*</span></label>
@@ -381,15 +383,24 @@
                                                 required >{{ form_data.address }}</textarea>
                                         </div>
                                         <div class="col-12">
-                                            <label>Select Terms and Conditions<span class="star">*</span></label><br>
+                                            <label>Select Terms and Conditions <span class="star">*</span></label><br>
+
+                                            <div class="search mb-2">
+                                                <input type="search" id="term-search" class="form-control" placeholder="Search terms..." oninput="filterTerms()">
+                                            </div>
+                                            
                                             <div class="overterm">
                                                 {% for term in terms %}
-                                                <input type="checkbox" name="terms_and_conditions" class="mt-3 "
-                                                    value="{{ term.id }}"
-                                                {% if term.id|stringformat:"s" in form_data.terms_and_conditions %}checked{% endif %}>
-                                                {{ term.description|truncatewords:10 }}<br>
+                                                    <div class="term-item">
+                                                        <label class="mt-1">
+                                                            <input type="checkbox" name="terms_and_conditions[]" value="{{ term.id }}"
+                                                                {% if term.id|stringformat:"s" in form_data.terms_and_conditions %}checked{% endif %}>
+                                                            {{ term.description|truncatewords:10 }}
+                                                        </label>
+                                                    </div>
                                                 {% endfor %}
                                             </div>
+
                                             <div class="add_terms_conditions mt-2">
                                                 <textarea name="add_terms_conditions" rows="2" placeholder="Enter your Customize Terms &Conditions">{{ form_data.add_terms_conditions }}</textarea>
                                             </div>
@@ -753,7 +764,66 @@
         }
       }
     </script> -->
+<!-- Thank u note textarea -->
+<script>
+    const THANK_NOTES = {{ thank_notes|safe }};
+    // console.log("Loaded notes:", THANK_NOTES);
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const textarea = document.getElementById('thank_u_note');
+        const suggestionBox = document.getElementById('thank-suggestions');
 
+        textarea.addEventListener('input', function () {
+            const input = this.value.toLowerCase().trim();
+            suggestionBox.innerHTML = '';
+
+            if (input.length < 1) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+
+            const filtered = THANK_NOTES.filter(note =>
+                note.toLowerCase().includes(input)
+            ).slice(0, 5);  // limit to 5 suggestions
+
+            if (filtered.length === 0) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+
+            filtered.forEach(note => {
+                const li = document.createElement('li');
+                li.textContent = note;
+                li.style.padding = '5px';
+                li.style.cursor = 'pointer';
+                li.style.borderBottom = '1px solid #eee';
+                li.addEventListener('click', () => {
+                    textarea.value = note;
+                    suggestionBox.style.display = 'none';
+                });
+                suggestionBox.appendChild(li);
+            });
+
+            const rect = textarea.getBoundingClientRect();
+            suggestionBox.style.display = 'block';
+            suggestionBox.style.position = 'absolute';
+            suggestionBox.style.backgroundColor = 'white';
+            suggestionBox.style.border = '1px solid #ccc';
+            suggestionBox.style.maxHeight = '150px';
+            suggestionBox.style.overflowY = 'auto';
+            suggestionBox.style.width = textarea.offsetWidth + 'px';
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!suggestionBox.contains(e.target) && e.target !== textarea) {
+                suggestionBox.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+<!-- Sales Person Dropdown -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const salesPersonSelect = document.getElementById('sales_person_select');
@@ -948,9 +1018,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (!nameField.value && data.customer_full_name) {
                             nameField.value = data.customer_full_name;
                         }
-                        if (!contactpersonField.value && data.contactperson) {
-                            contactpersonField.value = data.contactperson;
-                        }
+                        // if (!contactpersonField.value && data.contactperson) {
+                        //     contactpersonField.value = data.contactperson;
+                        // }
                         if (!customerTypeField.value && data.customer_type) {
                             customerTypeField.value = data.customer_type;
                             toggleOrgFieldsByCustomerType(); 
@@ -985,6 +1055,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+<script>
+        function filterTerms() {
+            const searchValue = document.getElementById("term-search").value.toLowerCase();
+            const termItems = document.querySelectorAll(".term-item");
+        
+            termItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                const shouldShow = text.includes(searchValue);
+                item.style.display = shouldShow ? "block" : "none";
+            });
+        }
+</script>
 
 
     <!--  -->

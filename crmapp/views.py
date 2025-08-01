@@ -976,6 +976,7 @@ def quotation_management_create(request):
     branches = Branch.objects.all()
     products = Product.objects.all()
     sales_person_list = SalesPerson.objects.all()
+    thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     if request.method == 'POST':
         custom_terms = request.POST.get('add_terms_conditions') or None
         customer_id = request.POST.get('customer_id')
@@ -983,7 +984,7 @@ def quotation_management_create(request):
         data = request.POST.copy()
         data['terms_and_conditions'] = request.POST.getlist('terms_and_conditions')
         request.session['quotation_form_data'] = data
-
+        print("Session stored terms:", request.session['quotation_form_data'].get('terms_and_conditions'))
         request.session.modified = True
         if customer_id:
             try:
@@ -1026,7 +1027,7 @@ def quotation_management_create(request):
             secondary_contact_no = request.POST.get('secondary_contact_no')
             customer_email = request.POST.get('customer_email')
             secondary_email = request.POST.get('secondary_email')
-            contact_by = request.POST.get('contact_by')
+            contact_by = request.POST.get('sales_person_list')
             contact_by_no = request.POST.get('contact_by_no')
             address = request.POST.get('address')
             city = request.POST.get('city')
@@ -1133,8 +1134,21 @@ def quotation_management_create(request):
                 thank_u_note = thank_u_note,
             )
 
+            # Ensure it's safe
+            custom_terms_list = [term.strip() for term in (custom_terms or '').split('\n') if term.strip()]
+
+            quotation_terms_to_add = []
+
+            for term_text in custom_terms_list:
+                # Check if term already exists
+                term_obj, created = QuotationTerm.objects.get_or_create(description=term_text)
+                quotation_terms_to_add.append(term_obj)
+
+            # Add terms to the quotation's terms_and_conditions field
+            quotation.terms_and_conditions.add(*quotation_terms_to_add)
+
             quotation.selected_services.set(selected_services)
-            selected_term_ids = request.POST.getlist('terms_and_conditions')
+            selected_term_ids = request.POST.getlist('terms_and_conditions[]')
             quotation.terms_and_conditions.set(selected_term_ids)
             request.session.pop('quotation_form_data', None)
             request.session.modified = True
@@ -1149,7 +1163,8 @@ def quotation_management_create(request):
                 'terms': terms,
                 'branches': branches,
                 'form': AddProductForm(),  
-                'form_data': {},           
+                'form_data': {},   
+                       
             })
 
 
@@ -1174,6 +1189,7 @@ def quotation_management_create(request):
         'branches': Branch.objects.all(),
         'form': form,
         'form_data': form_data,
+        'thank_notes': list(thank_notes), 
 })
     
 
@@ -1183,11 +1199,16 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def save_quotation_session(request):
     if request.method == 'POST':
-        request.session['quotation_form_data'] = request.POST.dict()
+        data = request.POST.dict()
+
+        # Manually fix the multi-select checkbox field
+        data['terms_and_conditions'] = request.POST.getlist('terms_and_conditions[]')
+
+        request.session['quotation_form_data'] = data
         request.session.modified = True
         return JsonResponse({'status': 'success'})
+    
     return JsonResponse({'status': 'invalid request'}, status=400)
-
 # @csrf_exempt
 # def clear_quotation_session(request):
 #     request.session.pop('quotation_form_data', None)
@@ -3005,7 +3026,9 @@ from .models import quotation_management, QuotationTerm, Product  # adjust as ne
 
 def edit_quotation(request, rid):
     quotation = quotation_management.objects.get(id=rid)
-   
+    sales_person_list = SalesPerson.objects.all()
+    thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
+    products = Product.objects.all()
     if request.method == "POST":
         delete_ids = request.POST.getlist('delete_product_ids[]')
         existing_products = quotation.product_details_json or []
@@ -3024,7 +3047,7 @@ def edit_quotation(request, rid):
         address = request.POST.get('address')
         subject = request.POST.get('subject')
         branch_id = request.POST.get('branch_id')
-        selected_term_ids = request.POST.getlist('terms_and_conditions')  # get selected terms
+        selected_term_ids = request.POST.getlist('terms_and_conditions[]')  # get selected terms
         custom_terms = request.POST.get('add_terms_conditions')
         
         or_name = request.POST.get('or_name')
@@ -3145,6 +3168,9 @@ def edit_quotation(request, rid):
             'product_details': json.dumps(product_details),
             'selected_categories': selected_categories,
             'category_choices': Product.CATEGORY_CHOICES,
+            "sales_person_list": sales_person_list,
+            "thank_notes": list(thank_notes),
+            'products': products,
         })
 
 # Edit Invoice
@@ -4698,7 +4724,9 @@ def get_customer_details(request):
                 'or_name':customer.or_name,
                 'or_contact':customer.or_contact,  
             }
+           
             return JsonResponse(data)
+        
         except customer_details.DoesNotExist:
             return JsonResponse({'error': 'Customer not found'}, status=404)
     return JsonResponse({'error': 'No contact number provided'}, status=400)
