@@ -615,6 +615,7 @@ class quotation_management(models.Model):
 
     
     terms_and_conditions = models.ManyToManyField(QuotationTerm, blank=True)
+    terms_order = models.JSONField(blank=True, null=True)
     gst_number = models.CharField(
         max_length=15,
         blank=True,

@@ -3029,6 +3029,7 @@ def edit_quotation(request, rid):
     sales_person_list = SalesPerson.objects.all()
     thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     products = Product.objects.all()
+
     if request.method == "POST":
         delete_ids = request.POST.getlist('delete_product_ids[]')
         existing_products = quotation.product_details_json or []
@@ -3048,6 +3049,7 @@ def edit_quotation(request, rid):
         subject = request.POST.get('subject')
         branch_id = request.POST.get('branch_id')
         selected_term_ids = request.POST.getlist('terms_and_conditions[]')  # get selected terms
+        ordered_term_ids_str = request.POST.get('terms_and_conditions_ordered', '')
         custom_terms = request.POST.get('add_terms_conditions')
         
         or_name = request.POST.get('or_name')
@@ -3086,7 +3088,7 @@ def edit_quotation(request, rid):
             new_products = []
 
         for new_product in new_products:
-            if str(new_product.get('id')) not in existing_product_ids:
+            if str(new_product.get('id')):
                 updated_products.append(new_product)
 
         # Totals
@@ -3139,8 +3141,14 @@ def edit_quotation(request, rid):
         quotation.save()
 
         # Save terms
-        quotation.terms_and_conditions.set(selected_term_ids)
+        # quotation.terms_and_conditions.set(selected_term_ids)
+        # Parse and apply ordered term IDs
+        ordered_term_ids = [int(tid) for tid in ordered_term_ids_str.split(',') if tid.isdigit()]
+        print('term', ordered_term_ids)
+        quotation.terms_and_conditions.set(ordered_term_ids)
 
+        quotation.terms_order = ordered_term_ids
+        quotation.save()
         return redirect('display_quotation')
 
     else:
@@ -5397,7 +5405,7 @@ def reportlab_quotation_pdf(request, id):
 
         product_data.append([
             str(idx),
-            Paragraph(f"{item['name']}<br/><i>{item.get('description', '')}</i>", small),
+            Paragraph(f"{item['name']}<br/><i>{item.get('description', '').replace('\n', '<br/>')}</i>", small),
             f"{price:,.2f}",
             f"{quantity:.0f} {item['unit']}",
             f"{total:,.2f}"
@@ -5489,13 +5497,22 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Paragraph("<b>Terms & Conditions</b>", bold))
 
     # Combine all terms
-    all_terms = [t.description for t in quotation.terms_and_conditions.all()] + [
-        t.strip() for t in (quotation.custom_terms or '').split(',') if t.strip()
-    ]
+    # all_terms = [t.description for t in quotation.terms_and_conditions.all()] + [
+    #     t.strip() for t in (quotation.custom_terms or '').split(',') if t.strip()
+    # ]
+    # Fetch the ordered terms using the order
+
+    ordered_terms = []
+    terms_by_id = {t.id: t for t in quotation.terms_and_conditions.all()}
+
+    for tid in quotation.terms_order or []:
+        if tid in terms_by_id:
+            ordered_terms.append(terms_by_id[tid])
+
 
     # Create paragraph list
-    terms_paragraphs = [[Paragraph(f"{idx}. {t}", small)] for idx, t in enumerate(all_terms, start=1)]
-
+    terms_paragraphs = [[Paragraph(f"{idx}. {t}", small)] for idx, t in enumerate(ordered_terms, start=1)]
+    
     # Wrap inside table for styling
     terms_table = Table(terms_paragraphs, colWidths=[doc.width])
     terms_table.setStyle(TableStyle([

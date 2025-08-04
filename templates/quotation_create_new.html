@@ -340,25 +340,26 @@
                                         </div>
 
                                         
-                                        <div class="col-md-6">
-                                            <label>Sales Person <span class="star">*</span></label>
-                                            <select name="sales_person_list" id="sales_person_select" class="form-control">
-                                                <option value="">Select Sales Person</option>
-                                                {% for sales_person in sales_person_list %}
-                                                    <option value="{{ sales_person.full_name }}" 
-                                                            data-contact="{{ sales_person.mobile_no }}"
-                                                            {% if sales_person.id|stringformat:"s" == form_data.sales_person_list %}selected{% endif %}>
-                                                        {{ sales_person.full_name }}
-                                                    </option>
-                                                {% endfor %}
-                                            </select>
+                                      <div class="col-md-6">
+    <label>Sales Person <span class="star">*</span></label>
+    <select name="sales_person_list" id="sales_person_select" class="form-control" required>
+        <option value="">Select Sales Person</option>
+        {% for sales_person in sales_person_list %}
+            <option value="{{ sales_person.full_name }}" 
+                    data-contact="{{ sales_person.mobile_no }}"
+                    {% if sales_person.full_name  == form_data.sales_person_list or sales_person.full_name == form_data.contactperson %}selected{% endif %}>
+                {{ sales_person.full_name }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
 
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label>Contact No<span class="star">*</span></label>
-                                            <input type="number" id="contact_by_no" name="contact_by_no"  required
-                                               value="{{ form_data.contact_by_no }}" class="form-control">
-                                        </div>
+<div class="col-md-6">
+    <label>Contact No {{ form_data.contactperson }} <span class="star">*</span></label>
+    <input type="number" id="contact_by_no" name="contact_by_no" required
+           value="{{ form_data.contact_by_no }}" class="form-control">
+</div>
+
 
                                         <div class="col-md-6">
                                             <label>Subject<span class="star">*</span></label>
@@ -824,7 +825,7 @@
 </script>
 
 <!-- Sales Person Dropdown -->
-<script>
+<!-- <script>
     document.addEventListener('DOMContentLoaded', function () {
         const salesPersonSelect = document.getElementById('sales_person_select');
         const contactInput = document.getElementById('contact_by_no');
@@ -846,7 +847,31 @@
             contactInput.value = initialSelected.getAttribute('data-contact') || '';
         }
     });
-</script>
+</script> -->
+
+<!-- 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const salesPersonSelect = document.getElementById('sales_person_select');
+        const contactInput = document.getElementById('contact_by_no');
+
+        function updateContactFromSelected() {
+            const selectedOption = salesPersonSelect.options[salesPersonSelect.selectedIndex];
+            const contactNumber = selectedOption.getAttribute('data-contact');
+            if (contactNumber) {
+                contactInput.value = contactNumber;
+            } else if (!contactInput.value) {
+                contactInput.value = '';
+            }
+        }
+
+        salesPersonSelect.addEventListener('change', updateContactFromSelected);
+
+    
+        updateContactFromSelected();
+        
+    });
+</script> -->
 
 <!-- customer type -->
  <script>
@@ -977,15 +1002,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    <!--  -->
+<!--     
     <script>
+         document.addEventListener('DOMContentLoaded', function () {
+        const salesPersonSelect = document.getElementById('sales_person_select');
+        const contactInput = document.getElementById('contact_by_no');
+
+        function updateContactFromSelected() {
+            const selectedOption = salesPersonSelect.options[salesPersonSelect.selectedIndex];
+            const contactNumber = selectedOption.getAttribute('data-contact');
+            if (contactNumber) {
+                contactInput.value = contactNumber;
+            } else if (!contactInput.value) {
+                contactInput.value = '';
+            }
+        }
+
+        salesPersonSelect.addEventListener('change', updateContactFromSelected);
+
+    
+        updateContactFromSelected();
+        
+    });
+
+
         document.addEventListener('DOMContentLoaded', function () {
             const customerIdField = document.getElementById("customer_id");
             const contactInput = document.querySelector('input[name="contact_no"]');
             const emailField = document.querySelector('input[name="customer_email"]');
             const nameField = document.querySelector('input[name="customer_full_name"]');
             const addressField = document.querySelector('textarea[name="address"]');
-            const contactpersonField = document.querySelector('input[name="contact_by"]');
+            const contactpersonField = document.querySelector('select[name="sales_person_list"]');
             const customerTypeField = document.querySelector('input[name="customer_type"]');
             const or_nameField = document.querySelector('input[name="or_name"]');
             const or_contactField = document.querySelector('input[name="or_contact"]');
@@ -1018,9 +1065,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (!nameField.value && data.customer_full_name) {
                             nameField.value = data.customer_full_name;
                         }
-                        // if (!contactpersonField.value && data.contactperson) {
-                        //     contactpersonField.value = data.contactperson;
-                        // }
+                        if (!contactpersonField.value && data.contactperson) {
+                            contactpersonField.value = data.contactperson;
+                        }
                         if (!customerTypeField.value && data.customer_type) {
                             customerTypeField.value = data.customer_type;
                             toggleOrgFieldsByCustomerType(); 
@@ -1043,7 +1090,10 @@ document.addEventListener("DOMContentLoaded", function () {
                                 addressField.title = "";
                             }, 5000);
                         }
+
+                        updateContactFromSelected();
                     })
+                    
                     .catch(error => {
                         console.error('Error:', error);
                     });
@@ -1051,7 +1101,112 @@ document.addEventListener("DOMContentLoaded", function () {
            
         });
     </script>
+ -->
+<script>
+    // ✅ Make this globally accessible
+    function updateContactFromSelected() {
+        const salesPersonSelect = document.getElementById('sales_person_select');
+        const contactInput = document.getElementById('contact_by_no');
 
+        if (!salesPersonSelect || !contactInput) return;
+
+        const selectedOption = salesPersonSelect.options[salesPersonSelect.selectedIndex];
+        const contactNumber = selectedOption.getAttribute('data-contact');
+        if (contactNumber) {
+            contactInput.value = contactNumber;
+        } else {
+            contactInput.value = '';
+        }
+    }
+
+    // ✅ First listener: Handle dropdown change + initial auto-fill
+    document.addEventListener('DOMContentLoaded', function () {
+        const salesPersonSelect = document.getElementById('sales_person_select');
+        if (salesPersonSelect) {
+            salesPersonSelect.addEventListener('change', updateContactFromSelected);
+            updateContactFromSelected();  // Initial call
+        }
+    });
+
+    // ✅ Second listener: Handle customer contact lookup
+    document.addEventListener('DOMContentLoaded', function () {
+        const customerIdField = document.getElementById("customer_id");
+        const contactInput = document.querySelector('input[name="contact_no"]');
+        const emailField = document.querySelector('input[name="customer_email"]');
+        const nameField = document.querySelector('input[name="customer_full_name"]');
+        const addressField = document.querySelector('textarea[name="address"]');
+        const contactpersonField = document.querySelector('select[name="sales_person_list"]');
+        const customerTypeField = document.querySelector('input[name="customer_type"]');
+        const or_nameField = document.querySelector('input[name="or_name"]');
+        const or_contactField = document.querySelector('input[name="or_contact"]');
+
+        contactInput.addEventListener('blur', function () {
+            const contactNo = this.value.trim();
+            if (!contactNo) return;
+
+            fetch(`/get_customer_details/?contact_no=${encodeURIComponent(contactNo)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Customer not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    if (data.customer_id) {
+                        customerIdField.value = data.customer_id;
+                    }
+
+                    if (!emailField.value && data.customer_email) {
+                        emailField.value = data.customer_email;
+                    }
+
+                    if (!nameField.value && data.customer_full_name) {
+                        nameField.value = data.customer_full_name;
+                    }
+
+                    if (!contactpersonField.value && data.contactperson) {
+                        contactpersonField.value = data.contactperson;
+                    }
+
+                    if (!customerTypeField.value && data.customer_type) {
+                        customerTypeField.value = data.customer_type;
+                        toggleOrgFieldsByCustomerType(); 
+                    }
+
+                    if (!or_nameField.value && data.or_name) {
+                        or_nameField.value = data.or_name;
+                    }
+
+                    if (!or_contactField.value && data.or_contact) {
+                        or_contactField.value = data.or_contact;
+                    }
+
+                    if (!addressField.value && data.soldtopartyaddress) {
+                        const pincode = data.sold_pincode;
+                        const fullAddress = `${data.soldtopartyaddress}, ${data.sold_city} - ${pincode}`;
+                        addressField.value = fullAddress;
+                        addressField.style.borderLeft = "4px solid #03AED2";
+                        addressField.title = "Auto-filled from customer records";
+                        setTimeout(() => {
+                            addressField.style.borderLeft = "";
+                            addressField.title = "";
+                        }, 5000);
+                    }
+
+                    // ✅ Re-run after sales person auto-filled
+                    updateContactFromSelected();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    });
+</script>
 
 
 
@@ -1226,10 +1381,12 @@ document.addEventListener("DOMContentLoaded", function () {
                             
                             <div class="col-md-3">
                                 <label>Description</label>
-                                    <input type="text" class="form-control product-description-input" 
-                                        data-product-id="${product.product_id}" 
-                                        placeholder="Description"
-                                        onchange="updateProductDescription(this, '${product.product_id}')">
+                                    <textarea class="form-control product-description-input" 
+                                      data-product-id="${product.product_id}" 
+                                      placeholder="Enter description..."
+                                      rows="3"
+                                      onchange="updateProductDescription(this, '${product.product_id}')"></textarea>
+                                                        
 
                             </div>
 

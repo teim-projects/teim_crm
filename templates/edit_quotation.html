@@ -355,7 +355,7 @@
 
                                         <div class="col-md-6">
                                             <label>Sales Person <span class="star">*</span></label>
-                                            <select name="sales_person_list" id="sales_person_select" class="form-control">
+                                            <select name="contact_by" id="sales_person_select" class="form-control">
                                                 <option value="">Select Sales Person</option>
                                                 {% for sales_person in sales_person_list %}
                                                     <option value="{{ sales_person.full_name }}" 
@@ -402,15 +402,19 @@
 
                                             <!-- ✅ Term Checkboxes (with search support + checked logic) -->
                                             <div class="overterm" id="terms-container">
+                                                <!-- Hidden input to store the ordered list -->
+                                                <input type="hidden" name="terms_and_conditions_ordered" id="terms_ordered_input">
                                                 {% for term in all_terms %}
                                                     <div class="term-item">
                                                         <label class="mt-1 d-block">
                                                             <input type="checkbox" name="terms_and_conditions[]" value="{{ term.id }}"
+                                                                data-term-id="{{ term.id }}"
                                                                 {% if term in quotation.terms_and_conditions.all %}checked{% endif %}>
                                                             {{ term.description|truncatewords:10 }}
                                                         </label>
                                                     </div>
                                                 {% endfor %}
+                                                
                                             </div>
 
                                             <div class="add_terms_conditions mt-2">
@@ -668,6 +672,50 @@
             </div>
         </div>
     </div>
+<!-- Store terms checkbox order -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const checkboxes = document.querySelectorAll('#terms-container input[type="checkbox"][name="terms_and_conditions[]"]');
+    const hiddenInput = document.getElementById('terms_ordered_input');
+
+    let checkedOrder = [];
+
+    function updateOrder() {
+        const activeIds = checkedOrder.filter(id => {
+            const checkbox = document.querySelector(`#terms-container input[type="checkbox"][value="${id}"]`);
+            return checkbox && checkbox.checked;
+        });
+
+        hiddenInput.value = activeIds.join(',');
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function () {
+            const id = cb.value;
+            if (cb.checked) {
+                if (!checkedOrder.includes(id)) {
+                    checkedOrder.push(id);  // Add newly checked item to order
+                }
+            } else {
+                // Remove unchecked item
+                checkedOrder = checkedOrder.filter(existingId => existingId !== id);
+            }
+
+            updateOrder();
+        });
+
+        // Prepopulate for already checked boxes
+        if (cb.checked && !checkedOrder.includes(cb.value)) {
+            checkedOrder.push(cb.value);
+        }
+    });
+
+    updateOrder(); // init on load
+});
+</script>
+
+
+
     <!-- JavaScript for Multistep Form -->
 <script>
   function toggleOrganizationFields() {
