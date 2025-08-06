@@ -340,25 +340,25 @@
                                         </div>
 
                                         
-                                      <div class="col-md-6">
-    <label>Sales Person <span class="star">*</span></label>
-    <select name="sales_person_list" id="sales_person_select" class="form-control" required>
-        <option value="">Select Sales Person</option>
-        {% for sales_person in sales_person_list %}
-            <option value="{{ sales_person.full_name }}" 
-                    data-contact="{{ sales_person.mobile_no }}"
-                    {% if sales_person.full_name  == form_data.sales_person_list or sales_person.full_name == form_data.contactperson %}selected{% endif %}>
-                {{ sales_person.full_name }}
-            </option>
-        {% endfor %}
-    </select>
-</div>
+                                        <div class="col-md-6">
+                                            <label>Sales Person <span class="star">*</span></label>
+                                            <select name="sales_person_list" id="sales_person_select" class="form-control" required>
+                                                <option value="">Select Sales Person</option>
+                                                {% for sales_person in sales_person_list %}
+                                                    <option value="{{ sales_person.full_name }}" 
+                                                            data-contact="{{ sales_person.mobile_no }}"
+                                                            {% if sales_person.full_name  == form_data.sales_person_list or sales_person.full_name == form_data.contactperson %}selected{% endif %}>
+                                                        {{ sales_person.full_name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
 
-<div class="col-md-6">
-    <label>Contact No {{ form_data.contactperson }} <span class="star">*</span></label>
-    <input type="number" id="contact_by_no" name="contact_by_no" required
-           value="{{ form_data.contact_by_no }}" class="form-control">
-</div>
+                                        <div class="col-md-6">
+                                            <label>Contact No {{ form_data.contactperson }} <span class="star">*</span></label>
+                                            <input type="number" id="contact_by_no" name="contact_by_no" required
+                                                   value="{{ form_data.contact_by_no }}" class="form-control">
+                                        </div>
 
 
                                         <div class="col-md-6">
@@ -390,17 +390,23 @@
                                                 <input type="search" id="term-search" class="form-control" placeholder="Search terms..." oninput="filterTerms()">
                                             </div>
                                             
-                                            <div class="overterm">
+                                             <!-- ✅ Term Checkboxes (with search support + checked logic) -->
+                                            <div class="overterm" id="terms-container">
+                                                <!-- Hidden input to store the ordered list -->
+                                                <input type="hidden" name="terms_and_conditions_ordered" id="terms_ordered_input">
                                                 {% for term in terms %}
                                                     <div class="term-item">
-                                                        <label class="mt-1">
+                                                        <label class="mt-1 d-block">
                                                             <input type="checkbox" name="terms_and_conditions[]" value="{{ term.id }}"
-                                                                {% if term.id|stringformat:"s" in form_data.terms_and_conditions %}checked{% endif %}>
+                                                                data-term-id="{{ term.id }}"
+                                                                {% if term in quotation.terms_and_conditions.all %}checked{% endif %}>
                                                             {{ term.description|truncatewords:10 }}
                                                         </label>
                                                     </div>
                                                 {% endfor %}
+                                                
                                             </div>
+
 
                                             <div class="add_terms_conditions mt-2">
                                                 <textarea name="add_terms_conditions" rows="2" placeholder="Enter your Customize Terms &Conditions">{{ form_data.add_terms_conditions }}</textarea>
@@ -435,6 +441,14 @@
 
                                             </div>
                                             
+
+                                            <div class="form-check mt-3 mb-3">
+                                                <input type="checkbox" class="form-check-input" id="enable_gst"
+                                                    name="enable_gst" onchange="toggleGSTFields()">
+                                                <label for="enable_gst" class="form-check-label">Enable GST for this
+                                                    quotation</label>
+                                            </div>
+
                                             <label>Service Type <span class="star">*</span></label>
                                             <select id="servicetype" name="servicetype" class="form-control"
                                                 onchange="fetchProducts(this)">
@@ -444,12 +458,7 @@
                                                 {% endfor %}
                                             </select>
 
-                                            <div class="form-check mt-3 mb-3">
-                                                <input type="checkbox" class="form-check-input" id="enable_gst"
-                                                    name="enable_gst" onchange="toggleGSTFields()">
-                                                <label for="enable_gst" class="form-check-label">Enable GST for this
-                                                    quotation</label>
-                                            </div>
+                                            
 
                                             <label>Select Products</label>
                                             <div class="search mb-2">
@@ -765,7 +774,50 @@
         }
       }
     </script> -->
-<!-- Thank u note textarea -->
+
+<!-- Store terms checkbox order -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const checkboxes = document.querySelectorAll('#terms-container input[type="checkbox"][name="terms_and_conditions[]"]');
+    const hiddenInput = document.getElementById('terms_ordered_input');
+
+    let checkedOrder = [];
+
+    function updateOrder() {
+        const activeIds = checkedOrder.filter(id => {
+            const checkbox = document.querySelector(`#terms-container input[type="checkbox"][value="${id}"]`);
+            return checkbox && checkbox.checked;
+        });
+
+        hiddenInput.value = activeIds.join(',');
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function () {
+            const id = cb.value;
+            if (cb.checked) {
+                if (!checkedOrder.includes(id)) {
+                    checkedOrder.push(id);  // Add newly checked item to order
+                }
+            } else {
+                // Remove unchecked item
+                checkedOrder = checkedOrder.filter(existingId => existingId !== id);
+            }
+
+            updateOrder();
+        });
+
+        // Prepopulate for already checked boxes
+        if (cb.checked && !checkedOrder.includes(cb.value)) {
+            checkedOrder.push(cb.value);
+        }
+    });
+
+    updateOrder(); // init on load
+});
+</script>
+
+    <!-- Thank u note textarea -->
 <script>
     const THANK_NOTES = {{ thank_notes|safe }};
     // console.log("Loaded notes:", THANK_NOTES);
@@ -1351,65 +1403,50 @@ document.addEventListener("DOMContentLoaded", function () {
                             productDiv.className = 'product-item mb-3 p-2 border rounded';
                             productDiv.setAttribute('data-name', product.product_name.toLowerCase());
                             productDiv.innerHTML = `
-                        <div class="d-flex align-items-center mb-2">
-                            <input type="checkbox" name="selected_services" value="${product.product_id}"
-                                data-price="${product.price}" data-name="${product.product_name}"
-                                onchange="updateSelectedServices(this)" class="me-2">
-                            <span>${product.product_name}</span>
-                        </div>
-
-                        <div class="row g-2">
-                            <div class="col-md-3">
-                                <label>Price</label>
-                                <input type="number" name="product_price_{{ product.id }}" class="form-control product-price-input" 
-                                    data-product-id="${product.product_id}" 
-                                    value="${product.price}"
-                                    placeholder="Price" 
-                                    min="0" step="0.01" 
-                                    onchange="updateProductPrice(this, '${product.product_id}')">
-                            </div>
-                   
-                            <div class="col-md-3">
-                                <label>Quantity</label>
-                                <input type="number" class="form-control product-quantity-input" 
-                                    data-product-id="${product.product_id}" 
-                                    value="1"
-                                    placeholder="Quantity" 
-                                    min="1" step="0.01" 
-                                    onchange="updateProductQuantity(this, '${product.product_id}')">
-                            </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <strong>${product.product_name}</strong>
+                                </div>
                             
-                            <div class="col-md-3">
-                                <label>Description</label>
-                                    <textarea class="form-control product-description-input" 
-                                      data-product-id="${product.product_id}" 
-                                      placeholder="Enter description..."
-                                      rows="3"
-                                      onchange="updateProductDescription(this, '${product.product_id}')"></textarea>
-                                                        
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <label>Price</label>
+                                        <input type="number" class="form-control product-price" placeholder="Price" value="${product.price}"  step="0.01">
+                                    </div>
+                                
+                                    <div class="col-md-3">
+                                        <label>Quantity</label>
 
-                            </div>
+                                        <input type="number" class="form-control product-quantity"
+                                               placeholder="Quantity"
+                                               value="1"
+                                               step="0.01" min="0.01">
 
-                            <div class="col-md-3">
-                                <label>Unit</label>
-                                    <input type="text" class="form-control product-unit-input" 
-                                        data-product-id="${product.product_id}" 
-                                        placeholder="Unit"
-                                        onchange="updateProductUnit(this, '${product.product_id}')">
+                                    </div>
+                                
+                                    <div class="col-md-3">
+                                        <label>Description</label>
+                                        <textarea class="form-control product-description" placeholder="Description"></textarea>
+                                    </div>
+                                
+                                    <div class="col-md-3">
+                                        <label>Unit</label>
+                                        <input type="text" class="form-control product-unit" placeholder="Unit">
+                                    </div>
+                                
+                                    <div class="col-md-3 product-gst-group" style="display: ${gstEnabled ? 'block' : 'none'}">
+                                        <label>GST %</label>
+                                        <input type="number" class="form-control product-gst" placeholder="GST %" value="18"  step="0.01">
+                                    </div>
+                                
+                                    <div class="col-md-3 align-self-end">
+                                        <button type="button" class="btn btn-sm btn-primary mt-2" 
+                                        onclick='addProductManually(${JSON.stringify(product)})'>
+                                            + Add
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
 
-                            </div>
-                            
-                            <div class="col-md-3" id="gst_${product.product_id}" style="display: ${gstEnabled ? 'block' : 'none'}">
-                                <label>GST %</label>
-                                <input type="number" class="form-control product-gst-input" 
-                                    data-product-id="${product.product_id}" 
-                                    value="18"
-                                    placeholder="GST %" 
-                                    min="0" max="100" step="0.01"
-                                    onchange="updateProductGST(this, '${product.product_id}')">
-                            </div>
-                        </div>
-                    `;
                             document.getElementById('products-container').appendChild(productDiv);
                         });
                     });
@@ -1418,28 +1455,64 @@ document.addEventListener("DOMContentLoaded", function () {
 
         
 
+        // function updateSelectedServices(checkbox) {
+        //     setTimeout(() => {
+        //         const productId = checkbox.value;
+        //         const productName = checkbox.getAttribute('data-name');
+
+        //         const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
+        //         const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
+        //         const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
+        //         const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
+        //         const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"].product-description-input`);
+
+        //         console.log("Unit Input Element:", unitInput);
+
+        //         const productPrice = priceInput ? parseFloat(priceInput.value) : 0;
+        //         const productQuantity = quantityInput ? parseInt(quantityInput.value) : 1;
+        //         const productGST = gstInput ? parseFloat(gstInput.value) : 0;
+        //         const productUnit = unitInput ? unitInput.value : '';
+        //         const productDesc = descriptionInput ? descriptionInput.value : '';
+
+        //         console.log("Unit Value:", productUnit);
+
+        //         if (checkbox.checked) {
+        //             selectedProducts.push({
+        //                 id: productId,
+        //                 name: productName,
+        //                 price: productPrice,
+        //                 quantity: productQuantity,
+        //                 unit: productUnit,
+        //                 description: productDesc,
+        //                 gst: productGST
+        //             });
+        //         } else {
+        //             selectedProducts = selectedProducts.filter(product => product.id !== productId);
+        //         }
+
+        //         updateSelectedServicesList();
+        //         calculateTotal();
+        //     }, 0);
+        // }
+
         function updateSelectedServices(checkbox) {
             setTimeout(() => {
-                const productId = checkbox.value;
-                const productName = checkbox.getAttribute('data-name');
-
-                const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
-                const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
-                const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
-                const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
-                const descriptionInput = document.querySelector(`input[data-product-id="${productId}"].product-description-input`);
-
-                console.log("Unit Input Element:", unitInput);
-
-                const productPrice = priceInput ? parseFloat(priceInput.value) : 0;
-                const productQuantity = quantityInput ? parseInt(quantityInput.value) : 1;
-                const productGST = gstInput ? parseFloat(gstInput.value) : 0;
-                const productUnit = unitInput ? unitInput.value : '';
-                const productDesc = descriptionInput ? descriptionInput.value : '';
-
-                console.log("Unit Value:", productUnit);
-
                 if (checkbox.checked) {
+                    const productId = checkbox.value;
+                    const productName = checkbox.getAttribute('data-name');
+                
+                    const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
+                    const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
+                    const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
+                    const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
+                    const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"].product-description-input`);
+                
+                    const productPrice = priceInput ? parseFloat(priceInput.value) : 0;
+                    const productQuantity = quantityInput ? parseFloat(quantityInput.value) : 1;
+                    const productGST = gstInput ? parseFloat(gstInput.value) : 0;
+                    const productUnit = unitInput ? unitInput.value : '';
+                    const productDesc = descriptionInput ? descriptionInput.value : '';
+                
                     selectedProducts.push({
                         id: productId,
                         name: productName,
@@ -1447,16 +1520,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         quantity: productQuantity,
                         unit: productUnit,
                         description: productDesc,
-                        gst: productGST
+                        gst: productGST,
+                        uniqueKey: Date.now() + Math.random() // unique key per entry
                     });
-                } else {
-                    selectedProducts = selectedProducts.filter(product => product.id !== productId);
+                
+                    updateSelectedServicesList();
+                    calculateTotal();
                 }
-
-                updateSelectedServicesList();
-                calculateTotal();
             }, 0);
         }
+
 
         function updateProductPrice(input, productId) {
             const newPrice = parseFloat(input.value) || 0;
@@ -1528,6 +1601,59 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById('total_with_gst').value = totalPrice.toFixed(2);
             }
         }
+        function addProductManually(productInfo) {
+            const container = event.target.closest('.row');
+            const price = parseFloat(container.querySelector('.product-price').value) || 0;
+            const quantity = parseFloat(container.querySelector('.product-quantity').value) || 1;
+            const description = container.querySelector('.product-description').value || '';
+            const unit = container.querySelector('.product-unit').value || '';
+            const gstInput = container.querySelector('.product-gst');
+            const gst = gstInput ? parseFloat(gstInput.value) || 0 : 0;
+                
+            selectedProducts.push({
+                id: productInfo.product_id,
+                name: productInfo.product_name,
+                price: price,
+                quantity: quantity,
+                unit: unit,
+                description: description,
+                gst: gst,
+                uniqueKey: Date.now() + Math.random() // So each entry is unique
+            });
+        
+            updateSelectedServicesList();
+            calculateTotal();
+        }
+        
+
+        // function updateSelectedServicesList() {
+        //     const selectedServicesList = document.getElementById('selected_services');
+        //     const selectedServicesNamesInput = document.getElementById('selected_services_ids');
+        //     const productDetailsJsonInput = document.getElementById('product_details_json');
+
+        //     selectedServicesList.innerHTML = '';
+        //     let selectedServiceNames = [];
+
+        //     selectedProducts.forEach(product => {
+        //         const listItem = document.createElement('li');
+        //         listItem.className = 'd-flex justify-content-between';
+        //         listItem.innerHTML = `
+        //     <span>${product.name} (${product.quantity} x ₹${product.price.toFixed(2)})</span>
+        //     <span>₹${(product.price * product.quantity).toFixed(2)}</span>
+        // `;
+        //         selectedServicesList.appendChild(listItem);
+        //         selectedServiceNames.push(product.name);
+        //     });
+
+        //     selectedServicesNamesInput.value = selectedServiceNames.join(',');
+        //     productDetailsJsonInput.value = JSON.stringify(selectedProducts); 
+
+        //     if (selectedProducts.length === 0) {
+        //         const emptyMessage = document.createElement('li');
+        //         emptyMessage.textContent = 'No products selected';
+        //         selectedServicesList.appendChild(emptyMessage);
+        //     }
+        // }
 
         function updateSelectedServicesList() {
             const selectedServicesList = document.getElementById('selected_services');
@@ -1537,20 +1663,23 @@ document.addEventListener("DOMContentLoaded", function () {
             selectedServicesList.innerHTML = '';
             let selectedServiceNames = [];
 
-            selectedProducts.forEach(product => {
+            selectedProducts.forEach((product, index) => {
                 const listItem = document.createElement('li');
-                listItem.className = 'd-flex justify-content-between';
+                listItem.className = 'd-flex justify-content-between align-items-center';
                 listItem.innerHTML = `
-            <span>${product.name} (${product.quantity} x ₹${product.price.toFixed(2)})</span>
-            <span>₹${(product.price * product.quantity).toFixed(2)}</span>
-        `;
+                    <span>${product.name} (${parseFloat(product.quantity).toFixed(2)} x ₹${parseFloat(product.price).toFixed(2)})</span>
+                    <span>
+                        ₹${(product.price * product.quantity).toFixed(2)}
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${index})">×</button>
+                    </span>
+                `;
                 selectedServicesList.appendChild(listItem);
                 selectedServiceNames.push(product.name);
             });
-
+        
             selectedServicesNamesInput.value = selectedServiceNames.join(',');
-            productDetailsJsonInput.value = JSON.stringify(selectedProducts); 
-
+            productDetailsJsonInput.value = JSON.stringify(selectedProducts);
+        
             if (selectedProducts.length === 0) {
                 const emptyMessage = document.createElement('li');
                 emptyMessage.textContent = 'No products selected';
@@ -1558,7 +1687,11 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-
+        function removeSelectedProduct(index) {
+            selectedProducts.splice(index, 1);
+            updateSelectedServicesList();
+            calculateTotal();
+        }
 
 
 

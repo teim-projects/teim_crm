@@ -1040,6 +1040,8 @@ def quotation_management_create(request):
             or_name = request.POST.get('or_name')
             or_contact = request.POST.get('or_contact')
             thank_u_note = request.POST.get('thank_u_note')
+            ordered_term_ids_str = request.POST.get('terms_and_conditions_ordered', '')
+            
             # Handle quotation date
             date_str = request.POST.get('quotation_date')
             if date_str:
@@ -1132,6 +1134,7 @@ def quotation_management_create(request):
                 or_name = or_name,
                 or_contact = or_contact,
                 thank_u_note = thank_u_note,
+                terms_order = ordered_term_ids_str
             )
 
             # Ensure it's safe
@@ -1144,6 +1147,12 @@ def quotation_management_create(request):
                 term_obj, created = QuotationTerm.objects.get_or_create(description=term_text)
                 quotation_terms_to_add.append(term_obj)
 
+            ordered_term_ids = [int(tid) for tid in ordered_term_ids_str.split(',') if tid.isdigit()]
+            print('term', ordered_term_ids)
+            quotation.terms_and_conditions.set(ordered_term_ids)
+    
+            quotation.terms_order = ordered_term_ids
+            quotation.save()
             # Add terms to the quotation's terms_and_conditions field
             quotation.terms_and_conditions.add(*quotation_terms_to_add)
 
@@ -3035,7 +3044,7 @@ def edit_quotation(request, rid):
         existing_products = quotation.product_details_json or []
 
         updated_products = []
-        existing_product_ids = set()
+        existing_product_ids = []
 
         # Get form fields
         customer_full_name = request.POST.get('customer_full_name')
@@ -3056,11 +3065,11 @@ def edit_quotation(request, rid):
         or_contact = request.POST.get('or_contact')
         thank_u_note = request.POST.get('thank_u_note')
 
-        for product in existing_products:
+        for counter , product in enumerate(existing_products):
             product_id = str(product['id'])
             if product_id in delete_ids:
                 continue
-            existing_product_ids.add(product_id)
+            existing_product_ids.append(product_id)
 
             try:
                 price = float(request.POST.get(f'product_price_{product_id}', product.get('price', 0)))
@@ -3072,7 +3081,8 @@ def edit_quotation(request, rid):
                 continue
 
             updated_products.append({
-                'id': product_id,
+                'id': counter,
+                'p_id': product_id,
                 'name': product.get('name'),
                 'price': price,
                 'quantity': quantity,
@@ -5407,7 +5417,7 @@ def reportlab_quotation_pdf(request, id):
             str(idx),
             Paragraph(f"{item['name']}<br/><i>{item.get('description', '').replace('\n', '<br/>')}</i>", small),
             f"{price:,.2f}",
-            f"{quantity:.0f} {item['unit']}",
+            f"{quantity:.2f} {item['unit']}",
             f"{total:,.2f}"
         ])
 
@@ -5502,16 +5512,30 @@ def reportlab_quotation_pdf(request, id):
     # ]
     # Fetch the ordered terms using the order
 
+    # 1. Ordered terms from M2M field
     ordered_terms = []
     terms_by_id = {t.id: t for t in quotation.terms_and_conditions.all()}
-
+    
     for tid in quotation.terms_order or []:
         if tid in terms_by_id:
             ordered_terms.append(terms_by_id[tid])
-
-
-    # Create paragraph list
-    terms_paragraphs = [[Paragraph(f"{idx}. {t}", small)] for idx, t in enumerate(ordered_terms, start=1)]
+    
+    # 2. Custom terms (from string)
+    custom_terms = []
+    if quotation.custom_terms:
+        custom_terms = [t.strip() for t in quotation.custom_terms.strip().split('\n') if t.strip()]
+    
+    # 3. Create Paragraphs (including both types)
+    terms_paragraphs = []
+    
+    idx = 1
+    for t in ordered_terms:
+        terms_paragraphs.append([Paragraph(f"{idx}. {t.description}", small)])
+        idx += 1
+    
+    for ct in custom_terms:
+        terms_paragraphs.append([Paragraph(f"{idx}. {ct}", small)])
+        idx += 1
     
     # Wrap inside table for styling
     terms_table = Table(terms_paragraphs, colWidths=[doc.width])
