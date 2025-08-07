@@ -811,32 +811,7 @@ input:checked + .slider:before {
             </div>
         </div>
     </div>
-    <!-- JavaScript for Multistep Form -->
-
-    <!-- customer form  -->
-    <!-- <script>
-      let currentStep = 1;
-
-      function showStep(step) {
-        document.querySelectorAll('.step').forEach(div => div.classList.add('d-none'));
-        document.getElementById(`step${step}`).classList.remove('d-none');
-      }
-
-      function nextStep() {
-        if (currentStep < 3) {
-          currentStep++;
-          showStep(currentStep);
-        }
-      }
-
-      function prevStep() {
-        if (currentStep > 1) {
-          currentStep--;
-          showStep(currentStep);
-        }
-      }
-    </script> -->
-
+   
 <!-- Store terms checkbox order -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -982,7 +957,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
+<!-- Branch Details -->
     <script>
         function fetchBranchDetails(branchId) {
             if (!branchId) {
@@ -1177,7 +1152,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
-
+<!-- Filter terms -->
 <script>
         function filterTerms() {
             const searchValue = document.getElementById("term-search").value.toLowerCase();
@@ -1373,46 +1348,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         
 
-        // function updateSelectedServices(checkbox) {
-        //     setTimeout(() => {
-        //         const productId = checkbox.value;
-        //         const productName = checkbox.getAttribute('data-name');
-
-        //         const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
-        //         const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
-        //         const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
-        //         const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
-        //         const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"].product-description-input`);
-
-        //         console.log("Unit Input Element:", unitInput);
-
-        //         const productPrice = priceInput ? parseFloat(priceInput.value) : 0;
-        //         const productQuantity = quantityInput ? parseInt(quantityInput.value) : 1;
-        //         const productGST = gstInput ? parseFloat(gstInput.value) : 0;
-        //         const productUnit = unitInput ? unitInput.value : '';
-        //         const productDesc = descriptionInput ? descriptionInput.value : '';
-
-        //         console.log("Unit Value:", productUnit);
-
-        //         if (checkbox.checked) {
-        //             selectedProducts.push({
-        //                 id: productId,
-        //                 name: productName,
-        //                 price: productPrice,
-        //                 quantity: productQuantity,
-        //                 unit: productUnit,
-        //                 description: productDesc,
-        //                 gst: productGST
-        //             });
-        //         } else {
-        //             selectedProducts = selectedProducts.filter(product => product.id !== productId);
-        //         }
-
-        //         updateSelectedServicesList();
-        //         calculateTotal();
-        //     }, 0);
-        // }
-
+       
         function updateSelectedServices(checkbox) {
             setTimeout(() => {
                 if (checkbox.checked) {
@@ -1519,6 +1455,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById('total_with_gst').value = totalPrice.toFixed(2);
             }
         }
+
+        let productCounter = 1; // start from 1
         function addProductManually(productInfo) {
             const container = event.target.closest('.row');
             const price = parseFloat(container.querySelector('.product-price').value) || 0;
@@ -1527,21 +1465,25 @@ document.addEventListener("DOMContentLoaded", function () {
             const unit = container.querySelector('.product-unit').value || '';
             const gstInput = container.querySelector('.product-gst');
             const gst = gstInput ? parseFloat(gstInput.value) || 0 : 0;
-                
+        
             selectedProducts.push({
-                id: productInfo.product_id,
+                id: productCounter,  
+                p_id: productInfo.product_id,
                 name: productInfo.product_name,
                 price: price,
                 quantity: quantity,
                 unit: unit,
                 description: description,
                 gst: gst,
-                uniqueKey: Date.now() + Math.random() // So each entry is unique
+                uniqueKey: Date.now() + Math.random()
             });
+        
+            productCounter++; // Increment after adding
         
             updateSelectedServicesList();
             calculateTotal();
         }
+
         
 
         // function updateSelectedServicesList() {

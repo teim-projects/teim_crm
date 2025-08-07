@@ -3064,7 +3064,7 @@ def edit_quotation(request, rid):
         or_contact = request.POST.get('or_contact')
         thank_u_note = request.POST.get('thank_u_note')
 
-        for counter , product in enumerate(existing_products):
+        for counter , product in enumerate(existing_products, start=1):
             product_id = str(product['id'])
             if product_id in delete_ids:
                 continue
