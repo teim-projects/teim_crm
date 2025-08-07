@@ -976,7 +976,8 @@ def quotation_management_create(request):
     branches = Branch.objects.all()
     products = Product.objects.all()
     sales_person_list = SalesPerson.objects.all()
-    thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
+    thank_notes_qs = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
+    thank_notes = [note for note in thank_notes_qs if note]  
     if request.method == 'POST':
         custom_terms = request.POST.get('add_terms_conditions') or None
         customer_id = request.POST.get('customer_id')
@@ -1198,7 +1199,7 @@ def quotation_management_create(request):
         'branches': Branch.objects.all(),
         'form': form,
         'form_data': form_data,
-        'thank_notes': list(thank_notes), 
+        'thank_notes': json.dumps(thank_notes), 
 })
     
 
@@ -2757,11 +2758,9 @@ def edit_customer(request , rid):
     else:
         ufullname=request.POST['ufullname']
         uprimaryemail=request.POST['uprimaryemail']
-        usecondaryemail=request.POST['usecondaryemail']
+        usecondaryemail=request.POST['usecondaryemail'] or ""
         uprimarycontact=request.POST['uprimarycontact']
-        usecondarycontact=request.POST['usecondarycontact']
-        if not usecondarycontact:
-            usecondarycontact = None
+        usecondarycontact=request.POST['usecondarycontact'] or None
         ucontactperson=request.POST['ucontactperson']
         udesignation=request.POST['udesignation']
         ushifttopartyaddress=request.POST['ushifttopartyaddress']
@@ -3163,6 +3162,22 @@ def edit_quotation(request, rid):
 
     else:
         terms = QuotationTerm.objects.all()
+        # terms = list(QuotationTerm.objects.all())
+        # ordered_terms = []
+
+        # if quotation.terms_order:
+        #     ordered_terms = [term for tid in quotation.terms_order 
+        #                      for term in terms if term.id == tid]
+
+        # # Append any unselected terms that were not in the order
+        # remaining_terms = [term for term in terms if term.id not in quotation.terms_order]
+        # all_terms = ordered_terms + remaining_terms
+        terms_order = quotation.terms_order or []  # fallback to empty list if None
+
+        ordered_terms = [term for tid in terms_order for term in terms if term.id == tid]
+        remaining_terms = [term for term in terms if term.id not in terms_order]
+        all_terms = ordered_terms + remaining_terms
+
         branches = Branch.objects.all()
         branch = Branch.objects.get(id = quotation.branch_id)
         
@@ -3180,7 +3195,7 @@ def edit_quotation(request, rid):
 
         return render(request, 'edit_quotation.html', {
             'quotation': quotation,
-            'all_terms': terms,
+            'all_terms': all_terms,
             'branch':branch,
             'branches': branches,
             'product_details': json.dumps(product_details),

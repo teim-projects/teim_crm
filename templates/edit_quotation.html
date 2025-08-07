@@ -528,13 +528,18 @@
                                             </select>
 
                                             <div class="form-check mt-3 mb-3">
-                                                <input type="checkbox" class="form-check-input" id="enable_gst"
-                                                       name="enable_gst" onchange="toggleGSTFields()"
-                                                       checked>
+                                                <input type="checkbox"
+                                                       class="form-check-input"
+                                                       id="enable_gst"
+                                                       name="enable_gst"
+                                                       onchange="toggleGSTFields()"
+                                                       {% if quotation.gst_status == 'GST' %}checked{% endif %}>
+
                                                 <label for="enable_gst" class="form-check-label">
                                                     Enable GST for this quotation
                                                 </label>
                                             </div>
+
 
 
                                             <label>Select Products</label>
@@ -605,6 +610,7 @@
                                     </div>
                                 </div>
                                
+
 
                                 <!-- GST form End  -->
 
@@ -1128,317 +1134,9 @@ function showCombinedGrandTotal() {
 
 
 {% comment %} Product {% endcomment %}
-   <!-- <script>
-
-        let selectedProducts = [];
-        let totalPrice = 0;
-        let gstEnabled = true;
-
-        function toggleGSTFields() {
-            gstEnabled = document.getElementById('enable_gst').checked;
-            const gstFields = document.querySelectorAll('[id^="gst_"]');
-            gstFields.forEach(field => {
-                field.style.display = gstEnabled ? 'block' : 'none';
-            });
-
-            const gstInputs = document.querySelectorAll('.product-gst-input');
-            gstInputs.forEach(input => {
-                input.style.display = gstEnabled ? 'block' : 'none';
-            });
-
-            calculateTotal();
-        }
-        
-        function filterProducts() {
-            const searchValue = document.getElementById('product-search').value.toLowerCase();
-            const productItems = document.querySelectorAll('#products-container .product-item');
-                
-            productItems.forEach(item => {
-                const name = item.getAttribute('data-name') || '';
-                if (name.includes(searchValue)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-        
-        let productCounter = 0;
-        function fetchProducts(selectElement) {
-            document.getElementById('products-container').innerHTML = '';
-            const selectedCategories = Array.from(selectElement.selectedOptions).map(option => option.value);
-
-            if (selectedCategories.length > 0) {
-                const categoriesQuery = selectedCategories.join(',');
-                fetch(`/get_products?categories=${categoriesQuery}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.products.forEach(product => {
-                            const rowId = `row_${productCounter++}`;
-                            const productDiv = document.createElement('div');
-                            productDiv.className = 'product-item mb-3 p-2 border rounded';
-                            productDiv.setAttribute('data-name', product.product_name.toLowerCase());
-                            productDiv.innerHTML = `
-                        <div class="d-flex align-items-center mb-2">
-                            <input type="checkbox" name="selected_services" value="${product.product_id}"
-                                data-price="${product.price}"
-                                data-row-id="${rowId}" data-name="${product.product_name}"
-                                onchange="updateSelectedServices(this)" class="me-2">
-                            <span>${product.product_name}</span>
-                        </div>
-
-                        <div class="row g-2">
-                            <div class="col-md-3">
-                                <label>Price</label>
-                                <input type="number" name="product_price_{{ product.id }}" class="form-control product-price-input" 
-                                    data-product-id="${product.product_id}" 
-                                    data-row-id="${rowId}"
-                                    value="${product.price}"
-                                    placeholder="Price" 
-                                    min="0" step="0.01" 
-                                    onchange="updateProductPrice(this, '${product.product_id}')">
-                            </div>
-                   
-                            <div class="col-md-3">
-                                <label>Quantity</label>
-                                <input type="number" class="form-control product-quantity-input" 
-                                    data-product-id="${product.product_id}" 
-                                    data-row-id="${rowId}"
-                                    value="1"
-                                    placeholder="Quantity" 
-                                    min="1" step="0.01" 
-                                    onchange="updateProductQuantity(this, '${product.product_id}')">
-                            </div>
-                            
-                            <div class="col-md-3">
-                                <label>Description</label>
-                                    <textarea class="form-control product-description-input" 
-                                      data-product-id="${product.product_id}"
-                                      data-row-id="${rowId}" 
-                                      placeholder="Enter description..."
-                                      rows="3"
-                                      onchange="updateProductDescription(this, '${product.product_id}')"></textarea>
-
-                            </div>
-
-                            <div class="col-md-3">
-                                <label>Unit</label>
-                                    <input type="text" class="form-control product-unit-input" 
-                                        data-product-id="${product.product_id}" 
-                                        data-row-id="${rowId}"
-                                        placeholder="Unit"
-                                        onchange="updateProductUnit(this, '${product.product_id}')">
-
-                            </div>
-                            
-                            <div class="col-md-3" id="gst_${product.product_id}" style="display: ${gstEnabled ? 'block' : 'none'}">
-                                <label>GST %</label>
-                                <input type="number" class="form-control product-gst-input" 
-                                    data-product-id="${product.product_id}" 
-                                    data-row-id="${rowId}"
-                                    value="18"
-                                    placeholder="GST %" 
-                                    min="0" max="100" step="0.01"
-                                    onchange="updateProductGST(this, '${product.product_id}')">
-                            </div>
-                        </div>
-                    `;
-                            document.getElementById('products-container').appendChild(productDiv);
-                        });
-                    });
-            }
-        }
 
 
-        // let productCounter = 0;
-        function updateSelectedServices(checkbox) {
-            setTimeout(() => {
-                const productId = checkbox.value;
-                const productName = checkbox.getAttribute('data-name');
-
-                const priceInput = document.querySelector(`input[data-product-id="${productId}"].product-price-input`);
-                const quantityInput = document.querySelector(`input[data-product-id="${productId}"].product-quantity-input`);
-                const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
-                const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
-                const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"].product-description-input`);
-
-                console.log("Unit Input Element:", unitInput);
-
-                const productPrice = priceInput ? parseFloat(priceInput.value) : 0;
-                const productQuantity = quantityInput ? parseInt(quantityInput.value) : 1;
-                const productGST = gstInput ? parseFloat(gstInput.value) : 0;
-                const productUnit = unitInput ? unitInput.value : '';
-                const productDesc = descriptionInput ? descriptionInput.value : '';
-
-                console.log("Unit Value:", productUnit);
-
-                if (checkbox.checked) {
-                    const lineId = `row_${productCounter++}`;
-                    selectedProducts.push({
-                        id: productId,
-                        row_id: lineId,
-                        name: productName,
-                        price: productPrice,
-                        quantity: productQuantity,
-                        unit: productUnit,
-                        description: productDesc,
-                        gst: productGST
-                    });
-                } else {
-                    selectedProducts = selectedProducts.filter(product => product.id !== productId);
-                }
-
-                updateSelectedServicesList();
-                calculateTotal();
-            }, 0);
-        }
-
-        function updateProductPrice(input, productId) {
-            const rowId = input.getAttribute('data-row-id');
-            const newPrice = parseFloat(input.value) || 0;
-            const product = selectedProducts.find(p => p.row_id === rowId);
-            if (product) {
-                product.price = newPrice;
-            }
-            updateSelectedServicesList();
-            calculateTotal();
-        }
-
-        function updateProductQuantity(input, productId) {
-            const rowId = input.getAttribute('data-row-id');
-            const newQuantity = parseFloat(input.value) || 1;
-            const product = selectedProducts.find(p => p.row_id === rowId);
-            if (product) {
-                product.quantity = newQuantity;
-            }
-            updateSelectedServicesList();
-            calculateTotal();
-        }
-
-        function updateProductUnit(input, productId) {
-            const rowId = input.getAttribute('data-row-id');
-            const newUnit = input.value || '';
-            const product = selectedProducts.find(p => p.row_id === rowId);
-            if (product) {
-                product.unit = newUnit;
-            }
-            updateSelectedServicesList();
-        }
-
-
-        function updateProductDescription(input, productId) {
-            const rowId = input.getAttribute('data-row-id');
-            const newDesc = input.value || '';
-            const product = selectedProducts.find(p => p.row_id === rowId);
-            if (product) {
-                product.description = newDesc;
-            }
-            updateSelectedServicesList();
-        }
-
-        function updateProductGST(input, productId) {
-            const newGST = parseFloat(input.value) || 0;
-            const product = selectedProducts.find(p => p.row_id === rowId);
-            if (product) {
-                product.gst = newGST;
-            }
-            calculateTotal();
-        }
-
-        function calculateTotal() {
-            totalPrice = selectedProducts.reduce((total, product) => total + (product.price * product.quantity), 0);
-            document.getElementById('total_price').value = totalPrice.toFixed(2);
-
-            if (gstEnabled) {
-                const gstType = document.getElementById('gst_type').value;
-                let totalGST = 0;
-
-                selectedProducts.forEach(product => {
-                    const productGSTAmount = (product.price * product.quantity * product.gst) / 100;
-                    totalGST += productGSTAmount;
-                });
-
-                const totalWithGST = totalPrice + totalGST;
-
-                document.getElementById('total_gst').value = totalGST.toFixed(2);
-                document.getElementById('total_with_gst').value = totalWithGST.toFixed(2);
-            } else {
-                document.getElementById('total_gst').value = '0.00';
-                document.getElementById('total_with_gst').value = totalPrice.toFixed(2);
-            }
-
-            
-            calculateQuotationSummary();   // new one from table rows
-            showCombinedGrandTotal();      // this will sum them both
-
-        }
-
-        function updateSelectedServicesList() {
-            const selectedServicesList = document.getElementById('selected_services');
-            const selectedServicesNamesInput = document.getElementById('selected_services_ids');
-            const productDetailsJsonInput = document.getElementById('product_details_json');
-
-            selectedServicesList.innerHTML = '';
-            let selectedServiceNames = [];
-
-            selectedProducts.forEach(product => {
-                const listItem = document.createElement('li');
-                listItem.className = 'd-flex justify-content-between';
-                listItem.innerHTML = `
-            <span>${product.name} (${product.quantity} x ₹${product.price.toFixed(2)})</span>
-            <span>₹${(product.price * product.quantity).toFixed(2)}</span>
-        `;
-                selectedServicesList.appendChild(listItem);
-                selectedServiceNames.push(product.name);
-            });
-
-            selectedServicesNamesInput.value = selectedServiceNames.join(',');
-            productDetailsJsonInput.value = JSON.stringify(selectedProducts); // ✅ Save full product list in hidden field
-
-            if (selectedProducts.length === 0) {
-                const emptyMessage = document.createElement('li');
-                emptyMessage.textContent = 'No products selected';
-                selectedServicesList.appendChild(emptyMessage);
-            }
-        }
-
-
-
-        function clearGSTFields() {
-            document.getElementById('gst_price').value = '';
-            document.getElementById('total_with_gst').value = '';
-        }
-
-
-        document.querySelector('form').addEventListener('submit', function () {
-            document.getElementById('product_details_json').value = JSON.stringify(selectedProducts);
-        });
-
-
-
-
-        function updateCustomerDetails() {
-            const customerSelect = document.getElementById("customer_id");
-            const selectedOption = customerSelect.options[customerSelect.selectedIndex];
-
-            const contact = selectedOption.getAttribute("data-contact");
-            const email = selectedOption.getAttribute("data-email");
-
-            document.getElementById("customer_contact").value = contact || '';
-            document.getElementById("customer_email").value = email || '';
-        }
-
-
-        // with this form will submit even after not entering the data
-        // document.querySelector('button[type="submit"]').addEventListener('click', function (e) {
-        //     document.getElementById('quotation-management-form').submit();
-        // });
-
-      
-
-    </script> -->
-
-    <script>
+<script>
     let selectedProducts = [];
     let totalPrice = 0;
     let gstEnabled = false;
@@ -1759,6 +1457,13 @@ function showCombinedGrandTotal() {
         document.getElementById("customer_email").value = email || '';
     }
 </script>   
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        calculateQuotationSummary();
+    });
+</script>
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">
