@@ -5413,13 +5413,16 @@ def reportlab_quotation_pdf(request, id):
         except (ValueError, KeyError, TypeError):
             price = quantity = total = 0.0
 
+        description = item.get('description', '').replace('\n', '<br/>')
+
         product_data.append([
             str(idx),
-            Paragraph(f"{item['name']}<br/><i>{item.get('description', '').replace('\n', '<br/>')}</i>", small),
+            Paragraph(f"{item['name']}<br/><i>{description}</i>", small),
             f"{price:,.2f}",
             f"{quantity:.2f} {item['unit']}",
             f"{total:,.2f}"
         ])
+
 
     # Add empty rows if needed to maintain uniform height
    
