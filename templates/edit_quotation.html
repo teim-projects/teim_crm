@@ -418,8 +418,10 @@
                                             </div>
 
                                             <div class="add_terms_conditions mt-2">
-                                                <textarea name="add_terms_conditions" rows="4">{{ quotation.custom_terms }}</textarea>
+                                                <textarea name="add_terms_conditions" rows="4">{{ quotation.custom_terms|default_if_none:"" }}
+                                                </textarea>
                                             </div>
+
 
                                         </div>
 
@@ -1496,37 +1498,38 @@ function showCombinedGrandTotal() {
                             </div>
                         
                             <div class="row g-2">
-                                <div class="col-md-3">
-                                    <label>Price</label>
-                                    <input type="number" class="form-control product-price" 
-                                        placeholder="Price" value="${product.price}" step="0.01">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label>Price</label>
+                                        <input type="number" class="form-control product-price" 
+                                            placeholder="Price" value="${product.price}" step="0.01">
+                                    </div>
+                                
+                                    <div class="col-md-4">
+                                        <label>Quantity</label>
+                                        <input type="number" class="form-control product-quantity"
+                                               placeholder="Quantity"
+                                               value="1"
+                                               step="0.01" min="0.01">
+                                    </div>
+                                
+                                    <div class="col-md-4">
+                                        <label>Unit</label>
+                                        <input type="text" class="form-control product-unit" placeholder="Unit">
+                                    </div>
                                 </div>
-                            
-                                <div class="col-md-3">
-                                    <label>Quantity</label>
-                                    <input type="number" class="form-control product-quantity"
-                                           placeholder="Quantity"
-                                           value="1"
-                                           step="0.01" min="0.01">
-                                </div>
-                            
-                                <div class="col-md-3">
-                                    <label>Description</label>
-                                    <textarea class="form-control product-description" placeholder="Description" rows="2"></textarea>
-                                </div>
-                            
-                                <div class="col-md-3">
-                                    <label>Unit</label>
-                                    <input type="text" class="form-control product-unit" placeholder="Unit">
-                                </div>
-                            
+                                
                                 <div class="col-md-3 product-gst-group" style="display: ${gstEnabled ? 'block' : 'none'}">
                                     <label>GST %</label>
                                     <input type="number" class="form-control product-gst" 
                                         placeholder="GST %" value="18" step="0.01">
                                 </div>
+                                <div class="col-md-7">
+                                    <label>Description</label>
+                                    <textarea class="form-control product-description" placeholder="Description" rows="2"></textarea>
+                                </div>
                             
-                                <div class="col-md-3 align-self-end">
+                                <div class="col-md-2 align-self-end">
                                     <button type="button" class="btn btn-sm btn-primary mt-2" 
                                     onclick='addProductManually(${JSON.stringify(product)}, this)'>
                                         + Add

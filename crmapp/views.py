@@ -1007,7 +1007,7 @@ def quotation_management_create(request):
                 state = request.POST.get('state')
                 gps_location = request.POST.get('gps_location')
                 pincode = request.POST.get('pincode', '000000')
-                custom_terms = request.POST.get('add_terms_conditions')or None
+                custom_terms = request.POST.get('add_terms_conditions')
                 customerid = generate_customerid(customer_full_name)
 
                 # You can add validation here if necessary

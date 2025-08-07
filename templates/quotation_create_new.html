@@ -45,9 +45,10 @@
         .switch {
             position: relative;
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 5px;
             width: 55px;
-            height: 26px;
+            height: 15px;
+            margin-left: 25%;
         }
 
 
@@ -260,6 +261,64 @@
             border-radius: 8px;
             background-color: #f8f9fa;
         }
+
+
+        /* From Uiverse.io by arghyaBiswasDev */ 
+/* The switch - the box around the slider */
+.switch {
+  font-size: 17px;
+  position: relative;
+  display: inline-block;
+  width: 3.5em;
+  height: 2em;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #fff;
+  border: 1px solid #adb5bd;
+  transition: .4s;
+  border-radius: 30px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 1.4em;
+  width: 1.4em;
+  border-radius: 20px;
+  left: 0.27em;
+  bottom: 0.25em;
+  background-color: #adb5bd;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #007bff;
+  border: 1px solid #007bff;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #007bff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(1.4em);
+  background-color: #fff;
+}
     </style>
 </head>
 
@@ -429,8 +488,17 @@
                                 <!-- STEP 2 -->
                                 <div class="form-step">
                                     <div class="row">
-                                        <div class="col-12">
-                                            <div class="mb-3 text-end">
+                                        <div class="col-6">
+                                            <div class="form-check mt-1 mb-3">
+                                                <label class="ms-2">Enable GST for this quotation</label>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="enable_gst" name="enable_gst" onchange="toggleGSTFields()">
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="mb-3 text-end mt-4">
                                                 <button type="button" class="btn btn-success"
                                                     onclick="saveQuotationFormToSession(() => { 
                                                         var myModal = new bootstrap.Modal(document.getElementById('addProductModal'));
@@ -440,15 +508,9 @@
                                                 </button>
 
                                             </div>
-                                            
-
-                                            <div class="form-check mt-3 mb-3">
-                                                <input type="checkbox" class="form-check-input" id="enable_gst"
-                                                    name="enable_gst" onchange="toggleGSTFields()">
-                                                <label for="enable_gst" class="form-check-label">Enable GST for this
-                                                    quotation</label>
-                                            </div>
-
+                                        </div>
+                                        
+                                        <div class="col-12">
                                             <label>Service Type <span class="star">*</span></label>
                                             <select id="servicetype" name="servicetype" class="form-control"
                                                 onchange="fetchProducts(this)">
@@ -1408,42 +1470,44 @@ document.addEventListener("DOMContentLoaded", function () {
                                 </div>
                             
                                 <div class="row g-2">
-                                    <div class="col-md-3">
-                                        <label>Price</label>
-                                        <input type="number" class="form-control product-price" placeholder="Price" value="${product.price}"  step="0.01">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label>Price</label>
+                                            <input type="number" class="form-control product-price" placeholder="Price" value="${product.price}"  step="0.01">
+                                        </div>
+                                            
+                                        <div class="col-md-4">
+                                            <label>Quantity</label>
+                                            
+                                            <input type="number" class="form-control product-quantity"
+                                            placeholder="Quantity"
+                                            value="1"
+                                            step="0.01" min="0.01">
+                                                
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Unit</label>
+                                            <input type="text" class="form-control product-unit" placeholder="Unit">
+                                        </div>
                                     </div>
-                                
-                                    <div class="col-md-3">
-                                        <label>Quantity</label>
+                                    
+                                        <div class="col-md-3 product-gst-group" style="display: ${gstEnabled ? 'block' : 'none'}">
+                                            <label>GST %</label>
+                                            <input type="number" class="form-control product-gst" placeholder="GST %" value="18"  step="0.01">
+                                        </div>                              
+                                        <div class="col-md-7">
+                                            <label>Description</label>
+                                            <textarea class="form-control product-description" placeholder="Description" rows=2></textarea>
+                                        </div>
+                                        
 
-                                        <input type="number" class="form-control product-quantity"
-                                               placeholder="Quantity"
-                                               value="1"
-                                               step="0.01" min="0.01">
-
-                                    </div>
-                                
-                                    <div class="col-md-3">
-                                        <label>Description</label>
-                                        <textarea class="form-control product-description" placeholder="Description"></textarea>
-                                    </div>
-                                
-                                    <div class="col-md-3">
-                                        <label>Unit</label>
-                                        <input type="text" class="form-control product-unit" placeholder="Unit">
-                                    </div>
-                                
-                                    <div class="col-md-3 product-gst-group" style="display: ${gstEnabled ? 'block' : 'none'}">
-                                        <label>GST %</label>
-                                        <input type="number" class="form-control product-gst" placeholder="GST %" value="18"  step="0.01">
-                                    </div>
-                                
-                                    <div class="col-md-3 align-self-end">
-                                        <button type="button" class="btn btn-sm btn-primary mt-2" 
-                                        onclick='addProductManually(${JSON.stringify(product)})'>
-                                            + Add
-                                        </button>
-                                    </div>
+                                        <div class="col-md-2 align-self-center mt-5">
+                                            <button type="button" class="btn btn-sm btn-primary mt-2" 
+                                            onclick='addProductManually(${JSON.stringify(product)})'>
+                                                + Add
+                                            </button>
+                                        </div>
+                                    
                                 </div>
                             `;
 
