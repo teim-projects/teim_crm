@@ -308,6 +308,36 @@
         input:checked + .slider:before {
           transform: translateX(26px);
         }
+
+                .adjustment{
+            padding: 2px !important;
+            padding-left: 6px;
+        }
+
+            #products-container {
+        max-height: 300px;
+      /* Horizontal scroll */
+        overflow-y: auto;  /* Vertical scroll */
+        white-space: nowrap; /* Prevent line breaks for horizontal content */
+    }
+
+          /* For WebKit browsers like Chrome, Edge, Safari */
+    #products-container::-webkit-scrollbar {
+        width: 0px; /* Change this value for width */
+    }
+
+    #products-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    #products-container::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 10px;
+    }
+
+    #products-container::-webkit-scrollbar-thumb:hover {
+        background-color: #555;
+    }
     </style>
 </head>
 
@@ -367,7 +397,8 @@
                         </div>          -->
                         
 
-                        <div class="container">
+                        <div class="container" style="overflow: auto
+                        ;">
                             <table class="table table-bordered table-md align-middle small">
                                 <thead class="table-light text-center">
                                     <tr>
@@ -433,7 +464,7 @@
 
                         <!-- Product Selection -->
                         <label>Select Products</label>
-                        <div id="products-container">
+                        <div id="products-container" style="overflow: auto; max-height: 300px;">
                             <!-- Dynamically loaded via AJAX -->
                         </div>
 
@@ -915,7 +946,7 @@ function deleteProduct(productId) {
                                 <!-- Other Fields in Another Row -->
                                 <div class="row g-2 align-items-center">
                                     <div class="col-md-3">
-                                        <input type="number" class="form-control form-control-sm product-price-input"
+                                        <input type="number" class="form-control form-control-sm product-price-input adjustment"
                                             data-product-id="${productId}"
                                             value="${existing ? existing.price : product.price}"
                                             placeholder="Price"
@@ -924,7 +955,7 @@ function deleteProduct(productId) {
                                             onchange="updateProductPrice(this, '${productId}')">
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="number" class="form-control form-control-sm product-quantity-input"
+                                        <input type="number" class="form-control form-control-sm product-quantity-input adjustment"
                                             data-product-id="${productId}"
                                             name="quantity_${productId}"
                                             value="${existing ? existing.quantity : product.quantity}"
@@ -933,7 +964,7 @@ function deleteProduct(productId) {
                                             onchange="updateProductQuantity(this, '${productId}')">
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="number" class="form-control form-control-sm product-gst-input"
+                                        <input type="number" class="form-control form-control-sm product-gst-input adjustment"
                                             name="gst_${productId}"
                                             data-product-id="${productId}"
                                             value="${existing ? existing.gst : product.gst}"

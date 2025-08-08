@@ -308,6 +308,11 @@
         input:checked + .slider:before {
           transform: translateX(26px);
         }
+
+        .adjustment{
+            padding: 2px !important;
+            padding-left: 6px;
+        }
         
     </style>
 </head>
@@ -379,7 +384,7 @@
                         <!-- Product Selection -->
                         <div class="row">
                             <label>Select Products</label>
-                            <div id="products-container" >
+                            <div id="products-container" style="max-height: 300px; overflow: auto;" >
                                 <!-- Dynamically loaded via AJAX -->
                             </div>
                         </div>
@@ -731,7 +736,7 @@
                                 <!-- Other Fields in Another Row -->
                                 <div class="row g-2 align-items-center">
                                     <div class="col-md-3">
-                                        <input type="number" class="form-control form-control-sm product-price-input"
+                                        <input type="number" class="form-control form-control-sm product-price-input adjustment"
                                             data-product-id="${productId}"
                                             value="${existing ? existing.price : product.price}"
                                             placeholder="Price"
@@ -740,7 +745,7 @@
                                             onchange="updateProductPrice(this, '${productId}')">
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="number" class="form-control form-control-sm product-quantity-input"
+                                        <input type="number" class="form-control form-control-sm product-quantity-input adjustment"
                                             data-product-id="${productId}"
                                             name="quantity_${productId}"
                                             value="${existing ? existing.quantity : product.quantity}"
@@ -749,7 +754,7 @@
                                             onchange="updateProductQuantity(this, '${productId}')">
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="number" class="form-control form-control-sm product-gst-input"
+                                        <input type="number" class="form-control form-control-sm product-gst-input adjustment"
                                             name="gst_${productId}"
                                             data-product-id="${productId}"
                                             value="${existing ? existing.gst : product.gst}"
@@ -757,14 +762,16 @@
                                             step="0.01"
                                             onchange="updateProductGst(this, '${productId}')">
                                     </div>
-                                    <div class="col-md-5">
-                                        <textarea class="form-control form-control-sm description-input"
-                                            data-product-id="${productId}"
-                                            name="description_${productId}"
-                                            oninput="updateProductDescription(this, '${productId}')"
-                                            placeholder="Description"
-                                            style="resize: none;">${existing ? existing.description : ''}</textarea>
-                                    </div>
+<div class="col-md-5">
+    <textarea class="form-control form-control-sm description-input  "
+        data-product-id="${productId}"
+        name="description_${productId}"
+        rows="2"
+        oninput="updateProductDescription(this, '${productId}')"
+        placeholder="Description"
+        style="resize: none; overflow: hidden;">${existing ? existing.description : ''}</textarea>
+</div>
+
                                 </div>
                             </div>
                             `;
