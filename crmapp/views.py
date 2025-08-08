@@ -978,6 +978,7 @@ def quotation_management_create(request):
     sales_person_list = SalesPerson.objects.all()
     thank_notes_qs = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     thank_notes = [note for note in thank_notes_qs if note]  
+    
     if request.method == 'POST':
         custom_terms = request.POST.get('add_terms_conditions') or None
         customer_id = request.POST.get('customer_id')
@@ -985,7 +986,7 @@ def quotation_management_create(request):
         data = request.POST.copy()
         data['terms_and_conditions'] = request.POST.getlist('terms_and_conditions')
         request.session['quotation_form_data'] = data
-        print("Session stored terms:", request.session['quotation_form_data'].get('terms_and_conditions'))
+        print("Session stored terms:", request.session['quotation_form_data'].get('product_json_data'))
         request.session.modified = True
         if customer_id:
             try:
@@ -1189,7 +1190,15 @@ def quotation_management_create(request):
             })
     form_data = request.session.get('quotation_form_data', {})
     print('form_data',form_data)
-   
+    print('product', form_data.get('product_details_json'))
+    product_json = form_data.get('product_details_json', '[]')
+    form_data['terms_and_conditions_ordered_list'] = form_data.get('terms_and_conditions_ordered', '').split(',')
+    order_list = form_data.get('terms_and_conditions_ordered_list', [])
+    terms = sorted(
+        terms,
+        key=lambda t: order_list.index(str(t.id)) if str(t.id) in order_list else 999
+    )
+
     form = AddProductForm()
     return render(request, 'quotation_create_new.html', {
         'products': products,
@@ -1200,6 +1209,7 @@ def quotation_management_create(request):
         'form': form,
         'form_data': form_data,
         'thank_notes': json.dumps(thank_notes), 
+        "product_details_json": product_json  
 })
     
 
@@ -5433,15 +5443,15 @@ def reportlab_quotation_pdf(request, id):
         product_data.append([
             str(idx),
             Paragraph(f"{item['name']}<br/><i>{description}</i>", small),
-            f"{price:,.2f}",
-            f"{quantity:.2f} {item['unit']}",
+            Paragraph(f"{price:,.2f}",small),
+            Paragraph(f"{quantity:.2f}<br/>{item['unit']}", small),
             f"{total:,.2f}"
         ])
 
 
     # Add empty rows if needed to maintain uniform height
    
-    col_widths = [15 * mm, 80 * mm, 25 * mm, 20 * mm, 30 * mm]
+    col_widths = [15 * mm, 70 * mm, 25 * mm, 30 * mm, 30 * mm]
     total_width = sum(col_widths)
 
     product_table = Table(product_data, colWidths=col_widths)

@@ -458,7 +458,9 @@ input:checked + .slider:before {
                                                         <label class="mt-1 d-block">
                                                             <input type="checkbox" name="terms_and_conditions[]" value="{{ term.id }}"
                                                                 data-term-id="{{ term.id }}"
-                                                                {% if term in quotation.terms_and_conditions.all %}checked{% endif %}>
+                                                                {% if term in quotation.terms_and_conditions.all %}checked{% endif %}
+                                                               {% if form_data.terms_and_conditions_ordered_list and term.id|stringformat:"s" in form_data.terms_and_conditions_ordered_list %}checked{% endif %}
+>
                                                             {{ term.description|truncatewords:10 }}
                                                         </label>
                                                     </div>
@@ -1226,8 +1228,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
-
     <script>
         function updateCustomerDetails() {
             const customerSelect = document.getElementById("customer_id");
@@ -1246,6 +1246,16 @@ document.addEventListener("DOMContentLoaded", function () {
     <script>
 
         let selectedProducts = [];
+        try {
+            const rawData = '{{ product_details_json|escapejs }}';
+            if (rawData && rawData.trim() !== '') {
+                selectedProducts = JSON.parse(rawData);
+            }
+        } catch (e) {
+            console.error('Invalid product_details_json:', e);
+            selectedProducts = [];
+        }
+
         let totalPrice = 0;
         let gstEnabled = false;
 
@@ -1375,7 +1385,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         unit: productUnit,
                         description: productDesc,
                         gst: productGST,
-                        uniqueKey: Date.now() + Math.random() // unique key per entry
+                        uniqueKey: Date.now() + Math.random()
                     });
                 
                     updateSelectedServicesList();
@@ -1485,36 +1495,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         
-
-        // function updateSelectedServicesList() {
-        //     const selectedServicesList = document.getElementById('selected_services');
-        //     const selectedServicesNamesInput = document.getElementById('selected_services_ids');
-        //     const productDetailsJsonInput = document.getElementById('product_details_json');
-
-        //     selectedServicesList.innerHTML = '';
-        //     let selectedServiceNames = [];
-
-        //     selectedProducts.forEach(product => {
-        //         const listItem = document.createElement('li');
-        //         listItem.className = 'd-flex justify-content-between';
-        //         listItem.innerHTML = `
-        //     <span>${product.name} (${product.quantity} x ₹${product.price.toFixed(2)})</span>
-        //     <span>₹${(product.price * product.quantity).toFixed(2)}</span>
-        // `;
-        //         selectedServicesList.appendChild(listItem);
-        //         selectedServiceNames.push(product.name);
-        //     });
-
-        //     selectedServicesNamesInput.value = selectedServiceNames.join(',');
-        //     productDetailsJsonInput.value = JSON.stringify(selectedProducts); 
-
-        //     if (selectedProducts.length === 0) {
-        //         const emptyMessage = document.createElement('li');
-        //         emptyMessage.textContent = 'No products selected';
-        //         selectedServicesList.appendChild(emptyMessage);
-        //     }
-        // }
-
         function updateSelectedServicesList() {
             const selectedServicesList = document.getElementById('selected_services');
             const selectedServicesNamesInput = document.getElementById('selected_services_ids');
@@ -1528,6 +1508,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 listItem.className = 'd-flex justify-content-between align-items-center';
                 listItem.innerHTML = `
                     <span>${product.name} (${parseFloat(product.quantity).toFixed(2)} x ₹${parseFloat(product.price).toFixed(2)})</span>
+                    
                     <span>
                         ₹${(product.price * product.quantity).toFixed(2)}
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${index})">×</button>
@@ -1578,6 +1559,9 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("customer_contact").value = contact || '';
             document.getElementById("customer_email").value = email || '';
         }
+
+        updateSelectedServicesList();
+        calculateTotal();
 
 
         // with this form will submit even after not entering the data
