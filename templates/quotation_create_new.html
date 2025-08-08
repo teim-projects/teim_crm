@@ -494,7 +494,8 @@ input:checked + .slider:before {
                                             <div class="form-check mt-1 mb-3">
                                                 <label class="ms-2">Enable GST for this quotation</label>
                                                 <label class="switch">
-                                                    <input type="checkbox" id="enable_gst" name="enable_gst" onchange="toggleGSTFields()">
+                                                    <input type="checkbox" id="enable_gst" name="enable_gst" onchange="toggleGSTFields()"
+                                                     {% if form_data.enable_gst == 'on' %}checked{% endif %}>
                                                     <span class="slider"></span>
                                                 </label>
                                             </div>
