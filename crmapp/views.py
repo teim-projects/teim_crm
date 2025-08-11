@@ -5484,6 +5484,7 @@ def reportlab_quotation_pdf(request, id):
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D9D9D9')),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('ALIGN', (0, 0), (0, -1), 'CENTER'),
         ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
     ]))
