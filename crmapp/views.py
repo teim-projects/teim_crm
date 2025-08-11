@@ -5327,13 +5327,36 @@ def draw_footer_and_logo(canvas, doc, logo_path, footer_path,branch):
     try:
         # Logo (left side)
         logo = ImageReader(logo_path)
-        canvas.drawImage(logo, 20 * mm, A4[1] - 40 * mm, width=25 * mm, height=25 * mm, mask='auto')
+        canvas.drawImage(logo, 20 * mm, A4[1] - 40 * mm, width=30 * mm, height=30 * mm, mask='auto')
     except Exception as e:
         print("Logo load failed:", e)
 
     # Company info (right side, top-aligned)
+
+    # Measure branch name width (10pt font)
     canvas.setFont("Helvetica-Bold", 10)
-    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 20 * mm, branch.branch_name or "" )
+    branch_text = branch.branch_name or ""
+    branch_width = canvas.stringWidth(branch_text, "Helvetica-Bold", 10)
+
+    # Measure SFS width (15pt font)
+    sfs_text = "SFS"
+    sfs_width = canvas.stringWidth(sfs_text, "Helvetica-Bold", 15)
+
+    # Calculate right-aligned base X coordinate
+    right_margin = A4[0] - 20 * mm
+
+    # Center SFS horizontally over branch name
+    sfs_x = (A4[0] - 30 * mm) - (branch_width / 2) + (sfs_width / 2)
+
+
+    # Draw SFS (shifted slightly up for vertical centering)
+    canvas.setFont("Helvetica-Bold", 15)
+    canvas.drawString(sfs_x, A4[1] - 15 * mm, sfs_text)
+
+    # Draw branch name below
+    canvas.setFont("Helvetica-Bold", 10)
+    canvas.drawRightString(right_margin, A4[1] - 20 * mm, branch_text)
+
 
     canvas.setFont("Helvetica", 8.5)
     canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 26 * mm, branch.full_address or "")
@@ -5349,7 +5372,8 @@ def draw_footer_and_logo(canvas, doc, logo_path, footer_path,branch):
     # --- FOOTER ---
     try:
         footer = ImageReader(footer_path)
-        canvas.drawImage(footer, 0, 0, width=A4[0], height=28 * mm)
+        bottom_margin = 3 * mm 
+        canvas.drawImage(footer, 0, bottom_margin, width=A4[0], height=28 * mm)
     except Exception as e:
         print("Footer load failed:", e)
 
@@ -5534,11 +5558,6 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Spacer(1, 10))
     elements.append(Paragraph("<b>Terms & Conditions</b>", bold))
 
-    # Combine all terms
-    # all_terms = [t.description for t in quotation.terms_and_conditions.all()] + [
-    #     t.strip() for t in (quotation.custom_terms or '').split(',') if t.strip()
-    # ]
-    # Fetch the ordered terms using the order
 
     # 1. Ordered terms from M2M field
     ordered_terms = []
