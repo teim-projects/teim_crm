@@ -6,7 +6,7 @@ from io import BytesIO
 from decimal import Decimal
 import base64
 from time import time
-
+import traceback
 import matplotlib.pyplot as plt
 import openpyxl
 
@@ -844,7 +844,7 @@ def service_management_create(request):
     products = Product.objects.all()
     sales_persons = SalesPerson.objects.all()
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
-    # print(request.POST)
+
     if request.method == 'POST':
         try:
             customer_contact = request.POST['customer_contact']
@@ -856,17 +856,9 @@ def service_management_create(request):
             lead_date = datetime.strptime(lead_date, '%Y-%m-%d').date() if lead_date else None
             service_date = datetime.strptime(service_date, '%Y-%m-%d').date() if service_date else None
 
-            
-            total_price = request.POST.get('total_price', '').strip()
-            total_with_gst = request.POST.get('total_with_gst', '').strip()
-
-            if not total_price or not total_price.replace('.', '', 1).isdigit():
-                raise ValueError("Invalid total price. Please provide a valid number.")
-            if total_with_gst and not total_with_gst.replace('.', '', 1).isdigit():
-                raise ValueError("Invalid total price with GST. Please provide a valid number.")
-
-            total_price = float(total_price)
-            total_with_gst = float(total_with_gst) if total_with_gst else None
+            total_price = float(request.POST.get('total_price', 0) or 0)
+            total_with_gst = float(request.POST.get('total_with_gst', 0) or 0)
+            total_gst = float(request.POST.get('gst_price', 0) or 0)
 
             apply_gst = request.POST.get('apply_gst') == 'on'
             gst_status = 'GST' if apply_gst else 'NON-GST'
@@ -875,12 +867,13 @@ def service_management_create(request):
 
             delivery_time = request.POST.get('delivery_time', timezone.now().time())
 
-            # Create and save the service instance
-            instance = service_management(
+            # Create service instance
+            instance = service_management.objects.create(
                 customer=customer,
                 address=address,
                 total_price=total_price,
                 total_price_with_gst=total_with_gst,
+                total_charges = total_gst,
                 contract_type=request.POST.get('contract_type', 'NOT SELECTED'),
                 contract_status=request.POST.get('contract_status', 'NOT SELECTED'),
                 property_type=request.POST.get('property_type'),
@@ -898,32 +891,33 @@ def service_management_create(request):
                 service_date=service_date,
                 gst_status=gst_status
             )
-            instance.save()
-            
-            selected_service_ids = request.POST.getlist('selected_services')
-            print("Selected Service IDs:", selected_service_ids)
-            # Save each selected product in ServiceProduct model
-            for product_id in selected_service_ids:
-                price = request.POST.get(f'price_{product_id}', '').strip()
-                quantity = request.POST.get(f'quantity_{product_id}').strip()
-                gst_percentage = request.POST.get(f'gst_{product_id}').strip()
-                description = request.POST.get(f'description_{product_id}', '').strip()
-                print(f"Product ID: {product_id}, Price: {price}, Quantity: {quantity}, GST: {gst_percentage}")
 
-                if not price or not quantity or not gst_percentage:
-                    print(f"Skipping product ID {product_id} due to missing data.")
-                    continue
-            
+            # Get products from JSON string
+            selected_products_json = request.POST.get('selected_products_json', '[]')
+            selected_products = json.loads(selected_products_json)
+
+            print("Selected Products:", selected_products)
+
+            # Loop through product entries (allowing duplicates)
+            for item in selected_products:
+                product_id = item.get('p_id')
+                price = item.get('price')
+                quantity = item.get('quantity')
+                gst_percentage = item.get('gst', 0)
+                description = item.get('description', '')
+
+                if not product_id or price is None or quantity is None:
+                    continue  # Skip invalid entries
+
                 product = Product.objects.get(product_id=product_id)
-            
-                
+
                 ServiceProduct.objects.create(
                     service=instance,
                     product=product,
                     price=Decimal(price),
                     quantity=Decimal(quantity),
                     gst_percentage=Decimal(gst_percentage) or Decimal('0.00'),
-                    description = description,
+                    description=description,
                 )
 
             return redirect('/display_service_management')
@@ -934,7 +928,8 @@ def service_management_create(request):
                 'category_choices': category_choices,
                 'products': products,
                 'customers': customers,
-                'sales_persons': sales_persons
+                'sales_persons': sales_persons,
+                'frequency_choices': frequency_choices,
             })
 
     return render(request, 'service_management.html', {
@@ -2837,17 +2832,22 @@ def edit_service_records(request, rid):
                 total_with_gst += line_total_with_gst
 
             # --- Add new selected products ---
-            selected_service_ids = request.POST.getlist('selected_services')
-            existing_product_ids = selected_products.values_list('product__product_id', flat=True)
+            selected_products_json = (request.POST.get('selected_products_json') or '[]').strip()
+            try:
+                selected_products = json.loads(selected_products_json)
+            except json.JSONDecodeError:
+                selected_products = []
+                print("⚠️ Warning: Invalid JSON in selected_products_json, defaulting to empty list.")
 
-            for product_id in selected_service_ids:
-                if product_id in existing_product_ids:
-                    continue  # Skip if already exists
+            print("Selected Products:", selected_products)
 
-                price = request.POST.get(f'price_{product_id}', '').strip()
-                quantity = request.POST.get(f'quantity_{product_id}', '').strip()
-                gst_percentage = request.POST.get(f'gst_{product_id}', '').strip()
-                description = request.POST.get(f'description_{product_id}', '').strip()
+
+            for item in selected_products:
+                product_id = item.get('p_id')
+                price = item.get('price')
+                quantity = item.get('quantity')
+                gst_percentage = item.get('gst', 0)
+                description = item.get('description', '')
 
                 if not price or not quantity or not gst_percentage:
                     continue
@@ -2900,10 +2900,12 @@ def edit_service_records(request, rid):
             service.service_date = request.POST.get('service_date')
             service.save()
 
-            messages.success(request, "Service record updated successfully.")
+            # messages.success(request, "Service record updated successfully.")
             return redirect('display_service_management')
 
         except Exception as e:
+            print("Error in edit_service_records:", str(e))
+            traceback.print_exc()
             messages.error(request, f"Error updating service record: {str(e)}")
 
     context = {
