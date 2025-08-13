@@ -4857,52 +4857,6 @@ def delete_bank_account(request, account_id):
     return redirect('list_bank_accounts')
 
 
-# def create_tax_invoice(request):
-#     if request.method == "POST":
-#         quotation_no = request.POST.get("quotation_no")
-#         hsn_sac = request.POST.get("hsn_sac")
-
-#         reference = request.POST.get("referance_no_and_date")
-#         bank_id = request.POST.get("bank_id")  
-
-#         # Fetch quotation
-#         quotation = quotation_management.objects.filter(quotation_number=quotation_no).first()
-
-#         if not quotation:
-#             messages.error(request, "Quotation number not found.")
-#             return render(request, "create_tax_invoice.html")
-
-#         # Get related customer and bank
-#         customer = getattr(quotation, 'customer', None)
-#         if not customer:
-#             messages.error(request, "Customer not found for this quotation.")
-#             return render(request, "create_tax_invoice.html")
-
-#         bank = get_object_or_404(BankAccounts, id=bank_id)
-
-#         # Check for existing invoice
-#         if TaxInvoice.objects.filter(quotation=quotation).exists():
-#             messages.warning(request, "Invoice already created for this quotation.")
-#             return render(request, "create_tax_invoice.html")
-
-#         # Create invoice – tax_invoice_no will be auto-generated
-#         invoice = TaxInvoice.objects.create(
-#             quotation=quotation,
-#             customer=customer,
-#             bank=bank,
-#             hsn_sac=hsn_sac,
-#             referance_no_and_date=reference
-#         )
-
-#         messages.success(request, f"Tax Invoice Created: {invoice.tax_invoice_no}")
-#         return redirect("create_tax_invoice")  # or redirect to invoice detail
-
-#     context = {
-#     'customers': customer_details.objects.all(),
-#     'banks': BankAccounts.objects.all()
-#     }
-#     return render(request, "create_tax_invoice.html", context=context)
-
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
@@ -4914,23 +4868,55 @@ from datetime import datetime
 
 def create_tax_invoice(request):
     use_quotation = request.GET.get("use_quotation") == "true"
-    if request.method == "POST":
+    if  request.method == "POST":
         try:
-            # 1. Get quotation and related data
-            quotation_no = request.POST.get("quotation_no")
-            quotation = get_object_or_404(quotation_management, quotation_no=quotation_no)
-            customer = get_object_or_404(customer_details, primarycontact=quotation.contact_no)
+            if use_quotation:
+                # 1. Get quotation and related data
+                quotation_no = request.POST.get("quotation_no")
+                quotation = get_object_or_404(quotation_management, quotation_no=quotation_no)
+                customer = get_object_or_404(customer_details, primarycontact=quotation.contact_no)
+                branch = get_object_or_404(Branch, id = quotation.branch)
+                # 2. Get product data
+                product_data = request.POST.get("product_data", "[]")
+                items = json.loads(product_data)
+                shifttopartystate=request.POST.get('shifttopartystate'),
+                shifttopartystatecode=request.POST.get('shifttopartystatecode'),
+                soldtopartystate=request.POST.get('soldtopartystate'),
+                soldtopartystatecode=request.POST.get('soldtopartystatecode'),
+            else:
+                quotation = None
+                branch = get_object_or_404(Branch, id = request.POST.get('branch_id'))
+                customer = get_object_or_404(customer_details, primarycontact=request.POST.get('contact_no'))
+                # Get the raw value from POST (e.g., "Maharashtra-27")
+                shifttopartystate_raw = request.POST.get('shifttopartystate', '')
+
+                # Extract state name and code
+                if '-' in shifttopartystate_raw:
+                    shifttopartystate, shifttopartystatecode = shifttopartystate_raw.split('-', 1)
+                else:
+                    shifttopartystate = shifttopartystate_raw
+                    shifttopartystatecode = ''
+
+                # Same logic for sold_to
+                soldtopartystate_raw = request.POST.get('soldtopartystate', '')
+                if '-' in soldtopartystate_raw:
+                    soldtopartystate, soldtopartystatecode = soldtopartystate_raw.split('-', 1)
+                else:
+                    soldtopartystate = soldtopartystate_raw
+                    soldtopartystatecode = ''
+
+                selected_products_json = request.POST.get('selected_products_json','[]')
+                # print(selected_products_json)
+                print("Selected Products JSON:", selected_products_json)
+                items = json.loads(selected_products_json)
             bank_id = request.POST.get("bank_id")
             bank = get_object_or_404(BankAccounts, id=bank_id)
-
-            # 2. Get product data
-            product_data = request.POST.get("product_data", "[]")
-            items = json.loads(product_data)
             # 4. Create TaxInvoice with grand_total
             invoice = TaxInvoice.objects.create(
                 quotation=quotation,
                 customer=customer,
                 bank=bank,
+                branch = branch,
                 referance_no_and_date=request.POST.get("referance_no_and_date"),
                 other_referance=request.POST.get("other_references"),
                 delivery_note=request.POST.get("delivery_note"),
@@ -4943,11 +4929,11 @@ def create_tax_invoice(request):
                 destination=request.POST.get("destination"),
                 service_titel=request.POST.get('service_titel'),
                 shift_gstin_uin=request.POST.get('shift_gstin_uin'),
-                shifttopartystate=request.POST.get('shifttopartystate'),
-                shifttopartystatecode=request.POST.get('shifttopartystatecode'),
+                shifttopartystate=shifttopartystate,
+                shifttopartystatecode=shifttopartystatecode,
                 sold_gstin_uin=request.POST.get('sold_gstin_uin'),
-                soldtopartystate=request.POST.get('soldtopartystate'),
-                soldtopartystatecode=request.POST.get('soldtopartystatecode'),
+                soldtopartystate=soldtopartystate,
+                soldtopartystatecode=soldtopartystatecode,
                 # grand_total=grand_total  # ✅ Use the calculated value here
             )
 
@@ -4987,10 +4973,14 @@ def create_tax_invoice(request):
 
     banks = BankAccounts.objects.all()
     branches = Branch.objects.all()
+    category_choices = Product.CATEGORY_CHOICES
+    product = Product.objects.all()
     selected_state = request.POST.get('soldtopartystate', '')
     context = {'banks': banks , 'use_quotation':use_quotation,
                'branches':branches , 'state_map':state_map,
-               'selected_state':selected_state} 
+               'selected_state':selected_state,
+               'category_choices':category_choices,
+               'product':product} 
     return render(request, "create_tax_invoice.html", context)
 
 def parse_date_or_none(date_str):
@@ -5332,32 +5322,32 @@ def draw_footer_and_logo(canvas, doc, logo_path, footer_path,branch):
         canvas.drawImage(logo, 20 * mm, A4[1] - 40 * mm, width=30 * mm, height=30 * mm, mask='auto')
     except Exception as e:
         print("Logo load failed:", e)
+    # Fonts
+    branch_font = ("Helvetica-Bold", 10)
+    sfs_font = ("Helvetica-Bold", 15)
 
-    # Company info (right side, top-aligned)
-
-    # Measure branch name width (10pt font)
-    canvas.setFont("Helvetica-Bold", 10)
+    # Texts
     branch_text = branch.branch_name or ""
-    branch_width = canvas.stringWidth(branch_text, "Helvetica-Bold", 10)
+    sfs_text = "SFS PEST CONTROL"
 
-    # Measure SFS width (15pt font)
-    sfs_text = "SFS"
-    sfs_width = canvas.stringWidth(sfs_text, "Helvetica-Bold", 15)
+    # Widths
+    branch_width = canvas.stringWidth(branch_text, *branch_font)
+    sfs_width = canvas.stringWidth(sfs_text, *sfs_font)
 
-    # Calculate right-aligned base X coordinate
+    # Right margin
     right_margin = A4[0] - 20 * mm
 
-    # Center SFS horizontally over branch name
-    sfs_x = (A4[0] - 30 * mm) - (branch_width / 2) + (sfs_width / 2)
-
-
-    # Draw SFS (shifted slightly up for vertical centering)
-    canvas.setFont("Helvetica-Bold", 15)
-    canvas.drawString(sfs_x, A4[1] - 15 * mm, sfs_text)
-
-    # Draw branch name below
-    canvas.setFont("Helvetica-Bold", 10)
+    # Draw branch name (right aligned)
+    canvas.setFont(*branch_font)
     canvas.drawRightString(right_margin, A4[1] - 20 * mm, branch_text)
+
+    # Calculate X so SFS is centered above branch name
+    branch_center_x = right_margin - (branch_width / 2)
+    sfs_x = branch_center_x - (sfs_width / 2)
+
+    # Draw SFS
+    canvas.setFont(*sfs_font)
+    canvas.drawString(sfs_x, A4[1] - 15 * mm, sfs_text)
 
 
     canvas.setFont("Helvetica", 8.5)
@@ -5620,7 +5610,7 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Spacer(1, 4))
     elements.append(Paragraph("<b>Seva Facility Services Pvt Ltd</b>", small))
     elements.append(Spacer(1, 4))
-    elements.append(Paragraph(f"<b>Contact By:</b> {quotation.contact_by} - {quotation.contact_by_no}", small))
+    elements.append(Paragraph(f"<b>SFS Representative:</b> {quotation.contact_by} - {quotation.contact_by_no}", small))
 
 
     doc.build(elements)

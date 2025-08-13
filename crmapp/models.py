@@ -709,8 +709,9 @@ class BankAccounts(models.Model):
 
 #  Tax Invoice model NEW
 class TaxInvoice(models.Model):
-    quotation = models.ForeignKey(quotation_management, on_delete=models.CASCADE, related_name="tax_invoice")
+    quotation = models.ForeignKey(quotation_management, on_delete=models.CASCADE, related_name="tax_invoice", null=True, blank=True)
     customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, related_name="customer_details")
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="branch")
     bank = models.ForeignKey(BankAccounts, on_delete=models.CASCADE, related_name="bank_details")
     # hsn_sac = models.CharField(max_length=50, blank=True, null=True)
     tax_invoice_no = models.CharField(max_length=30, blank=True, null=True, unique=True) 

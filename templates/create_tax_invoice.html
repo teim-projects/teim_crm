@@ -7,7 +7,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SFS - Tax Invoice</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+   /* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+    cursor: pointer;
+}
 
+.toggle-switch input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-switch-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ddd;
+    border-radius: 20px;
+    box-shadow: inset 0 0 0 2px #ccc;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.toggle-switch-handle {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out;
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-switch-background {
+    background-color: #05c46b;
+    box-shadow: inset 0 0 0 2px #04b360;
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-switch-background .toggle-switch-handle {
+    transform: translateX(24px);
+}
+    </style>
 </head>
 
 <body>
@@ -230,14 +276,14 @@
                 <div class="row mt-4 mb-4">
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
-                                        <button type="submit" class="btn btn-primary w-100">Submit</button>
+                        <button type="submit" class="btn btn-primary w-100">Submit</button>
 
                     </div>
                     <div class="col-md-4"></div>
                 </div>
-    </div>
+            </div>
                     <div class="col-md-2"></div>
-                        </div>
+                    <div class="col-md-2"></div>
 
             </form>
             
@@ -367,46 +413,72 @@
                 </div>
 
                 <!-- Product Info (Read-only) -->
-                <h5 class=" text-center mt-3 text-body-secondary">Product Details</h5>
-                <label for="Service-titel">Service Titel <span class="star">*</span></label>
-                <input type="text" id="service_titel" name="service_titel" class="form-control mb-2" placeholder="Enter Service Titel ">
-                <div class="t" style="overflow: auto;">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>HSN/SAC</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Unit</th>
-                            <th>GST (%)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-table-body">
-                        <!-- Products will be populated here by JavaScript -->
-                    </tbody>
-                </table>
+                <div class="product-section">
+                    <h5 class=" text-center mt-3 text-body-secondary">Product Details</h5>
+                    <div class="service-title">
+                        <label for="Service-titel">Service Titel <span class="star">*</span></label>
+                        <input type="text" id="service_titel" name="service_titel" class="form-control mb-2" placeholder="Enter Service Titel ">
+                    </div>
+                    <div class="row align-items-center">
+                        <!-- GST toggle section -->
+                        <div class="col-md-6 gst-field d-flex align-items-center gap-3">
+                            <label class="gst-label mb-0 ms-5">Enable GST</label>
+                            <label class="toggle-switch mb-0 ">
+                                <input type="checkbox" id="gstToggle">
+                                <div class="toggle-switch-background">
+                                    <div class="toggle-switch-handle"></div>
+                                </div>
+                            </label>
+                        </div>
+                    
+                        <!-- New Product button -->
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-success me-5">
+                                + New Product
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Service Type & Product List -->
+                    <div class="row">
+                        <div class="col-12">
+                            <label class="font-weight-medium">Service Type</label>
+                            <select name="service_type" id="service_type" class="form-control" onchange="fetchProducts(this)">
+                                <option value="">Select Service Type</option>
+                                {% for value, label in category_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="font-weight-medium">Available Products</label>
+                            <div id="products-container" class="mt-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Products -->
+                    <label class="mt-4 ">Selected Products</label>
+                    <ul id="selected_services" class="list-group mb-3"></ul>
+
+                    <!-- Totals -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label>Total Price</label>
+                            <input type="text" id="total_price" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label>GST Amount</label>
+                            <input type="text" id="gst_price" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Total with GST</label>
+                            <input type="text" id="total_with_gst" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Input -->
+                    <input type="hidden" name="selected_products_json" id="selected_products_json">
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th id="gstHeader1"></th>
-                                <th id="gstHeader2"></th>
-                                <th>Quantity</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td id="gstValues1" class="gstValues1"></td>
-                                <td id="gstValues2" class="gsrValues2"></td>
-                                <td id="totalQuantity" class="totalQuantity"></td>
-                                <td id="grand_total" class="grand_total" name="grand_total"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+
 
                 <!-- Delevary Info  -->
                 <div class="">
@@ -486,9 +558,177 @@
             </form> 
         </div>
     {% endif %}
+    
+
+    <!-- Product section -->
+<script>
+    let gstEnabled = false; // initially off
+
+    document.getElementById('gstToggle').addEventListener('change', function () {
+        gstEnabled = this.checked;
+        console.log(gstEnabled ? "GST Enabled" : "GST Disabled");
+
+        // Show/hide GST input fields
+        document.querySelectorAll('.product-gst-group').forEach(el => {
+            el.style.display = gstEnabled ? 'block' : 'none';
+        });
+
+        updateSelectedServicesList();
+        updateTotalPrice();
+    });
 
 
-       <script>
+    let selectedProducts = [];
+    let counter = 1;
+
+    function fetchProducts(selectElement) {
+        document.getElementById('products-container').innerHTML = '';
+        const category = selectElement.value;
+
+        if (!category) return;
+
+        fetch(`/get_products?categories=${category}`)
+            .then(res => res.json())
+            .then(data => {
+                data.products.forEach(product => {
+                    const productDiv = document.createElement('div');
+                    productDiv.className = 'product-item mb-3 p-2 border rounded';
+                    productDiv.setAttribute('data-product-id', product.product_id);
+
+                    productDiv.innerHTML = `
+                        <div class="mb-1 text-dark"><strong>${product.product_name}</strong></div>
+                        <div class="row g-2 mb-0">
+                            <div class="col-md-2">
+                                <label>Price</label>
+                                <input type="number" class="form-control product-price" value="0" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Quantity</label>
+                                <input type="number" class="form-control product-quantity" value="1" step="0.01" min="0.01">
+                            </div>
+                            <div class="col-md-4">
+                                <label>HSN / SAC </label>
+                                <input type="text" class="form-control product-hsn-sac" placeholder="HSN / SAC">
+                            </div>
+                           
+                            <div class="col-md-2 product-gst-group" style="display:${gstEnabled ? 'block' : 'none'}">
+                                <label>GST %</label>
+                                <input type="number" class="form-control product-gst" value="18" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Unit</label>
+                                <input type="text" class="form-control product-unit" placeholder="Unit">
+                            </div>
+                            <div class="col-md-8 mt-0">
+                                <label>Description</label>
+                                <textarea class="form-control product-description" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-2 align-self-center mt-4">
+                                <button type="button" class="btn btn-sm btn-primary" onclick='addProductManually(${JSON.stringify(product)})'>
+                                    + Add
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('products-container').appendChild(productDiv);
+                });
+            });
+    }
+
+    function addProductManually(product) {
+        const container = document.querySelector(`div.product-item[data-product-id="${product.product_id}"]`);
+        if (!container) return;
+
+        const price = parseFloat(container.querySelector('input.product-price').value) || 0;
+        const quantity = parseFloat(container.querySelector('input.product-quantity').value) || 0;
+        const unit = container.querySelector('input.product-unit').value || '';
+        const gst = parseFloat(container.querySelector('input.product-gst')?.value) || 0;
+        const description = container.querySelector('textarea.product-description').value || '';
+        const hsn = container.querySelector('input.product-hsn-sac').value || '';
+
+        if (quantity <= 0) {
+            alert('Quantity must be greater than zero.');
+            return;
+        }
+
+        selectedProducts.push({
+            id: counter++,
+            p_id: product.product_id,
+            name: product.product_name,
+            price,
+            quantity,
+            unit,
+            gst,
+            description,
+            hsn,
+        });
+
+        updateSelectedServicesList();
+        updateTotalPrice();
+        updateHiddenInput();
+    }
+
+    function updateSelectedServicesList() {
+        const list = document.getElementById('selected_services');
+        list.innerHTML = '';
+
+        if (selectedProducts.length === 0) {
+            list.innerHTML = '<li class="list-group-item">No products selected</li>';
+            return;
+        }
+
+        selectedProducts.forEach((p, index) => {
+            const gstText = gstEnabled ? ` + GST(${p.gst}%)` : '';
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `
+                <span>${p.name} : ₹${p.price.toFixed(2)} x ${p.quantity}${gstText}</span>
+                <span>
+                    ₹${(p.price * p.quantity).toFixed(2)}
+                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${index})">×</button>
+                </span>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    function removeSelectedProduct(index) {
+        selectedProducts.splice(index, 1);
+        updateSelectedServicesList();
+        updateTotalPrice();
+        updateHiddenInput();
+    }
+
+   function updateTotalPrice() {
+        let total = 0, gstTotal = 0;
+        selectedProducts.forEach(p => {
+            total += p.price * p.quantity;
+            if (gstEnabled) {
+                gstTotal += p.price * p.quantity * (p.gst / 100);
+            }
+        });
+
+        document.getElementById('total_price').value = total.toFixed(2);
+        document.getElementById('gst_price').value = gstEnabled ? gstTotal.toFixed(2) : '0.00';
+        document.getElementById('total_with_gst').value = (total + (gstEnabled ? gstTotal : 0)).toFixed(2);
+    }
+
+
+    function updateHiddenInput() {
+        document.getElementById('selected_products_json').value = JSON.stringify(selectedProducts);
+    }
+    // function updateHiddenInput() {
+    //     const hiddenInput = document.getElementById('selected_products_json');
+    //     hiddenInput.value = JSON.stringify(selectedProducts);
+
+    //     // Debug log
+    //     console.log("selected_products_json:", hiddenInput.value);
+    // }
+
+</script>
+
+<!-- Customer details -->
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
             const customerIdField = document.getElementById("customer_id");
             const contactInput = document.getElementById("primary_contact");
@@ -558,7 +798,7 @@
         });
     </script>
 
-
+<!-- Branch details -->
     <script>
         function fetchBranchDetails(branchId) {
             if (!branchId) {
@@ -592,6 +832,7 @@
                 });
         }
     </script>
+
     <!-- ✅ Do NOT remove this sidebar toggle logic -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -751,6 +992,8 @@
         }
 
     </script>
+
+
     <script>
         document.querySelector('form').addEventListener('submit', function (e) {
             const products = [];
