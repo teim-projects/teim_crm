@@ -1263,6 +1263,7 @@ def get_quotation_details_by_no(request):
         quotation = quotation_management.objects.select_related('branch').get(quotation_no=quotation_no)
         branch = quotation.branch
         product = quotation.product_details_json
+        aplly_gst = quotation.apply_gst
         cgst = quotation.cgst
         sgst = quotation.sgst
         igst = quotation.igst
@@ -1299,6 +1300,7 @@ def get_quotation_details_by_no(request):
             
             # Product data
             'product':product,
+            'apply_gst':aplly_gst,
             'cgst':cgst,
             'sgst':sgst,
             'igst':igst,
@@ -4875,14 +4877,22 @@ def create_tax_invoice(request):
                 quotation_no = request.POST.get("quotation_no")
                 quotation = get_object_or_404(quotation_management, quotation_no=quotation_no)
                 customer = get_object_or_404(customer_details, primarycontact=quotation.contact_no)
-                branch = get_object_or_404(Branch, id = quotation.branch)
+                branch = get_object_or_404(Branch, id = quotation.branch_id)
+                gst_enabled = quotation.apply_gst
+                if quotation.igst > 0:
+                    gst_type = "IGST"
+                else:
+                    gst_type = "CGST + SGST"
+
                 # 2. Get product data
                 product_data = request.POST.get("product_data", "[]")
                 items = json.loads(product_data)
-                shifttopartystate=request.POST.get('shifttopartystate'),
-                shifttopartystatecode=request.POST.get('shifttopartystatecode'),
-                soldtopartystate=request.POST.get('soldtopartystate'),
-                soldtopartystatecode=request.POST.get('soldtopartystatecode'),
+                shifttopartystate=request.POST.get('shifttopartystate')
+                shifttopartystatecode=request.POST.get('shifttopartystatecode')
+                print("shift", shifttopartystate, shifttopartystatecode)
+                soldtopartystate=request.POST.get('soldtopartystate')
+                soldtopartystatecode=request.POST.get('soldtopartystatecode')
+                print("sold", soldtopartystate, soldtopartystatecode)
             else:
                 quotation = None
                 branch = get_object_or_404(Branch, id = request.POST.get('branch_id'))
@@ -4904,6 +4914,8 @@ def create_tax_invoice(request):
                 else:
                     soldtopartystate = soldtopartystate_raw
                     soldtopartystatecode = ''
+                gst_enabled = request.POST.get("gst_enabled")
+                gst_type = request.POST.get("gst_type") 
 
                 selected_products_json = request.POST.get('selected_products_json','[]')
                 # print(selected_products_json)
@@ -4934,7 +4946,12 @@ def create_tax_invoice(request):
                 sold_gstin_uin=request.POST.get('sold_gstin_uin'),
                 soldtopartystate=soldtopartystate,
                 soldtopartystatecode=soldtopartystatecode,
-                # grand_total=grand_total  # ✅ Use the calculated value here
+                remarks = request.POST.get('remarks'),
+                declaration = request.POST.get('declaration'),
+                ship_to_address = request.POST.get('ship_to_address'),
+                bill_to_address = request.POST.get('bill_to_address'),
+
+                gst_type=gst_type if gst_enabled else "No GST"
             )
 
             # 5. Save products       
@@ -4942,11 +4959,14 @@ def create_tax_invoice(request):
             for item in items:
                 price = float(item.get('price', 0))
                 quantity = float(item.get('quantity', 0))
-                print("q",quantity)
                 gst_percent = float(item.get('gst', 0))
-                gst_amount = round((price * quantity * gst_percent) / 100,2)
-                print("gst",gst_amount)
+       
                 total = price * quantity 
+                if gst_enabled:  
+                    gst_amount = round((total * gst_percent) / 100, 2)
+                else:
+                    gst_amount = 0
+
                 grand_total += total + gst_amount
 
                 TaxInvoiceItem.objects.create(

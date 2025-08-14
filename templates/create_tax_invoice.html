@@ -138,9 +138,9 @@
                     <!-- Sold To Party -->
                     <div class="col-md-6 mb-3">
                         <label for="sold_address">Sold To Party Address <span class="star">*</span></label>
-                        <textarea id="sold_address" class="form-control" rows="2" readonly></textarea>
+                        <textarea id="sold_address" class="form-control" rows="2" name="bill_to_address"></textarea>
 
-                        <label>GSTIN/UIN <span class="star">*</span></label>
+                        <label>GSTIN/UIN </label>
                         <input type="text" id="gstin-uin" name='sold_gstin_uin' class="form-control">
 
                         <label for="sold_state_select">Sold To Party State <span class="star">*</span></label>
@@ -156,9 +156,9 @@
                     <!-- Shift To Party -->
                     <div class="col-md-6 mb-3">
                         <label for="ship_address">Ship To Party Address <span class="star">*</span></label>
-                        <textarea id="ship_address" class="form-control" rows="2" readonly></textarea>
+                        <textarea id="ship_address" class="form-control" rows="2" name="ship_to_address"></textarea>
 
-                        <label>GSTIN/UIN <span class="star">*</span></label>
+                        <label>GSTIN/UIN </label>
                         <input type="text" id="gstin-uin" name='shift_gstin_uin' class="form-control">
 
                         <label for="shift_state_select">Shift To Party State <span class="star">*</span></label>
@@ -178,16 +178,9 @@
                 <input type="text" id="service_titel" name="service_titel" class="form-control mb-2" placeholder="Enter Service Titel ">
                 <div class="t" style="overflow: auto;">
                 <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>HSN/SAC</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Unit</th>
-                            <th>GST (%)</th>
-                        </tr>
-                    </thead>
+                    
+                    <thead id="product-table-head"></thead>
+
                     <tbody id="product-table-body">
                         <!-- Products will be populated here by JavaScript -->
                     </tbody>
@@ -219,7 +212,7 @@
                     <h5 class=" text-center text-body-secondary">Delivery Details</h5>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label> Buyer’s Order No <span class="star">*</span></label>
+                            <label> Buyer’s Order No</label>
                             <input type="text" id="Buyer_order_no" name="buyer_order_no" class="form-control">
                         </div>
                         <div class="col-md-6 mb-3">
@@ -258,6 +251,14 @@
                             <label> Delivery Note Date </label>
                             <input type="date" id="delivery_note_date" name="delivery_note_date" class="form-control">
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label >Remarks</label>
+                            <textarea name="remarks" id="remarks" class="form-control"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label >Declaration</label>
+                            <textarea name="declaration" id="declaration" class="form-control"></textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -295,14 +296,19 @@
                 {% csrf_token %}
                 <!-- Quotation No -->
                 <div class="row">
-                    <div class="col-md-2"></div>
-                    <div class="col-md-8 bg-light p-4 mb-5 rounded shadow">
+                   
+                <div class="col-md-12 bg-light p-4 mb-5 rounded shadow">
         
-                <div class="mb-3">
-                    <div class="bt">
-                    <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4 mt-2"><i class="fas fa-house-chimney"></i></span>
-                    <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4 mt-2">X</span>
-                </div>
+                    <div class="mb-3">
+                        <div class="bt">
+                        <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4 mt-2"><i class="fas fa-house-chimney"></i></span>
+                        <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4 mt-2">X</span>
+                    </div>
+                    <div class="button text-end me-5 ">
+                        <button> 
+                            With Quotation
+                        </button>
+                    </div>
                     <h3 class="text-center">Tax Invoice </h3>
                 </div>
 
@@ -369,13 +375,13 @@
                <div class="row">
                     <!-- Sold To Party -->
                     <div class="col-md-6">
-                        <h6 class="mb-2 text-body-secondary text-center">Sold To Party</h6>
+                        <h6 class="mb-2 text-body-secondary text-center">Sold To Party ( Bill to )</h6>
                         <div class="mb-3">
                             <label for="sold_address">Address <span class="star">*</span></label>
-                            <textarea id="sold_address" class="form-control" rows="2"></textarea>
+                            <textarea id="sold_address" class="form-control" name="bill_to_address"  rows="2"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="sold_gstin">GSTIN/UIN <span class="star">*</span></label>
+                            <label for="sold_gstin">GSTIN/UIN </label>
                             <input type="text" id="sold_gstin" name='sold_gstin_uin' class="form-control ">
                         </div>
                         <div class="mb-3">
@@ -391,13 +397,13 @@
                 
                     <!-- Ship To Party -->
                     <div class="col-md-6">
-                        <h6 class="mb-2 text-body-secondary text-center">Ship To Party</h6>
+                        <h6 class="mb-2 text-body-secondary text-center">Ship To Party ( Consignee )</h6>
                         <div class="mb-3">
                             <label for="ship_address">Address <span class="star">*</span></label>
-                            <textarea id="ship_address" class="form-control" rows="2" readonly></textarea>
+                            <textarea id="ship_address" class="form-control" rows="2" name="ship_to_address" ></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="ship_gstin">GSTIN/UIN <span class="star">*</span></label>
+                            <label for="ship_gstin">GSTIN/UIN </label>
                             <input type="text" id="ship_gstin" class="form-control"  name='shift_gstin_uin'>
                         </div>
                         <div class="mb-3">
@@ -415,28 +421,36 @@
                 <!-- Product Info (Read-only) -->
                 <div class="product-section">
                     <h5 class=" text-center mt-3 text-body-secondary">Product Details</h5>
-                    <div class="service-title">
-                        <label for="Service-titel">Service Titel <span class="star">*</span></label>
-                        <input type="text" id="service_titel" name="service_titel" class="form-control mb-2" placeholder="Enter Service Titel ">
-                    </div>
+                    
                     <div class="row align-items-center">
                         <!-- GST toggle section -->
-                        <div class="col-md-6 gst-field d-flex align-items-center gap-3">
-                            <label class="gst-label mb-0 ms-5">Enable GST</label>
+                        <div class="col-md-3 gst-field d-flex align-items-center gap-3">
+                            <label class="gst-label mb-0">Enable GST</label> 
                             <label class="toggle-switch mb-0 ">
-                                <input type="checkbox" id="gstToggle">
+                                <input type="checkbox" id="gstToggle" name="gst_enabled">
                                 <div class="toggle-switch-background">
                                     <div class="toggle-switch-handle"></div>
                                 </div>
                             </label>
                         </div>
+                        <div class="col-md-6 gst-field d-flex align-items-center" id="gstTypeContainer" style="display:none;">
+                            <label for="gstType" class="select-gst-type mb-0">Select GST Type</label>
+                            <select id="gstType" class="form-select w-100" name="gst_type">
+                                <option value="CGST_SGST">CGST + SGST</option>
+                                <option value="IGST">IGST</option>
+                            </select>
+                        </div>
                     
                         <!-- New Product button -->
-                        <div class="col-md-6 text-end">
-                            <button type="button" class="btn btn-success me-5">
+                        <div class="col-md-3 text-end ">
+                            <button type="button" class="btn btn-success">
                                 + New Product
                             </button>
                         </div>
+                    </div>
+                    <div class="service-title">
+                        <label for="Service-titel">Service Titel <span class="star">*</span></label>
+                        <input type="text" id="service_titel" name="service_titel" class="form-control mb-2" placeholder="Enter Service Titel ">
                     </div>
                     <!-- Service Type & Product List -->
                     <div class="row">
@@ -485,7 +499,7 @@
                     <h5 class=" text-center text-body-secondary">Delivery Details</h5>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label> Buyer’s Order No <span class="star">*</span></label>
+                            <label> Buyer’s Order No </label>
                             <input type="text" id="Buyer_order_no" name="buyer_order_no" class="form-control">
                         </div>
                         <div class="col-md-6 mb-3">
@@ -524,6 +538,14 @@
                             <label> Delivery Note Date </label>
                             <input type="date" id="delivery_note_date" name="delivery_note_date" class="form-control">
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label >Remarks</label>
+                            <textarea name="remarks" id="remarks" class="form-control"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label >Declaration</label>
+                            <textarea name="declaration" id="declaration" class="form-control"></textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -541,7 +563,8 @@
                         {% endfor %}
                             
                     </select>
-                </div>
+                </div>  
+
                 <input type="hidden" id="grand_total" name="grand_total">
                 <input type="hidden" name="product_data" id="product_data">
                 <div class="row mt-4 mb-4">
@@ -567,6 +590,7 @@
     document.getElementById('gstToggle').addEventListener('change', function () {
         gstEnabled = this.checked;
         console.log(gstEnabled ? "GST Enabled" : "GST Disabled");
+        
 
         // Show/hide GST input fields
         document.querySelectorAll('.product-gst-group').forEach(el => {
@@ -908,48 +932,85 @@
                     populateStateDropdowns(data.state_map, data.soldtopartystate, data.shifttopartystate);
 
                     // Product Table Rendering
-                    const productBody = document.getElementById('product-table-body');
-                 
-                    productBody.innerHTML = ''; // Clear previous rows
+                    const productHead = document.querySelector('#product-table-head');
+                    const productBody = document.querySelector('#product-table-body');
 
-                    if (data.product && Array.isArray(data.product)) {
-                        data.product.forEach(prod => {
+                    function renderTableHeader(showGST) {
+                        let headerHTML = `
+                            <tr>
+                                <th>Product Name</th>
+                                <th>HSN/SAC</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                        `;
+                            
+                        if (showGST) {
+                            headerHTML += `<th>GST (%)</th>`;
+                        }
+
+                        headerHTML += `</tr>`;
+                        productHead.innerHTML = headerHTML;
+                    }
+
+                    function renderProductRows(products, showGST) {
+                        productBody.innerHTML = ''; // Clear old rows
+                    
+                        products.forEach(prod => {
+                            const gstColumn = showGST
+                                ? `<td><input type="number" class="form-control gst" value="${prod.gst}" readonly></td>`
+                                : '';
+                        
                             const row = `
-                                      <tr>
-                                        <td><input type="text" class="form-control product-name" value="${prod.name}" readonly></td>
-                                        <td><input type="text" class="form-control hsn" placeholder="Enter HSN/SAC number"></td>
-                                        <td><input type="number" class="form-control price"value="${parseFloat(prod.price).toFixed(2) || 0.00}"  readonly></td>
-                                        <td><input type="number" class="form-control quantity" value="${parseFloat(prod.quantity).toFixed(2) || 0.00}" readonly></td>
-                                        <td><input type="text" class="form-control unit" value="${prod.unit}" readonly></td>
-                                        <td><input type="number" class="form-control gst" value="${prod.gst}" readonly></td>
-                                      </tr>
-                                    `;
-
+                                <tr>
+                                    <td><input type="text" class="form-control product-name" value="${prod.name}" readonly></td>
+                                    <td><input type="text" class="form-control hsn" placeholder="Enter HSN/SAC number"></td>
+                                    <td><input type="number" class="form-control price" value="${parseFloat(prod.price).toFixed(2)}" readonly></td>
+                                    <td><input type="number" class="form-control quantity" value="${parseFloat(prod.quantity).toFixed(2)}" readonly></td>
+                                    <td><input type="text" class="form-control unit" value="${prod.unit}" readonly></td>
+                                    ${gstColumn}
+                                </tr>
+                            `;
                             productBody.insertAdjacentHTML('beforeend', row);
                         });
                     }
+
+                    // Example usage after fetching data
+                    renderTableHeader(data.apply_gst == 1);
+                    renderProductRows(data.product, data.apply_gst == 1);
+
+                    // Calculate total quantity
                     const totalQuantity = data.product.reduce((sum, item) => {
                         return sum + (parseFloat(item.quantity) || 0);
                     }, 0);
 
-                    console.log("Total Quantity:", totalQuantity);
-
-
-                    if (data.igst > 0) {
-                        document.getElementById('gstHeader1').innerHTML = 'IGST'
-                        document.getElementById('gstValues1').innerText = data.igst || 0;
+                    // GST & Totals display logic
+                    if (data.apply_gst == 1) {
+                        // GST is applied
+                        if (data.igst > 0) {
+                            // IGST case
+                            document.getElementById('gstHeader1').innerHTML = 'IGST';
+                            document.getElementById('gstValues1').innerText = data.igst || 0;
+                            document.getElementById('gstHeader2').innerHTML = '';
+                            document.getElementById('gstValues2').innerText = '';
+                        } else {
+                            // CGST + SGST case
+                            document.getElementById('gstHeader1').innerHTML = 'CGST';
+                            document.getElementById('gstValues1').innerText = data.cgst || 0;
+                            document.getElementById('gstHeader2').innerHTML = 'SGST';
+                            document.getElementById('gstValues2').innerText = data.sgst || 0;
+                        }
                     } else {
-                        document.getElementById('gstHeader1').innerHTML = 'CGST'
-                        document.getElementById('gstValues1').innerText = data.cgst || 0;
-                        document.getElementById('gstHeader2').innerHTML = 'SGST'
-                        document.getElementById('gstValues2').innerText = data.sgst || 0;
+                        // No GST — hide GST headers & values
+                        document.getElementById('gstHeader1').innerHTML = '';
+                        document.getElementById('gstValues1').innerText = '';
+                        document.getElementById('gstHeader2').innerHTML = '';
+                        document.getElementById('gstValues2').innerText = '';
                     }
+
                     document.getElementById('grand_total').innerText = data.total || 0;
                     document.getElementById('grand_total').value = data.total || 0;
                     document.getElementById('totalQuantity').innerText = totalQuantity || 0;
-
-
-
                 })
                 .catch(err => console.error('Fetch error:', err));
         }

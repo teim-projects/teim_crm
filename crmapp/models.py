@@ -709,6 +709,10 @@ class BankAccounts(models.Model):
 
 #  Tax Invoice model NEW
 class TaxInvoice(models.Model):
+    GST_TYPE_CHOICES = [
+        ('CGST_SGST', 'CGST + SGST'),
+        ('IGST', 'IGST'),
+    ]
     quotation = models.ForeignKey(quotation_management, on_delete=models.CASCADE, related_name="tax_invoice", null=True, blank=True)
     customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, related_name="customer_details")
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="branch")
@@ -734,7 +738,11 @@ class TaxInvoice(models.Model):
     sold_gstin_uin = models.CharField(max_length=100)
     soldtopartystate = models.CharField(max_length=100)
     soldtopartystatecode = models.CharField(max_length=10)
-
+    gst_type = models.CharField( max_length=20, choices=GST_TYPE_CHOICES, blank=True, null=True )
+    remarks =  models.TextField(blank=True, null=True)
+    declaration = models.TextField(blank=True, null=True)
+    ship_to_address = models.TextField(blank=True, null=True)
+    bill_to_address = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.tax_invoice_no
