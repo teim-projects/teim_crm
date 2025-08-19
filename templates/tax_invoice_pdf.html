@@ -88,11 +88,11 @@
             </tr>
             <tr>
                 <td rowspan="6" style="width: 50%;">
-                    <strong>{{ invoice.quotation.branch.branch_name }}</strong><br>
-                    {{ invoice.quotation.branch.full_address }}<br>
-                    GSTIN/UIN: {{ invoice.quotation.branch.gst_number }}<br>
-                    State: {{ invoice.quotation.branch.state }}, Code: {{ invoice.quotation.branch.code }}<br>
-                    Email: {{ invoice.quotation.branch.email_1 }}<br><br>
+                    <strong>{{ invoice.branch.branch_name }}</strong><br>
+                    {{ invoice.branch.full_address }}<br>
+                    GSTIN/UIN: {{ invoice.branch.gst_number }}<br>
+                    State: {{ invoice.branch.state }}, Code: {{ invoice.branch.code }}<br>
+                    Email: {{ invoice.branch.email_1 }}<br><br>
                     <strong>Consignee (Ship to)</strong><br>
                     {{ invoice.customer.fullname }}<br>
                     {{ invoice.customer.shifttopartyaddress }}<br>
@@ -193,9 +193,9 @@
             <tr>
                 <td style="width: 60%; vertical-align: top;">
                     <p><strong>Remarks:</strong><br>
-                        Invoice for Pest Management Services for {{ today|date:"F Y" }}.<br><br>
+                        {{ invoice.remarks }}<br><br>
                         <strong>Declaration:</strong><br>
-                        Payment is due immediately. Late payment attracts 18% p.a interest. Disputes subject to Pune.
+                        {{ invoice.declaration }}
                     </p>
                 </td>
                 <td style="vertical-align: bottom;">
@@ -210,7 +210,7 @@
             <tr>
                 <td>Customer’s Seal & Signature</td>
                 <td class="text-right">
-                    for <strong>{{ invoice.quotation.branch.branch_name }}</strong><br><br><br>
+                    for <strong>{{ invoice.branch.branch_name }}</strong><br><br><br>
                     Authorised Signatory
                 </td>
             </tr>

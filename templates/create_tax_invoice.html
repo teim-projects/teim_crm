@@ -53,7 +53,35 @@
 .toggle-switch input[type="checkbox"]:checked + .toggle-switch-background .toggle-switch-handle {
     transform: translateX(24px);
 }
+
+.custom-btn {
+    display: inline-block;
+    background-color: #0d6efd;   /* Bootstrap primary blue */
+    color: white;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.custom-btn i {
+    margin-left: 6px; /* space before icon */
+}
+
+.custom-btn:hover {
+    background-color: #0b5ed7; /* darker blue on hover */
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
     </style>
+
+    <!-- Bootstrap 5 JS (needed for modals to work) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </head>
 
 <body>
@@ -75,6 +103,12 @@
                     <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4 mt-2"><i class="fas fa-house-chimney"></i></span>
                     <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4 mt-2">X</span>
                 </div>
+                <div class="button text-end me-5">
+                    <a href="/tax-invoice/create" class="custom-btn">
+                        New <i class="fa-solid fa-file-lines"></i>
+                    </a>
+                </div>
+
                     <h3 class="text-center">Tax Invoice </h3>
                 </div>
 
@@ -296,19 +330,20 @@
                 {% csrf_token %}
                 <!-- Quotation No -->
                 <div class="row">
-                   
-                <div class="col-md-12 bg-light p-4 mb-5 rounded shadow">
+                <div class="col-md-2"></div>
+                <div class="col-md-8 bg-light p-4 mb-5 rounded shadow">
         
                     <div class="mb-3">
                         <div class="bt">
                         <span onclick="window.location.href='/index'" style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4 mt-2"><i class="fas fa-house-chimney"></i></span>
                         <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4 mt-2">X</span>
                     </div>
-                    <div class="button text-end me-5 ">
-                        <button> 
-                            With Quotation
-                        </button>
+                    <div class="button text-end me-5">
+                        <a href="/tax-invoice/create?use_quotation=true" class="custom-btn">
+                            <i class="fa-solid fa-file-lines"></i>  with Quotation
+                        </a>
                     </div>
+
                     <h3 class="text-center">Tax Invoice </h3>
                 </div>
 
@@ -436,17 +471,17 @@
                         <div class="col-md-6 gst-field d-flex align-items-center" id="gstTypeContainer" style="display:none;">
                             <label for="gstType" class="select-gst-type mb-0">Select GST Type</label>
                             <select id="gstType" class="form-select w-100" name="gst_type">
-                                <option value="CGST_SGST">CGST + SGST</option>
+                                <option value="CGST + SGST">CGST + SGST</option>
                                 <option value="IGST">IGST</option>
                             </select>
                         </div>
-                    
-                        <!-- New Product button -->
-                        <div class="col-md-3 text-end ">
-                            <button type="button" class="btn btn-success">
+                        <!-- Button -->
+                        <div class="col-md-3 text-end">
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal" onclick="loadAddProductForm()">
                                 + New Product
                             </button>
                         </div>
+
                     </div>
                     <div class="service-title">
                         <label for="Service-titel">Service Titel <span class="star">*</span></label>
@@ -465,6 +500,7 @@
                         </div>
                         <div class="col-12">
                             <label class="font-weight-medium">Available Products</label>
+                            <input type="search" name="product_search" id="product_search" class="form-control" placeholder="Search Products">
                             <div id="products-container" class="mt-2"></div>
                         </div>
                     </div>
@@ -574,14 +610,79 @@
                     </div>
                     <div class="col-md-4"></div>
                 </div>
-                    </div>
+                </div>
                     <div class="col-md-2"></div>
             </div>
 
             </form> 
+            
+            <!-- Modal -->
+            <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title text-body-secondary">Add New Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body" id="addProductFormContainer">
+                    <!-- Form will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <script>
+            function loadAddProductForm() {
+                fetch("{% url 'add_product' %}")
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("addProductFormContainer").innerHTML = html;
+                });
+            }
+            </script>
+            
         </div>
+        
+<script>
+function loadAddProductForm() {
+    fetch("{% url 'add_product' %}", {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById("addProductFormContainer").innerHTML = html;
+
+        // Attach form submit handler
+        const form = document.getElementById("addProductForm");
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            fetch("{% url 'add_product' %}?from_quotation=true", {
+                method: "POST",
+                body: new FormData(form),
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById("addProductModal"));
+                    modal.hide();
+
+                    // Optionally refresh product list
+                    location.reload();
+                }
+            });
+        });
+    });
+}
+</script>
     {% endif %}
     
+
+
+
+
 
     <!-- Product section -->
 <script>
@@ -658,6 +759,18 @@
                 });
             });
     }
+
+    // Attach search functionality
+    document.getElementById("product_search").addEventListener("keyup", function () {
+        let query = this.value.toLowerCase();
+        let products = document.querySelectorAll("#products-container .product-item");
+    
+        products.forEach(product => {
+            let productName = product.querySelector("strong").textContent.toLowerCase();
+            product.style.display = productName.includes(query) ? "block" : "none";
+        });
+    });
+
 
     function addProductManually(product) {
         const container = document.querySelector(`div.product-item[data-product-id="${product.product_id}"]`);

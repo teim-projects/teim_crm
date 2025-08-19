@@ -3498,6 +3498,29 @@ def inventory_summary(request):
     return render(request, 'inventory_summary.html', context)
 
 
+# @login_required
+# def add_product(request):
+#     from_quotation = request.GET.get('from_quotation') == 'true'
+
+#     if request.method == 'POST':
+#         form = AddProductForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+
+#             if from_quotation:
+#                 # Redirect back to quotation form (retain user input via session or back button)
+#                 return redirect(reverse('create_quotation'))
+#             else:
+#                 return render(request, 'add_product_success.html')
+#     else:
+#         form = AddProductForm()
+
+#     # Render either as a modal or full page based on access
+#     return render(request, 'add_product.html', {
+#         'form': form,
+#         'from_quotation': from_quotation
+#     })
+
 @login_required
 def add_product(request):
     from_quotation = request.GET.get('from_quotation') == 'true'
@@ -3505,21 +3528,25 @@ def add_product(request):
     if request.method == 'POST':
         form = AddProductForm(request.POST)
         if form.is_valid():
-            form.save()
+            product = form.save()
+
+            # If AJAX -> return JSON
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'product_id': product.id, 'product_name': product.name})
 
             if from_quotation:
-                # Redirect back to quotation form (retain user input via session or back button)
                 return redirect(reverse('create_quotation'))
             else:
                 return render(request, 'add_product_success.html')
     else:
         form = AddProductForm()
 
-    # Render either as a modal or full page based on access
-    return render(request, 'add_product.html', {
-        'form': form,
-        'from_quotation': from_quotation
-    })
+    # If AJAX -> return only the form HTML
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'add_product_form.html', {'form': form})
+
+    # Otherwise, render full page
+    return render(request, 'add_product.html', {'form': form, 'from_quotation': from_quotation})
 
 
 
@@ -5060,9 +5087,20 @@ def display_tax_invoice(request):
 def tax_invoice_pdf(request, id):
     invoice = get_object_or_404(TaxInvoice, id=id)
     items = invoice.items.all()
-    cgst = invoice.quotation.cgst
-    sgst = invoice.quotation.sgst
-    igst = invoice.quotation.igst
+    cgst = sgst = igst = 0 
+    branch = invoice.branch
+    if invoice.quotation:
+        cgst = invoice.quotation.cgst or 0
+        sgst = invoice.quotation.sgst or 0
+        igst = invoice.quotation.igst or 0
+    else:
+        gst = items.aggregate(total_gst=Sum('gst_amount'))['total_gst'] or 0
+        if invoice.gst_type == 'CGST + SGST':
+            cgst = gst / 2
+            sgst = gst / 2
+        else:
+            igst  = gst
+
     amount_in_words = price_in_words(invoice.grand_total)
     # print("data" ,invoice.quotation.igst )
     context = {
