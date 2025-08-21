@@ -166,6 +166,7 @@ urlpatterns = [
 
     # Tax Invoice
     path('tax-invoice/create/',views.create_tax_invoice, name="create_tax_invoice"),
+    path('tax-invoice/edit/<int:id>/',views.edit_tax_invoice, name="edit_tax_invoice"),
     path('display_tax_invoice/', views.display_tax_invoice, name="display_tax_invoice"),
     path('tax-invoice/pdf/<int:id>/', views.tax_invoice_pdf, name='tax_invoice_pdf'),
     path('export-invoice/', views.export_invoice_excel, name='export_invoice'),

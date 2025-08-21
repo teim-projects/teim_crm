@@ -5083,7 +5083,8 @@ def display_tax_invoice(request):
     return render(request, 'display_invoice.html', context)
 
 
-
+def edit_tax_invoice(request, id):
+    return render(request, 'edit_tax_invoice.html')
 def tax_invoice_pdf(request, id):
     invoice = get_object_or_404(TaxInvoice, id=id)
     items = invoice.items.all()

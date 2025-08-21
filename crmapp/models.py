@@ -96,7 +96,7 @@ class Product(models.Model):
     CATEGORY_CHOICES = [
         ('Pest Control', 'Pest Control'),
         ('Fumigation', 'Fumigation'),
-        ('Product Sell', 'Product Sell'),
+        ('Product Salel', 'Product Sale'),
     ]
    
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="NULL")
