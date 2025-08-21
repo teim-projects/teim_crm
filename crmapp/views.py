@@ -967,6 +967,7 @@ from .models import Branch
 @role_required(['admin','sales'])
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
+    print(category_choices)
     terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
     products = Product.objects.all()
