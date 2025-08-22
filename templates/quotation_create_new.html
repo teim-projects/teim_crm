@@ -382,17 +382,31 @@ input:checked + .slider:before {
                                             <input type="text" name="secondary_contact_no" class="form-control"
                                             value="{{ form_data.secondary_contact_no }}" ><br>
                                         </div>
-                                        <div class="col-md-6">
+                                        <!-- <div class="col-md-6">
                                             <label>Customer Type<span class="star">*</span></label>
                                             <input type="text" class="form-control" name="customer_type" id="view_customer_type" 
                                                 value="{{ form_data.customer_type }}" readonly>
+                                        </div> -->
+                                        <div class="col-md-6">
+                                            <label>Customer Type <span class="star">*</span></label>
+                                            <select class="form-control" name="customer_type" id="view_customer_type" required>
+                                                <option value="">Select Customer Type</option>
+                                                <option value="Organization" {% if form_data.customer_type == "Organization" %}selected{% endif %}>
+                                                    Organization
+                                                </option>
+                                                <option value="Individual" {% if form_data.customer_type == "Individual" %}selected{% endif %}>
+                                                    Individual
+                                                </option>
+                                            </select>
                                         </div>
-                                        
+
+
+                                        <!-- Org-specific fields (hidden by default via JS) -->
                                         <div class="col-md-6 org-fields">
                                             <label>Sub-Name</label>
-                                            <input type="text" name="or_name" value="{{ form_data.or_name}}" class="form-control">
+                                            <input type="text" name="or_name" value="{{ form_data.or_name }}" class="form-control">
                                         </div>
-                                        
+
                                         <div class="col-md-6 org-fields">
                                             <label>Sub-Contact No</label>
                                             <input type="text" name="or_contact" value="{{ form_data.or_contact }}" class="form-control">
@@ -942,19 +956,22 @@ function toggleOrgFieldsByCustomerType() {
     if (!customerTypeInput) return;
 
     const customerType = customerTypeInput.value.trim();
-    console.log("Customer type value (dynamic):", customerType);
-
     const orgFields = document.querySelectorAll(".org-fields");
-    const show = (customerType === "Organization");
 
+    const show = (customerType === "Organization");
     orgFields.forEach(el => {
         el.style.display = show ? "block" : "none";
     });
 }
 
-// Run on initial page load
+// Run on page load + when dropdown changes
 document.addEventListener("DOMContentLoaded", function () {
     toggleOrgFieldsByCustomerType();
+
+    const customerTypeInput = document.getElementById("view_customer_type");
+    if (customerTypeInput) {
+        customerTypeInput.addEventListener("change", toggleOrgFieldsByCustomerType);
+    }
 });
 </script>
 
@@ -1078,11 +1095,13 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener('DOMContentLoaded', function () {
         const customerIdField = document.getElementById("customer_id");
         const contactInput = document.querySelector('input[name="contact_no"]');
+        const secondarycontactInput = document.querySelector('input[name="secondary_contact_no"]');
         const emailField = document.querySelector('input[name="customer_email"]');
+        const secondaryemailField = document.querySelector('input[name="secondary_email"]');
         const nameField = document.querySelector('input[name="customer_full_name"]');
         const addressField = document.querySelector('textarea[name="address"]');
         const contactpersonField = document.querySelector('select[name="sales_person_list"]');
-        const customerTypeField = document.querySelector('input[name="customer_type"]');
+        const customerTypeField = document.querySelector('select[name="customer_type"]');
         const or_nameField = document.querySelector('input[name="or_name"]');
         const or_contactField = document.querySelector('input[name="or_contact"]');
 
@@ -1109,6 +1128,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     if (!emailField.value && data.customer_email) {
                         emailField.value = data.customer_email;
+                    }
+
+                    if (!secondaryemailField.value && data.secondary_email) {
+                        secondaryemailField.value = data.secondary_email;
+                    }
+
+                    if (!secondarycontactInput.value && data.secondary_contact_no) {
+                        secondarycontactInput.value = data.secondary_contact_no;
                     }
 
                     if (!nameField.value && data.customer_full_name) {

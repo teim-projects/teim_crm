@@ -321,7 +321,7 @@
                                         <div class="col-md-6">
                                             <label>Customer Email<span class="star">*</span></label>
                                             <input type="text" id="customer_email" name="customer_email" 
-                                            value="{{ quotation.customer_email }}"  required readonly class="form-control">
+                                            value="{{ quotation.customer_email }}"  required  class="form-control">
                                         </div>
                                         <div class="col-md-6">
                                             <label>Secondary Email:</label>
@@ -331,17 +331,27 @@
                                         <div class="col-md-6">
                                             <label>Customer Full Name<span class="star">*</span></label>
                                             <input type="text" name="customer_full_name" class="form-control" 
-                                            value="{{ quotation.customer_full_name }}" required readonly>
+                                            value="{{ quotation.customer_full_name }}" required >
                                         </div>
                                         <div class="col-md-6">
                                             <label>Secondary Contact No.:</label>
                                             <input type="text" name="secondary_contact_no" class="form-control"><br>
                                         </div>
-                                        <div class="col-md-6">
+                                        <!-- <div class="col-md-6">
                                             <label>Customer Type<span class="star">*</span></label>
                                             <input type="text" class="form-control" name="customer_type" id="customer_type_select" 
                                                    value="{{ quotation.customer.customer_type }}" readonly>
+                                        </div> -->
+                                        <div class="col-md-6">
+                                            <label>Customer Type<span class="star">*</span></label>
+                                            <select name="customer_type" id="customer_type_select" class="form-control" onchange="toggleOrganizationFields()">
+                                                <option value="">Select Customer Type</option>
+                                                <option value="Individual" {% if quotation.customer.customer_type == 'Individual' %}selected{% endif %}>Individual</option>
+                                                <option value="Organization" {% if quotation.customer.customer_type == 'Organization' %}selected{% endif %}>Organization</option>
+                                            </select>
+
                                         </div>
+                                        
 
                                         <div class="col-md-6 org-fields">
                                             <label>Sub-Name</label>

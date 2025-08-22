@@ -437,16 +437,16 @@
                     <div class="form-step d-none">
                         <div class="row">
                             <div class="col-6">
-                                <label>Contract Type<span class="star">*</span></label>
-                                <select name="contract_type" class="form-control" required>
+                                <label>Contract Type</label>
+                                <select name="contract_type" class="form-control" >
                                     <option value="One Time">One Time</option>
                                     <option value="AMC">AMC</option>
                                     <option value="Warranty">Warranty</option>
                                 </select>
                             </div>
                             <div class="col-6">
-                                <label>Contract Status<span class="star">*</span></label>
-                                <select name="contract_status" class="form-control" required>
+                                <label>Contract Status</label>
+                                <select name="contract_status" class="form-control" >
                                     <option value="Yes">Yes</option>
                                     <option value="No">No</option>
                                 </select>
@@ -454,12 +454,12 @@
                         </div>
                         <div class="row">
                             <div class="col-6">
-                                <label>Property Type<span class="star">*</span></label>
-                                <textarea name="property_type" class="form-control" rows="1" required></textarea>
+                                <label>Property Type</label>
+                                <textarea name="property_type" class="form-control" rows="1" ></textarea>
                             </div>
                             <div class="col-6">
-                                <label for="warranty_period">Warranty Period<span class="star">*</span></label>
-                                <input type="text" name="warranty_period" class="form-control" required><br>
+                                <label for="warranty_period">Warranty Period</label>
+                                <input type="text" name="warranty_period" class="form-control" ><br>
                             </div>
                         </div>
                         <div class="row">
@@ -482,8 +482,8 @@
                         <label>Address<span class="star">*</span></label>
                         <textarea name="address" id="address" class="form-control" required></textarea>
 
-                        <label>GPS Location<span class="star">*</span></label>
-                        <input type="url" name="gps_location" class="form-control" required>
+                        <label>GPS Location <span>( GPS Location is mandatory for service.)</span></label>
+                        <input type="url" name="gps_location" class="form-control" >
 
 
                         <div class="row">
@@ -502,7 +502,7 @@
                     <div class="form-step d-none">
                         <div class="row">
                             <div class="col-6">
-                                <label>Select Frequency Count<span class="star">*</span></label>
+                                <label>Select Frequency Count</label>
                                 <select name="frequency_count" class="form-control">
                                     {% for freq in frequency_choices %}
                                     <option value="{{ freq }}">{{ freq }}</option>

@@ -967,7 +967,6 @@ from .models import Branch
 @role_required(['admin','sales'])
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
-    print(category_choices)
     terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
     products = Product.objects.all()
@@ -987,37 +986,43 @@ def quotation_management_create(request):
         if customer_id:
             try:
                 customer = customer_details.objects.get(id=customer_id)
+                contact_no = request.POST.get('contact_no')
+                customer = customer_details.objects.filter(primarycontact=contact_no).first()
+
+                if customer:
+                    # Update customer details
+                    customer_full_name = request.POST.get('customer_full_name')
+                    secondary_contact_no = request.POST.get('secondary_contact_no') or None
+                    customer_email = request.POST.get('customer_email')
+                    secondary_email = request.POST.get('secondary_email') or None
+                    customer_type = request.POST.get('customer_type')
+                    or_name = request.POST.get('or_name') or None
+                    or_contact = request.POST.get('or_contact') or None
+
+                    # Assign values to the existing instance
+                    customer.fullname = customer_full_name
+                    customer.secondarycontact = secondary_contact_no
+                    customer.primaryemail = customer_email
+                    customer.secondaryemail = secondary_email
+                    customer.customer_type = customer_type
+                    customer.or_name = or_name
+                    customer.or_contact = or_contact
+                    
+                    # Save changes
+                    customer.save(update_fields=[
+                        "fullname",
+                        "secondarycontact",
+                        "primaryemail",
+                        "secondaryemail",
+                        "customer_type",
+                        "or_name",
+                        "or_contact",
+
+                    ])
             except customer_details.DoesNotExist:
                 raise ValueError("Invalid customer ID.")
 
-        else:
-            contact_no = request.POST.get('contact_no')
-            customer = customer_details.objects.filter(primarycontact=contact_no).first()
-            if not customer:
-            # Create new customer
-                customer_full_name = request.POST.get('customer_full_name')
-                contact_no = request.POST.get('contact_no')
-                secondary_contact_no = request.POST.get('secondary_contact_no')or None
-                customer_email = request.POST.get('customer_email')
-                secondary_email = request.POST.get('secondary_email')or None
-                address = request.POST.get('address')
-                city = request.POST.get('city')
-                state = request.POST.get('state')
-                gps_location = request.POST.get('gps_location')
-                pincode = request.POST.get('pincode', '000000')
-                custom_terms = request.POST.get('add_terms_conditions')
-                customerid = generate_customerid(customer_full_name)
 
-                # You can add validation here if necessary
-                customer = customer_details.objects.create(
-                    customerid = customerid,
-                    fullname=customer_full_name,
-                    primarycontact=contact_no,
-                    secondarycontact=secondary_contact_no,
-                    primaryemail=customer_email,
-                    secondaryemail=secondary_email,
-                    shifttopartyaddress=address,
-                )
         try:
             # Core data
             customer_full_name = request.POST.get('customer_full_name')
@@ -1161,18 +1166,20 @@ def quotation_management_create(request):
             request.session.modified = True
 
             # return redirect(f'/generate_quotation/quotation/pdf/{quotation.id}/view')
-            return render(request, 'quotation_create_new.html', {
-                # Existing context
-                'pdf_url': f'/generate_quotation/quotation/pdf/{quotation.id}/view',
-                'show_pdf_script': True,
-                'products': products,
-                'category_choices': category_choices,
-                'terms': terms,
-                'branches': branches,
-                'form': AddProductForm(),  
-                'form_data': {},   
+            # return render(request, 'quotation_create_new.html', {
+            #     # Existing context
+            #     'pdf_url': f'/generate_quotation/quotation/pdf/{quotation.id}/view',
+            #     'show_pdf_script': True,
+            #     'products': products,
+            #     'category_choices': category_choices,
+            #     'terms': terms,
+            #     'branches': branches,
+            #     'form': AddProductForm(),  
+            #     'form_data': {},   
                        
-            })
+            # })
+
+            return redirect(f'/create_quotation/?pdf={quotation.id}')
 
 
         except Exception as e:
@@ -1195,18 +1202,26 @@ def quotation_management_create(request):
         key=lambda t: order_list.index(str(t.id)) if str(t.id) in order_list else 999
     )
 
-    form = AddProductForm()
-    return render(request, 'quotation_create_new.html', {
+    pdf_id = request.GET.get("pdf")
+
+    context = {
         'products': products,
         'category_choices': category_choices,
         'sales_person_list': sales_person_list,
         'terms': terms,
         'branches': Branch.objects.all(),
-        'form': form,
-        'form_data': form_data,
-        'thank_notes': json.dumps(thank_notes), 
-        "product_details_json": product_json  
-})
+        'form': AddProductForm(),   # always fresh
+        'form_data': {},            # reset session cleared already
+        'thank_notes': json.dumps(thank_notes),
+        "product_details_json": "[]"
+    }
+
+    if pdf_id:  # just submitted
+        context['pdf_url'] = f'/generate_quotation/quotation/pdf/{pdf_id}/view'
+        context['show_pdf_script'] = True
+
+    return render(request, 'quotation_create_new.html', context)
+
     
 
 
@@ -3052,7 +3067,7 @@ def edit_quotation(request, rid):
     sales_person_list = SalesPerson.objects.all()
     thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     products = Product.objects.all()
-
+    customer = quotation.customer
     if request.method == "POST":
         delete_ids = request.POST.getlist('delete_product_ids[]')
         existing_products = quotation.product_details_json or []
@@ -3063,7 +3078,7 @@ def edit_quotation(request, rid):
         # Get form fields
         customer_full_name = request.POST.get('customer_full_name')
         contact_no = request.POST.get('contact_no')
-        secondary_contact_no = request.POST.get('secondary_contact_no')
+        secondary_contact_no = request.POST.get('secondary_contact_no') or None
         customer_email = request.POST.get('customer_email')
         secondary_email = request.POST.get('secondary_email')
         contact_by = request.POST.get('contact_by')
@@ -3074,11 +3089,30 @@ def edit_quotation(request, rid):
         selected_term_ids = request.POST.getlist('terms_and_conditions[]')  # get selected terms
         ordered_term_ids_str = request.POST.get('terms_and_conditions_ordered', '')
         custom_terms = request.POST.get('add_terms_conditions')
-        
+        customer_type = request.POST.get('customer_type')
         or_name = request.POST.get('or_name')
         or_contact = request.POST.get('or_contact')
         thank_u_note = request.POST.get('thank_u_note')
 
+        customer.fullname = customer_full_name
+        customer.primaryemail = customer_email
+        customer.secondaryemail = secondary_email
+        customer.secondarycontact = secondary_contact_no
+        customer.customer_type = customer_type
+        customer.or_name = or_name
+        customer.or_contact = or_contact
+
+         # Save changes
+        customer.save(update_fields=[
+            "fullname",
+            "secondarycontact",
+            "primaryemail",
+            "secondaryemail",
+            "customer_type",
+            "or_name",
+            "or_contact",
+        ])
+        
         for counter , product in enumerate(existing_products, start=1):
             product_id = str(product['id'])
             if product_id in delete_ids:
@@ -3177,16 +3211,6 @@ def edit_quotation(request, rid):
 
     else:
         terms = QuotationTerm.objects.all()
-        # terms = list(QuotationTerm.objects.all())
-        # ordered_terms = []
-
-        # if quotation.terms_order:
-        #     ordered_terms = [term for tid in quotation.terms_order 
-        #                      for term in terms if term.id == tid]
-
-        # # Append any unselected terms that were not in the order
-        # remaining_terms = [term for term in terms if term.id not in quotation.terms_order]
-        # all_terms = ordered_terms + remaining_terms
         terms_order = quotation.terms_order or []  # fallback to empty list if None
 
         ordered_terms = [term for tid in terms_order for term in terms if term.id == tid]
@@ -4785,7 +4809,9 @@ def get_customer_details(request):
             data = {
                 'customer_id': customer.id,
                 'customer_full_name': customer.fullname,
+                'secondary_contact_no':customer.secondarycontact,
                 'customer_email': customer.primaryemail,
+                'secondary_email' : customer.secondaryemail,
                 'contactperson':customer.contactperson,
                 'shifttopartyaddress': customer.shifttopartyaddress,
                 'city': customer.shifttopartycity,
