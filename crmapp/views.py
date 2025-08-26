@@ -1211,9 +1211,9 @@ def quotation_management_create(request):
         'terms': terms,
         'branches': Branch.objects.all(),
         'form': AddProductForm(),   # always fresh
-        'form_data': {},            # reset session cleared already
+        'form_data':form_data,            # reset session cleared already
         'thank_notes': json.dumps(thank_notes),
-        "product_details_json": "[]"
+        "product_details_json": product_json
     }
 
     if pdf_id:  # just submitted
@@ -4495,7 +4495,7 @@ def handle_csv(file):
     for row in reader:
         try:
             # Handle empty or malformed rows
-            if len(row) < 19:
+            if len(row):
                 print(f"Skipped incomplete row: {row}")
                 continue
             lead_management.objects.create(
@@ -4995,16 +4995,18 @@ def create_tax_invoice(request):
                 destination=request.POST.get("destination"),
                 service_titel=request.POST.get('service_titel'),
                 shift_gstin_uin=request.POST.get('shift_gstin_uin'),
+                shift_pan_number = request.POST.get('shift_pan'),
                 shifttopartystate=shifttopartystate,
                 shifttopartystatecode=shifttopartystatecode,
                 sold_gstin_uin=request.POST.get('sold_gstin_uin'),
+                sold_pan_number = request.POST.get('sold_pan'), 
                 soldtopartystate=soldtopartystate,
                 soldtopartystatecode=soldtopartystatecode,
                 remarks = request.POST.get('remarks'),
-                declaration = request.POST.get('declaration'),
+                terms_of_delivery = request.POST.get('terms_of_delivery'),
                 ship_to_address = request.POST.get('ship_to_address'),
                 bill_to_address = request.POST.get('bill_to_address'),
-
+            
                 gst_type=gst_type if gst_enabled else "No GST"
             )
 
@@ -5028,6 +5030,7 @@ def create_tax_invoice(request):
                     product_name=item.get('name'),
                     hsn_code=item.get('hsn'),
                     quantity=quantity,
+                    description = item.get('description'),
                     unit=item.get('unit'),
                     price=price,
                     gst_percent=gst_percent,
@@ -5111,7 +5114,143 @@ def display_tax_invoice(request):
 
 
 def edit_tax_invoice(request, id):
-    return render(request, 'edit_tax_invoice.html')
+    invoice = get_object_or_404(TaxInvoice, id=id)
+    items = invoice.items.all()
+    branches = Branch.objects.all()
+    banks = BankAccounts.objects.all()
+    category_choices = Product.CATEGORY_CHOICES
+    product = Product.objects.all()
+    if request.method == "POST":
+        invoice.branch_id = request.POST.get('branch_id')
+        invoice.customer = get_object_or_404(customer_details, primarycontact=request.POST.get('contact_no'))
+        invoice.bill_to_address = request.POST.get('bill_to_address')
+        invoice.ship_to_address = request.POST.get('ship_to_address')
+        invoice.shift_gstin_uin = request.POST.get('shift_gstin_uin')
+        invoice.shift_pan_number = request.POST.get('shift_pan')
+        invoice.sold_gstin_uin = request.POST.get('sold_gstin_uin')
+        invoice.sold_pan_number = request.POST.get('sold_pan')
+        invoice.buyers_order_no = request.POST.get('buyer_order_no')
+        invoice.dispatch_doc_no = request.POST.get('dispatch_doc_no')
+        invoice.dated = request.POST.get('dated')
+        invoice.referance_no_and_date = request.POST.get('referance_no_and_date')
+        invoice.dispatched_through = request.POST.get('dispatched_through')
+        invoice.destination = request.POST.get('destination')
+        invoice.other_referance =  request.POST.get('other_references')
+        invoice.modern_terms_of_payment = request.POST.get('mode_terms_of_payment')
+        invoice.delivery_note = request.POST.get('delivery_note')
+        invoice.delivery_note_date = request.POST.get('delivery_note_date')
+        invoice.remarks = request.POST.get('remarks')
+        invoice.terms_of_delivery = request.POST.get('terms_of_delivery')
+        invoice.bank_id = request.POST.get('bank_id')
+        shifttopartystate_raw = request.POST.get('shifttopartystate', '')
+        # Extract state name and code
+        if '-' in shifttopartystate_raw:
+            invoice.shifttopartystate, invoice.shifttopartystatecode = shifttopartystate_raw.split('-', 1)
+    
+        # Same logic for sold_to
+        soldtopartystate_raw = request.POST.get('soldtopartystate', '')
+        if '-' in soldtopartystate_raw:
+            invoice.soldtopartystate, invoice.soldtopartystatecode = soldtopartystate_raw.split('-', 1)
+        invoice.save()
+        gst_enabled = request.POST.get("gst_enabled")
+        gst_type = request.POST.get("gst_type") 
+        deleted_ids = request.POST.get("deleted_items", "")
+        if deleted_ids:
+            ids = [int(x) for x in deleted_ids.split(",") if x.isdigit()]
+            TaxInvoiceItem.objects.filter(id__in=ids, tax_invoice=invoice).delete()
+
+        total_items = int(request.POST.get("total_items", 0))
+        products = []
+        for i in range(1, total_items + 1):
+            product_data = {
+                "hsn_code": request.POST.get(f"old_hsn_code_{i}"),
+                "price": request.POST.get(f"old_price_{i}"),
+                "quantity": request.POST.get(f"old_quantity_{i}"),
+                "description": request.POST.get(f"old_description_{i}"),
+                "unit": request.POST.get(f"old_unit_{i}"),
+                "gst_percent": request.POST.get(f"old_gst_percent_{i}"),
+            }
+            products.append(product_data)
+
+        # 1. Update existing items
+        for product in products:  # products from old_* form fields
+            row_id = product.get("row_id")
+            if not row_id:
+                continue
+            
+            try:
+                item = TaxInvoiceItem.objects.get(id=row_id, tax_invoice=invoice)
+            except TaxInvoiceItem.DoesNotExist:
+                continue
+            
+            price = float(product.get("price", 0))
+            quantity = float(product.get("quantity", 0))
+            gst_percent = float(product.get("gst_percent", 0))
+            total = price * quantity
+
+            gst_amount = round((total * gst_percent) / 100, 2) if gst_enabled else 0
+
+            item.hsn_code = product.get("hsn_code")
+            item.price = price
+            item.quantity = quantity
+            item.description = product.get("description")
+            item.unit = product.get("unit")
+            item.gst_percent = gst_percent
+            item.gst_amount = gst_amount
+            item.total = total
+            item.save()
+
+
+        # 2. Add new items (from JSON)
+        selected_products_json = request.POST.get('selected_products_json','[]')
+        # print(selected_products_json)
+        print("Selected Products JSON:", selected_products_json)
+        try:
+            new_items = json.loads(selected_products_json) if selected_products_json else []
+        except json.JSONDecodeError:
+            new_items = []
+        grand_total = 0
+        for item in new_items:  # items = new products from JSON
+            price = Decimal(item.get('price', 0) or 0)
+            quantity = Decimal(item.get('quantity', 0) or 0)
+            gst_percent = Decimal(item.get('gst', 0) or 0)
+
+            total = price * quantity
+            gst_amount = round((total * gst_percent) / 100, 2) if gst_enabled else 0
+
+            grand_total += total + gst_amount
+
+            TaxInvoiceItem.objects.create(
+                tax_invoice=invoice,
+                product_name=item.get('name'),
+                hsn_code=item.get('hsn'),
+                quantity=quantity,
+                description=item.get('description'),
+                unit=item.get('unit'),
+                price=price,
+                gst_percent=gst_percent,
+                gst_amount=gst_amount,
+                total=total
+            )
+
+        # 3. Update invoice total
+        invoice.grand_total = grand_total + sum(x.total + x.gst_amount for x in invoice.items.all())
+        
+        invoice.save(update_fields=['grand_total'])
+
+        return redirect('display_tax_invoice')
+
+    data = {
+        "invoice":invoice,
+        "items":items,
+        "branches":branches,
+        'state_map':state_map,
+        'banks': banks,
+        'category_choices':category_choices,
+        'product':product,
+    }
+    return render(request, 'edit_tax_invoice.html', context= data)
+
 def tax_invoice_pdf(request, id):
     invoice = get_object_or_404(TaxInvoice, id=id)
     items = invoice.items.all()
@@ -5446,21 +5585,33 @@ def draw_footer_and_logo(canvas, doc, logo_path, footer_path,branch):
     canvas.setLineWidth(0.8)
     canvas.setStrokeColorRGB(0, 0, 0)
     canvas.line(20 * mm, A4[1] - 48 * mm, A4[0] - 20 * mm, A4[1] - 48 * mm)
-    
-    # --- FOOTER ---
     try:
         footer = ImageReader(footer_path)
-        bottom_margin = 3 * mm 
-        canvas.drawImage(footer, 0, bottom_margin, width=A4[0], height=28 * mm)
+        iw, ih = footer.getSize()  
+
+        # Scale to fit width of A4 while keeping aspect ratio
+        aspect = ih / float(iw)
+        new_width = A4[0]         # full page width
+        new_height = new_width * aspect  
+
+        bottom_margin = 3 * mm
+        canvas.drawImage(
+            footer,
+            0,
+            bottom_margin,
+            width=new_width,
+            height=new_height,
+            preserveAspectRatio=True,
+            mask='auto'
+        )
     except Exception as e:
         print("Footer load failed:", e)
-
 
 def reportlab_quotation_pdf(request, id):
     quotation = quotation_management.objects.get(id=id)
     branch = quotation.branch
     logo_path = request.build_absolute_uri(static('images/Logo.png'))
-    footer_path = request.build_absolute_uri(static('images/qutation_fottor_pdf.jpg'))
+    footer_path = request.build_absolute_uri(static('images/NewFooter.png'))
     light_blue = HexColor("#0070C0")
     buffer = io.BytesIO()
     doc = BaseDocTemplate(buffer, pagesize=A4,
@@ -5480,13 +5631,13 @@ def reportlab_quotation_pdf(request, id):
     bold = ParagraphStyle(name='bold', parent=normal, fontName='Helvetica-Bold')
     small = ParagraphStyle(name='small', parent=normal, fontSize=9)
     full_width = ParagraphStyle(name='full_width', parent=normal, leftIndent=0, firstLineIndent=0,
-                                rightIndent=0, spaceBefore=0, spaceAfter=0, fontSize=10, leading=12)
+                                rightIndent=0, spaceBefore=0, spaceAfter=0, fontSize=10, leading=9)
 
     elements = []
 
     # --- Customer + Quotation Details ---
-    left_style = ParagraphStyle(name='left', fontSize=9, leading=12)
-    right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=12)
+    left_style = ParagraphStyle(name='left', fontSize=9, leading=9)
+    right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=9)
 
     customer_details = [
         Paragraph(f"<b>Name :</b> {quotation.customer_full_name}", left_style),
@@ -5507,8 +5658,8 @@ def reportlab_quotation_pdf(request, id):
     ]))
 
     quotation_details = [
-        Paragraph("<b>Quotation</b>", ParagraphStyle(name='title', fontSize=14, alignment=2, leading=16)),
-        Paragraph(f"<b>{quotation.quotation_no}</b>", ParagraphStyle(name="temp_right_bold", parent=right_style, fontSize=12, fontName='Helvetica-Bold')),
+        Paragraph("<b>Quotation</b>", ParagraphStyle(name='title', fontSize=12, alignment=2, leading=12)),
+        Paragraph(f"<b>{quotation.quotation_no}</b>", ParagraphStyle(name="temp_right_bold", parent=right_style, fontSize=14, fontName='Helvetica-Bold')),
         Paragraph(f"<b>Date:</b> {quotation.quotation_date.strftime('%d %B %Y')}", right_style)
     ]
     right_table = Table([[item] for item in quotation_details], colWidths=[85 * mm])
@@ -5520,7 +5671,7 @@ def reportlab_quotation_pdf(request, id):
         ('RIGHTPADDING', (0, 0), (-1, -1), 2),
     ]))
     elements.append(combined_table)
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 5))
 
     # --- Subject and Intro ---
     elements.append(Paragraph(f"<b>Subject:</b> {quotation.subject}", full_width))
@@ -5528,7 +5679,7 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Paragraph(
         f"<b>{ quotation.thank_u_note }:</b>",
         full_width))
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 8))
 
     # --- Product Table ---
     product_data = [["Sr. No.", "Product / Service", "Rate (Rs)", "Qty", "Total (Rs)"]]
@@ -5586,26 +5737,31 @@ def reportlab_quotation_pdf(request, id):
    
      # -- Totals data (2 columns only) --
     totals_data = []
-
-    totals_data.append(["Total:", f"{quotation.total_price:,.2f}"])
+    
+    totals_data.append([Paragraph(f"<b>Total :</b>", right_style),
+                        Paragraph(f"<b>{quotation.total_price:,.2f}</b>", right_style)])
 
     if quotation.apply_gst:
         if quotation.igst:
-            totals_data.append(["IGST :", f"{quotation.igst:,.2f}"])
+            totals_data.append([Paragraph(f"<b>IGST :</b>",right_style),
+                                Paragraph(f"<b>{quotation.igst:,.2f}</b>", right_style)])
         else:
 
-            totals_data.append(["CGST :", f"{quotation.cgst:,.2f}"])
-            totals_data.append(["SGST :", f"{quotation.sgst:,.2f}"])
-            totals_data.append(["Total Tax :", f"{quotation.gst_total:,.2f}"])
+            totals_data.append([Paragraph(f"<b>CGST :</b>", right_style), 
+                                Paragraph(f"<b>{quotation.cgst:,.2f}</b>", right_style)])
+            totals_data.append([Paragraph(f"<b>SGST :</b>",right_style),
+                                Paragraph(f"<b>{quotation.sgst:,.2f}</b>",right_style)])
+            totals_data.append([Paragraph(f"<b>Total Tax :</b>",right_style), 
+                                Paragraph(f"<b>{quotation.gst_total:,.2f}</b>", right_style)])
 
    
     totals_data.append([
-    Paragraph("<b>Grand Total:</b>", right_style),  
+    Paragraph("<b>Grand Total :</b>", right_style),  
     Paragraph(f"<b>{quotation.total_price_with_gst:,.2f}</b>", right_style)])
 
     # --- Total in Words as last row, spanning both columns ---
     amount_words = price_in_words(quotation.total_price_with_gst)
-    totals_data.append([Paragraph(f"<b>Total in Words:</b> {amount_words}", small), ""])
+    totals_data.append([Paragraph(f"<b>Total in Words : {amount_words}</b>", small), ""])
 
     # --- Create totals table ---
     totals_table = Table(totals_data, colWidths=[140 * mm, 30 * mm])
@@ -5634,7 +5790,7 @@ def reportlab_quotation_pdf(request, id):
     # --- Terms & Footer ---
    
     # Title
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 5))
     elements.append(Paragraph("<b>Terms & Conditions</b>", bold))
 
 
@@ -5678,24 +5834,24 @@ def reportlab_quotation_pdf(request, id):
 
     # GST Note (only when applicable)
     if quotation.apply_gst:
-        elements.append(Spacer(1, 6))
         elements.append(Paragraph(
             "All above material and services will be attracted to GST extra as per product or service applicable.",
             small
         ))
+        elements.append(Spacer(1, 5))
 
     # Thank You Block (always shown)
-    elements.append(Spacer(1, 10))
     elements.append(Paragraph(
         "We thank you for the opportunity given to serve you & look forward to adding you to our family of customers.",
         small
     ))
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1,8))
+    # elements.append(Spacer(1, 6))
 
     elements.append(Paragraph("<b>Thanking You,</b>", small))
-    elements.append(Spacer(1, 4))
+    elements.append(Spacer(1, 2))
     elements.append(Paragraph("<b>Seva Facility Services Pvt Ltd</b>", small))
-    elements.append(Spacer(1, 4))
+    elements.append(Spacer(1, 2))
     elements.append(Paragraph(f"<b>SFS Representative:</b> {quotation.contact_by} - {quotation.contact_by_no}", small))
 
 

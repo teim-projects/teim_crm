@@ -99,6 +99,7 @@
                     {{ invoice.customer.shifttopartycity }}, {{ invoice.customer.shifttopartystate }} -
                     {{ invoice.customer.soldtopartypostal }}<br>
                     GSTIN/UIN: {{ invoice.shift_gstin_uin }}<br>
+                    PAN: {{ invoice.shift_pan_number }}<br>
                     State: {{ invoice.shifttopartystate }}, Code: {{ invoice.shifttopartystatecode }}<br><br>
                     <strong>Buyer (Bill to)</strong><br>
                     {{ invoice.customer.fullname }}<br>
@@ -106,6 +107,7 @@
                     {{ invoice.customer.soldtopartycity }}, {{ invoice.customer.soldtopartystate }} -
                     {{ invoice.customer.soldtopartypostal }}<br>
                     GSTIN/UIN: {{ invoice.sold_gstin_uin }}<br>
+                    PAN: {{ invoice.sold_pan_number }}<br>
                     State: {{ invoice.soldtopartystate }}, Code: {{ invoice.soldtopartystatecode }}<br>
                     Place of Supply: {{ invoice.soldtopartystate }}
                 </td>
@@ -194,8 +196,21 @@
                 <td style="width: 60%; vertical-align: top;">
                     <p><strong>Remarks:</strong><br>
                         {{ invoice.remarks }}<br><br>
+                        
                         <strong>Declaration:</strong><br>
-                        {{ invoice.declaration }}
+                        {% if invoice.gst_type == "No GST" %}
+                            <span>
+                                "Non GST Declaration..."
+                            </span>
+                        {% else %}
+                            <span>
+                                "The Payment of this invoice is due immediately. In case
+                                of late payment, interest @18% p.a will be charged from
+                                the date of invoice up to the date of payment. Any
+                                dispute on service /invoice will be subject to Pune."
+                            </span>
+
+                        {% endif %}
                     </p>
                 </td>
                 <td style="vertical-align: bottom;">

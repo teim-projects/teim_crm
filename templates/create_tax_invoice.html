@@ -186,7 +186,10 @@
 
                         <label>GSTIN/UIN </label>
                         <input type="text" id="gstin-uin" name='sold_gstin_uin' class="form-control">
-                        
+
+                        <label for="sold_pan">PAN Number </label>
+                        <input type="text" id="sold_pan" name='sold_pan' class="form-control">
+
                         <label for="sold_state_select">Sold To Party State <span class="star">*</span></label>
                         <select id="sold_state_select" name="soldtopartystate" class="form-control"
                         onchange="updateStateCode('sold')">
@@ -204,7 +207,10 @@
                     
                     <label>GSTIN/UIN </label>
                     <input type="text" id="gstin-uin" name='shift_gstin_uin' class="form-control">
-                    
+
+                    <label for="shift_pan">PAN Number </label>
+                    <input type="text" id="shift_pan" name='shift_pan' class="form-control">
+
                     <label for="shift_state_select">Shift To Party State <span class="star">*</span></label>
                     <select id="shift_state_select" name="shifttopartystate" class="form-control"
                     onchange="updateStateCode('shift')">
@@ -320,8 +326,8 @@
                             <textarea name="remarks" id="remarks" class="form-control"></textarea>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label >Declaration</label>
-                            <textarea name="declaration" id="declaration" class="form-control"></textarea>
+                            <label >Terms of Delivery</label>
+                            <textarea name="terms_of_delivery" id="terms_of_delivery" class="form-control"></textarea>
                         </div>
                     </div>
                 </div>
@@ -446,12 +452,12 @@
                           </button>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label>Customer Name <span class="star">*</span></label>
-                            <input type="text" id="customer_name" name="customer_full_name" class="form-control">
-                        </div>
-                        <div class="col-md-4 mb-3">
                             <label>Contact <span class="star">*</span></label>
                             <input type="text" id="primary_contact" name="contact_no" class="form-control">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Customer Name <span class="star">*</span></label>
+                            <input type="text" id="customer_name" name="customer_full_name" class="form-control">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label>Email <span class="star">*</span></label>
@@ -470,6 +476,10 @@
                              <div class="mb-3">
                                  <label for="sold_gstin">GSTIN/UIN </label>
                                  <input type="text" id="sold_gstin" name='sold_gstin_uin' class="form-control ">
+                             </div>
+                             <div class="mb-3">
+                                 <label for="sold_pan">PAN Number </label>
+                                 <input type="text" id="sold_pan" name='sold_pan' class="form-control ">
                              </div>
                              <div class="mb-3">
                                  <label for="sold_state_select">State & Code <span class="star">*</span></label>
@@ -492,6 +502,10 @@
                              <div class="mb-3">
                                  <label for="ship_gstin">GSTIN/UIN </label>
                                  <input type="text" id="ship_gstin" class="form-control"  name='shift_gstin_uin'>
+                             </div>
+                             <div class="mb-3">
+                                 <label for="shift_pan">PAN Number </label>
+                                 <input type="text" id="shift_pan" name='shift_pan' class="form-control ">
                              </div>
                              <div class="mb-3">
                                  <label for="shift_state_select">State & Code <span class="star">*</span></label>
@@ -649,9 +663,9 @@
                             <label >Remarks</label>
                             <textarea name="remarks" id="remarks" class="form-control"></textarea>
                         </div>
-                        <div class="col-md-4 mb-1">
-                            <label >Declaration</label>
-                            <textarea name="declaration" id="declaration" class="form-control"></textarea>
+                        <div class="col-md-4 mb-3">
+                            <label >Terms of Delivery</label>
+                            <textarea name="terms_of_delivery" id="terms_of_delivery" class="form-control"></textarea>
                         </div>
                     </div>
                     
@@ -869,7 +883,8 @@
             </script>
             
         </div>
-        
+
+<!-- Add new product form modal -->
 <script>
 function loadAddProductForm() {
     fetch("{% url 'add_product' %}", {
@@ -1188,7 +1203,7 @@ showStep(currentStep);
                     });
             });
         });
-    </script>
+    </script>  
 
 <!-- Branch details -->
     <script>
@@ -1311,6 +1326,7 @@ showStep(currentStep);
                                 <th>Price</th>
                                 <th>Quantity</th>
                                 <th>Unit</th>
+                                <th>Description</th>
                         `;
                             
                         if (showGST) {
@@ -1336,6 +1352,7 @@ showStep(currentStep);
                                     <td><input type="number" class="form-control price" value="${parseFloat(prod.price).toFixed(2)}" readonly></td>
                                     <td><input type="number" class="form-control quantity" value="${parseFloat(prod.quantity).toFixed(2)}" readonly></td>
                                     <td><input type="text" class="form-control unit" value="${prod.unit}" readonly></td>
+                                    <td><input type="text" class="form-control description" value="${prod.description}" readonly></td>
                                     ${gstColumn}
                                 </tr>
                             `;
@@ -1433,7 +1450,8 @@ showStep(currentStep);
                     price: parseFloat(row.querySelector(".price")?.value || 0),
                     quantity: parseFloat(row.querySelector(".quantity")?.value || 0),
                     unit: row.querySelector(".unit")?.value || "",
-                    gst: parseFloat(row.querySelector(".gst")?.value || 0)
+                    gst: parseFloat(row.querySelector(".gst")?.value || 0),
+                    description: row.querySelector(".description")?.value || ""
                 });
             });
 
