@@ -5536,23 +5536,27 @@ import io
 from .models import quotation_management
 from .custom_filters import price_in_words  
 from reportlab.lib.colors import HexColor   
+from reportlab.lib.enums import TA_RIGHT
 
- 
-
-def draw_footer_and_logo(canvas, doc, logo_path, footer_path,branch):
+def draw_footer_and_logo(canvas, doc, logo_path, footer_path, branch):
     # --- HEADER ---
     try:
         # Logo (left side)
         logo = ImageReader(logo_path)
-        canvas.drawImage(logo, 20 * mm, A4[1] - 40 * mm, width=30 * mm, height=30 * mm, mask='auto')
+        canvas.drawImage(
+            logo, 20 * mm, A4[1] - 40 * mm,
+            width=30 * mm, height=30 * mm,
+            mask='auto'
+        )
     except Exception as e:
         print("Logo load failed:", e)
+
     # Fonts
     branch_font = ("Helvetica-Bold", 10)
     sfs_font = ("Helvetica-Bold", 15)
 
     # Texts
-    branch_text = branch.branch_name or ""
+    branch_text = 'Seva Facility Services Pvt Ltd'
     sfs_text = "SFS PEST CONTROL"
 
     # Widths
@@ -5566,41 +5570,54 @@ def draw_footer_and_logo(canvas, doc, logo_path, footer_path,branch):
     canvas.setFont(*branch_font)
     canvas.drawRightString(right_margin, A4[1] - 20 * mm, branch_text)
 
-    # Calculate X so SFS is centered above branch name
+    # Center "SFS PEST CONTROL" above branch name
     branch_center_x = right_margin - (branch_width / 2)
     sfs_x = branch_center_x - (sfs_width / 2)
-
-    # Draw SFS
     canvas.setFont(*sfs_font)
     canvas.drawString(sfs_x, A4[1] - 15 * mm, sfs_text)
 
+    # --- Address (wrapped to branch_text width) ---
+    from reportlab.lib.styles import ParagraphStyle
 
-    canvas.setFont("Helvetica", 8.5)
-    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 26 * mm, branch.full_address or "")
-    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 32 * mm, f"{branch.email_1}, {branch.email_2}")
-    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 38 * mm,branch.contact_1 or "")
-    canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 44 * mm,  f"GSTIN: {branch.gst_number} | PAN No: {branch.pan_number}")
+    style = ParagraphStyle(
+        "right_address",
+        fontName="Helvetica",
+        fontSize=8.5,
+        leading=10,
+        alignment=TA_RIGHT
+    )
 
-      # --- Horizontal Line (HR) ---
+    if branch.full_address:
+        addr_para = Paragraph(branch.full_address, style)
+        addr_w, addr_h = addr_para.wrap(branch_width, 100*mm)  # <= max width = branch_text width
+        addr_para.drawOn(canvas, right_margin - addr_w, A4[1] - 22*mm - addr_h)
+
+    # Other branch details
+    canvas.setFont("Helvetica", 8.5)    
+    canvas.drawRightString(right_margin, A4[1] - 36 * mm, f"{branch.email_1}, {branch.email_2}")
+    canvas.drawRightString(right_margin, A4[1] - 40 * mm, branch.contact_1 or "")
+    canvas.drawRightString(
+        right_margin, A4[1] - 44 * mm,
+        f"GSTIN: {branch.gst_number} | PAN No: {branch.pan_number}"
+    )
+
+    # --- Horizontal Line ---
     canvas.setLineWidth(0.8)
     canvas.setStrokeColorRGB(0, 0, 0)
     canvas.line(20 * mm, A4[1] - 48 * mm, A4[0] - 20 * mm, A4[1] - 48 * mm)
+
+    # Footer image
     try:
         footer = ImageReader(footer_path)
-        iw, ih = footer.getSize()  
-
-        # Scale to fit width of A4 while keeping aspect ratio
+        iw, ih = footer.getSize()
         aspect = ih / float(iw)
-        new_width = A4[0]         # full page width
-        new_height = new_width * aspect  
-
+        new_width = A4[0]
+        new_height = new_width * aspect
         bottom_margin = 3 * mm
         canvas.drawImage(
             footer,
-            0,
-            bottom_margin,
-            width=new_width,
-            height=new_height,
+            0, bottom_margin,
+            width=new_width, height=new_height,
             preserveAspectRatio=True,
             mask='auto'
         )
