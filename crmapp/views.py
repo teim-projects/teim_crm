@@ -5537,11 +5537,13 @@ from .models import quotation_management
 from .custom_filters import price_in_words  
 from reportlab.lib.colors import HexColor   
 from reportlab.lib.enums import TA_RIGHT
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.enums import TA_RIGHT
 
 def draw_footer_and_logo(canvas, doc, logo_path, footer_path, branch):
     # --- HEADER ---
     try:
-        # Logo (left side)
         logo = ImageReader(logo_path)
         canvas.drawImage(
             logo, 20 * mm, A4[1] - 40 * mm,
@@ -5551,34 +5553,28 @@ def draw_footer_and_logo(canvas, doc, logo_path, footer_path, branch):
     except Exception as e:
         print("Logo load failed:", e)
 
-    # Fonts
     branch_font = ("Helvetica-Bold", 10)
     sfs_font = ("Helvetica-Bold", 15)
 
-    # Texts
     branch_text = 'Seva Facility Services Pvt Ltd'
     sfs_text = "SFS PEST CONTROL"
 
-    # Widths
     branch_width = canvas.stringWidth(branch_text, *branch_font)
     sfs_width = canvas.stringWidth(sfs_text, *sfs_font)
 
-    # Right margin
     right_margin = A4[0] - 20 * mm
 
-    # Draw branch name (right aligned)
+    # --- Branch name ---
     canvas.setFont(*branch_font)
     canvas.drawRightString(right_margin, A4[1] - 20 * mm, branch_text)
 
-    # Center "SFS PEST CONTROL" above branch name
+    # --- SFS centered above ---
     branch_center_x = right_margin - (branch_width / 2)
     sfs_x = branch_center_x - (sfs_width / 2)
     canvas.setFont(*sfs_font)
     canvas.drawString(sfs_x, A4[1] - 15 * mm, sfs_text)
 
-    # --- Address (wrapped to branch_text width) ---
-    from reportlab.lib.styles import ParagraphStyle
-
+    # --- Address (dynamic height) ---
     style = ParagraphStyle(
         "right_address",
         fontName="Helvetica",
@@ -5587,26 +5583,36 @@ def draw_footer_and_logo(canvas, doc, logo_path, footer_path, branch):
         alignment=TA_RIGHT
     )
 
+    current_y = A4[1] - 22 * mm  # start below branch name
+
     if branch.full_address:
         addr_para = Paragraph(branch.full_address, style)
-        addr_w, addr_h = addr_para.wrap(branch_width, 100*mm)  # <= max width = branch_text width
-        addr_para.drawOn(canvas, right_margin - addr_w, A4[1] - 22*mm - addr_h)
+        addr_w, addr_h = addr_para.wrap(branch_width, 100*mm)
+        addr_para.drawOn(canvas, right_margin - addr_w, current_y - addr_h)
+        current_y -= addr_h + 10  # move down based on actual height
 
-    # Other branch details
-    canvas.setFont("Helvetica", 8.5)    
-    canvas.drawRightString(right_margin, A4[1] - 36 * mm, f"{branch.email_1}, {branch.email_2}")
-    canvas.drawRightString(right_margin, A4[1] - 40 * mm, branch.contact_1 or "")
-    canvas.drawRightString(
-        right_margin, A4[1] - 44 * mm,
-        f"GSTIN: {branch.gst_number} | PAN No: {branch.pan_number}"
-    )
+    # --- Email(s) ---
+    canvas.setFont("Helvetica", 8.5)
+    if branch.email_1 or branch.email_2:
+        canvas.drawRightString(right_margin, current_y, f"{branch.email_1}, {branch.email_2}")
+        current_y -= 12
+
+    # --- Contact ---
+    if branch.contact_1:
+        canvas.drawRightString(right_margin, current_y, branch.contact_1)
+        current_y -= 12
+
+    # --- GST + PAN ---
+    gst_pan_text = f"GSTIN: {branch.gst_number} | PAN No: {branch.pan_number}"
+    canvas.drawRightString(right_margin, current_y, gst_pan_text)
+    current_y -= 12
 
     # --- Horizontal Line ---
     canvas.setLineWidth(0.8)
     canvas.setStrokeColorRGB(0, 0, 0)
-    canvas.line(20 * mm, A4[1] - 48 * mm, A4[0] - 20 * mm, A4[1] - 48 * mm)
+    canvas.line(20 * mm, current_y, A4[0] - 20 * mm, current_y)
 
-    # Footer image
+    # --- Footer Image ---
     try:
         footer = ImageReader(footer_path)
         iw, ih = footer.getSize()
@@ -5654,7 +5660,7 @@ def reportlab_quotation_pdf(request, id):
 
     # --- Customer + Quotation Details ---
     left_style = ParagraphStyle(name='left', fontSize=9, leading=9)
-    right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=9)
+    right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=14)
 
     customer_details = [
         Paragraph(f"<b>Name :</b> {quotation.customer_full_name}", left_style),
@@ -5868,7 +5874,7 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Paragraph("<b>Thanking You,</b>", small))
     elements.append(Spacer(1, 2))
     elements.append(Paragraph("<b>Seva Facility Services Pvt Ltd</b>", small))
-    elements.append(Spacer(1, 2))
+    elements.append(Spacer(1, 6))
     elements.append(Paragraph(f"<b>SFS Representative:</b> {quotation.contact_by} - {quotation.contact_by_no}", small))
 
 
