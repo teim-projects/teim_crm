@@ -77,6 +77,16 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
+#products-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* space between rows */
+}
+.product-item {
+    background: #f9f9f9;   /* light background */
+}
+
+
 @media (max-width: 575.98px) {
      .text-invoice {
         padding-bottom: 20px;
@@ -622,7 +632,12 @@
                         <div class="col-12">
                             <label class="font-weight-medium">Available Products</label>
                             <input type="search" name="product_search" id="product_search" class="form-control" placeholder="Search Products">
-                            <div id="products-container" class="mt-2"></div>
+                            <!-- Scrollable container -->
+                            <div id="products-container" 
+                                 class="mt-2 border rounded p-2" 
+                                 style="max-height: 300px; overflow-y: auto;">
+                            </div>
+                            <!-- <div id="products-container" class="mt-2"></div> -->
                         </div>
                     </div>
 
@@ -1040,32 +1055,32 @@ showStep(currentStep);
                         <div class="mb-1 text-dark"><strong>${product.product_name}</strong></div>
                         <div class="row g-2 mb-0">
                             <div class="col-md-2">
-                                <label>Price</label>
+                                <label class="mt-1">Price</label>
                                 <input type="number" class="form-control product-price" value="0" step="0.01">
                             </div>
                             <div class="col-md-2">
-                                <label>Quantity</label>
+                                <label class="mt-1">Quantity</label>
                                 <input type="number" class="form-control product-quantity" value="1" step="0.01" min="0.01">
                             </div>
-                            <div class="col-md-4">
-                                <label>HSN / SAC </label>
+                            <div class="col-md-5">
+                                <label class="mt-1">HSN / SAC </label>
                                 <input type="text" class="form-control product-hsn-sac" placeholder="HSN / SAC">
                             </div>
                            
                             <div class="col-md-2 product-gst-group" style="display:${gstEnabled ? 'block' : 'none'}">
-                                <label>GST %</label>
+                                <label class="mt-1">GST %</label>
                                 <input type="number" class="form-control product-gst" value="18" step="0.01">
                             </div>
-                            <div class="col-md-2">
-                                <label>Unit</label>
+                            <div class="col-md-2 ">
+                                <label class="mt-1">Unit</label>
                                 <input type="text" class="form-control product-unit" placeholder="Unit">
                             </div>
-                            <div class="col-md-8 mt-0">
-                                <label>Description</label>
-                                <textarea class="form-control product-description" rows="2"></textarea>
+                            <div class="col-md-8">
+                                <label class="mt-1">Description</label>
+                                <textarea class="form-control product-description" rows="1"></textarea>
                             </div>
-                            <div class="col-md-2 align-self-center mt-4">
-                                <button type="button" class="btn btn-sm btn-primary" onclick='addProductManually(${JSON.stringify(product)})'>
+                            <div class="col-md-2 align-self-center">
+                                <button type="button" class="btn btn-sm btn-primary mt-4" onclick='addProductManually(${JSON.stringify(product)})'>
                                     + Add
                                 </button>
                             </div>
