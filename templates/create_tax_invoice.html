@@ -164,17 +164,39 @@
                 <div class="step" id="step-2">
                     <h5 class=" text-center text-body-secondary">Customer Details</h5>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label>Customer Name <span class="star">*</span></label>
-                            <input type="text" id="customer_name" class="form-control" readonly>
+                            <input type="text" id="customer_name" name="customer_full_name" class="form-control" required>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label>Contact <span class="star">*</span></label>
-                            <input type="text" id="primary_contact" class="form-control" readonly>
+                            <input type="text" id="primary_contact" name="contact_no" class="form-control" required>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label>Email <span class="star">*</span></label>
-                            <input type="email" id="primary_email" class="form-control" readonly>
+                            <input type="email" id="primary_email" name="customer_email" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Customer Type</label>
+                            <select class="form-control" name="customer_type" id="view_customer_type" required>
+                                <option value="">Select Customer Type</option>
+                                <option value="Organization" {% if form_data.customer_type == "Organization" %}selected{% endif %}>
+                                    Organization
+                                </option>
+                                <option value="Individual" {% if form_data.customer_type == "Individual" %}selected{% endif %}>
+                                    Individual
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Org-specific fields (hidden by default via JS) -->
+                        <div class="col-md-3 org-fields">
+                            <label>Sub-Name</label>
+                            <input type="text" name="or_name" id="or_name" value="{{ form_data.or_name }}" class="form-control">
+                        </div>
+                        <div class="col-md-3 org-fields">
+                            <label>Sub-Contact No</label>
+                            <input type="text" name="or_contact" id="or_contact" value="{{ form_data.or_contact }}" class="form-control">
                         </div>
                     </div>
                     
@@ -550,7 +572,7 @@
                     </div>
                 </div>
                 </div>
-                
+
 
                 <!-- Product Info (Read-only) -->
                 <div class="product-section step" id="step-3" style="display:none;">
@@ -1357,11 +1379,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById('customer_name').value = data.fullname || '';
                     document.getElementById('primary_contact').value = data.primarycontact || '';
                     document.getElementById('primary_email').value = data.primaryemail || '';
+                    document.getElementById('view_customer_type').value = data.customer_type || '';
+                    document.getElementById('or_name').value = data.or_name || '';
+                    document.getElementById('or_contact').value = data.or_contact || '';
                     document.getElementById('sold_address').value =
                         `${data.soldtopartyaddress}, ${data.soldtopartycity}, ${data.soldtopartystate}, ${data.soldtopartypostal} `;
                     document.getElementById('ship_address').value =
                         `${data.shifttopartyaddress}, ${data.shifttopartycity}, ${data.shifttopartystate}, ${data.shifttopartypostal} `;
-
+                    toggleOrgFieldsByCustomerType();
                     // ✅ Bank Account (populate dynamically)
                     const bankDropdown = document.getElementById('bank_id');
                     bankDropdown.innerHTML = '<option value="">Select Bank Account</option>';

@@ -1286,10 +1286,12 @@ def get_quotation_details_by_no(request):
         total = quotation.total_price_with_gst
         bank_accounts = BankAccounts.objects.all().values('id', 'bank_name', 'account_number', 'ifs_code', 'branch')
         # Fetch customer manually by customer_id string field
-        customer_contact = quotation.contact_no
+        customer_contact = quotation.customer.primarycontact
         customer = customer_details.objects.get(primarycontact=customer_contact)
 
-
+        print(customer.customer_type)
+        print(customer.or_name)
+        print(customer.or_contact)
         return JsonResponse({
             # Branch data
             'branch_name':branch.branch_name if branch else '',
@@ -1313,6 +1315,9 @@ def get_quotation_details_by_no(request):
             'shifttopartycity': customer.shifttopartycity,
             'shifttopartystate': customer.shifttopartystate,
             'shifttopartypostal': customer.shifttopartypostal,
+            'customer_type': customer.customer_type,
+            'or_name': customer.or_name,
+            'or_contact':customer.or_contact,
             
             # Product data
             'product':product,
@@ -1327,6 +1332,7 @@ def get_quotation_details_by_no(request):
             'bank': list(bank_accounts),
             'state_map': state_map,
         })
+       
 
     except quotation_management.DoesNotExist:
         return JsonResponse({'error': 'Quotation not found'}, status=404)
@@ -4932,7 +4938,7 @@ def create_tax_invoice(request):
                 # 1. Get quotation and related data
                 quotation_no = request.POST.get("quotation_no")
                 quotation = get_object_or_404(quotation_management, quotation_no=quotation_no)
-                customer = get_object_or_404(customer_details, primarycontact=quotation.contact_no)
+                customer = get_object_or_404(customer_details, primarycontact=quotation.customer.primarycontact)
                 branch = get_object_or_404(Branch, id = quotation.branch_id)
                 gst_enabled = quotation.apply_gst
                 if quotation.igst > 0:
