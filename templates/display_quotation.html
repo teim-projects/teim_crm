@@ -519,9 +519,9 @@
                     <a href="/delete_quotation/{{ x.id }}" class="btn btn-sm btn-danger delete-link"><i class="fa-solid fa-trash"></i></a>
                 </td>
                 <td>{{ x.quotation_no }}</td>
-                <td>{{ x.customer_full_name }}</td>
-                <td>{{ x.contact_no }}</td>
-                <td>{{ x.customer_email }}</td>
+                <td>{{ x.customer.fullname }}</td>
+                <td>{{ x.customer.primarycontact }}</td>
+                <td>{{ x.customer.primaryemail }}</td>
                 <td>{{ x.address|truncatechars:20 }}</td>
                 <td>{{ x.branch.branch_name|truncatechars:20 }}</td>
                 <td>

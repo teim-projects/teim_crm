@@ -463,7 +463,29 @@
                             <label>Email <span class="star">*</span></label>
                             <input type="email" id="primary_email" name="customer_email" class="form-control">
                         </div>
-                    </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Customer Type</label>
+                            <select class="form-control" name="customer_type" id="view_customer_type" required>
+                                <option value="">Select Customer Type</option>
+                                <option value="Organization" {% if form_data.customer_type == "Organization" %}selected{% endif %}>
+                                    Organization
+                                </option>
+                                <option value="Individual" {% if form_data.customer_type == "Individual" %}selected{% endif %}>
+                                    Individual
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Org-specific fields (hidden by default via JS) -->
+                        <div class="col-md-3 org-fields">
+                            <label>Sub-Name</label>
+                            <input type="text" name="or_name" value="{{ form_data.or_name }}" class="form-control">
+                        </div>
+                        <div class="col-md-3 org-fields">
+                            <label>Sub-Contact No</label>
+                            <input type="text" name="or_contact" value="{{ form_data.or_contact }}" class="form-control">
+                        </div>
+
 
                     <div class="row">
                          <!-- Sold To Party -->
@@ -493,7 +515,7 @@
                          </div>
                      
                          <!-- Ship To Party -->
-                         <div class="col-md-6">
+                        <div class="col-md-6">
                              <h6 class="mb-2 text-body-secondary text-center">Ship To Party ( Consignee )</h6>
                              <div class="mb-3">
                                  <label for="ship_address">Address <span class="star">*</span></label>
@@ -527,6 +549,8 @@
                         </button>
                     </div>
                 </div>
+                </div>
+                
 
                 <!-- Product Info (Read-only) -->
                 <div class="product-section step" id="step-3" style="display:none;">
@@ -768,7 +792,7 @@
 
                                     <div class="col-md-4 mb-4">
                                         <label>Customer Type<span class="star">*</span></label>
-                                        <select name="customer_type" class="form-control" id="customer_type_select" onchange="toggleOrganizationFields()">
+                                        <select name="customer_type" class="form-control" id="customer_type" onchange="toggleOrganizationFields()">
                                           <option value="Individual" {% if customer_type == 'Individual' %}selected{% endif %}>Individual</option>
                                           <option value="Organization" {% if customer_type == 'Organization' %}selected{% endif %}>Organization</option>
                                         </select>
@@ -1134,6 +1158,31 @@ showStep(currentStep);
 
 </script>
 
+<!-- Customer type but in quotation form -->
+<script>
+function toggleOrgFieldsByCustomerType() {
+    const customerTypeInput = document.getElementById("view_customer_type");
+    if (!customerTypeInput) return;
+
+    const customerType = customerTypeInput.value.trim();
+    const orgFields = document.querySelectorAll(".org-fields");
+
+    const show = (customerType === "Organization");
+    orgFields.forEach(el => {
+        el.style.display = show ? "block" : "none";
+    });
+}
+
+// Run on page load + when dropdown changes
+document.addEventListener("DOMContentLoaded", function () {
+    toggleOrgFieldsByCustomerType();
+
+    const customerTypeInput = document.getElementById("view_customer_type");
+    if (customerTypeInput) {
+        customerTypeInput.addEventListener("change", toggleOrgFieldsByCustomerType);
+    }
+});
+</script>
 <!-- Customer details -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -1147,7 +1196,9 @@ showStep(currentStep);
 
             const shipAddressField = document.getElementById("ship_address");
             const shiftStateSelect = document.getElementById("shift_state_select");
-            
+            const customerTypeField = document.querySelector('select[name="customer_type"]');
+            const or_nameField = document.querySelector('input[name="or_name"]');
+            const or_contactField = document.querySelector('input[name="or_contact"]');
 
             contactInput.addEventListener('blur', function () {
                 const contactNo = this.value.trim();
@@ -1196,6 +1247,18 @@ showStep(currentStep);
 
                         if (data.state) {
                             shiftStateSelect.value = data.state;
+                        }
+                        if (!customerTypeField.value && data.customer_type) {
+                            customerTypeField.value = data.customer_type;
+                            toggleOrgFieldsByCustomerType(); 
+                        }
+
+                        if (!or_nameField.value && data.or_name) {
+                            or_nameField.value = data.or_name;
+                        }
+
+                        if (!or_contactField.value && data.or_contact) {
+                            or_contactField.value = data.or_contact;
                         }
                     })
                     .catch(error => {

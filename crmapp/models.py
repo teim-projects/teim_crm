@@ -580,18 +580,18 @@ from django.db.models import Sum
 class quotation_management(models.Model):
     customer = models.ForeignKey(customer_details, on_delete = models.CASCADE, null=True, blank=True)
     quotation_no = models.CharField(max_length=20, blank=True, null=True, unique=True)
-    customer_full_name = models.CharField(max_length=255, null=True, blank=True)
-    contact_no = models.CharField(max_length=15, null=True, blank=True)
-    secondary_contact_no = models.CharField(max_length=15, null=True, blank=True)
-    customer_email = models.EmailField(null=True, blank=True)
-    secondary_email = models.EmailField(null=True, blank=True)  
+    # customer_full_name = models.CharField(max_length=255, null=True, blank=True)
+    # contact_no = models.CharField(max_length=15, null=True, blank=True)
+    # secondary_contact_no = models.CharField(max_length=15, null=True, blank=True)
+    # customer_email = models.EmailField(null=True, blank=True)
+    # secondary_email = models.EmailField(null=True, blank=True)  
     contact_by = models.CharField(max_length=100 , null=True, blank=True)
     contact_by_no = models.CharField(max_length=11,null=True,blank=True)
     address = models.TextField(null=True, blank=True)
-    city = models.CharField(max_length=100, null=True, blank=True)
-    state = models.CharField(max_length=100, null=True, blank=True)
-    pincode = models.CharField(max_length=6, default="000000")
-    gps_location = models.URLField(null=True, blank=True)
+    # city = models.CharField(max_length=100, null=True, blank=True)
+    # state = models.CharField(max_length=100, null=True, blank=True)
+    # pincode = models.CharField(max_length=6, default="000000")
+    # gps_location = models.URLField(null=True, blank=True)
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)  
     selected_services = models.ManyToManyField(Product, related_name="quotation_services", blank=True)
     product_details_json = models.JSONField(null=True, blank=True)
@@ -626,7 +626,8 @@ class quotation_management(models.Model):
 
     def __str__(self):
         selected_services = ', '.join([str(service) for service in self.selected_services.all()])
-        return f'Quotation Management - {self.customer_full_name} ({selected_services})'
+        customer_name = self.customer.fullname if self.customer else "No Customer"
+        return f'Quotation Management - {customer_name} ({selected_services})'
 
 
     def save(self, *args, **kwargs):

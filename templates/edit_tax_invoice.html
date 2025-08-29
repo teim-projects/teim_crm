@@ -188,6 +188,28 @@ input[type=number] {
                             <input type="email" id="primary_email" name="customer_email" class="form-control"
                             value="{{ invoice.customer.primaryemail }}">
                         </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Customer Type</label>
+                            <select class="form-control" name="customer_type" id="view_customer_type" required>
+                                <option value="">Select Customer Type</option>
+                                <option value="Organization" {% if invoice.customer.customer_type == "Organization" %}selected{% endif %}>
+                                    Organization
+                                </option>
+                                <option value="Individual" {% if invoice.customer.customer_type == "Individual" %}selected{% endif %}>
+                                    Individual
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Org-specific fields (hidden by default via JS) -->
+                        <div class="col-md-3 org-fields">
+                            <label>Sub-Name</label>
+                            <input type="text" name="or_name" value="{{ invoice.customer.or_name }}" class="form-control">
+                        </div>
+                        <div class="col-md-3 org-fields">
+                            <label>Sub-Contact No</label>
+                            <input type="text" name="or_contact" value="{{ invoice.customer.or_contact }}" class="form-control">
+                        </div>
                     </div>
 
                     <div class="row">
@@ -808,6 +830,31 @@ showStep(currentStep);
 
 </script>
 
+<!-- Customer type but in quotation form -->
+<script>
+function toggleOrgFieldsByCustomerType() {
+    const customerTypeInput = document.getElementById("view_customer_type");
+    if (!customerTypeInput) return;
+
+    const customerType = customerTypeInput.value.trim();
+    const orgFields = document.querySelectorAll(".org-fields");
+
+    const show = (customerType === "Organization");
+    orgFields.forEach(el => {
+        el.style.display = show ? "block" : "none";
+    });
+}
+
+// Run on page load + when dropdown changes
+document.addEventListener("DOMContentLoaded", function () {
+    toggleOrgFieldsByCustomerType();
+
+    const customerTypeInput = document.getElementById("view_customer_type");
+    if (customerTypeInput) {
+        customerTypeInput.addEventListener("change", toggleOrgFieldsByCustomerType);
+    }
+});
+</script>
     <!-- ✅ Do NOT remove this sidebar toggle logic -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {

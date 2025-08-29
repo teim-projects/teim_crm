@@ -1025,18 +1025,18 @@ def quotation_management_create(request):
 
         try:
             # Core data
-            customer_full_name = request.POST.get('customer_full_name')
-            contact_no = request.POST.get('contact_no')
-            secondary_contact_no = request.POST.get('secondary_contact_no')
-            customer_email = request.POST.get('customer_email')
-            secondary_email = request.POST.get('secondary_email')
+            # customer_full_name = request.POST.get('customer_full_name')
+            # contact_no = request.POST.get('contact_no')
+            # secondary_contact_no = request.POST.get('secondary_contact_no')
+            # customer_email = request.POST.get('customer_email')
+            # secondary_email = request.POST.get('secondary_email')
             contact_by = request.POST.get('sales_person_list')
             contact_by_no = request.POST.get('contact_by_no')
             address = request.POST.get('address')
-            city = request.POST.get('city')
-            state = request.POST.get('state')
-            gps_location = request.POST.get('gps_location')
-            pincode = request.POST.get('pincode', '000000')
+            # city = request.POST.get('city')
+            # state = request.POST.get('state')
+            # gps_location = request.POST.get('gps_location')
+            # pincode = request.POST.get('pincode', '000000')
             subject = request.POST.get('subject')
             branch_id = request.POST.get('branch_id')
             product_details_json = request.POST.get('product_details_json')
@@ -1108,18 +1108,18 @@ def quotation_management_create(request):
             # Create the quotation
             quotation = quotation_management.objects.create(
                 customer=customer,
-                customer_full_name=customer_full_name,
-                contact_no=contact_no,
-                secondary_contact_no=secondary_contact_no,
-                customer_email=customer_email,
-                secondary_email=secondary_email,
+                # customer_full_name=customer_full_name,
+                # contact_no=contact_no,
+                # secondary_contact_no=secondary_contact_no,
+                # customer_email=customer_email,
+                # secondary_email=secondary_email,
                 contact_by = contact_by,
                 contact_by_no = contact_by_no,
                 address=address,
-                city=city,
-                state=state,
-                gps_location=gps_location,
-                pincode=pincode,
+                # city=city,
+                # state=state,
+                # gps_location=gps_location,
+                # pincode=pincode,
                 subject=subject,
                 quotation_date=quotation_date,
                 apply_gst=enable_gst,
@@ -2378,14 +2378,14 @@ def display_quotation(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
     sort_order = sort_order if sort_order in ['asc', 'desc'] else 'asc'
-    sort_by = request.GET.get('sort_by', 'customer_full_name')
+    sort_by = request.GET.get('sort_by', 'customer__fullname')
     customer_type = request.GET.get('customer_type')
-    valid_sort_fields = ['quotation_no','customer_full_name', 'quotation_date', 'total_price', 'total_price_with_gst']
+    valid_sort_fields = ['quotation_no','customer__fullname', 'quotation_date', 'total_price', 'total_price_with_gst']
 
     m = quotation_management.objects.all()
     if query:
         m = m.filter(
-            Q(customer_full_name__icontains=query) |
+            Q(customer__fullname__icontains=query) |
             Q(quotation_no__icontains=query) |
             Q(customer__customerid__icontains=query) |
             Q(contact_no__icontains=query)
@@ -2399,7 +2399,7 @@ def display_quotation(request):
         order_prefix = '-' if sort_order == 'desc' else ''
         m = m.order_by(f'{order_prefix}{sort_by}')
     else:
-        m = m.order_by('customer_full_name')
+        m = m.order_by('customer__fullname')
 
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
@@ -3094,6 +3094,7 @@ def edit_quotation(request, rid):
         or_contact = request.POST.get('or_contact')
         thank_u_note = request.POST.get('thank_u_note')
 
+        customer.primarycontact = contact_no
         customer.fullname = customer_full_name
         customer.primaryemail = customer_email
         customer.secondaryemail = secondary_email
@@ -3104,6 +3105,7 @@ def edit_quotation(request, rid):
 
          # Save changes
         customer.save(update_fields=[
+            "primarycontact",
             "fullname",
             "secondarycontact",
             "primaryemail",
@@ -3172,11 +3174,11 @@ def edit_quotation(request, rid):
         total_with_gst = total_without_gst + total_gst
 
         # Save quotation fields
-        quotation.customer_full_name = customer_full_name
-        quotation.contact_no = contact_no
-        quotation.secondary_contact_no = secondary_contact_no
-        quotation.customer_email = customer_email
-        quotation.secondary_email = secondary_email
+        # quotation.customer_full_name = customer_full_name
+        # quotation.contact_no = contact_no
+        # quotation.secondary_contact_no = secondary_contact_no
+        # quotation.customer_email = customer_email
+        # quotation.secondary_email = secondary_email
         quotation.contact_by = contact_by
         quotation.contact_by_no = contact_by_no
         quotation.address = address
@@ -4977,7 +4979,17 @@ def create_tax_invoice(request):
                 items = json.loads(selected_products_json)
             bank_id = request.POST.get("bank_id")
             bank = get_object_or_404(BankAccounts, id=bank_id)
-            # 4. Create TaxInvoice with grand_total
+
+            # Update customer details
+            customer.primarycontact = request.POST.get('contact_no')
+            customer.fullname = request.POST.get('customer_full_name')
+            customer.primaryemail = request.POST.get('customer_email')
+            customer.customer_type = request.POST.get('customer_type')
+            customer.or_name = request.POST.get('or_name')
+            customer.or_contact = request.POST.get('or_contact')
+            customer.save()
+
+            # Create TaxInvoice with grand_total
             invoice = TaxInvoice.objects.create(
                 quotation=quotation,
                 customer=customer,
@@ -5120,9 +5132,19 @@ def edit_tax_invoice(request, id):
     banks = BankAccounts.objects.all()
     category_choices = Product.CATEGORY_CHOICES
     product = Product.objects.all()
+    customer = invoice.customer
     if request.method == "POST":
+
+        customer.fullname = request.POST.get('customer_full_name')
+        customer.primarycontact = request.POST.get('contact_no')
+        customer.primaryemail = request.POST.get('customer_email')
+        customer.customer_type = request.POST.get('customer_type')
+        customer.or_contact = request.POST.get('or_contact')
+        customer.or_name = request.POST.get('or_name')
+        customer.save()
+
         invoice.branch_id = request.POST.get('branch_id')
-        invoice.customer = get_object_or_404(customer_details, primarycontact=request.POST.get('contact_no'))
+        invoice.customer = customer
         invoice.bill_to_address = request.POST.get('bill_to_address')
         invoice.ship_to_address = request.POST.get('ship_to_address')
         invoice.shift_gstin_uin = request.POST.get('shift_gstin_uin')
@@ -5131,14 +5153,14 @@ def edit_tax_invoice(request, id):
         invoice.sold_pan_number = request.POST.get('sold_pan')
         invoice.buyers_order_no = request.POST.get('buyer_order_no')
         invoice.dispatch_doc_no = request.POST.get('dispatch_doc_no')
-        invoice.dated = request.POST.get('dated')
+        invoice.dated = parse_date(request.POST.get('dated'))
         invoice.referance_no_and_date = request.POST.get('referance_no_and_date')
         invoice.dispatched_through = request.POST.get('dispatched_through')
         invoice.destination = request.POST.get('destination')
         invoice.other_referance =  request.POST.get('other_references')
         invoice.modern_terms_of_payment = request.POST.get('mode_terms_of_payment')
         invoice.delivery_note = request.POST.get('delivery_note')
-        invoice.delivery_note_date = request.POST.get('delivery_note_date')
+        invoice.delivery_note_date = parse_date(request.POST.get('delivery_note_date'))
         invoice.remarks = request.POST.get('remarks')
         invoice.terms_of_delivery = request.POST.get('terms_of_delivery')
         invoice.bank_id = request.POST.get('bank_id')
@@ -5663,9 +5685,9 @@ def reportlab_quotation_pdf(request, id):
     right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=14)
 
     customer_details = [
-        Paragraph(f"<b>Name :</b> {quotation.customer_full_name}", left_style),
-        Paragraph(f"<b>Phone :</b> {quotation.contact_no}", left_style),
-        Paragraph(f"<b>Email :</b> {quotation.customer_email}", left_style),
+        Paragraph(f"<b>Name :</b> {quotation.customer.fullname}", left_style),
+        Paragraph(f"<b>Phone :</b> {quotation.customer.primarycontact}", left_style),
+        Paragraph(f"<b>Email :</b> {quotation.customer.primaryemail}", left_style),
         Paragraph(f"<b>Address :</b> {quotation.address}", left_style),
     ]
     if quotation.or_name:
