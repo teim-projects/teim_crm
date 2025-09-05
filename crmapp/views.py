@@ -569,9 +569,15 @@ def add_sales_person(request):
         # Create Django User (username as email or phone, password default or random)
         username = mobile_no
         user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        user.is_staff = True
+        user.save()
+        
 
         # Assign role to user via UserProfile
-        UserProfile.objects.create(user=user, role='sales', phone=mobile_no)
+        user_profile = user.userprofile  # auto-created by the signal
+        user_profile.role = 'sales'
+        user_profile.phone = mobile_no
+        user_profile.save()
 
         # Create SalesPerson record
         SalesPerson.objects.create(
@@ -659,6 +665,8 @@ def edit_sales_person(request, pk):
                 password=password or User.objects.make_random_password(),
                 first_name=full_name
             )
+        user.is_staff = True
+        user.save()
 
         # Update or create UserProfile
         user_profile, created = UserProfile.objects.get_or_create(user=user)
@@ -1108,18 +1116,9 @@ def quotation_management_create(request):
             # Create the quotation
             quotation = quotation_management.objects.create(
                 customer=customer,
-                # customer_full_name=customer_full_name,
-                # contact_no=contact_no,
-                # secondary_contact_no=secondary_contact_no,
-                # customer_email=customer_email,
-                # secondary_email=secondary_email,
                 contact_by = contact_by,
                 contact_by_no = contact_by_no,
                 address=address,
-                # city=city,
-                # state=state,
-                # gps_location=gps_location,
-                # pincode=pincode,
                 subject=subject,
                 quotation_date=quotation_date,
                 apply_gst=enable_gst,
@@ -1165,19 +1164,7 @@ def quotation_management_create(request):
             request.session.pop('quotation_form_data', None)
             request.session.modified = True
 
-            # return redirect(f'/generate_quotation/quotation/pdf/{quotation.id}/view')
-            # return render(request, 'quotation_create_new.html', {
-            #     # Existing context
-            #     'pdf_url': f'/generate_quotation/quotation/pdf/{quotation.id}/view',
-            #     'show_pdf_script': True,
-            #     'products': products,
-            #     'category_choices': category_choices,
-            #     'terms': terms,
-            #     'branches': branches,
-            #     'form': AddProductForm(),  
-            #     'form_data': {},   
-                       
-            # })
+           
 
             return redirect(f'/create_quotation/?pdf={quotation.id}')
 
@@ -1693,7 +1680,6 @@ from datetime import datetime
 @role_required(['admin','sales'])
 def lead_management_create(request):
     salespersons = SalesPerson.objects.all()
-
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'primarycontact' in request.GET:
@@ -1703,7 +1689,7 @@ def lead_management_create(request):
             if lead:
                 data = {
                     'sourceoflead': lead.sourceoflead,
-                    'salesperson': lead.salesperson,
+                    'salesperson': lead.salesperson.id,
                     'customername': lead.customername,
                     'customersegment': lead.customersegment,
                     'enquirydate': lead.enquirydate.strftime('%Y-%m-%d') if lead.enquirydate else '',
@@ -1730,7 +1716,10 @@ def lead_management_create(request):
         try:
             # Get all form data
             sourceoflead = request.POST.get('sourceoflead')
-            salesperson = request.POST.get('salesperson')
+            # salesperson_id = request.POST.get("salesperson")
+            salesperson_mobile = request.user.username
+            print(salesperson_mobile)
+            sp = SalesPerson.objects.get(mobile_no = salesperson_mobile)
             customername = request.POST.get('customername')
             customersegment = request.POST.get('customersegment')
             
@@ -1768,7 +1757,7 @@ def lead_management_create(request):
             # Create new lead (duplicates allowed)
             lead = lead_management.objects.create(
                 sourceoflead=sourceoflead,
-                salesperson=salesperson,
+                salesperson=sp,
                 customername=customername,
                 customersegment=customersegment,
                 enquirydate=enquirydate,
@@ -1897,8 +1886,16 @@ def today_work(request):
     salesperson_filter = request.GET.get('salesperson')
 
     # Filter today's follow-ups
-    lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
-    followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
+    if request.user.userprofile.role =='admin':
+        lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
+        followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
+    elif request.user.userprofile.role == 'sales': 
+        lead_folloup = lead_management.objects.filter(firstfollowupdate = today ,
+                                                    salesperson__mobile_no = request.user.username )
+        followups = main_followup.objects.filter(next_followup_date=today, 
+                                                 lead__salesperson__mobile_no=request.user.username ).select_related('lead')
+    # lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
+    # followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
 
     if salesperson_filter:
         followups = followups.filter(lead__salesperson=salesperson_filter)
@@ -1963,7 +1960,11 @@ def pending_followups(request):
     order_prefix = '-' if order == 'desc' else ''
 
     # Overdue leads without followup
-    lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today)
+    if request.user.userprofile.role =='admin':
+        lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today )
+    elif request.user.userprofile.role == 'sales': 
+        lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today ,
+                                                    salesperson__mobile_no = request.user.username )
     if salesperson_filter:
         lead_folloup = lead_folloup.filter(salesperson=salesperson_filter)
 
@@ -2191,6 +2192,7 @@ def handle_customer_csv(file):
 
 
 from crmapp.models import Reschedule
+from django.db.models import Prefetch
 @login_required
 @role_required(['admin','sales'])
 def display_reschedule(request):
@@ -2250,7 +2252,10 @@ def display_service_management(request):
     customer_type = request.GET.get('customer_type')
 
     m = service_management.objects.all()
-
+    if request.user.userprofile.role =='admin':
+        m = service_management.objects.all()
+    elif request.user.userprofile.role == 'sales':
+        m = service_management.objects.filter(sales_person_contact_no = request.user.username)
     if query:
         m = m.filter(
             Q(customer__customerid__icontains=query) | 
@@ -2328,39 +2333,58 @@ def get_service_details(request, service_id):
     return render(request, 'service_details_modal.html', {'service': service})
 
 
+from itertools import chain
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 def display_allocation(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
-    sort_by = request.GET.get('sort_by', 'customerid')  
-    allocated_service_ids = WorkAllocation.objects.values_list('service_id', flat=True)
-    
+    sort_by = request.GET.get('sort_by', 'customerid')
+
+    # ✅ Base queryset depending on search
     if query:
-        m = service_management.objects.filter(
-            customer__customerid__icontains=query
-        ) | service_management.objects.filter(
-            customer__primarycontact__icontains=query
+        base_qs = service_management.objects.filter(
+            Q(customer__customerid__icontains=query) |
+            Q(customer__primarycontact__icontains=query)
         )
     else:
-        m = service_management.objects.all()
+        base_qs = service_management.objects.all()
 
+    # ✅ Split into groups
+    allocated_ids = WorkAllocation.objects.values_list('service_id', flat=True)
+
+    unallocated = base_qs.exclude(id__in=allocated_ids)
+    pending = base_qs.filter(work_allocations__status="Pending").distinct()
+    completed = base_qs.filter(work_allocations__status="Completed").distinct()
+
+    # ✅ Sorting field
     if sort_by == 'firstname':
-        if sort_order == 'desc':
-            m = m.order_by('-customer__firstname')  
-        else:
-            m = m.order_by('customer__firstname')  
+        order_field = 'customer__firstname'
     else:
-        if sort_order == 'desc':
-            m = m.order_by('-customer__customerid')  
-        else:
-            m = m.order_by('customer__customerid')
+        order_field = 'customer__customerid'
 
+    if sort_order == 'desc':
+        order_field = f'-{order_field}'
+
+    # ✅ Apply sorting
+    unallocated = unallocated.order_by(order_field)
+    pending = pending.order_by(order_field)
+    completed = completed.order_by(order_field)
+
+    # ✅ Merge in required order
+    m = list(chain(unallocated, pending, completed))
+
+    # ✅ Pagination
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
 
     context = {
-        'allocated_service_ids': list(allocated_service_ids),
+        'unallocated_ids': list(unallocated.values_list('id', flat=True)),
+        'pending_ids': list(pending.values_list('id', flat=True)),
+        'completed_ids': list(completed.values_list('id', flat=True)),
         'current_order': sort_order,
         'current_sort_by': sort_by,
         'page_obj': page_obj,
@@ -2394,7 +2418,7 @@ def display_quotation(request):
             Q(customer__fullname__icontains=query) |
             Q(quotation_no__icontains=query) |
             Q(customer__customerid__icontains=query) |
-            Q(contact_no__icontains=query)
+            Q(customer__primarycontact__icontains=query)
         )
     # Filter by customer type 
     if customer_type:
@@ -2490,8 +2514,11 @@ from .models import lead_management, SalesPerson, main_followup
 
 def display_lead_management(request):
     # 1. Start with all leads
-    filtered_leads = lead_management.objects.all()
-
+    if request.user.userprofile.role =='admin':
+        filtered_leads = lead_management.objects.all()
+    elif request.user.userprofile.role == 'sales':
+        salesperson = SalesPerson.objects.get(mobile_no =request.user.username)
+        filtered_leads = lead_management.objects.filter(salesperson=salesperson)
     # 2. Get filters from request
     search_query = request.GET.get('search','').strip()
     typeoflead_filter = request.GET.get('typeoflead')
@@ -3340,7 +3367,7 @@ def edit_lead_management(request, rid):
     
     elif request.method == 'POST':
         usourceoflead = request.POST.get('usourceoflead', '')
-        usalesperson = request.POST.get('usalesperson', '')
+        # usalesperson = request.user.username
         ucustomername = request.POST.get('ucustomername', '')
         ucustomersegment = request.POST.get('ucustomersegment', '')
         utypeoflead = request.POST.get('utypeoflead', '')
@@ -3373,6 +3400,7 @@ def edit_lead_management(request, rid):
             ufirstfollowupdate = None  # Handle invalid date format
 
         m=lead_management.objects.filter(id=rid)
+        usalesperson = get_object_or_404(SalesPerson, mobile_no = request.user.username)
 
         m.update(
             sourceoflead = usourceoflead,
@@ -3644,11 +3672,12 @@ def create_technician_profile(request):
         )
 
         # ✅ Assign role to user via UserProfile
-        UserProfile.objects.create(
-            user=user,
-            role='technician',
-            phone=contact_number
-        )
+       # update the auto-created profile
+        user_profile = user.userprofile  
+        user_profile.role = 'technician'
+        user_profile.phone = contact_number
+        user_profile.save()
+
 
         # ✅ Create the TechnicianProfile linked to the user
         TechnicianProfile.objects.create(
@@ -3856,6 +3885,114 @@ from datetime import datetime
 
 @login_required
 @role_required(['technician'])
+# def technician_dashboard(request):
+#     user = request.user
+#     try:
+#         technician_profile = TechnicianProfile.objects.get(user=user)
+#     except TechnicianProfile.DoesNotExist:
+#         technician_profile = None
+
+
+#     techworklistobj = TechWorkList.objects.all()
+#     for i in techworklistobj:
+#         print('tech',i.technician.first_name,'completion time',i.completion_datetime )
+
+
+#     works = WorkAllocation.objects.all()
+#     for work in works:
+#         if work.status == 'Pending':
+#             work.status = 'workdesk'
+#             work.save()
+#             TechWorkList.objects.create(technician=request.user, work=work)
+
+#     # Get the current date or use the month and year from query parameters
+#     query_month = request.GET.get('month')
+#     query_year = request.GET.get('year')
+
+#     if query_month and query_year:
+#         selected_month = int(query_month)
+#         selected_year = int(query_year)
+#     else:
+#         today = now()
+#         selected_month = today.month
+#         selected_year = today.year
+
+#     # Get the start and end dates for the selected month
+#     from django.utils.timezone import make_aware
+
+#     print('selected month: ', selected_month)
+#     print('selected year',selected_year)
+#     # Make the start and end dates timezone-aware
+#     first_day_of_month = make_aware(datetime(selected_year, selected_month, 1))
+#     last_day_of_month = make_aware(datetime(selected_year, selected_month, monthrange(selected_year, selected_month)[1], 23, 59, 59))
+
+#     print("first day",first_day_of_month)
+#     print('last day of month', last_day_of_month)
+
+
+#     # Filter works for the selected month
+#     print('Filter Range:', first_day_of_month, '-', last_day_of_month)
+
+#     completed_works = TechWorkList.objects.filter(
+#         technician=user,
+#         status='Completed',
+#         completion_datetime__range=[first_day_of_month, last_day_of_month]
+#     )
+
+#     print('Completed Works:', completed_works)
+
+#     # Group works by week
+#     weekly_work_counts = {}
+#     current_date = first_day_of_month
+#     while current_date <= last_day_of_month:
+#         week_start = current_date
+#         week_end = week_start + timedelta(days=6)
+
+#         week_label = f"{week_start.strftime('%d %b')} - {week_end.strftime('%d %b')}"
+#         count = completed_works.filter(
+#             completion_datetime__range=[week_start, min(week_end, last_day_of_month)]
+#         ).count()
+
+#         weekly_work_counts[week_label] = count
+#         print(f"Week: {week_label}, Count: {count}")  # Debugging output
+#         current_date = week_end + timedelta(days=1)
+
+#     # Prepare data for the chart
+#     labels = list(weekly_work_counts.keys())
+#     data = list(weekly_work_counts.values())
+
+
+#     chart_data = {
+#         'labels': labels,
+#         'data': data
+#     }
+#     chart_data_json = json.dumps(chart_data)
+
+#     # Determine previous and next months for navigation
+#     previous_month = first_day_of_month - timedelta(days=1)
+#     next_month = last_day_of_month + timedelta(days=1)
+#     if "notifications" not in request.session:
+#          request.session["notifications"] = [
+#              {"title": "Work Assigned", "message": "You have a new job today", "timestamp": now().strftime("%d %b %Y %H:%M")},
+#              {"title": "Reminder", "message": "Check your completed jobs for this week", "timestamp": now().strftime("%d %b %Y %H:%M")},
+#          ]
+
+#     notifications = request.session.get("notifications", [])
+
+#     context = {
+#         'user': user,
+#         'technician_profile': technician_profile,
+#         'chart_data_json': chart_data_json,  # Pass chart data to the template
+#         'selected_month': selected_month,
+#         'selected_year': selected_year,
+#         'previous_month': previous_month,
+#         'next_month': next_month,
+#         "notifications": notifications,
+#         "notifications_count": len(notifications),
+#     }
+
+
+#     return render(request, 'technician_dashboard.html', context)
 def technician_dashboard(request):
     user = request.user
     try:
@@ -3863,20 +4000,10 @@ def technician_dashboard(request):
     except TechnicianProfile.DoesNotExist:
         technician_profile = None
 
+    # 👇 Don’t re-create TechWorkList here blindly
+    # Just display existing work assignments
 
-    techworklistobj = TechWorkList.objects.all()
-    for i in techworklistobj:
-        print('tech',i.technician.first_name,'completion time',i.completion_datetime )
-
-
-    works = WorkAllocation.objects.all()
-    for work in works:
-        if work.status == 'Pending':
-            work.status = 'workdesk'
-            work.save()
-            TechWorkList.objects.create(technician=request.user, work=work)
-
-    # Get the current date or use the month and year from query parameters
+    # Get current month/year from query params or today
     query_month = request.GET.get('month')
     query_year = request.GET.get('year')
 
@@ -3888,73 +4015,74 @@ def technician_dashboard(request):
         selected_month = today.month
         selected_year = today.year
 
-    # Get the start and end dates for the selected month
+    # Make timezone-aware dates
     from django.utils.timezone import make_aware
-
-    print('selected month: ', selected_month)
-    print('selected year',selected_year)
-    # Make the start and end dates timezone-aware
     first_day_of_month = make_aware(datetime(selected_year, selected_month, 1))
-    last_day_of_month = make_aware(datetime(selected_year, selected_month, monthrange(selected_year, selected_month)[1], 23, 59, 59))
+    last_day_of_month = make_aware(datetime(
+        selected_year,
+        selected_month,
+        monthrange(selected_year, selected_month)[1],
+        23, 59, 59
+    ))
 
-    print("first day",first_day_of_month)
-    print('last day of month', last_day_of_month)
-
-
-    # Filter works for the selected month
-    print('Filter Range:', first_day_of_month, '-', last_day_of_month)
-
+    # ✅ Completed works this month
     completed_works = TechWorkList.objects.filter(
         technician=user,
         status='Completed',
         completion_datetime__range=[first_day_of_month, last_day_of_month]
     )
 
-    print('Completed Works:', completed_works)
-
-    # Group works by week
+    # ✅ Weekly counts
     weekly_work_counts = {}
     current_date = first_day_of_month
     while current_date <= last_day_of_month:
         week_start = current_date
         week_end = week_start + timedelta(days=6)
-
         week_label = f"{week_start.strftime('%d %b')} - {week_end.strftime('%d %b')}"
         count = completed_works.filter(
             completion_datetime__range=[week_start, min(week_end, last_day_of_month)]
         ).count()
-
         weekly_work_counts[week_label] = count
-        print(f"Week: {week_label}, Count: {count}")  # Debugging output
         current_date = week_end + timedelta(days=1)
 
-    # Prepare data for the chart
-    labels = list(weekly_work_counts.keys())
-    data = list(weekly_work_counts.values())
-
-
+    # ✅ Chart data
     chart_data = {
-        'labels': labels,
-        'data': data
+        'labels': list(weekly_work_counts.keys()),
+        'data': list(weekly_work_counts.values())
     }
     chart_data_json = json.dumps(chart_data)
 
-    # Determine previous and next months for navigation
-    previous_month = first_day_of_month - timedelta(days=1)
-    next_month = last_day_of_month + timedelta(days=1)
-    
+    # ✅ Notifications directly from TechWorkList
+    notifications = TechWorkList.objects.filter(
+        technician=user,
+        is_notified=True
+    )
+    notifications_count = notifications.count()
+
     context = {
         'user': user,
         'technician_profile': technician_profile,
-        'chart_data_json': chart_data_json,  # Pass chart data to the template
+        'chart_data_json': chart_data_json,
         'selected_month': selected_month,
         'selected_year': selected_year,
-        'previous_month': previous_month,
-        'next_month': next_month,
+        'previous_month': first_day_of_month - timedelta(days=1),
+        'next_month': last_day_of_month + timedelta(days=1),
+        "notifications": notifications,
+        "notifications_count": notifications_count,
     }
 
-
     return render(request, 'technician_dashboard.html', context)
+
+@csrf_exempt
+def clear_notifications(request):
+    if request.method == "POST":
+        TechWorkList.objects.filter(
+            technician=request.user,
+            is_notified=True
+        ).update(is_notified=False)
+        return JsonResponse({"status": "cleared"})
+    return JsonResponse({"status": "invalid request"}, status=400)
+
 
 def create_superadmin(request):
     # List of superadmin details
@@ -4343,7 +4471,9 @@ from .models import TechWorkList, UploadedFile
 def complete_work(request, work_id):
     tech_work = get_object_or_404(TechWorkList, id=work_id, technician=request.user)
     print('techn_work',tech_work)
-    
+    for w in tech_work.work.all():
+        print(w.payment_amount)
+
     if request.method == 'POST':
         # Get related work object (WorkAllocation)
         work_allocation = tech_work.work.first()  # Assuming only 1 work per tech_work
@@ -4381,10 +4511,19 @@ def complete_work(request, work_id):
 
         # Update customer payment status on WorkAllocation
         payment_status = request.POST.get('customer_payment_status')
-        if payment_status in ['Pending', 'Online', 'Cash']:
-            work_allocation.customer_payment_status = payment_status
-            work_allocation.save()
+        work_allocation.customer_payment_status = payment_status
+        work_allocation.save()
 
+        tech_work.payment_mode = payment_status
+        print('payment_status',payment_status)
+        tech_work.payment_type = request.POST.get('payment_type')
+        print('payment type',request.POST.get('payment_type'))
+        try:
+            tech_work.remaining_amount = float(request.POST.get('remaining_balance') or 0.00)
+        except ValueError:
+            tech_work.remaining_amount = 0.00
+        tech_work.next_due_date = request.POST.get('next_due_date') or None
+        tech_work.save()
         # Update all related TechWorkList entries for this work allocation
         related_tech_works = TechWorkList.objects.filter(work=work_allocation)
         for tw in related_tech_works:
@@ -4404,6 +4543,7 @@ def complete_work(request, work_id):
 def completed_work_list(request):
     completed_works = TechWorkList.objects.filter(technician=request.user, status='Completed')
     return render(request, 'completed_work_list.html', {'completed_works': completed_works})
+
 @login_required
 def work_details(request, work_id):
     work = get_object_or_404(TechWorkList, id=work_id, technician=request.user)
@@ -5687,14 +5827,21 @@ def reportlab_quotation_pdf(request, id):
     elements = []
 
     # --- Customer + Quotation Details ---
-    left_style = ParagraphStyle(name='left', fontSize=9, leading=9)
-    right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=14)
+    left_style = ParagraphStyle(name='left', fontSize=10, leading=10)
+    right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=12)
+    address_style = ParagraphStyle(
+        'address',
+        parent=left_style,
+        leading=14,       # extra line gap
+    )
 
+
+    
     customer_details = [
         Paragraph(f"<b>Name :</b> {quotation.customer.fullname}", left_style),
         Paragraph(f"<b>Phone :</b> {quotation.customer.primarycontact}", left_style),
         Paragraph(f"<b>Email :</b> {quotation.customer.primaryemail}", left_style),
-        Paragraph(f"<b>Address :</b> {quotation.address}", left_style),
+        Paragraph(f"<b>Address :</b> {quotation.address}", address_style ),
     ]
     if quotation.or_name:
         customer_details.append(
@@ -5725,12 +5872,21 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Spacer(1, 5))
 
     # --- Subject and Intro ---
+    thank_u_note_style = ParagraphStyle(
+        name="thank_u_note_style",
+        parent=full_width,
+        fontSize=10,
+        leading=14,        # extra line gap
+        # firstLineIndent=0, # label starts at margin
+        # leftIndent=65,     # adjust so wrapped lines start after label
+        # spaceAfter=10
+    )
     elements.append(Paragraph(f"<b>Subject:</b> {quotation.subject}", full_width))
-    elements.append(Spacer(1, 5))
+    elements.append(Spacer(1, 8))
     elements.append(Paragraph(
         f"<b>{ quotation.thank_u_note }:</b>",
-        full_width))
-    elements.append(Spacer(1, 8))
+         thank_u_note_style))
+    elements.append(Spacer(1, 10))
 
     # --- Product Table ---
     product_data = [["Sr. No.", "Product / Service", "Rate (Rs)", "Qty", "Total (Rs)"]]
@@ -5822,8 +5978,8 @@ def reportlab_quotation_pdf(request, id):
         ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
         ('SPAN', (0, -1), (1, -1)),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
         ('GRID', (0, 0), (-1, -1), 0.3, colors.gray),
     ]))
 

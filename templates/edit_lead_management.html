@@ -120,7 +120,7 @@
         <!-- Step 1 -->
 <div id="step1" class="step-section active">
   <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Source of Lead<span class="star">*</span></label>
       <select name="usourceoflead" class="form-control form-control-lg" required>
         <option disabled {% if not x.usourceoflead %}selected{% endif %}>Source of Lead</option>
@@ -134,18 +134,12 @@
         <option value="Others" {% if x.sourceoflead == "Others" %}selected{% endif %}>Others</option>
       </select>
     </div>
-    <div class="col-md-6 mb-4">
-      <label>Enter Salesperson<span class="star">*</span></label>
-      <input type="text" name="usalesperson" class="form-control form-control-lg" value="{{ x.salesperson }}" required />
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Enter Customer Name<span class="star">*</span></label>
       <input type="text" name="ucustomername" class="form-control form-control-lg" value="{{ x.customername }}" />
     </div>
-    <div class="col-md-6 mb-4">
+     
+    <div class="col-md-4 mb-4">
       <label>Enter Customer Segment<span class="star">*</span></label>
       <select name="ucustomersegment" class="form-control form-control-lg" required>
         <option disabled {% if not x.customersegment %}selected{% endif %}>Customer Segment</option>
@@ -155,17 +149,7 @@
         <option value="Irrelevant Lead" {% if x.customersegment == "Irrelevant Lead" %}selected{% endif %}>Irrelevant Lead</option>
       </select>
     </div>
-  </div>
-
-  <div class="text-center">
-    <button type="button" class="btn btn-primary" style="width: 200px;" onclick="nextStep(1)">Next</button>
-  </div>
-</div>
-
-<!-- Step 2 -->
-<div id="step2" class="step-section">
-  <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Type of Lead<span class="star">*</span></label>
       <select name="utypeoflead" class="form-control form-control-lg">
         <option disabled {% if not x.typeoflead %}selected{% endif %}>Type of Lead</option>
@@ -176,13 +160,13 @@
         <option value="LossOfOrder" {% if x.typeoflead == "LossOfOrder" %}selected{% endif %}>Loss Of Order</option>
       </select>
     </div>
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Enquiry Date<span class="star">*</span></label>
       <input type="date" name="uenquirydate" class="form-control form-control-lg" value="{{ x.enquirydate|date:'Y-m-d' }}" />
     </div>
-  </div>
 
-  <div class="row">
+
+
     <div class="col-md-4 mb-4">
       <label>Contacted By<span class="star">*</span></label>
       <input type="text" name="ucontactedby" class="form-control form-control-lg" value="{{ x.contactedby }}" />
@@ -195,10 +179,6 @@
       <label>Sub Category<span class="star">*</span></label>
       <input type="text" name="usubcategory" class="form-control form-control-lg" value="{{ x.subcategory }}" />
     </div>
-  </div>
-
-  <div class="row">
-    
     <div class="col-md-4 mb-4">
       <label>Customer Type<span class="star">*</span></label>
       <select name="ucustomer_type" class="form-control" id="customer_type_select" onchange="toggleOrganizationFields()">
@@ -216,6 +196,27 @@
       <input type="number" name="uor_contact" class="form-control" value="{{ x.or_contact }}">
     </div>
   </div>
+    <!-- <div class="col-md-6 mb-4">
+      <label>Enter Salesperson<span class="star">*</span></label>
+      <input type="text" name="usalesperson" class="form-control form-control-lg" value="{{ x.salesperson }}" required />
+    </div> -->
+  </div>
+
+
+  <div class="text-center">
+    <button type="button" class="btn btn-primary" style="width: 200px;" onclick="nextStep(1)">Next</button>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<!-- <div id="step2" class="step-section">
+  <div class="row">
+    
+  </div>
+
+  <div class="row">
+    
+    
 
   <div class="row">
     <div class="col-md-3"></div>
@@ -229,37 +230,37 @@
     </div>
     <div class="col-md-3"></div>
   </div>
-</div>
+</div> -->
 
 <!-- Step 3 -->
 <div id="step3" class="step-section">
   <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Primary Contact No<span class="star">*</span></label>
       <input type="number" name="uprimarycontact" class="form-control form-control-lg" value="{{ x.primarycontact }}"  required/>
     </div>
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Secondary Contact No</label>
       <input type="number" name="usecondarycontact" class="form-control form-control-lg" value="{{ x.secondarycontact }}" />
     </div>
   </div>
   <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Customer Email<span class="star">*</span></label>
       <input type="email" name="ucustomeremail" class="form-control form-control-lg" value="{{ x.customeremail }}" required/>
     </div>
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Location</label>
       <input type="url" name="ulocation" class="form-control form-control-lg" value="{{ x.location }}" />
     </div>
   </div>
 
   <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>City<span class="star">*</span></label>
       <input type="text" name="ucity" class="form-control form-control-lg" value="{{ x.city }}" />
     </div>
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Customer Address<span class="star">*</span></label>
       <textarea name="ucustomeraddress" class="form-control form-control-lg">{{ x.customeraddress }}</textarea>
     </div>
@@ -270,8 +271,7 @@
     <div class="col-md-3">    
         <button type="button" class="btn btn-secondary w-100" onclick="prevStep(1)">Previous</button>
 </div>
-    <div class="col-md-3">    <input type="submit" class="btn btn-success w-100" value="Submit" />
-</div>
+    <div class="col-md-3">    <input type="submit" class="btn btn-success w-100" value="Submit" /></div>
     <div class="col-md-3"></div>
   </div>
   <p class="mt-3 text-center text-danger">{{ msg1 }}</p>

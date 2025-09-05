@@ -100,6 +100,7 @@ urlpatterns = [
     path('technician_login/', views.technician_login, name='technician_login'), 
     path('not_authorized/', views.not_authorized, name='not_authorized'),
     path('technician_dashboard/', views.technician_dashboard, name='technician_dashboard'),
+    path('clear_notifications/',views.clear_notifications, name="clear_notifications"),
     path('create_superadmin/', views.create_superadmin, name='create_superadmin'),
     path('allocate/<int:service_id>/', views.allocate_work, name='allocate_work'),
     path('technician_work_list/', views.technician_work_list, name='technician_work_list'),

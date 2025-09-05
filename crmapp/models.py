@@ -315,7 +315,7 @@ class lead_management(models.Model):
         ('Employee Reference', 'Employee Reference'),
         ('Others', 'Others')
     ], default="NOT SELECTED")
-    salesperson = models.CharField(max_length=100)
+    salesperson = models.ForeignKey(SalesPerson, on_delete=models.CASCADE, related_name="leads")
     customername = models.CharField(max_length=100, null=True, blank=True)
     customer_type = models.CharField(max_length=100, null=True, blank=True)
     customersegment = models.CharField(max_length=100, choices=SEGMENTS_CHOICES)
@@ -579,19 +579,10 @@ from django.db.models import Sum
 # New ----------
 class quotation_management(models.Model):
     customer = models.ForeignKey(customer_details, on_delete = models.CASCADE, null=True, blank=True)
-    quotation_no = models.CharField(max_length=20, blank=True, null=True, unique=True)
-    # customer_full_name = models.CharField(max_length=255, null=True, blank=True)
-    # contact_no = models.CharField(max_length=15, null=True, blank=True)
-    # secondary_contact_no = models.CharField(max_length=15, null=True, blank=True)
-    # customer_email = models.EmailField(null=True, blank=True)
-    # secondary_email = models.EmailField(null=True, blank=True)  
+    quotation_no = models.CharField(max_length=20, blank=True, null=True, unique=True)  
     contact_by = models.CharField(max_length=100 , null=True, blank=True)
     contact_by_no = models.CharField(max_length=11,null=True,blank=True)
     address = models.TextField(null=True, blank=True)
-    # city = models.CharField(max_length=100, null=True, blank=True)
-    # state = models.CharField(max_length=100, null=True, blank=True)
-    # pincode = models.CharField(max_length=6, default="000000")
-    # gps_location = models.URLField(null=True, blank=True)
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)  
     selected_services = models.ManyToManyField(Product, related_name="quotation_services", blank=True)
     product_details_json = models.JSONField(null=True, blank=True)
@@ -650,7 +641,7 @@ class WorkAllocation(models.Model):
         ('Completed', 'Completed'),
         ('workdesk','workdesk'),
     ]
-    service = models.ForeignKey(service_management, on_delete=models.CASCADE)
+    service = models.ForeignKey(service_management, on_delete=models.CASCADE, related_name='work_allocations')
     technician = models.ManyToManyField(TechnicianProfile)
     fullname = models.CharField(max_length=100)
     customer_contact = models.CharField(max_length=15) 
@@ -683,7 +674,7 @@ class UploadedFile(models.Model):
 
 class TechWorkList(models.Model):
     technician = models.ForeignKey(User, on_delete=models.CASCADE)
-    work = models.ManyToManyField(WorkAllocation)
+    work = models.ManyToManyField(WorkAllocation, related_name='work')
     service = models.ForeignKey(service_management, on_delete=models.CASCADE, default=None, null=True, blank=True)
     status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Completed', 'Completed')], default='Pending')
     photos_before_service = models.ManyToManyField(UploadedFile, related_name='photos_before_service', blank=True)
@@ -691,6 +682,12 @@ class TechWorkList(models.Model):
     customer_signature_photo = models.ImageField(upload_to='photos/signatures/', blank=True, null=True)
     payment_photos = models.ManyToManyField(UploadedFile, related_name='payment_photos', blank=True)
     completion_datetime = models.DateTimeField(default=timezone.now)
+    payment_mode = models.CharField(max_length=20, choices=[('UPI','UPI'),('Cash','Cash'),('UPI+Cash','UPI Cash')], blank=True, null=True)
+    payment_type = models.CharField(max_length=20, choices=[('Full Payment','Full Payment'),('Half Payment','Half Payment')], blank=True, null=True)
+    remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    next_due_date = models.DateField(blank=True, null=True)
+    is_notified = models.BooleanField(default=False)
+
     
     def __str__(self):
         return f"Work by {self.technician.username}"

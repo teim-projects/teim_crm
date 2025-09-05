@@ -6,5 +6,5 @@ class CrmappConfig(AppConfig):
     name = 'crmapp'
 
 
-def ready(self):
-    import crmapp.signals
+    def ready(self):
+        import crmapp.signals
