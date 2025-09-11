@@ -436,7 +436,7 @@
                     <!-- STEP 2: Contract & Property Details -->
                     <div class="form-step d-none">
                         <div class="row">
-                            <div class="col-6">
+                            <div class="col-4">
                                 <label>Contract Type</label>
                                 <select name="contract_type" class="form-control" >
                                     <option value="One Time">One Time</option>
@@ -444,13 +444,27 @@
                                     <option value="Warranty">Warranty</option>
                                 </select>
                             </div>
-                            <div class="col-6">
+                            <div class="col-4">
                                 <label>Contract Status</label>
                                 <select name="contract_status" class="form-control" >
                                     <option value="Yes">Yes</option>
                                     <option value="No">No</option>
                                 </select>
                             </div>
+                            <div class="col-4">
+                                <label for="segment">Segment</label>
+                                <select name="segments" id="segment" class="form-control">
+                                    <option value="">-- All Segments --</option>
+                                    {% for value, label in segments %}
+                                        <option value="{{ value }}" {% if value == selected_segment %}selected{% endif %}>
+                                        {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+
+
                         </div>
                         <div class="row">
                             <div class="col-6">

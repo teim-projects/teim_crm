@@ -42,7 +42,6 @@ class SalesPerson(models.Model):
 
 
 from django.db import models
-
 class QuotationTerm(models.Model):
     description = models.TextField()
 
@@ -497,12 +496,10 @@ class TechnicianProfile(models.Model):
 
 
 class service_management(models.Model):
-    SEGMENTS_CHOICES = [
-        ('Residential', 'Residential'),
+    SEGMENTS_CHOICES = [('Residential', 'Residential'),
         ('Industrial / Commercial', 'Industrial / Commercial'),
         ('Institutional', 'Institutional'),
-        ('Irrelevant Leads', 'Irrelevant Leads')
-    ]
+        ('Irrelevant Leads', 'Irrelevant Leads')]
     customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, null=True, blank=True)
     # selected_services = models.ManyToManyField(Product, related_name="selected_services")
     selected_services = models.ManyToManyField(Product, through='ServiceProduct', related_name="selected_services")
@@ -906,3 +903,43 @@ class PaymentsRecord(models.Model):
         return self.payment_invoice_no
     
 
+class MessageTemplates(models.Model):
+    MESSAGE_TYPE_CHOICE = [
+        ('email','Email'),
+        ('whatsapp','WhatsApp'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ('lead','Lead'),
+        ('service','Service Schedule'),
+        ('quotation','Quotation'),
+        ('invoice','Invoice'),
+        ('payment','Payment Tracker'),
+    ]
+
+    LEAD_STATUS_CHOICES =[
+        ('hot','Hot'),
+        ('warm','Warm'),
+        ('cold','Cold'),
+        ('not_insterested','Not Interested'),
+        ('loss_of_order','Loss of Order'),
+    ]
+
+    name = models.CharField(max_length=200, help_text="Template name (eg.Lead-hot)")
+    message_type = models.CharField(max_length=20, choices=MESSAGE_TYPE_CHOICE)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    # For leads only other keep blank 
+    lead_status = models.CharField(max_length=50, choices=LEAD_STATUS_CHOICES, blank=True, null=True)
+    # Subject is only for email 
+    subject = models.CharField(max_length=500, blank=True, null=True)
+    body = models.TextField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.get_message_type_display()} - {self.category} - {self.name}"
+    class Meta:
+        db_table = 'MessageTemplates'
+        verbose_name = 'Message Templates'
+        verbose_name_plural = 'Message Templates'

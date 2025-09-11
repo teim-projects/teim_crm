@@ -284,7 +284,7 @@
   </div>
 </div>
 
-<script>
+<!-- <script>
 function showStep(step) {
   const steps = document.querySelectorAll('.step-section');
   steps.forEach((s, i) => {
@@ -302,6 +302,33 @@ function prevStep(prev) {
 }
 
 // Show first step on load
+document.addEventListener("DOMContentLoaded", () => showStep(0));
+</script> -->
+<script>
+let currentStep = 0;
+
+function showStep(step) {
+  const steps = document.querySelectorAll('.step-section');
+  steps.forEach((s, i) => {
+    s.classList.remove('active');
+    if (i === step) s.classList.add('active');
+  });
+  currentStep = step; // update tracker
+}
+
+function nextStep() {
+  const steps = document.querySelectorAll('.step-section');
+  if (currentStep < steps.length - 1) {
+    showStep(currentStep + 1);
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    showStep(currentStep - 1);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => showStep(0));
 </script>
 

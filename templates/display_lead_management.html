@@ -585,7 +585,7 @@
 
 
 
-
+                            
                             <!-- Button to toggle the filter form -->
                             <button id="toggleFilterBtn" class="btn btn-primary mb-3">Show Filters</button>
                             <div class="d-flex justify-content-end mb-3">
@@ -812,24 +812,31 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="text-nowrap">
-                                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                      <td class="text-nowrap" style="width: 150px; min-width: 150px; max-width: 150px;">
+                                            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
                                             
-                                                {% if x.latest_followup %}
+                                               {% if x.latest_followup %}
                                                     {% if x.latest_followup.order_status == "Close Win" %}
-                                                        <span class="badge bg-success text-white">Close  <br> Win</span>
-                                                    {% elif x.latest_followup.order_status == "Close <br> Loss" %}
-                                                        <span class="badge bg-danger text-white">Close Loss</span>
+                                                        <span class="badge bg-success text-white d-inline-block text-center p-1" style="width: 40px;">Close<br>Win</span>
+                                                    {% elif x.latest_followup.order_status == "Close Loss" %}
+                                                        <span class="badge bg-danger text-white d-inline-block text-center p-1" style="width: 40px;">Close<br>Loss</span>
                                                     {% else %}
-                                                        <a href="{% url 'main_followup_view' x.id %}" class="btn btn-sm btn-outline-primary" title="Follow Up">
+                                                        <a href="{% url 'main_followup_view' x.id %}" 
+                                                           class="btn btn-sm btn-outline-primary text-center" 
+                                                           style="width: 40px;" 
+                                                           title="Follow Up">
                                                             <i class="fa-solid fa-clipboard-list"></i>
                                                         </a>
                                                     {% endif %}
                                                 {% else %}
-                                                    <a href="{% url 'main_followup_view' x.id %}" class="btn btn-sm btn-outline-primary" title="Follow Up">
+                                                    <a href="{% url 'main_followup_view' x.id %}" 
+                                                       class="btn btn-sm btn-outline-primary text-center" 
+                                                       style="width: 40px;" 
+                                                       title="Follow Up">
                                                         <i class="fa-solid fa-clipboard-list"></i>
                                                     </a>
                                                 {% endif %}
+                                                
                                                 
                                                 <a href="/edit_lead_management/{{ x.id }}" class="btn btn-sm btn-success" title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
@@ -841,6 +848,7 @@
                                             
                                             </div>
                                         </td>
+
 
                                         <td>{{x.sourceoflead}}</td>
                                         <td>{{x.salesperson}}</td>
@@ -876,20 +884,27 @@
                         </div>
 
                         <div class="pagination">
-
                             {% if page_obj.has_previous %}
-                            <li><a href="?page=1">&laquo; First</a></li>
-                            <li><a href="?page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
+                                <li>
+                                    <a href="?page=1{% if query_params %}&{{ query_params }}{% endif %}">&laquo; First</a>
+                                </li>
+                                <li>
+                                    <a href="?page={{ page_obj.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}">&lsaquo; Previous</a>
+                                </li>
                             {% endif %}
-
+                            
                             <span class="current">{{ page_obj.number }}</span>
-
+                            
                             {% if page_obj.has_next %}
-                            <li><a href="?page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
-                            <li><a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+                                <li>
+                                    <a href="?page={{ page_obj.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}">Next &rsaquo;</a>
+                                </li>
+                                <li>
+                                    <a href="?page={{ page_obj.paginator.num_pages }}{% if query_params %}&{{ query_params }}{% endif %}">Last &raquo;</a>
+                                </li>
                             {% endif %}
-
                         </div>
+
                         {% include 'buttons.html' %}
 
                     </div>

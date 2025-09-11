@@ -182,8 +182,9 @@ urlpatterns = [
     path('fetch_invoice_product_details/<int:id>/', views.fetch_tax_invoice_details, name='fetch_invoice_product_details'),
 
     path('quotation/pdf/<int:id>/', views.reportlab_quotation_pdf, name='quotation_pdf'),
-   
-
+#    Message Templates
+    path('message_templates', views.get_message_templates, name="message_templates"),
+    path('edit_message_template/<int:id>/', views.edit_message_template, name='edit_message_template')
 ]
 
 if settings.DEBUG:

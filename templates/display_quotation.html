@@ -439,7 +439,7 @@
                                 </div>
                             
                                 <!-- Customer Type Dropdown -->
-                                <div class="col-md-2">
+                                <div class="col-md-1">
                                     <form method="get">
                                         <select class="form-select" name="customer_type" id="customer_type" onchange="this.form.submit()">
                                             <option value="">All Type</option>
@@ -448,7 +448,27 @@
                                         </select>
                                     </form>
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-2">
+                                    <form method="get">
+                                        <select class="form-select" name="branch" id="branch" onchange="this.form.submit()">
+                                            <option value="">All Branches</option>
+                                            {% for branch in branches %}
+                                                <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </form>
+                                </div>
+                                <div class="col-md-2">
+                                    <form method="get">
+                                        <select class="form-select" name="sfs_representatives" id="sfs_representatives" onchange="this.form.submit()">
+                                            <option value="">SFS Representative</option>
+                                            {% for rep in sfs_representatives %}
+                                                <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </form>
+                                </div>
+                                <div class="col-md-2">
 
                                 </div>
                                 <!-- Export Button -->
@@ -457,6 +477,8 @@
                                         <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
                                     </a>
                                 </div>
+
+                                
                             
                             </div>
                         </div>

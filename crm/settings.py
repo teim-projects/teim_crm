@@ -93,14 +93,7 @@ DATABASES = {
         'PORT' : 3306,
     }
 } 
-#the email settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True 
-DEFAULT_FROM_EMAIL = "MY APP"
-EMAIL_HOST_USER = "connectteim@gmail.com"
-EMAIL_HOST_PASSWORD = "rmmx ylvp kihj goxo"
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -272,3 +265,14 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1GB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1GB
+
+
+#the email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True 
+DEFAULT_FROM_EMAIL = "SFS"
+EMAIL_HOST_USER = "connectteim@gmail.com"
+EMAIL_HOST_PASSWORD = "iuri dlqe nfsd joyr" 
+

@@ -852,7 +852,7 @@ def service_management_create(request):
     products = Product.objects.all()
     sales_persons = SalesPerson.objects.all()
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
-
+    segments = service_management._meta.get_field('segment').choices
     if request.method == 'POST':
         try:
             customer_contact = request.POST['customer_contact']
@@ -884,6 +884,7 @@ def service_management_create(request):
                 total_charges = total_gst,
                 contract_type=request.POST.get('contract_type', 'NOT SELECTED'),
                 contract_status=request.POST.get('contract_status', 'NOT SELECTED'),
+                segment = request.POST.get('segments'),
                 property_type=request.POST.get('property_type'),
                 warranty_period=request.POST.get('warranty_period'),
                 state=request.POST.get('state', 'Null'),
@@ -946,6 +947,7 @@ def service_management_create(request):
         'customers': customers,
         'sales_persons': sales_persons,
         'frequency_choices': frequency_choices,
+        'segments':segments
     })
 
 from django.shortcuts import render, redirect
@@ -1716,10 +1718,10 @@ def lead_management_create(request):
         try:
             # Get all form data
             sourceoflead = request.POST.get('sourceoflead')
-            # salesperson_id = request.POST.get("salesperson")
-            salesperson_mobile = request.user.username
-            print(salesperson_mobile)
-            sp = SalesPerson.objects.get(mobile_no = salesperson_mobile)
+            salesperson_id = request.POST.get("salesperson")
+            # salesperson_mobile = request.user.username
+            # print(salesperson_mobile)
+            sp = SalesPerson.objects.get(id = salesperson_id)
             customername = request.POST.get('customername')
             customersegment = request.POST.get('customersegment')
             
@@ -1751,7 +1753,7 @@ def lead_management_create(request):
             
             firstfollowupdate_str = request.POST.get('firstfollowupdate')
             firstfollowupdate = datetime.strptime(firstfollowupdate_str, '%Y-%m-%d').date() if firstfollowupdate_str else None
-            
+
             branch = request.POST.get('branch')
 
             # Create new lead (duplicates allowed)
@@ -1914,7 +1916,7 @@ def today_work(request):
     page_obj = paginator.get_page(page_number)
 
     # Get all unique salespersons
-    salespersons = lead_management.objects.values_list('salesperson', flat=True).distinct()
+    salespersons = SalesPerson.objects.all()
 
     # Used for correct indexing
     start_index = (page_obj.number - 1) * paginator.per_page
@@ -1943,7 +1945,7 @@ from .models import lead_management, main_followup, SalesPerson
 def pending_followups(request):
     today = date.today()
 
-    # Get filters
+    # Get filters from request
     search_query = request.GET.get('search', '').strip()
     typeoflead_filter = request.GET.get('typeoflead')
     source_filter = request.GET.get('sourceoflead')
@@ -1959,20 +1961,41 @@ def pending_followups(request):
 
     order_prefix = '-' if order == 'desc' else ''
 
-    # Overdue leads without followup
-    if request.user.userprofile.role =='admin':
-        lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today )
-    elif request.user.userprofile.role == 'sales': 
-        lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today ,
-                                                    salesperson__mobile_no = request.user.username )
-    if salesperson_filter:
-        lead_folloup = lead_folloup.filter(salesperson=salesperson_filter)
+    # Base queryset filtered by role
+    if request.user.userprofile.role == 'admin':
+        lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today)
+    else:  # Sales role
+        lead_folloup = lead_management.objects.filter(
+            firstfollowupdate__lt=today,
+            salesperson__mobile_no=request.user.username
+        )
+    followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
+    # Apply additional filters
+    if typeoflead_filter:
+        lead_folloup = lead_folloup.filter(typeoflead=typeoflead_filter)
+        followups = followups.filter(lead__typeoflead=typeoflead_filter) 
+    if source_filter:
+        lead_folloup = lead_folloup.filter(sourceoflead=source_filter)
+    if branch_filter:
+        lead_folloup = lead_folloup.filter(branch=branch_filter)
+        followups = followups.filter(lead__branch=branch_filter)
+    if segment_filter:
+        lead_folloup = lead_folloup.filter(customersegment=segment_filter)
+        followups = followups.filter(lead__customersegment=segment_filter)
+    if enquiry_from and enquiry_to:
+        lead_folloup = lead_folloup.filter(enquirydate__range=[enquiry_from, enquiry_to])
+    if followup_from and followup_to:
+        lead_folloup = lead_folloup.filter(firstfollowupdate__range=[followup_from, followup_to])
 
     # Overdue leads with followup
-    followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
+    # followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
+    if request.user.userprofile.role != 'admin':
+        followups = followups.filter(lead__salesperson__mobile_no=request.user.username)
     if salesperson_filter:
-        followups = followups.filter(lead__salesperson=salesperson_filter)
+        lead_folloup = lead_folloup.filter(salesperson__full_name=salesperson_filter)
+        followups = followups.filter(lead__salesperson__full_name=salesperson_filter)
 
+    # Combine leads: followups + leads without any followup
     combined_leads = list(chain(
         followups,
         [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]
@@ -2012,26 +2035,24 @@ def pending_followups(request):
         lead = obj.lead if hasattr(obj, 'lead') else obj
         return getattr(lead, sort_by, '')
 
-    filtered.sort(key=get_sort_value, reverse=(order == 'desc'))
+    combined_leads.sort(key=get_sort_value, reverse=(order == 'desc'))
 
-    # Paginate
-    paginator = Paginator(filtered, 10)
+    # Pagination
+    paginator = Paginator(combined_leads, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
 
-    # Dropdowns
+    # Dropdown options
     typeoflead_choices = [c[0] for c in lead_management._meta.get_field('typeoflead').choices if c[0]]
     source_choices = [c[0] for c in lead_management._meta.get_field('sourceoflead').choices if c[0]]
     branch_choices = [c[0] for c in lead_management._meta.get_field('branch').choices if c[0]]
     salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
-    segments = [ choice[0] for choice in lead_management._meta.get_field('customersegment').choices if choice[0] != "NOT SELECTED" ]
+    segments = [c[0] for c in lead_management._meta.get_field('customersegment').choices if c[0] != "NOT SELECTED"]
 
-
-  
     return render(request, 'pending_followups.html', {
         'page_obj': page_obj,
-        "count_data":count_data,
+        'count_data': paginator.count,
         'search_query': search_query,
         'start_index': start_index,
         'lead_types': typeoflead_choices,
@@ -2043,9 +2064,7 @@ def pending_followups(request):
         'current_order': order,
         'segments': segments,
         'selected_segment': segment_filter,
-        
     })
-
 
 
 # In crmapp/views.py
@@ -2411,6 +2430,8 @@ def display_quotation(request):
     sort_by = request.GET.get('sort_by', 'customer__fullname')
     customer_type = request.GET.get('customer_type')
     valid_sort_fields = ['quotation_no','customer__fullname', 'quotation_date', 'total_price', 'total_price_with_gst']
+    branch = request.GET.get('branch')
+    sfs_representatives = request.GET.get('sfs_representatives')
 
     m = quotation_management.objects.all()
     if query:
@@ -2424,6 +2445,13 @@ def display_quotation(request):
     if customer_type:
         m=m.filter(customer__customer_type=customer_type)
 
+    if branch:
+        m = m.filter(branch = branch)
+    
+    if sfs_representatives:
+        m = m.filter(contact_by = sfs_representatives)
+
+
     filter_count = m.count()
     if sort_by in valid_sort_fields:
         order_prefix = '-' if sort_order == 'desc' else ''
@@ -2435,7 +2463,8 @@ def display_quotation(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
-    print(page_obj)
+    branch_list = Branch.objects.all()
+    sfs_representatives = quotation_management.objects.values_list("contact_by", flat=True).distinct()
     context = {
         'current_order': sort_order,
         'current_sort_by': sort_by,
@@ -2443,6 +2472,8 @@ def display_quotation(request):
         'start_index': start_index,
         'search_query': query,
         'filter_count':filter_count,
+        'branches':branch_list,
+        'sfs_representatives':sfs_representatives,
     }
     return render(request, 'display_quotation.html', context)
 
@@ -2548,7 +2579,7 @@ def display_lead_management(request):
     if source_filter:
         filtered_leads = filtered_leads.filter(sourceoflead=source_filter)
     if salesperson_filter:
-        filtered_leads = filtered_leads.filter(salesperson=salesperson_filter)
+        filtered_leads = filtered_leads.filter(salesperson__full_name=salesperson_filter)
     if branch_filter:
         filtered_leads = filtered_leads.filter(branch=branch_filter)
     if enquiry_from and enquiry_to:
@@ -2625,6 +2656,9 @@ def display_lead_management(request):
         else:
             no_data_message = "No data found for the selected filters."
 
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        query_params.pop('page')
     # 11. Final context
     context = {
         'page_obj': page_obj,
@@ -2641,6 +2675,7 @@ def display_lead_management(request):
         'branch_count': branch_count,
         'selected_segment': segment_filter,
         'c_types' : c_types,
+        'query_params': query_params.urlencode(),
     }
 
     return render(request, 'display_lead_management.html', context)
@@ -5701,7 +5736,7 @@ from reportlab.lib.utils import ImageReader
 from django.templatetags.static import static
 from django.http import HttpResponse
 import io
-from .models import quotation_management
+from .models import quotation_management, MessageTemplates
 from .custom_filters import price_in_words  
 from reportlab.lib.colors import HexColor   
 from reportlab.lib.enums import TA_RIGHT
@@ -6077,4 +6112,17 @@ def reportlab_quotation_pdf(request, id):
 
     return response
 
+def get_message_templates(request):
+    templates = MessageTemplates.objects.all()
+    data = {
+        'templates': templates
+    }
+    return render(request, 'message_templates.html', context=data)
 
+
+def edit_message_template(request,id):
+    templates = MessageTemplates.objects.get(id = id)
+    data = {
+        'templates':templates
+    }
+    return render(request, 'edit_message_template.html' ,context=data)

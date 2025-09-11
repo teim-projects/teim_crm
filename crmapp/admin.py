@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import PaymentsRecord ,UserProfile, service_management, ServiceProduct
+from .models import PaymentsRecord ,UserProfile, service_management, ServiceProduct, MessageTemplates
 
 # Register your models here.
 
@@ -50,3 +50,4 @@ class UserAdmin(BaseUserAdmin):
 # Unregister the original User admin, then register our custom one
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+admin.site.register(MessageTemplates)

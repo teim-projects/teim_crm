@@ -147,17 +147,20 @@
             <h3 class="text-center mb-4 ">Todays Follow-ups</h3>
 
             <!-- Filter -->
-            <form method="get" class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+             
+            {% if request.user.userprofile.role == "admin" %}
+             <form method="get" class="d-flex flex-wrap gap-2 mb-4 align-items-center">
                 <label for="salesperson" class="form-label me-2 mb-0">Filter by Salesperson:</label>
                 <select name="salesperson" id="salesperson" class="form-select w-auto" style="width: 200px;">
                     <option value="">All</option>
                     {% for person in salespersons %}
-                    <option value="{{ person }}" {% if selected_salesperson == person %} selected {% endif %}>{{ person }}
+                    <option value="{{ person.id }}" {% if selected_salesperson == person.full_name %} selected {% endif %}>{{ person.full_name }}
                     </option>
                     {% endfor %}
                 </select>
                 <button type="submit" class="btn btn-primary btn-sm ms-2" style="width: 150px;">Filter</button>
             </form>
+            {% endif %}
             <h5 class="text-primary text-end">Today's Work : {{ count }}</h5>
 
             <!-- Table -->
