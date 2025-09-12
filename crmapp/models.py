@@ -501,6 +501,7 @@ class service_management(models.Model):
         ('Institutional', 'Institutional'),
         ('Irrelevant Leads', 'Irrelevant Leads')]
     customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, null=True, blank=True)
+    service_subject = models.CharField(max_length=500, blank=True, null=True)
     # selected_services = models.ManyToManyField(Product, related_name="selected_services")
     selected_services = models.ManyToManyField(Product, through='ServiceProduct', related_name="selected_services")
     segment = models.CharField(max_length=100, choices=SEGMENTS_CHOICES, null=True, blank=True)
@@ -939,7 +940,3 @@ class MessageTemplates(models.Model):
 
     def __str__(self):
         return f"{self.get_message_type_display()} - {self.category} - {self.name}"
-    class Meta:
-        db_table = 'MessageTemplates'
-        verbose_name = 'Message Templates'
-        verbose_name_plural = 'Message Templates'

@@ -882,11 +882,12 @@ def service_management_create(request):
                 total_price=total_price,
                 total_price_with_gst=total_with_gst,
                 total_charges = total_gst,
+                service_subject = request.POST.get('subject'),
                 contract_type=request.POST.get('contract_type', 'NOT SELECTED'),
                 contract_status=request.POST.get('contract_status', 'NOT SELECTED'),
                 segment = request.POST.get('segments'),
-                property_type=request.POST.get('property_type'),
-                warranty_period=request.POST.get('warranty_period'),
+                property_type=request.POST.get('property_type',''),
+                warranty_period=request.POST.get('warranty_period',''),
                 state=request.POST.get('state', 'Null'),
                 city=request.POST.get('city', 'Null'),
                 pincode=request.POST.get('pincode', '000000'),
@@ -6119,10 +6120,63 @@ def get_message_templates(request):
     }
     return render(request, 'message_templates.html', context=data)
 
+# def create_message_template(request):
+#     messages_type_choices = MessageTemplates.MESSAGE_TYPE_CHOICE
+#     category_choices = MessageTemplates.CATEGORY_CHOICES
+#     context ={
+#         'message_type_choices': messages_type_choices,
+#         'category_choices': category_choices,
+#     }
+#     return render(request,'create_message_template.html',context)
+
+
+def create_message_template(request):
+    messages_type_choices = MessageTemplates.MESSAGE_TYPE_CHOICE
+    category_choices = MessageTemplates.CATEGORY_CHOICES
+
+    if request.method == "POST":
+        name = request.POST.get('name')
+        message_type = request.POST.get('message_type')
+        category = request.POST.get('category')
+        subject = request.POST.get('subject') if message_type == 'email' else None
+        body = request.POST.get('body')
+
+        # Save to DB
+        MessageTemplates.objects.create(
+            name=name,
+            message_type=message_type,
+            category=category,
+            subject=subject,
+            body=body,
+            is_active=True
+        )
+
+        return redirect('message_templates')  # redirect to your templates list page
+
+    context = {
+        'messages_type_choices': messages_type_choices,
+        'category_choices': category_choices,
+    }
+    return render(request, 'create_message_template.html', context)
+
 
 def edit_message_template(request,id):
     templates = MessageTemplates.objects.get(id = id)
+    if request.method == "POST":
+        # Get the serialized body from the hidden input
+        body = request.POST.get('body', '')
+        subject = request.POST.get('subject','')
+        print(body)
+        # Save to model
+        templates.body = body
+        templates.subject = subject
+        templates.save()
+
+        # Redirect or show success message
+        return redirect('message_templates')  # Replace with your template list URL name
     data = {
         'templates':templates
     }
     return render(request, 'edit_message_template.html' ,context=data)
+
+
