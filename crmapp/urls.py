@@ -186,6 +186,7 @@ urlpatterns = [
     path('message_templates', views.get_message_templates, name="message_templates"),
     path('edit_message_template/<int:id>/', views.edit_message_template, name='edit_message_template'),
     path('create_message_template/', views.create_message_template, name='create_message_template'),
+    path('send-email/<int:pk>/', views.send_lead_email, name='send_lead_email'),
 ]
 
 if settings.DEBUG:

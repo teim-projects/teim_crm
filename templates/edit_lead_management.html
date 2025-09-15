@@ -195,17 +195,25 @@
       <label>Contact <span class="star">*</span></label>
       <input type="number" name="uor_contact" class="form-control" value="{{ x.or_contact }}">
     </div>
+ 
+  <div class="col-md-4 mb-4">
+    <label>Select Salesperson<span class="star">*</span></label>
+    <select name="usalesperson" class="form-control form-control-lg" required>
+        {% for sp in salespersons %}
+            <option value="{{ sp.id }}" {% if x.salesperson.id == sp.id %}selected{% endif %}>
+                {{ sp.full_name }}
+            </option>
+        {% endfor %}
+    </select>
   </div>
-    <!-- <div class="col-md-6 mb-4">
-      <label>Enter Salesperson<span class="star">*</span></label>
-      <input type="text" name="usalesperson" class="form-control form-control-lg" value="{{ x.salesperson }}" required />
-    </div> -->
+</div>
+<div class="text-center">
+  <button type="button" class="btn btn-primary" style="width: 200px;" onclick="nextStep(1)">Next</button>
+</div>
   </div>
 
 
-  <div class="text-center">
-    <button type="button" class="btn btn-primary" style="width: 200px;" onclick="nextStep(1)">Next</button>
-  </div>
+  
 </div>
 
 <!-- Step 2 -->
@@ -235,32 +243,32 @@
 <!-- Step 3 -->
 <div id="step3" class="step-section">
   <div class="row">
-    <div class="col-md-4 mb-4">
+    <div class="col-md-6 mb-4">
       <label>Primary Contact No<span class="star">*</span></label>
       <input type="number" name="uprimarycontact" class="form-control form-control-lg" value="{{ x.primarycontact }}"  required/>
     </div>
-    <div class="col-md-4 mb-4">
+    <div class="col-md-6 mb-4">
       <label>Secondary Contact No</label>
       <input type="number" name="usecondarycontact" class="form-control form-control-lg" value="{{ x.secondarycontact }}" />
     </div>
   </div>
   <div class="row">
-    <div class="col-md-4 mb-4">
+    <div class="col-md-6 mb-4">
       <label>Customer Email<span class="star">*</span></label>
       <input type="email" name="ucustomeremail" class="form-control form-control-lg" value="{{ x.customeremail }}" required/>
     </div>
-    <div class="col-md-4 mb-4">
+    <div class="col-md-6 mb-4">
       <label>Location</label>
       <input type="url" name="ulocation" class="form-control form-control-lg" value="{{ x.location }}" />
     </div>
   </div>
 
   <div class="row">
-    <div class="col-md-4 mb-4">
+    <div class="col-md-6 mb-4">
       <label>City<span class="star">*</span></label>
       <input type="text" name="ucity" class="form-control form-control-lg" value="{{ x.city }}" />
     </div>
-    <div class="col-md-4 mb-4">
+    <div class="col-md-6 mb-4">
       <label>Customer Address<span class="star">*</span></label>
       <textarea name="ucustomeraddress" class="form-control form-control-lg">{{ x.customeraddress }}</textarea>
     </div>

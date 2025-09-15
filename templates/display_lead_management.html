@@ -766,8 +766,21 @@
 
                         
                         <div class="container-table">
+                            <div class="auto_actions text-end mb-2" style="margin-right: 30px;">
+                                <a href="" class="btn btn-sm btn-primary">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </a>  
 
-                            <table class="table table-bordered">
+                                <a href="" class="btn btn-sm btn-success">
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                </a> 
+
+                                <a href="" class="btn btn-sm btn-success">
+                                    <i class="fa-solid fa-square-phone"></i>
+                                </a> 
+                            </div>
+
+                            <table class="table table-bordered text-center">
                                 <thead>
                                     <tr>
                                         <th>Sr.No</th>
@@ -812,7 +825,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                      <td class="text-nowrap" style="width: 150px; min-width: 150px; max-width: 150px;">
+                                      <td class="text-nowrap" style="width: 300px; min-width: 300px; max-width: 300px;">
                                             <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
                                             
                                                {% if x.latest_followup %}
@@ -845,7 +858,19 @@
                                                 <a href="/delete_lead_management/{{ x.id }}" class="btn btn-sm btn-danger delete-link" title="Delete">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </a>
-                                            
+                                                {% if not x.latest_followup or x.latest_followup.order_status != "Close Win" %}
+                                                <a href="{% url 'send_lead_email' x.id %}" class="btn btn-sm btn-primary">
+                                                    <i class="fa-solid fa-envelope"></i>
+                                                </a> 
+                                                
+                                                <a href="" class="btn btn-sm btn-success">
+                                                    <i class="fa-brands fa-whatsapp"></i>
+                                                </a> 
+                
+                                                <a href="" class="btn btn-sm btn-success">
+                                                    <i class="fa-solid fa-square-phone"></i>
+                                                </a> 
+                                                {% endif %}
                                             </div>
                                         </td>
 

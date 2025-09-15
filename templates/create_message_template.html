@@ -121,6 +121,17 @@
                   {% endfor %}
                 </select>
               </div>
+              <!-- Lead Status (show only if Category is 'lead') -->
+              <div class="mb-2" id="leadStatusDiv" style="display: none;">
+                <label for="lead_status"><b>Lead Status</b></label>
+                <select name="lead_status" class="form-control">
+                  <option value="">Select Lead Status</option>
+                  {% for i in lead_status_choices %}
+                    <option value="{{ i.0 }}">{{ i.1 }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
             </div>
 
             <!-- Subject (only for email) -->
@@ -245,6 +256,22 @@
       hiddenBody.value = serializeEditor(bodyEditor);
       hiddenSubject.value = serializeEditor(subjectEditor);
     });
+
+    const leadStatusDiv = document.getElementById('leadStatusDiv');
+    const categorySelect = document.querySelector('select[name="category"]');
+      
+    function toggleLeadStatus() {
+      if (categorySelect.value.toLowerCase() === 'lead') {
+        leadStatusDiv.style.display = 'block';
+      } else {
+        leadStatusDiv.style.display = 'none';
+      }
+    }
+    
+    // Run on page load and when category changes
+    toggleLeadStatus();
+    categorySelect.addEventListener('change', toggleLeadStatus);
+
   </script>
 
 <script>

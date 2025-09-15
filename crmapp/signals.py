@@ -5,7 +5,7 @@ from django.dispatch import receiver, Signal
 from django.db import transaction
 from django.contrib.auth.models import User
 from .models import UserProfile, TechWorkList, TechnicianProfile, service_management
-from crmapp.tasks import send_service_email
+from crmapp.tasks import send_email_task
 
 
 @receiver(post_save, sender=User)
@@ -170,7 +170,7 @@ def send_service_scheduled_email(sender, service_id, created, **kwargs):
     if not created:
         subject = "Service Appointment Updated – Seva Facility Services"
 
-    send_service_email.delay(subject, body, customer.primaryemail)
+    send_email_task.delay(subject, body, recipient_list = customer.primaryemail)
     print("📧 Email task queued for:", customer.primaryemail)
 
 

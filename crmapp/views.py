@@ -3395,15 +3395,15 @@ def edit_lead_management(request, rid):
     if request.method =='GET':
 
         m=lead_management.objects.filter(id=rid)
-
-        context={}
+        salesperson = SalesPerson.objects.all()
+        context={'salespersons':salesperson}
         context['data']=m
     
         return render(request , 'edit_lead_management.html' , context)
     
     elif request.method == 'POST':
         usourceoflead = request.POST.get('usourceoflead', '')
-        # usalesperson = request.user.username
+        usalesperson = request.POST.get('usalesperson')
         ucustomername = request.POST.get('ucustomername', '')
         ucustomersegment = request.POST.get('ucustomersegment', '')
         utypeoflead = request.POST.get('utypeoflead', '')
@@ -3436,7 +3436,7 @@ def edit_lead_management(request, rid):
             ufirstfollowupdate = None  # Handle invalid date format
 
         m=lead_management.objects.filter(id=rid)
-        usalesperson = get_object_or_404(SalesPerson, mobile_no = request.user.username)
+        usalesperson = SalesPerson.objects.get(id  = usalesperson)
 
         m.update(
             sourceoflead = usourceoflead,
@@ -6133,11 +6133,13 @@ def get_message_templates(request):
 def create_message_template(request):
     messages_type_choices = MessageTemplates.MESSAGE_TYPE_CHOICE
     category_choices = MessageTemplates.CATEGORY_CHOICES
+    lead_status_choices = MessageTemplates.LEAD_STATUS_CHOICES
 
     if request.method == "POST":
         name = request.POST.get('name')
         message_type = request.POST.get('message_type')
         category = request.POST.get('category')
+        lead_status = request.POST.get('lead_status')
         subject = request.POST.get('subject') if message_type == 'email' else None
         body = request.POST.get('body')
 
@@ -6146,6 +6148,7 @@ def create_message_template(request):
             name=name,
             message_type=message_type,
             category=category,
+            lead_status = lead_status,
             subject=subject,
             body=body,
             is_active=True
@@ -6156,6 +6159,7 @@ def create_message_template(request):
     context = {
         'messages_type_choices': messages_type_choices,
         'category_choices': category_choices,
+        'lead_status_choices':lead_status_choices,
     }
     return render(request, 'create_message_template.html', context)
 
@@ -6179,4 +6183,47 @@ def edit_message_template(request,id):
     }
     return render(request, 'edit_message_template.html' ,context=data)
 
+
+from django.apps import apps
+from django.core.mail import send_mail
+from django.conf import settings
+from django.shortcuts import redirect
+from .tasks import send_email_task
+
+def send_lead_email(request, pk):
+    lead = get_object_or_404(lead_management, pk=pk)
+    
+    if not lead.customeremail or not lead.customeremail.strip():
+        messages.error(request, f"{lead.customername} has no email address.")
+        return redirect("display_lead_management")
+    
+    template = MessageTemplates.objects.filter(
+        message_type='email',
+        category='lead',
+        lead_status__iexact=lead.typeoflead.strip()
+    ).first()
+
+    print("template",template)
+    print("lead",lead.typeoflead)
+    if not template:
+        messages.error(request, f"No template found for {lead.typeoflead} leads.")
+        return redirect("display_lead_management")
+
+    # Prepare placeholders
+    placeholders = {
+        "customername": lead.customername,
+        "typeoflead": lead.typeoflead,
+        "primarycontact": lead.primarycontact,
+        # Add more fields if needed
+    }
+
+    body = template.body
+    subject = template.subject
+    for key, value in placeholders.items():
+        body = body.replace(f"{{{key}}}", str(value))
+        subject = subject.replace(f"{{{key}}}", str(value))
+
+    send_email_task.delay(subject, body, recipient=lead.customeremail)
+    messages.success(request, f"Email sent to {lead.customername}")
+    return redirect("display_lead_management")
 
