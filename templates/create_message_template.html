@@ -92,7 +92,7 @@
               class="mb-4 mt-2">X</span>
           </div>
 
-          <form method="post" class="p-4">
+          <form method="post" class="p-4" enctype="multipart/form-data">
             {% csrf_token %}
             <h3 style="text-align: center;">Create Message Template</h3>
 
@@ -130,6 +130,11 @@
                     <option value="{{ i.0 }}">{{ i.1 }}</option>
                   {% endfor %}
                 </select>
+              </div>
+              <div class="card mt-3" id="attachmentCard" style="display:none;">
+                <label for="attachment"><b>Attachment</b></label>
+                <input type="file" name="attachment" id="attachment" class="form-control"
+                       accept="image/*,.pdf,.doc,.docx">
               </div>
 
             </div>
@@ -170,7 +175,7 @@
     </div>
   </div>
 
-  <script>
+  <!-- <script>
     const PLACEHOLDER_RE = /\{[^}]+\}/g;
 
     const bodyEditor = document.getElementById('editor');
@@ -272,8 +277,122 @@
     toggleLeadStatus();
     categorySelect.addEventListener('change', toggleLeadStatus);
 
+  </script> -->
+  <script>
+    const PLACEHOLDER_RE = /\{[^}]+\}/g;
+  
+    const bodyEditor = document.getElementById('editor');
+    const subjectEditor = document.getElementById('subjectEditor');
+    const hiddenBody = document.getElementById('hiddenBody');
+    const hiddenSubject = document.getElementById('hiddenSubject');
+    const subjectCard = document.getElementById('subjectCard');
+    const attachmentCard = document.getElementById('attachmentCard');
+    const messageType = document.getElementById('message_type');
+  
+    // Toggle subject + attachment based on message type
+    function toggleFields() {
+      if (messageType.value === 'email') {
+        subjectCard.style.display = 'block';
+        attachmentCard.style.display = 'block';
+      } else if (messageType.value === 'whatsapp') {
+        subjectCard.style.display = 'none';
+        attachmentCard.style.display = 'block';
+      } else {
+        subjectCard.style.display = 'none';
+        attachmentCard.style.display = 'none';
+      }
+    }
+  
+    messageType.addEventListener('change', toggleFields);
+    toggleFields(); // run on page load
+  
+    function esc(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+  
+    function renderTemplate(editor, raw) {
+      const parts = raw ? raw.split(/(\{[^}]+\})/g) : [];
+      const frag = parts.map(p => {
+        if (p.match(PLACEHOLDER_RE)) {
+          return `<span contenteditable="false" class="placeholder-1" data-value="${esc(p)}">${esc(p)}</span>`;
+        } else {
+          return esc(p).replace(/\r?\n/g, '<br>');
+        }
+      }).join('');
+      editor.innerHTML = frag;
+    }
+  
+    function serializeEditor(editor) {
+      const clone = editor.cloneNode(true);
+      const placeholders = clone.querySelectorAll('.placeholder-1');
+      placeholders.forEach(span => {
+        const textNode = document.createTextNode(span.getAttribute('data-value'));
+        span.parentNode.replaceChild(textNode, span);
+      });
+  
+      function getTextWithNewlines(node) {
+        let text = '';
+        node.childNodes.forEach(n => {
+          if (n.nodeType === Node.TEXT_NODE) text += n.nodeValue;
+          else if (n.nodeType === Node.ELEMENT_NODE) {
+            if (n.tagName === 'BR') text += '\n';
+            else text += getTextWithNewlines(n) + '\n';
+          }
+        });
+        return text;
+      }
+  
+      return getTextWithNewlines(clone).replace(/\n{2,}/g, '\n\n');
+    }
+  
+    [bodyEditor, subjectEditor].forEach(editor => {
+      editor.addEventListener("keydown", (e) => {
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        let node = range.startContainer;
+        if (node.nodeType === 3) node = node.parentNode;
+  
+        if (e.key === "Backspace") {
+          if (range.startOffset === 0 && node.previousSibling?.classList?.contains("placeholder-1")) e.preventDefault();
+        }
+        if (e.key === "Delete") {
+          if (range.startOffset === node.length && node.nextSibling?.classList?.contains("placeholder-1")) e.preventDefault();
+        }
+      });
+    });
+  
+    document.querySelectorAll('.toolbar .btn[data-cmd]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        let cmd = btn.getAttribute('data-cmd');
+        if (cmd === 'createLink') {
+          let url = prompt("Enter the link URL:", "https://");
+          if (url) document.execCommand(cmd, false, url);
+        } else document.execCommand(cmd, false, null);
+      });
+    });
+  
+    document.querySelector('form').addEventListener('submit', () => {
+      hiddenBody.value = serializeEditor(bodyEditor);
+      hiddenSubject.value = serializeEditor(subjectEditor);
+    });
+  
+    const leadStatusDiv = document.getElementById('leadStatusDiv');
+    const categorySelect = document.querySelector('select[name="category"]');
+  
+    function toggleLeadStatus() {
+      if (categorySelect.value.toLowerCase() === 'lead') {
+        leadStatusDiv.style.display = 'block';
+      } else {
+        leadStatusDiv.style.display = 'none';
+      }
+    }
+  
+    // Run on page load and when category changes
+    toggleLeadStatus();
+    categorySelect.addEventListener('change', toggleLeadStatus);
   </script>
-
+  
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');

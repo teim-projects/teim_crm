@@ -922,8 +922,8 @@ class MessageTemplates(models.Model):
         ('hot','Hot'),
         ('warm','Warm'),
         ('cold','Cold'),
-        ('not_insterested','Not Interested'),
-        ('loss_of_order','Loss of Order'),
+        ('not interested','Not Interested'),
+        ('loss of order','Loss of Order'),
     ]
 
     name = models.CharField(max_length=200, help_text="Template name (eg.Lead-hot)")
@@ -934,6 +934,7 @@ class MessageTemplates(models.Model):
     # Subject is only for email 
     subject = models.CharField(max_length=500, blank=True, null=True)
     body = models.TextField()
+    attachment = models.FileField(upload_to="message_attachments/", null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

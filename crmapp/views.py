@@ -702,7 +702,7 @@ def customer_details_create(request):
                     'fullname': lead.customername or '',
                     'primaryemail': lead.customeremail or '',
                     'secondarycontact': lead.secondarycontact or '',
-                    'contactperson': lead.salesperson or '',
+                    'contactperson': lead.salesperson.full_name or '',
                     'contactedby': lead.contactedby or '',
                     'shifttopartyaddress': lead.customeraddress or '',
                     'shifttopartycity': lead.city or '',
@@ -712,6 +712,7 @@ def customer_details_create(request):
                     'or_name':lead.or_name or '',
                     'or_contact': lead.or_contact or None,
                 }
+                print(data)
                 return JsonResponse({'status': 'exists', 'data': data})
             return JsonResponse({'status': 'not_found'})
         return render(request, 'customer_details.html')
@@ -1857,7 +1858,8 @@ def main_followup_view(request, lead_id):
             lead.save()
             if order_status == 'Close Win':
                 return redirect('service_management_create')
-
+        else:
+            lead.save()  
         query_string = request.GET.urlencode()
         redirect_url = reverse('pending_followups')
         if query_string:
@@ -2433,7 +2435,8 @@ def display_quotation(request):
     valid_sort_fields = ['quotation_no','customer__fullname', 'quotation_date', 'total_price', 'total_price_with_gst']
     branch = request.GET.get('branch')
     sfs_representatives = request.GET.get('sfs_representatives')
-
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
     m = quotation_management.objects.all()
     if query:
         m = m.filter(
@@ -2452,6 +2455,15 @@ def display_quotation(request):
     if sfs_representatives:
         m = m.filter(contact_by = sfs_representatives)
 
+     # Date range filter
+    if from_date:
+        from_date_obj = parse_date(from_date)
+        if from_date_obj:
+            m = m.filter(quotation_date__gte=from_date_obj)
+    if to_date:
+        to_date_obj = parse_date(to_date)
+        if to_date_obj:
+            m = m.filter(quotation_date__lte=to_date_obj)
 
     filter_count = m.count()
     if sort_by in valid_sort_fields:
@@ -2475,6 +2487,8 @@ def display_quotation(request):
         'filter_count':filter_count,
         'branches':branch_list,
         'sfs_representatives':sfs_representatives,
+        'from_date': from_date,
+        'to_date': to_date,
     }
     return render(request, 'display_quotation.html', context)
 
@@ -5938,9 +5952,12 @@ def reportlab_quotation_pdf(request, id):
 
         product_data.append([
             str(idx),
-            Paragraph(f"{item['name']}<br/><i>{description}</i>", small),
-            Paragraph(f"{price:,.2f}",small),
-            Paragraph(f"{quantity:.2f}<br/>{item['unit']}", small),
+             Paragraph(
+                f"<b>{item['name']}</b><br/><font size='8'><i>{description}</i></font>",
+                small
+            ),
+            Paragraph(f"{price:,.2f}",ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+            Paragraph(f"{quantity:.2f}<br/>{item['unit']}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             f"{total:,.2f}"
         ])
 
@@ -5952,14 +5969,24 @@ def reportlab_quotation_pdf(request, id):
 
     product_table = Table(product_data, colWidths=col_widths)
     product_table.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D9D9D9')),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('ALIGN', (0, 0), (0, -1), 'CENTER'),
-        ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
-        ('FONTSIZE', (0, 0), (-1, -1), 9),
+     ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
+     ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D9D9D9')),
+     ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+
+     # Center align only header row, except Product / Service
+     ('ALIGN', (0, 0), (0, 0), 'CENTER'),   # Sr. No.
+     ('ALIGN', (2, 0), (-1, 0), 'CENTER'),  # Rate, Qty, Total
+     ('ALIGN', (1, 0), (1, 0), 'LEFT'),     # Product / Service header
+
+     # Data rows alignment
+     ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # Sr. No.
+     ('ALIGN', (1, 1), (1, -1), 'LEFT'),    # Product / Service (all rows)
+     ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),  # Rate, Qty, Total
+
+     ('FONTSIZE', (0, 0), (-1, -1), 9),
     ]))
+
     elements.append(product_table)
     # elements.append(Spacer(1, 8))
 
@@ -6120,15 +6147,6 @@ def get_message_templates(request):
     }
     return render(request, 'message_templates.html', context=data)
 
-# def create_message_template(request):
-#     messages_type_choices = MessageTemplates.MESSAGE_TYPE_CHOICE
-#     category_choices = MessageTemplates.CATEGORY_CHOICES
-#     context ={
-#         'message_type_choices': messages_type_choices,
-#         'category_choices': category_choices,
-#     }
-#     return render(request,'create_message_template.html',context)
-
 
 def create_message_template(request):
     messages_type_choices = MessageTemplates.MESSAGE_TYPE_CHOICE
@@ -6142,7 +6160,7 @@ def create_message_template(request):
         lead_status = request.POST.get('lead_status')
         subject = request.POST.get('subject') if message_type == 'email' else None
         body = request.POST.get('body')
-
+        attachment = request.FILES.get('attachment',None)  
         # Save to DB
         MessageTemplates.objects.create(
             name=name,
@@ -6151,6 +6169,7 @@ def create_message_template(request):
             lead_status = lead_status,
             subject=subject,
             body=body,
+            attachment=attachment,
             is_active=True
         )
 
@@ -6170,10 +6189,13 @@ def edit_message_template(request,id):
         # Get the serialized body from the hidden input
         body = request.POST.get('body', '')
         subject = request.POST.get('subject','')
-        print(body)
+        attachment = request.FILES.get('attachment') 
         # Save to model
         templates.body = body
         templates.subject = subject
+        print(attachment)
+        if attachment: 
+            templates.attachment = attachment
         templates.save()
 
         # Redirect or show success message
@@ -6192,17 +6214,16 @@ from .tasks import send_email_task
 
 def send_lead_email(request, pk):
     lead = get_object_or_404(lead_management, pk=pk)
-    
+
     if not lead.customeremail or not lead.customeremail.strip():
         messages.error(request, f"{lead.customername} has no email address.")
         return redirect("display_lead_management")
-    
+   
     template = MessageTemplates.objects.filter(
         message_type='email',
         category='lead',
-        lead_status__iexact=lead.typeoflead.strip()
+        lead_status__iexact=lead.typeoflead.strip().lower()
     ).first()
-
     print("template",template)
     print("lead",lead.typeoflead)
     if not template:
@@ -6223,7 +6244,75 @@ def send_lead_email(request, pk):
         body = body.replace(f"{{{key}}}", str(value))
         subject = subject.replace(f"{{{key}}}", str(value))
 
-    send_email_task.delay(subject, body, recipient=lead.customeremail)
-    messages.success(request, f"Email sent to {lead.customername}")
-    return redirect("display_lead_management")
+    attachment_path = None
+    attachment_name = None
+    if template.attachment:
+        attachment_path = template.attachment.path  # full file path
+        attachment_name = os.path.basename(template.attachment.name)  # file name
 
+
+    send_email_task.delay(subject, body, recipient=lead.customeremail,attachment_path=attachment_path, attachment_name=attachment_name)
+    messages.success(request, f"Email sent to {lead.customername}")
+    # return redirect("display_lead_management")
+    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+
+def send_group_lead_email(request, lead_type):
+    # Get only leads in 'lead' category with the given type
+    leads = lead_management.objects.filter(typeoflead__iexact=lead_type)
+
+    sent_count = 0
+    skipped_count = 0
+
+    for lead in leads:
+        # Get latest follow-up
+        latest_followup = main_followup.objects.filter(lead=lead).order_by('-created_at').first()
+
+        # Skip if Close Win
+        if latest_followup and latest_followup.order_status == 'Close Win':
+            skipped_count += 1
+            continue
+
+        # Skip if no email
+        if not lead.customeremail or not lead.customeremail.strip():
+            skipped_count += 1
+            continue
+
+        # Fetch template
+        template = MessageTemplates.objects.filter(
+            message_type='email',
+            category='lead',
+            lead_status__iexact=lead_type.strip()
+        ).first()
+        if not template:
+            skipped_count += 1
+            continue
+
+        # Prepare placeholders
+        placeholders = {
+            "customername": lead.customername,
+            "typeoflead": lead.typeoflead,
+            "primarycontact": lead.primarycontact,
+        }
+
+        body = template.body
+        subject = template.subject
+        for key, value in placeholders.items():
+            body = body.replace(f"{{{key}}}", str(value))
+            subject = subject.replace(f"{{{key}}}", str(value))
+
+        attachment_path = None
+        attachment_name = None
+        if template.attachment:
+            attachment_path = template.attachment.path  # full file path
+            attachment_name = os.path.basename(template.attachment.name)  # file name
+
+
+        send_email_task.delay(subject, body, recipient=lead.customeremail,attachment_path=attachment_path, attachment_name=attachment_name)
+        # Send email asynchronously
+        # send_email_task.delay(subject, body, recipient=lead.customeremail)
+        sent_count += 1
+
+    messages.success(request, f"✅ Emails sent: {sent_count}, ⏭️ Skipped: {skipped_count}")
+    # return redirect("display_lead_management")
+    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))

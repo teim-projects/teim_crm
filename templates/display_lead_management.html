@@ -766,19 +766,28 @@
 
                         
                         <div class="container-table">
-                            <div class="auto_actions text-end mb-2" style="margin-right: 30px;">
-                                <a href="" class="btn btn-sm btn-primary">
+                            <div class="auto_actions d-flex justify-content-end align-items-center gap-2 mb-2" style="margin-right: 30px;">
+    
+                                <select name="lead_type" id="lead_type" class="form-control" style="width: 200px;">
+                                    <option value="">Select Lead Type</option>
+                                    {% for i in lead_types %}
+                                        <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            
+                                <a href="#" id="sendGroupEmailBtn" class="btn btn-sm btn-primary">
                                     <i class="fa-solid fa-envelope"></i>
-                                </a>  
-
+                                </a> 
+                            
                                 <a href="" class="btn btn-sm btn-success">
                                     <i class="fa-brands fa-whatsapp"></i>
                                 </a> 
-
+                            
                                 <a href="" class="btn btn-sm btn-success">
                                     <i class="fa-solid fa-square-phone"></i>
                                 </a> 
                             </div>
+                            
 
                             <table class="table table-bordered text-center">
                                 <thead>
@@ -965,6 +974,21 @@
         <div id="modal-content"></div>
     </div>
 
+    <!-- Group Email Modal -->
+    <script>
+        document.getElementById("sendGroupEmailBtn").addEventListener("click", function (e) {
+            e.preventDefault();
+            let leadType = document.getElementById("lead_type").value;
+            
+            if (!leadType) {
+                alert("Please select a lead type first!");
+                return;
+            }
+            
+            // Redirect with selected lead type
+            window.location.href = `/send-group-email/${leadType}/`;
+        });
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

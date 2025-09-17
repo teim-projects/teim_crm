@@ -170,7 +170,7 @@ def send_service_scheduled_email(sender, service_id, created, **kwargs):
     if not created:
         subject = "Service Appointment Updated – Seva Facility Services"
 
-    send_email_task.delay(subject, body, recipient_list = customer.primaryemail)
+    send_email_task.delay(subject, body, recipient = customer.primaryemail)
     print("📧 Email task queued for:", customer.primaryemail)
 
 

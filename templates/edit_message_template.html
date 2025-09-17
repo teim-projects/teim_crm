@@ -93,7 +93,7 @@
               class="mb-4 mt-2">X</span>
           </div>
 
-          <form method="post" class="p-4">
+          <form method="post" class="p-4" enctype="multipart/form-data">
             {% csrf_token %}
             <h3 style="text-align: center;">Edit Message Templates</h3>
             
@@ -122,7 +122,12 @@
               <div id="editor" class="editor" contenteditable="true"></div>
               <textarea name="body" id="hiddenBody" hidden></textarea>
             </div>
-          
+            <div class="card mt-3" id="attachmentCard" style="display:none;">
+              <label for="attachment"><b>Attachment</b></label>
+              <input type="file" name="attachment" id="attachment" class="form-control"
+                     accept="image/*,.pdf,.doc,.docx">
+            </div>
+
             <div class="row mt-3 mb-3 justify-content-center">
               <div class="col-md-3">
                 <button class="btn btn-success w-100" type="submit">Submit</button>
@@ -155,7 +160,7 @@
     </div>
   </div>
 
- <script>
+ <!-- <script>
   const PLACEHOLDER_RE = /\{[^}]+\}/g;
 
 // Editors
@@ -253,7 +258,123 @@ document.querySelector('form').addEventListener('submit', () => {
   hiddenSubject.value = serializeEditor(subjectEditor);
 });
 
- </script>
+ </script>  -->
+ 
+ <script>
+  const PLACEHOLDER_RE = /\{[^}]+\}/g;
+
+  // Editors
+  const bodyEditor = document.getElementById('editor');
+  const subjectEditor = document.getElementById('subjectEditor');
+
+  // Hidden fields
+  const hiddenBody = document.getElementById('hiddenBody');
+  const hiddenSubject = document.getElementById('hiddenSubject');
+
+  // Subject + attachment cards
+  const subjectCard = document.querySelector('[for="subjectEditor"]')?.closest('.card');
+  const attachmentCard = document.getElementById('attachmentCard');
+
+  // Message type (from DB)
+  const messageType = `{{ templates.message_type|escapejs }}`.toLowerCase();
+
+  // Show/hide fields based on message type
+  function toggleFields() {
+    if (messageType === 'email') {
+      if (subjectCard) subjectCard.style.display = 'block';
+      if (attachmentCard) attachmentCard.style.display = 'block';
+    } else if (messageType === 'whatsapp') {
+      if (subjectCard) subjectCard.style.display = 'none';
+      if (attachmentCard) attachmentCard.style.display = 'block';
+    } else {
+      if (subjectCard) subjectCard.style.display = 'none';
+      if (attachmentCard) attachmentCard.style.display = 'none';
+    }
+  }
+
+  toggleFields(); // run immediately on load
+
+  // ------------------ existing code -------------------
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderTemplate(editor, raw) {
+    const parts = raw.split(/(\{[^}]+\})/g);
+    const frag = parts.map(p => {
+      if (p.match(PLACEHOLDER_RE)) {
+        return `<span contenteditable="false" class="placeholder-1" data-value="${esc(p)}">${esc(p)}</span>`;
+      } else {
+        return esc(p).replace(/\r?\n/g, '<br>');
+      }
+    }).join('');
+    editor.innerHTML = frag;
+  }
+
+  function serializeEditor(editor) {
+    const clone = editor.cloneNode(true);
+    const placeholders = clone.querySelectorAll('.placeholder-1');
+    placeholders.forEach(span => {
+      const textNode = document.createTextNode(span.getAttribute('data-value'));
+      span.parentNode.replaceChild(textNode, span);
+    });
+
+    function getTextWithNewlines(node) {
+      let text = '';
+      node.childNodes.forEach(n => {
+        if (n.nodeType === Node.TEXT_NODE) text += n.nodeValue;
+        else if (n.nodeType === Node.ELEMENT_NODE) {
+          if (n.tagName === 'BR') text += '\n';
+          else text += getTextWithNewlines(n) + '\n';
+        }
+      });
+      return text;
+    }
+
+    return getTextWithNewlines(clone).replace(/\n{2,}/g, '\n\n');
+  }
+
+  [bodyEditor, subjectEditor].forEach(editor => {
+    editor?.addEventListener("keydown", (e) => {
+      const sel = window.getSelection();
+      if (!sel.rangeCount) return;
+      const range = sel.getRangeAt(0);
+      let node = range.startContainer;
+      if (node.nodeType === 3) node = node.parentNode;
+
+      if (e.key === "Backspace") {
+        if (range.startOffset === 0 && node.previousSibling?.classList?.contains("placeholder-1")) {
+          e.preventDefault();
+        }
+      }
+      if (e.key === "Delete") {
+        if (range.startOffset === node.length && node.nextSibling?.classList?.contains("placeholder-1")) {
+          e.preventDefault();
+        }
+      }
+    });
+  });
+
+  document.querySelectorAll('.toolbar .btn[data-cmd]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      let cmd = btn.getAttribute('data-cmd');
+      if (cmd === 'createLink') {
+        let url = prompt("Enter the link URL:", "https://");
+        if (url) document.execCommand(cmd, false, url);
+      } else document.execCommand(cmd, false, null);
+    });
+  });
+
+  const dbBody = `{{ templates.body|escapejs }}`;
+  const dbSubject = `{{ templates.subject|escapejs }}`;
+  renderTemplate(bodyEditor, dbBody);
+  renderTemplate(subjectEditor, dbSubject);
+
+  document.querySelector('form').addEventListener('submit', () => {
+    hiddenBody.value = serializeEditor(bodyEditor);
+    hiddenSubject.value = serializeEditor(subjectEditor);
+  });
+</script>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {

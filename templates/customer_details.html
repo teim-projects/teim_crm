@@ -311,41 +311,41 @@
                 <!-- Step form JS -->
 
                 <script>
-        $(document).ready(function () {
-            $('input[name="primarycontact"]').on('change', function () {
-                const mobile = $(this).val();
-                if (mobile.length === 10) {
-                    $.ajax({
-                        url: "",
-                        data: {
-                            'primarycontact': mobile
-                        },
-                        dataType: 'json',
-                        success: function (response) {
-                            if (response.status === 'exists') {
-                                const data = response.data;
-                                $('input[name="fullname"]').val(data.fullname);
-                                $('input[name="primaryemail"]').val(data.primaryemail);
-                                $('input[name="secondarycontact"]').val(data.secondarycontact);
-                                $('input[name="contactperson"]').val(data.contactperson);
-                                $('input[name="customersegment"]').val(data.customersegment);
-                                $('input[name="shifttopartyaddress"]').val(data.shifttopartyaddress);
-                                $('input[name="shifttopartycity"]').val(data.shifttopartycity);
-                                $('input[name="soldtopartyaddress"]').val(data.soldtopartyaddress);
-                                $('input[name="soldtopartycity"]').val(data.soldtopartycity);
-                                $('select[name="customer_type"]').val(data.customer_type || 'Individual');
-                                $('input[name="or_name"]').val(data.or_name);
-                                $('input[name="or_contact"]').val(data.or_contact);
-                                toggleOrganizationFields();
-                            } else {
-                                alert("No lead data found for this number.");
+                    $(document).ready(function () {
+                        $('input[name="primarycontact"]').on('change', function () {
+                            const mobile = $(this).val();
+                            if (mobile.length === 10) {
+                                $.ajax({
+                                    url: "",
+                                    data: {
+                                        'primarycontact': mobile
+                                    },
+                                    dataType: 'json',
+                                    success: function (response) {
+                                        if (response.status === 'exists') {
+                                            const data = response.data;
+                                            $('input[name="fullname"]').val(data.fullname);
+                                            $('input[name="primaryemail"]').val(data.primaryemail);
+                                            $('input[name="secondarycontact"]').val(data.secondarycontact);
+                                            $('input[name="contactperson"]').val(data.contactperson);
+                                            $('input[name="customersegment"]').val(data.customersegment);
+                                            $('input[name="shifttopartyaddress"]').val(data.shifttopartyaddress);
+                                            $('input[name="shifttopartycity"]').val(data.shifttopartycity);
+                                            $('input[name="soldtopartyaddress"]').val(data.soldtopartyaddress);
+                                            $('input[name="soldtopartycity"]').val(data.soldtopartycity);
+                                            $('select[name="customer_type"]').val(data.customer_type || 'Individual');
+                                            $('input[name="or_name"]').val(data.or_name);
+                                            $('input[name="or_contact"]').val(data.or_contact);
+                                            toggleOrganizationFields();
+                                        } else {
+                                            alert("No lead data found for this number.");
+                                        }
+                                    }
+                                });
                             }
-                        }
+                        });
                     });
-                }
-            });
-        });
-    </script>
+                </script>
                 <script>
                     let currentStep = 0;
                     const steps = document.querySelectorAll('.step');
