@@ -368,11 +368,16 @@ document.querySelector('form').addEventListener('submit', () => {
   const dbBody = `{{ templates.body|escapejs }}`;
   const dbSubject = `{{ templates.subject|escapejs }}`;
   renderTemplate(bodyEditor, dbBody);
-  renderTemplate(subjectEditor, dbSubject);
+  // renderTemplate(subjectEditor, dbSubject);
+  if (subjectEditor) {
+    renderTemplate(subjectEditor, dbSubject);
+  }
 
   document.querySelector('form').addEventListener('submit', () => {
     hiddenBody.value = serializeEditor(bodyEditor);
-    hiddenSubject.value = serializeEditor(subjectEditor);
+    if (messageType === 'email' && subjectEditor) {
+      hiddenSubject.value = serializeEditor(subjectEditor);
+    }
   });
 </script>
 

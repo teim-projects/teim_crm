@@ -3101,7 +3101,7 @@ def edit_service_management(request, rid):
         # Step 3: Assign new technicians
         technician_profiles = TechnicianProfile.objects.filter(id__in=technician_ids)
         work_allocation.technician.set(technician_profiles)  # update technicians for WorkAllocation
-
+        
         for tech_profile in technician_profiles:
             tech_user = tech_profile.user  # convert to User model
             tech_work = TechWorkList.objects.create(
@@ -3138,7 +3138,7 @@ def edit_service_management(request, rid):
         service_obj.service_date = uservice_date
         service_obj.technicians.set(technician_ids)
         service_obj.save()
-
+        work_allocation.save()
         return redirect('/display_allocation')
 
 # Edit Quotation
@@ -6183,27 +6183,28 @@ def create_message_template(request):
     return render(request, 'create_message_template.html', context)
 
 
-def edit_message_template(request,id):
-    templates = MessageTemplates.objects.get(id = id)
-    if request.method == "POST":
-        # Get the serialized body from the hidden input
-        body = request.POST.get('body', '')
-        subject = request.POST.get('subject','')
-        attachment = request.FILES.get('attachment') 
-        # Save to model
-        templates.body = body
-        templates.subject = subject
-        print(attachment)
-        if attachment: 
-            templates.attachment = attachment
-        templates.save()
+def edit_message_template(request, id):
+    template = MessageTemplates.objects.get(id=id)
 
-        # Redirect or show success message
-        return redirect('message_templates')  # Replace with your template list URL name
-    data = {
-        'templates':templates
-    }
-    return render(request, 'edit_message_template.html' ,context=data)
+    if request.method == "POST":
+        body = request.POST.get('body', '')
+
+        # Always update body
+        template.body = body  
+
+        # Only handle subject + attachment if Email
+        if template.message_type == "email":
+            subject = request.POST.get('subject', '')
+            template.subject = subject
+
+        attachment = request.FILES.get('attachment')
+        if attachment:
+            template.attachment = attachment
+
+        template.save()
+        return redirect('message_templates')
+
+    return render(request, 'edit_message_template.html', {"templates": template})
 
 
 from django.apps import apps

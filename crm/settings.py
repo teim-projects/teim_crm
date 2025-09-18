@@ -276,3 +276,6 @@ DEFAULT_FROM_EMAIL = "SFS"
 EMAIL_HOST_USER = "connectteim@gmail.com"
 EMAIL_HOST_PASSWORD = "iuri dlqe nfsd joyr" 
 
+# Whatsapp Api
+WHATSAPP_API  = "https://app.rapbooster.com/api/send/msg?authKey=6538c8eff027d41e9151"
+WHATSAPP_CHANNEL_ID = "22035"
