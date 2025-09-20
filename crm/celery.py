@@ -19,20 +19,20 @@ app.autodiscover_tasks()
 app.conf.timezone = 'Asia/Kolkata'
 
 # Beat Schedules
-app.conf.beat_schedule = {
-    'send-hot-lead-emails-every-day-11-12': {
-        'task': 'email_sender.tasks.send_hot_lead_emails',
-        'schedule': crontab(minute=12, hour=11),  # every day at 11:12 AM
-    },
-    'send-warm-lead-emails-weekly': {
-        'task': 'email_sender.tasks.send_warm_lead_emails',
-        'schedule': crontab(minute=0, hour=0, day_of_week='monday'),  # every Monday at midnight
-    },
-    'send-cold-lead-emails-every-15-days': {
-        'task': 'email_sender.tasks.send_cold_lead_emails',
-        'schedule': crontab(minute=0, hour=0, day_of_month='1,15'),  # 1st & 15th at midnight
-    },
-}
+# app.conf.beat_schedule = {
+#     'send-hot-lead-emails-every-day-11-12': {
+#         'task': 'email_sender.tasks.send_hot_lead_emails',
+#         'schedule': crontab(minute=12, hour=11),  # every day at 11:12 AM
+#     },
+#     'send-warm-lead-emails-weekly': {
+#         'task': 'email_sender.tasks.send_warm_lead_emails',
+#         'schedule': crontab(minute=0, hour=0, day_of_week='monday'),  # every Monday at midnight
+#     },
+#     'send-cold-lead-emails-every-15-days': {
+#         'task': 'email_sender.tasks.send_cold_lead_emails',
+#         'schedule': crontab(minute=0, hour=0, day_of_month='1,15'),  # 1st & 15th at midnight
+#     },
+# }
 
 @app.task(bind=True)
 def debug_task(self):

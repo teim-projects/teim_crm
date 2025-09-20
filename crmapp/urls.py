@@ -188,6 +188,7 @@ urlpatterns = [
     path('create_message_template/', views.create_message_template, name='create_message_template'),
     path('send-email/<int:pk>/', views.send_lead_email, name='send_lead_email'),
     path('send-group-email/<str:lead_type>/', views.send_group_lead_email, name='send_group_lead_email'),
+    path('send-whatsapp/<int:pk>/', views.send_lead_whatsapp, name='send_lead_whatsapp'),
 ]
 
 if settings.DEBUG:

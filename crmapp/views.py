@@ -3037,6 +3037,8 @@ def delete_service_product(request, pid):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
 
+
+from .signals import service_scheduled
 # This function is for edit service management in reshdule 
 def edit_service_management(request, rid):
     if request.method == 'GET':
@@ -3139,6 +3141,7 @@ def edit_service_management(request, rid):
         service_obj.technicians.set(technician_ids)
         service_obj.save()
         work_allocation.save()
+        service_scheduled.send(sender=WorkAllocation, service_id=service_obj.id, created=False)
         return redirect('/display_allocation')
 
 # Edit Quotation
@@ -4199,7 +4202,7 @@ def allocate_work(request, service_id):
             payment_amount=payment_amount,
             gps_location=gps_location,
         )
-
+   
         # Add all technicians to the WorkAllocation
         technicians = TechnicianProfile.objects.filter(id__in=technician_ids)
         work_allocation.technician.set(technicians)
@@ -4211,7 +4214,7 @@ def allocate_work(request, service_id):
                 service=service_object,
             )
             tech_worklist.work.add(work_allocation)
-
+       
         return redirect('work_allocation_success')
 
     technicians = TechnicianProfile.objects.all()
@@ -6211,7 +6214,7 @@ from django.apps import apps
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import redirect
-from .tasks import send_email_task
+from .tasks import send_email_task, send_whatsapp_task
 
 def send_lead_email(request, pk):
     lead = get_object_or_404(lead_management, pk=pk)
@@ -6219,7 +6222,6 @@ def send_lead_email(request, pk):
     if not lead.customeremail or not lead.customeremail.strip():
         messages.error(request, f"{lead.customername} has no email address.")
         return redirect("display_lead_management")
-   
     template = MessageTemplates.objects.filter(
         message_type='email',
         category='lead',
@@ -6316,4 +6318,58 @@ def send_group_lead_email(request, lead_type):
 
     messages.success(request, f"✅ Emails sent: {sent_count}, ⏭️ Skipped: {skipped_count}")
     # return redirect("display_lead_management")
+    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+
+
+def send_lead_whatsapp(request, pk):
+    lead = get_object_or_404(lead_management, pk=pk)
+
+    if not lead.primarycontact:
+        messages.error(request, f"{lead.customername} has no phone number.")
+        return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+    
+    # Fetch WhatsApp template for this lead type
+    template = MessageTemplates.objects.filter(
+        message_type='whatsapp',
+        category='lead',
+        lead_status__iexact=lead.typeoflead.strip().lower()
+    ).first()
+
+    if not template:
+        messages.error(request, f"No WhatsApp template found for {lead.typeoflead}.")
+        return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+    # Prepare placeholders
+    placeholders = {
+        "customername": lead.customername,
+        "typeoflead": lead.typeoflead,
+        "primarycontact": lead.primarycontact,
+        # Add more fields if needed
+    }
+
+    # Replace placeholders in template body
+    msg = template.body
+    for key, value in placeholders.items():
+        msg = msg.replace(f"{{{key}}}", str(value))
+
+    # Handle attachment if present
+    attachment_url = None
+    attachment_name = None
+    if template.attachment:
+        # Use .url (relative to MEDIA_URL)
+        relative_url = template.attachment.url  # e.g. /media/message_attachments/ape1_hbHE7TU.jpg
+
+        # Build absolute URL
+        site_url = getattr(settings, "SITE_URL", "https://www.teimcrm.com")  
+        attachment_url = f"{site_url}{relative_url}"
+        attachment_name = os.path.basename(template.attachment.name)
+    
+    print("url: ", attachment_url)
+    print("attachment_name :",attachment_name)
+    # Queue the Celery task
+    mobile = f"91{lead.primarycontact}"
+    send_whatsapp_task.delay(mobile, msg, attachment_url, attachment_name)
+
+    messages.success(request, f"WhatsApp message queued for {lead.customername}")
     return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
