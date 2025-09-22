@@ -189,7 +189,11 @@ urlpatterns = [
     path('send-email/<int:pk>/', views.send_lead_email, name='send_lead_email'),
     path('send-group-email/<str:lead_type>/', views.send_group_lead_email, name='send_group_lead_email'),
     path('send-whatsapp/<int:pk>/', views.send_lead_whatsapp, name='send_lead_whatsapp'),
+    path('send-group-whatsapp/<str:lead_type>/', views.send_group_lead_whatsapp, name='send_group_lead_whatsapp'),
+    path('send-quotation-whatsapp/<int:id>/', views.send_quotation_pdf_on_whatsapp, name='send_quotation_pdf_on_whatsapp'),
+    path('send-quotation-email/<int:id>/', views.send_quotation_email, name='send_quotation_email'),
 ]
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

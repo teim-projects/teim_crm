@@ -2466,12 +2466,12 @@ def display_quotation(request):
             m = m.filter(quotation_date__lte=to_date_obj)
 
     filter_count = m.count()
-    if sort_by in valid_sort_fields:
-        order_prefix = '-' if sort_order == 'desc' else ''
-        m = m.order_by(f'{order_prefix}{sort_by}')
-    else:
-        m = m.order_by('customer__fullname')
-
+    # if sort_by in valid_sort_fields:
+    #     order_prefix = '-' if sort_order == 'desc' else ''
+    #     m = m.order_by(f'{order_prefix}{sort_by}')
+    # else:
+    #     m = m.order_by('customer__fullname')
+    m = m.order_by('-id')
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -2609,9 +2609,7 @@ def display_lead_management(request):
     branch_count = filtered_leads.count()
 
     # 6. Apply sorting
-    order_prefix = '-' if order == 'desc' else ''
-    leads = filtered_leads.order_by(f'{order_prefix}{sort_by}')
-
+    leads = filtered_leads.order_by('-id')
     # 7. Apply pagination
     paginator = Paginator(leads, 10)
     page_number = request.GET.get('page')
@@ -2636,9 +2634,7 @@ def display_lead_management(request):
     typeoflead_choices = [choice[0] for choice in lead_management._meta.get_field('typeoflead').choices if choice[0]]
     lead_types = sorted(set(typeoflead_choices))
     source_choices = [choice[0] for choice in lead_management._meta.get_field('sourceoflead').choices if choice[0]]
-    
-    # source_used = lead_management.objects.values_list('sourceoflead', flat=True).distinct()
-    # sources = sorted(set(source_choices + list(source_used)))
+
     sources = sorted(set(source_choices))
 
 
@@ -6373,3 +6369,143 @@ def send_lead_whatsapp(request, pk):
 
     messages.success(request, f"WhatsApp message queued for {lead.customername}")
     return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+
+def send_group_lead_whatsapp(request, lead_type):
+    leads = lead_management.objects.filter(typeoflead__iexact=lead_type)
+    sent_count = 0
+    skipped_count = 0
+
+    site_url = getattr(settings, "SITE_URL", "https://www.teimcrm.com")
+
+    for lead in leads:
+        latest_followup = main_followup.objects.filter(lead=lead).order_by('-created_at').first()
+
+        # Skip Closed/No contact
+        if latest_followup and latest_followup.order_status == 'Close Win':
+            skipped_count += 1
+            continue
+        if not lead.primarycontact:
+            skipped_count += 1
+            continue
+
+        # Fetch template
+        template = MessageTemplates.objects.filter(
+            message_type='whatsapp',
+            category='lead',
+            lead_status__iexact=lead_type.strip()
+        ).first()
+        if not template:
+            skipped_count += 1
+            continue
+
+        # Prepare placeholders
+        placeholders = {
+            "customername": lead.customername,
+            "typeoflead": lead.typeoflead,
+            "primarycontact": lead.primarycontact,
+        }
+
+        body = template.body
+        for key, value in placeholders.items():
+            body = body.replace(f"{{{key}}}", str(value))
+
+        # Prepare attachment URL if exists
+        attachment_url = None
+        attachment_name = None
+        if template.attachment:
+            relative_url = template.attachment.url
+            attachment_url = f"{site_url}{relative_url}"
+            attachment_name = os.path.basename(template.attachment.name)
+
+        # Mobile number
+        mobile = f"91{lead.primarycontact}"
+
+        # Only send msg if no attachment
+        # msg = None if attachment_url else body
+        msg = body
+        send_whatsapp_task.delay(mobile, msg, attachment_url, attachment_name)
+
+        sent_count += 1
+
+    messages.success(request, f"✅ WhatsApp sent: {sent_count}, ⏭️ Skipped: {skipped_count}")
+    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+
+def send_quotation_pdf_on_whatsapp(request, id):
+    quotation = get_object_or_404(quotation_management, id=id)
+
+    mobile = f"91{quotation.customer.primarycontact}"  # adjust if field name is different
+
+        # Fetch WhatsApp template for this lead type
+    template = MessageTemplates.objects.filter(
+        message_type='whatsapp',
+        category='quotation',
+    ).first()
+
+    if not template:
+        messages.error(request, f"No WhatsApp template found for quotation.")
+        return redirect(request.META.get("HTTP_REFERER", "display_quotation"))
+
+    # Prepare placeholders
+    placeholders = {
+        "customername": quotation.customer.fullname,
+
+    }
+
+    # Replace placeholders in template body
+    msg = template.body
+    for key, value in placeholders.items():
+        msg = msg.replace(f"{{{key}}}", str(value))
+
+    # Handle attachment if present
+    attachment_url = f"https://www.teimcrm.com/generate_quotation/quotation/pdf/{quotation.id}/view?download=True"
+    attachment_name = f"quotation_{quotation.id}.pdf"
+
+    # Trigger Celery task
+    send_whatsapp_task.delay(
+        mobile=mobile,
+        msg=msg,
+        attachment_path=attachment_url,   # must be accessible URL
+        attachment_name=attachment_name
+    )
+
+    return redirect(request.META.get("HTTP_REFERER", "display_quotation")) 
+
+def send_quotation_email(request, id):
+    quotation = get_object_or_404(quotation_management, id=id)
+
+    recipient = quotation.customer.primaryemail
+    # subject = f"Quotation #{quotation.id}"
+    template = MessageTemplates.objects.filter(
+            message_type='email',
+            category='quotation').first()
+    
+    if not template:
+        messages.error(request, f"No template found for quotation.")
+        return redirect("display_quotation")
+    
+    placeholders = {
+        "customername": quotation.customer.fullname,
+    }
+
+    body = template.body
+    subject = template.subject
+    for key, value in placeholders.items():
+        body = body.replace(f"{{{key}}}", str(value))
+        subject = subject.replace(f"{{{key}}}", str(value))
+    
+    attachment_path = f"https://www.teimcrm.com/generate_quotation/quotation/pdf/{quotation.id}/view?download=True"
+    attachment_name = f"quotation_{quotation.id}.pdf"
+    message = f"Hello {quotation.customer.fullname}, please find your quotation attached."
+    
+    send_email_task.delay(
+        subject=subject,
+        message=body,
+        recipient=recipient,
+        attachment_path=attachment_path,
+        attachment_name=attachment_name
+    )
+
+    return redirect(request.META.get("HTTP_REFERER", "display_quotation"))
+

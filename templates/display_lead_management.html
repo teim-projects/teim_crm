@@ -779,7 +779,7 @@
                                     <i class="fa-solid fa-envelope"></i>
                                 </a> 
                             
-                                <a href="" class="btn btn-sm btn-success">
+                                <a href="#" id="sendGroupWhatsappBtn" class="btn btn-sm btn-success">
                                     <i class="fa-brands fa-whatsapp"></i>
                                 </a> 
                             
@@ -987,6 +987,18 @@
             
             // Redirect with selected lead type
             window.location.href = `/send-group-email/${leadType}/`;
+        });
+
+        // Group WhatsApp
+        document.getElementById("sendGroupWhatsappBtn").addEventListener("click", function (e) {
+            e.preventDefault();
+            let leadType = document.getElementById("lead_type").value;
+            if (!leadType) {
+                alert("Please select a lead type first!");
+                return;
+            }
+            // Redirect to your Django view for group WhatsApp
+            window.location.href = `/send-group-whatsapp/${leadType}/`;
         });
     </script>
 
