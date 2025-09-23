@@ -98,7 +98,7 @@ def send_whatsapp_task(mobile, msg, attachment_path=None, attachment_name=None):
             "fileUrl": attachment_path,        # must be accessible via URL
             "fileName": attachment_name,       # keep full name with extension
             "fileType": file_type,
-            "mimeType": mime_type,   
+            "mimeType": mime_type,  
         })
 
     try:

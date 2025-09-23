@@ -4261,15 +4261,61 @@ def technician_work_list(request):
     if not request.user.is_staff:
         return HttpResponse("Not authorized", status=403)
 
+    search = request.GET.get("search",'').strip()
+    payment_status = request.GET.get('payment_status','')
+    branch = request.GET.get('branch','')
+    work_status = request.GET.get('work_status')
+    technician = request.GET.get('technician','')
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
     # Fetch work allocations
     work_allocations = WorkAllocation.objects.all()
 
+    # Apply search filter
+    if search:
+        work_allocations = work_allocations.filter(
+            Q(service__customer__fullname__icontains=search) |
+            Q(service__customer__primarycontact__icontains=search) 
+        )
+
+    if payment_status:
+        work_allocations = work_allocations.filter(customer_payment_status = payment_status)
+  
+    if branch:
+        work_allocations = work_allocations.filter(service__branch = branch )
+
+    if work_status:
+        work_allocations = work_allocations.filter(status = work_status)
+
+    if technician :
+        work_allocations = work_allocations.filter(technician = technician)
+
+    if from_date:
+        from_date_obj = parse_date(from_date)
+        if from_date_obj:
+            work_allocations = work_allocations.filter(created_at__gte = from_date_obj)
+    if to_date:
+        to_date_obj = parse_date(to_date)
+        if to_date_obj:
+            # Add +1 day so the filter includes the whole 'to_date'
+            work_allocations = work_allocations.filter(created_at__lt=to_date_obj + timedelta(days=1))
     # Set up pagination (10 items per page)
     paginator = Paginator(work_allocations, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
-    return render(request, 'technician_work_list.html', {'page_obj': page_obj})
+    payment_status_choices  = WorkAllocation.objects.values_list('customer_payment_status', flat=True).distinct()
+    w_status = WorkAllocation.objects.values_list('status', flat=True).distinct()
+    branch = Branch.objects.all()
+    tech = TechnicianProfile.objects.all()
+    context = {'page_obj': page_obj, 
+               'search': search,
+                "payment_status": payment_status, 
+                "payment_status_choices":payment_status_choices ,
+                "branch":branch,
+                "w_status":w_status,
+                'tech':tech,
+             }
+    return render(request, 'technician_work_list.html', context)
 
 
 

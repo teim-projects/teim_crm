@@ -439,6 +439,26 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 
+class Branch(models.Model):
+    branch_name = models.CharField(max_length=100)
+    contact_1 = models.CharField(max_length=15)
+    contact_2 = models.CharField(max_length=15, blank=True, null=True)
+    email_1 = models.EmailField()
+    email_2 = models.EmailField(blank=True, null=True)
+    gst_number = models.CharField(max_length=20)
+    pan_number = models.CharField(max_length=20)
+    full_address = models.TextField()
+    state = models.CharField(max_length=50 )
+    code = models.IntegerField()
+    shortcut = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.branch_name
+
+
+
+
 class Inventory_summary(models.Model):
     customer_id = models.CharField(max_length=100, default='unknown')
     customer_name = models.CharField(max_length=255)
@@ -501,6 +521,7 @@ class service_management(models.Model):
         ('Institutional', 'Institutional'),
         ('Irrelevant Leads', 'Irrelevant Leads')]
     customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, null=True, blank=True)
+    branch = models.ForeignKey("Branch", on_delete=models.CASCADE,null=True, blank=True)
     service_subject = models.CharField(max_length=500, blank=True, null=True)
     # selected_services = models.ManyToManyField(Product, related_name="selected_services")
     selected_services = models.ManyToManyField(Product, through='ServiceProduct', related_name="selected_services")
@@ -548,29 +569,11 @@ class ServiceProduct(models.Model):
     def __str__(self):
         return f"{self.product.product_name} ({self.quantity} @ ₹{self.price} + GST {self.gst_percentage}%)"
 
-class Branch(models.Model):
-    branch_name = models.CharField(max_length=100)
-    contact_1 = models.CharField(max_length=15)
-    contact_2 = models.CharField(max_length=15, blank=True, null=True)
-    email_1 = models.EmailField()
-    email_2 = models.EmailField(blank=True, null=True)
-    gst_number = models.CharField(max_length=20)
-    pan_number = models.CharField(max_length=20)
-    full_address = models.TextField()
-    state = models.CharField(max_length=50 )
-    code = models.IntegerField()
-    shortcut = models.CharField(max_length=10)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.branch_name
-
-
 
 from django.db import models
 from django.utils import timezone
 from .models import Product
-from crmapp.models import Branch
+
 from .models import QuotationTerm  # adjust path if needed
 from django.db.models import Sum
 
