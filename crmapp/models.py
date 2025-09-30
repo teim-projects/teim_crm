@@ -57,7 +57,7 @@ class InvoiceTerm(models.Model):
 class customer_details(models.Model):
    
     fullname = models.CharField(max_length=100)
-    primaryemail=models.EmailField()
+    primaryemail=models.EmailField(null=True, blank=True)
     secondaryemail=models.EmailField(null=True , blank=True)
     primarycontact=models.BigIntegerField( unique=True)
     secondarycontact=models.BigIntegerField(null=True , blank=True)
@@ -833,7 +833,7 @@ class PaymentsRecord(models.Model):
     remarks = models.TextField(blank=True, null=True)
     attachment = models.FileField(upload_to='payment_attachments/', null=True, blank=True)
     base_invoice_ref = models.CharField(max_length=100, editable=False)
-
+    last_alert_sent = models.DateField(blank=True, null=True)
     def clean(self):
         if self.attachment and self.attachment.size > 5 * 1024 * 1024:
             raise ValidationError("Attachment size cannot exceed 5MB.")
@@ -890,19 +890,31 @@ class PaymentsRecord(models.Model):
         elif hasattr(self.main_invoice, 'dated') and self.main_invoice.dated:
             invoice_date = self.main_invoice.dated
 
-        if invoice_date:
-            days = (timezone.now().date() - invoice_date).days
-            if days <= 7:
-                return "0–7 Days"
-            elif days <= 15:
-                return "8–15 Days"
-            elif days <= 21:
-                return "16–21 Days"
-            elif days <= 30:
-                return "22–30 Days"
-            return "30+ Days"
-        return "Unknown"
-    
+        if not invoice_date:
+            return "Unknown"
+
+        # If invoice fully paid, stop ageing at the last payment date
+        if self.amount_remaining == 0:
+            last_payment = PaymentsRecord.objects.filter(main_invoice=self.main_invoice).order_by('-payment_date').first()
+            if last_payment:
+                end_date = last_payment.payment_date
+            else:
+                end_date = timezone.now().date()
+        else:
+            # Still not fully paid → ageing continues till today
+            end_date = timezone.now().date()
+
+        days = (end_date - invoice_date).days
+
+        if days <= 7:
+            return "0–7 Days"
+        elif days <= 15:
+            return "8–15 Days"
+        elif days <= 21:
+            return "16–21 Days"
+        elif days <= 30:
+            return "22–30 Days"
+        return "30+ Days"
     def __str__(self):
         return self.payment_invoice_no
     

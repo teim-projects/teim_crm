@@ -428,67 +428,64 @@
                         <h1> Quotation Information</h1>
 
                         <div class="container-fluid">
-                            <div class="row align-items-center mb-3 g-2">
-                            
-                                <!-- Search Bar -->
-                                <div class="col-md-3">
-                                    <form class="d-flex" method="get">
-                                        <input class="form-control me-2" type="search" name="search"
-                                            placeholder="Search by Cust.ID / Mobile / Comapny Name"
-                                            aria-label="Search"
-                                            value="{{ request.GET.search }}">
-                                        <button class="btn btn-outline-success" type="submit" style="min-width: 100px;">Search</button>
-                                    </form>
+                            <form method="get" class="row align-items-center mb-3 g-2">
+                          
+                              <!-- Search Bar -->
+                              <div class="col-md-3">
+                                <div class="d-flex">
+                                  <input class="form-control me-2" type="search" name="search"
+                                    placeholder="Search by Cust.ID / Mobile / Company Name"
+                                    value="{{ request.GET.search }}">
+                                  <button class="btn btn-outline-success" type="submit" style="min-width: 100px;">Search</button>
                                 </div>
-                            
-                                <!-- Customer Type Dropdown -->
-                                <div class="col-md-1">
-                                    <form method="get">
-                                        <select class="form-select" name="customer_type" id="customer_type" onchange="this.form.submit()">
-                                            <option value="">All Type</option>
-                                            <option value="Individual" {% if request.GET.customer_type == 'Individual' %}selected{% endif %}>Individual</option>
-                                            <option value="Organization" {% if request.GET.customer_type == 'Organization' %}selected{% endif %}>Organization</option>
-                                        </select>
-                                    </form>
-                                </div>
-                                <div class="col-md-2">
-                                    <form method="get">
-                                        <select class="form-select" name="branch" id="branch" onchange="this.form.submit()">
-                                            <option value="">All Branches</option>
-                                            {% for branch in branches %}
-                                                <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </form>
-                                </div>
-                                <div class="col-md-2">
-                                    <form method="get">
-                                        <select class="form-select" name="sfs_representatives" id="sfs_representatives" onchange="this.form.submit()">
-                                            <option value="">SFS Representative</option>
-                                            {% for rep in sfs_representatives %}
-                                                <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </form>
-                                </div>
-                                <!-- Date Filter Button -->
-                                <div class="col-md-2">
-                                  <button type="button" class="btn btn-outline-secondary w-100" name="date_filter" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
-                                    <i class="fa fa-calendar"></i> <span id="selectedRange">Select Date Range</span>
-                                  </button>
-                                </div>
-
-                                <!-- Export Button -->
-                                <div class="col-md-2">
-                                    <a href="{% url 'export_quotation' %}">
-                                        <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
-                                    </a>
-                                </div>
-
-                                
-                            
-                            </div>
-                        </div>
+                              </div>
+                          
+                              <!-- Customer Type Dropdown -->
+                              <div class="col-md-1">
+                                <select class="form-select" name="customer_type" onchange="this.form.submit()">
+                                  <option value="">All Type</option>
+                                  <option value="Individual" {% if request.GET.customer_type == 'Individual' %}selected{% endif %}>Individual</option>
+                                  <option value="Organization" {% if request.GET.customer_type == 'Organization' %}selected{% endif %}>Organization</option>
+                                </select>
+                              </div>
+                          
+                              <!-- Branch Dropdown -->
+                              <div class="col-md-2">
+                                <select class="form-select" name="branch" onchange="this.form.submit()">
+                                  <option value="">All Branches</option>
+                                  {% for branch in branches %}
+                                    <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+                          
+                              <!-- SFS Representative -->
+                              <div class="col-md-2">
+                                <select class="form-select" name="sfs_representatives" onchange="this.form.submit()">
+                                  <option value="">SFS Representative</option>
+                                  {% for rep in sfs_representatives %}
+                                    <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+                          
+                              <!-- Date Filter Button -->
+                              <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
+                                  <i class="fa fa-calendar"></i> <span id="selectedRange">Select Date Range</span>
+                                </button>
+                              </div>
+                          
+                              <!-- Export Button -->
+                              <div class="col-md-2">
+                                <a href="{% url 'export_quotation' %}?{{ request.GET.urlencode }}">
+                                  <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
+                                </a>
+                              </div>
+                          
+                            </form>
+                          </div>
+                          
 
                         <div class="p mb-3">
                             <p class="text-primary text-end">Total Quotation's : <strong> {{ filter_count }}</strong></p>
@@ -594,15 +591,15 @@
                         <div class="pagination">
 
                             {% if page_obj.has_previous %}
-                            <li><a href="?page=1">&laquo; First</a></li>
-                            <li><a href="?page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
+                            <li><a href="?{{ querystring }}&page=1">&laquo; First</a></li>
+                            <li><a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
                             {% endif %}
 
                             <span class="current">{{ page_obj.number }}</span>
 
                             {% if page_obj.has_next %}
-                            <li><a href="?page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
-                            <li><a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+                            <li><a href="?{{ querystring }}&page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
+                            <li><a href="?{{ querystring }}&page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
                             {% endif %}
 
                         </div>

@@ -3,6 +3,10 @@ from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
 import os
 import requests
+from .models import  PaymentsRecord
+from django.utils import timezone
+from datetime import timedelta
+
 # @shared_task
 # def send_email_task(subject, message, recipient):
 #     send_mail(
@@ -112,5 +116,62 @@ def send_whatsapp_task(mobile, msg, attachment_path=None, attachment_name=None):
 
 
 
+@shared_task
+def send_due_payment_alerts():
+    today = timezone.now().date()
+    upcoming = today + timedelta(days=2)
+    print(f"[DEBUG] Today: {today}, Upcoming: {upcoming}")
 
-        
+    due_payments = PaymentsRecord.objects.filter(
+        next_due_date__gte=today,
+        next_due_date__lte=upcoming,
+        amount_remaining__gt=0
+    )
+    print(f"[DEBUG] Due payments found: {due_payments.count()}")
+
+    for payment in due_payments:
+        print(f"[DEBUG] Processing payment: {payment.payment_invoice_no}")
+
+        # avoid duplicate alerts for the same day
+        if payment.last_alert_sent == today:
+            print(f"[DEBUG] Skipping {payment.payment_invoice_no}, alert already sent today")
+            continue  
+
+        customer = getattr(payment.main_invoice, "customer", None)
+        if not customer:
+            print(f"[DEBUG] Payment {payment.payment_invoice_no} has no customer assigned")
+            continue
+
+        email = getattr(customer, "primaryemail", None)
+        mobile = getattr(customer, "primarycontact", None)
+        print(f"[DEBUG] Customer email: {email}, mobile: {mobile}")
+
+        n_m = f"91{mobile}" if mobile else None
+        subject = f"Payment Due Reminder: {payment.payment_invoice_no}"
+        message = (
+            f"Dear {getattr(customer, 'fullname', 'Customer')},\n\n"
+            f"This is a reminder that your payment of {payment.amount_remaining} "
+            f"is due on {payment.next_due_date} for invoice {payment.main_invoice.tax_invoice_no}.\n\n"
+            "Please ensure timely payment.\n\nThank you."
+        )
+
+        if email:
+            print(f"[DEBUG] Sending email to {email}")
+            send_email_task.delay(subject, message, email)
+        else:
+            print(f"[DEBUG] No email for payment {payment.payment_invoice_no}")
+
+        if n_m:
+            print(f"[DEBUG] Sending WhatsApp to {n_m}")
+            whatsapp_msg = (
+                f"Reminder: Your payment of {payment.amount_remaining} "
+                f"is due on {payment.next_due_date} for invoice {payment.main_invoice.tax_invoice_no}."
+            )
+            send_whatsapp_task.delay(n_m, whatsapp_msg)
+        else:
+            print(f"[DEBUG] No mobile for payment {payment.payment_invoice_no}")
+
+        payment.last_alert_sent = today
+        payment.save(update_fields=["last_alert_sent"])
+        print(f"[DEBUG] Updated last_alert_sent for {payment.payment_invoice_no}")
+

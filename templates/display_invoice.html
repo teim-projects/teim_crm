@@ -499,6 +499,13 @@
                                             <a href="{% url 'edit_tax_invoice' x.id %}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
 
                                             <a href="/delete_invoice/{{ x.id }}/" class="btn btn-sm btn-danger delete-link"><i class="fa-solid fa-trash"></i></a>
+
+                                            <a href="{% url 'send_invoice_email' x.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fa-solid fa-envelope"></i>
+                                            </a> 
+                                            <a href="{% url 'send_invoice_pdf_on_whatsapp' x.id %}" class="btn btn-sm btn-success">
+                                                <i class="fa-brands fa-whatsapp"></i>
+                                            </a>
                                         </td>
 
                                         <td>{{ x.customer.fullname }}</td>

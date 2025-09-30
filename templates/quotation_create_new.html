@@ -359,7 +359,7 @@ input:checked + .slider:before {
                                             <label>Customer Contact<span class="star">*</span></label>
                                             <input type="text" id="customer_contact" name="contact_no" required
                                                 class="form-control" value="{{ form_data.contact_no }}" >
-                                            <input type="hidden" name="customer_id" id="customer_id" required>
+                                            <input type="hidden" name="customer_id" id="customer_id"  value="{{ form_data.customer_id }}" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label>Customer Email<span class="star">*</span></label>
@@ -1197,7 +1197,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
-    <!--  -->
+    <!-- sidebar  -->
     <script>
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -1321,7 +1321,7 @@ document.addEventListener("DOMContentLoaded", function () {
         function fetchProducts(selectElement) {
             document.getElementById('products-container').innerHTML = '';
             const selectedCategories = Array.from(selectElement.selectedOptions).map(option => option.value);
-
+            gstEnabled = document.getElementById('enable_gst').checked; 
             if (selectedCategories.length > 0) {
                 const categoriesQuery = selectedCategories.join(',');
                 fetch(`/get_products?categories=${categoriesQuery}`)
@@ -1338,12 +1338,12 @@ document.addEventListener("DOMContentLoaded", function () {
                             
                                 <div class="row g-2">
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <label>Price</label>
                                             <input type="number" class="form-control product-price" placeholder="Price" value="${product.price}"  step="0.01">
                                         </div>
                                             
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <label>Quantity</label>
                                             
                                             <input type="number" class="form-control product-quantity"
@@ -1352,7 +1352,12 @@ document.addEventListener("DOMContentLoaded", function () {
                                             step="0.01" min="0.01">
                                                 
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
+                                            <label>HSN Code</label>
+                                            <input type="text" class="form-control product-hsn" placeholder="HSN Code" value="">
+                                                
+                                        </div>
+                                        <div class="col-md-3">
                                             <label>Unit</label>
                                             <input type="text" class="form-control product-unit" placeholder="Unit">
                                         </div>
@@ -1398,12 +1403,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     const unitInput = document.querySelector(`input[data-product-id="${productId}"].product-unit-input`);
                     const gstInput = document.querySelector(`input[data-product-id="${productId}"].product-gst-input`);
                     const descriptionInput = document.querySelector(`textarea[data-product-id="${productId}"].product-description-input`);
-                
+                    const hsnInput = document.querySelector(`input[data-product-id="${productId}"].product-hsn-input`);
                     const productPrice = priceInput ? parseFloat(priceInput.value) : 0;
                     const productQuantity = quantityInput ? parseFloat(quantityInput.value) : 1;
                     const productGST = gstInput ? parseFloat(gstInput.value) : 0;
                     const productUnit = unitInput ? unitInput.value : '';
                     const productDesc = descriptionInput ? descriptionInput.value : '';
+                    const productHSN = hsnInput ? hsnInput.value : '';
                 
                     selectedProducts.push({
                         id: productId,
@@ -1413,6 +1419,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         unit: productUnit,
                         description: productDesc,
                         gst: productGST,
+                        hsn_code: productHSN,
                         uniqueKey: Date.now() + Math.random()
                     });
                 
@@ -1471,6 +1478,15 @@ document.addEventListener("DOMContentLoaded", function () {
             calculateTotal();
         }
 
+        function updateProductHSN(input, productId) {
+            const newHSN = input.value || '';
+            const product = selectedProducts.find(p => p.id === productId);
+            if (product) {
+                product.hsn_code = newHSN;
+            }
+            updateSelectedServicesList();
+        }
+
         function calculateTotal() {
             totalPrice = selectedProducts.reduce((total, product) => total + (product.price * product.quantity), 0);
             document.getElementById('total_price').value = totalPrice.toFixed(2);
@@ -1503,7 +1519,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const unit = container.querySelector('.product-unit').value || '';
             const gstInput = container.querySelector('.product-gst');
             const gst = gstInput ? parseFloat(gstInput.value) || 0 : 0;
-        
+            const hsnInput = container.querySelector('.product-hsn');
+            const hsn_code = hsnInput ? hsnInput.value || '' : '';
             selectedProducts.push({
                 id: productCounter,  
                 p_id: productInfo.product_id,
@@ -1513,6 +1530,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 unit: unit,
                 description: description,
                 gst: gst,
+                hsn_code: hsn_code,
                 uniqueKey: Date.now() + Math.random()
             });
         

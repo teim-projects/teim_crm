@@ -716,60 +716,63 @@ def customer_details_create(request):
                 return JsonResponse({'status': 'exists', 'data': data})
             return JsonResponse({'status': 'not_found'})
         return render(request, 'customer_details.html')
+    elif request.method == 'POST':
+            fullname = request.POST.get('fullname', '').strip()
+            primarycontact = request.POST.get('primarycontact', '').strip()
 
-    else:
-        fullname = request.POST['fullname']
-        primaryemail = request.POST['primaryemail']
-        secondaryemail = request.POST['secondaryemail']
-        primarycontact = request.POST['primarycontact']
-        secondarycontact = request.POST['secondarycontact'] or None
-        contactperson = request.POST['contactperson']
-        designstion = request.POST['designstion']
-        shifttopartyaddress = request.POST['shifttopartyaddress']
-        shifttopartycity = request.POST['shifttopartycity']
-        shifttopartystate = request.POST['shifttopartystate']
-        shifttopartypostal = request.POST['shifttopartypostal']
-        soldtopartyaddress = request.POST['soldtopartyaddress']
-        soldtopartycity = request.POST['soldtopartycity']
-        soldtopartystate = request.POST['soldtopartystate']
-        soldtopartypostal = request.POST['soldtopartypostal']
-        customer_type =  request.POST['customer_type']
-        or_name = request.POST['or_name']
-        or_contact = request.POST['or_contact'] or None
+            # fallback email if empty
+            primaryemail = request.POST.get('primaryemail') or "test@sample.com"
+            secondaryemail = request.POST.get('secondaryemail', '')
+            secondarycontact = request.POST.get('secondarycontact') or None
+            contactperson = request.POST.get('contactperson', '')
+            designstion = request.POST.get('designstion', '')
+            shifttopartyaddress = request.POST.get('shifttopartyaddress', '')
+            shifttopartycity = request.POST.get('shifttopartycity', '')
+            shifttopartystate = request.POST.get('shifttopartystate', '')
+            shifttopartypostal = request.POST.get('shifttopartypostal', '')
+            soldtopartyaddress = request.POST.get('soldtopartyaddress', '')
+            soldtopartycity = request.POST.get('soldtopartycity', '')
+            soldtopartystate = request.POST.get('soldtopartystate', '')
+            soldtopartypostal = request.POST.get('soldtopartypostal', '')
+            customer_type = request.POST.get('customer_type', 'Individual')
+            or_name = request.POST.get('or_name', '')
+            or_contact = request.POST.get('or_contact') or None
 
+            # validate required fields
+            if not fullname or not primarycontact:
+                return render(request, "customer_details.html", {
+                    'msg1': 'Full Name and Primary Contact are required'
+                })
 
-        if not fullname or not primaryemail or not primarycontact:
-            return render(request, "customer_details.html", {'msg1': 'Field cannot be empty'})
+            customerid = generate_customerid(fullname)
 
-        customerid = generate_customerid(fullname)
+            customer_details.objects.create(
+                fullname=fullname,
+                primaryemail=primaryemail,
+                secondaryemail=secondaryemail,
+                primarycontact=primarycontact,
+                secondarycontact=secondarycontact,
+                contactperson=contactperson,
+                designation=designstion,
+                shifttopartyaddress=shifttopartyaddress,
+                shifttopartycity=shifttopartycity,
+                shifttopartystate=shifttopartystate,
+                shifttopartypostal=shifttopartypostal,
+                soldtopartyaddress=soldtopartyaddress,
+                soldtopartycity=soldtopartycity,
+                soldtopartystate=soldtopartystate,
+                soldtopartypostal=soldtopartypostal,
+                customerid=customerid,
+                customer_type=customer_type,
+                or_name=or_name,
+                or_contact=or_contact,
+            )
 
-        customer_details.objects.create(
-            fullname=fullname,
-            primaryemail=primaryemail,
-            secondaryemail=secondaryemail,
-            primarycontact=primarycontact,
-            secondarycontact=secondarycontact,
-            contactperson=contactperson,
-            designation=designstion,
-            shifttopartyaddress=shifttopartyaddress,
-            shifttopartycity=shifttopartycity,
-            shifttopartystate=shifttopartystate,
-            shifttopartypostal=shifttopartypostal,
-            soldtopartyaddress=soldtopartyaddress,
-            soldtopartycity=soldtopartycity,
-            soldtopartystate=soldtopartystate,
-            soldtopartypostal=soldtopartypostal,
-            customerid=customerid,
-            customer_type = customer_type,
-            or_name = or_name,
-            or_contact = or_contact,
-        )
-
-        # Conditional redirect
-        next_url = request.GET.get('next')
-        if next_url:
-            return redirect(next_url)
-        return redirect('/display_customer')
+            # Conditional redirect
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect('/display_customer')
     
 
 @login_required
@@ -852,6 +855,7 @@ def service_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
     sales_persons = SalesPerson.objects.all()
+    branch = Branch.objects.all()
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
     segments = service_management._meta.get_field('segment').choices
     if request.method == 'POST':
@@ -875,7 +879,8 @@ def service_management_create(request):
                 total_with_gst = total_price
 
             delivery_time = request.POST.get('delivery_time', timezone.now().time())
-
+            branch_id = request.POST.get('branch')
+            branch_instance = Branch.objects.get(id=branch_id) if branch_id else None
             # Create service instance
             instance = service_management.objects.create(
                 customer=customer,
@@ -900,7 +905,8 @@ def service_management_create(request):
                 delivery_time=delivery_time,
                 lead_date=lead_date,
                 service_date=service_date,
-                gst_status=gst_status
+                gst_status=gst_status,
+                branch=branch_instance,
             )
 
             # Get products from JSON string
@@ -949,7 +955,8 @@ def service_management_create(request):
         'customers': customers,
         'sales_persons': sales_persons,
         'frequency_choices': frequency_choices,
-        'segments':segments
+        'segments':segments,
+        'branches':branch
     })
 
 from django.shortcuts import render, redirect
@@ -992,6 +999,10 @@ def quotation_management_create(request):
         customer = None
         data = request.POST.copy()
         data['terms_and_conditions'] = request.POST.getlist('terms_and_conditions')
+        customer_id = request.POST.get('customer_id')
+        if customer_id:
+            data['customer_id'] = customer_id
+
         request.session['quotation_form_data'] = data
         print("Session stored terms:", request.session['quotation_form_data'].get('product_json_data'))
         request.session.modified = True
@@ -2489,6 +2500,7 @@ def display_quotation(request):
         'sfs_representatives':sfs_representatives,
         'from_date': from_date,
         'to_date': to_date,
+        "querystring": request.GET.urlencode(),
     }
     return render(request, 'display_quotation.html', context)
 
@@ -3173,7 +3185,7 @@ def edit_quotation(request, rid):
         custom_terms = request.POST.get('add_terms_conditions')
         customer_type = request.POST.get('customer_type')
         or_name = request.POST.get('or_name')
-        or_contact = request.POST.get('or_contact')
+        or_contact = request.POST.get('or_contact') 
         thank_u_note = request.POST.get('thank_u_note')
 
         customer.primarycontact = contact_no
@@ -3183,7 +3195,10 @@ def edit_quotation(request, rid):
         customer.secondarycontact = secondary_contact_no
         customer.customer_type = customer_type
         customer.or_name = or_name
-        customer.or_contact = or_contact
+        try:
+            customer.or_contact = int(or_contact) if or_contact not in (None, "", "None") else None
+        except (TypeError, ValueError):
+            customer.or_contact = None
 
          # Save changes
         customer.save(update_fields=[
@@ -3209,6 +3224,7 @@ def edit_quotation(request, rid):
                 gst = float(request.POST.get(f'product_gst_{product_id}', product.get('gst', 0)))
                 description = request.POST.get(f'product_description_{product_id}', product.get('description', ''))
                 unit = request.POST.get(f'product_unit_{product_id}', product.get('unit', ''))
+                hsn_code =  request.POST.get(f'product_hsn_{product_id}',product.get('hsn_code',''))
             except (TypeError, ValueError):
                 continue
 
@@ -3218,6 +3234,7 @@ def edit_quotation(request, rid):
                 'name': product.get('name'),
                 'price': price,
                 'quantity': quantity,
+                'hsn_code':hsn_code,
                 'gst': gst,
                 'description': description,
                 'unit': unit
@@ -3278,7 +3295,10 @@ def edit_quotation(request, rid):
         quotation.apply_gst = enable_gst
         quotation.custom_terms = custom_terms
         quotation.or_name = or_name
-        quotation.or_contact = or_contact
+        try:
+            quotation.or_contact = int(or_contact) if or_contact not in (None, "", "None") else None
+        except (TypeError, ValueError):
+            quotation.or_contact = None
         quotation.thank_u_note = thank_u_note
         quotation.save()
 
@@ -4314,10 +4334,88 @@ def technician_work_list(request):
                 "branch":branch,
                 "w_status":w_status,
                 'tech':tech,
+                "querystring": request.GET.urlencode(),
              }
     return render(request, 'technician_work_list.html', context)
 
+from openpyxl.utils import get_column_letter
+def export_technician_work_list(request):
+    if not request.user.is_staff:
+        return HttpResponse("Not authorized", status=403)
 
+    search = request.GET.get("search", '').strip()
+    payment_status = request.GET.get('payment_status', '')
+    branch = request.GET.get('branch', '')
+    work_status = request.GET.get('work_status')
+    technician = request.GET.get('technician', '')
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+
+    work_allocations = WorkAllocation.objects.all()
+
+    # Apply same filters as list view
+    if search:
+        work_allocations = work_allocations.filter(
+            Q(service__customer__fullname__icontains=search) |
+            Q(service__customer__primarycontact__icontains=search)
+        )
+    if payment_status:
+        work_allocations = work_allocations.filter(customer_payment_status=payment_status)
+    if branch:
+        work_allocations = work_allocations.filter(service__branch=branch)
+    if work_status:
+        work_allocations = work_allocations.filter(status=work_status)
+    if technician:
+        work_allocations = work_allocations.filter(technician=technician)
+    if from_date:
+        from_date_obj = parse_date(from_date)
+        if from_date_obj:
+            work_allocations = work_allocations.filter(created_at__gte=from_date_obj)
+    if to_date:
+        to_date_obj = parse_date(to_date)
+        if to_date_obj:
+            work_allocations = work_allocations.filter(created_at__lt=to_date_obj + timedelta(days=1))
+
+    # Create Excel workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Work Allocations"
+
+    # Header row
+    headers = ["Customer", "Mobile", "Branch", "Technician", "Status", "Payment Status", "Created At"]
+    ws.append(headers)
+
+    # Data rows
+    for wa in work_allocations:
+        ws.append([
+            wa.service.customer.fullname if wa.service and wa.service.customer else "",
+            wa.service.customer.primarycontact if wa.service and wa.service.customer else "",
+            wa.service.branch.branch_name if wa.service and wa.service.branch else "",
+            ", ".join([f"{t.first_name} {t.last_name}" for t in wa.technician.all()]) if wa.technician.exists() else "",
+            wa.status,
+            wa.customer_payment_status,
+            wa.created_at.strftime("%Y-%m-%d %H:%M") if wa.created_at else "",
+        ])
+
+    # Auto-adjust column widths
+    for col in ws.columns:
+        max_length = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            try:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+        ws.column_dimensions[col_letter].width = max_length + 2
+
+    # Return response as Excel file
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response['Content-Disposition'] = 'attachment; filename="technician_work_list.xlsx"'
+    wb.save(response)
+    return response
 
 def edit_work(request, work_id):
     work_allocation = get_object_or_404(WorkAllocation, id=work_id)
@@ -5226,8 +5324,8 @@ def create_tax_invoice(request):
             customer.fullname = request.POST.get('customer_full_name')
             customer.primaryemail = request.POST.get('customer_email')
             customer.customer_type = request.POST.get('customer_type')
-            customer.or_name = request.POST.get('or_name')
-            customer.or_contact = request.POST.get('or_contact')
+            customer.or_name = request.POST.get('or_name', '')
+            customer.or_contact = request.POST.get('or_contact') or None
             customer.save()
 
             # Create TaxInvoice with grand_total
@@ -5984,9 +6082,11 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Spacer(1, 10))
 
     # --- Product Table ---
+    # "HSN",
     product_data = [["Sr. No.", "Product / Service", "Rate (Rs)", "Qty", "Total (Rs)"]]
     for idx, item in enumerate(quotation.product_details_json, start=1):
         try:
+            # hsn = item['hsn_code']
             price = float(item['price'])
             quantity = float(item['quantity'])
             total = price * quantity
@@ -6001,6 +6101,7 @@ def reportlab_quotation_pdf(request, id):
                 f"<b>{item['name']}</b><br/><font size='8'><i>{description}</i></font>",
                 small
             ),
+            # hsn,
             Paragraph(f"{price:,.2f}",ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             Paragraph(f"{quantity:.2f}<br/>{item['unit']}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             f"{total:,.2f}"
@@ -6543,7 +6644,6 @@ def send_quotation_email(request, id):
     
     attachment_path = f"https://www.teimcrm.com/generate_quotation/quotation/pdf/{quotation.id}/view?download=True"
     attachment_name = f"quotation_{quotation.id}.pdf"
-    message = f"Hello {quotation.customer.fullname}, please find your quotation attached."
     
     send_email_task.delay(
         subject=subject,
@@ -6554,4 +6654,81 @@ def send_quotation_email(request, id):
     )
 
     return redirect(request.META.get("HTTP_REFERER", "display_quotation"))
+
+
+def send_invoice_email(request, id):
+    invoice = get_object_or_404(TaxInvoice, id=id)
+
+    recipient = invoice.customer.primaryemail
+    # subject = f"Quotation #{quotation.id}"
+    template = MessageTemplates.objects.filter(
+            message_type='email',
+            category='invoice').first()
+    
+    if not template:
+        messages.error(request, f"No template found for Invoice.")
+        return redirect("display_tax_invoice")
+    
+    placeholders = {
+        "customername": invoice.customer.fullname,
+    }
+
+    body = template.body
+    subject = template.subject
+    for key, value in placeholders.items():
+        body = body.replace(f"{{{key}}}", str(value))
+        subject = subject.replace(f"{{{key}}}", str(value))
+    
+    attachment_path = f"https://www.teimcrm.com/tax-invoice/pdf/{invoice.id}/?download=true"
+    attachment_name = f"Invoice_{invoice.customer.fullname}.pdf"
+    
+    send_email_task.delay(
+        subject=subject,
+        message=body,
+        recipient=recipient,
+        attachment_path=attachment_path,
+        attachment_name=attachment_name
+    )
+
+    return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice"))
+
+def send_invoice_pdf_on_whatsapp(request, id):
+    invoice = get_object_or_404(TaxInvoice, id=id)
+
+    mobile = f"91{invoice.customer.primarycontact}"  
+
+        # Fetch WhatsApp template for this lead type
+    template = MessageTemplates.objects.filter(
+        message_type='whatsapp',
+        category='invoice',
+    ).first()
+
+    if not template:
+        messages.error(request, f"No WhatsApp template found for quotation.")
+        return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice"))
+
+    # Prepare placeholders
+    placeholders = {
+        "customername": invoice.customer.fullname,
+
+    }
+
+    # Replace placeholders in template body
+    msg = template.body
+    for key, value in placeholders.items():
+        msg = msg.replace(f"{{{key}}}", str(value))
+
+    # Handle attachment if present
+    attachment_url = f"https://www.teimcrm.com/tax-invoice/pdf/{invoice.id}/?download=true"
+    attachment_name = f"Invoice_{invoice.customer.fullname}.pdf"
+
+    # Trigger Celery task
+    send_whatsapp_task.delay(
+        mobile=mobile,
+        msg=msg,
+        attachment_path=attachment_url,   # must be accessible URL
+        attachment_name=attachment_name
+    )
+
+    return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice")) 
 

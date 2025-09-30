@@ -274,8 +274,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True 
 DEFAULT_FROM_EMAIL = "SFS"
-EMAIL_HOST_USER = "connectteim@gmail.com"
-EMAIL_HOST_PASSWORD = "iuri dlqe nfsd joyr" 
+EMAIL_HOST_USER = "sfspl.sales@gmail.com"
+EMAIL_HOST_PASSWORD = "wsgc mnza ovvh cggw"
 
 # Whatsapp Api
 WHATSAPP_API  = "https://app.rapbooster.com/api/send/msg?authKey=6538c8eff027d41e9151"

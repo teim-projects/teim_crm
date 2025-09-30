@@ -155,7 +155,7 @@
                             <div class="col-md-6 mb-3">
                                 <label>Customer ID <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="customerid" value="{{ customerid }}"
-                                    readonly required>
+                                    readonly >
                             </div>
                             <div class="col-md-6 mb-0">
                                 <label>Full Name <span class="text-danger">*</span></label>
@@ -164,9 +164,8 @@
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label>Primary Email <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" name="primaryemail" placeholder="Primary Email"
-                                    required>
+                                <label>Primary Email </label>
+                                <input type="email" class="form-control" name="primaryemail" placeholder="Primary Email">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Secondary Email</label>
@@ -430,6 +429,63 @@ window.onload = function () {
 }
 
 </script>
+
+<script>
+    function validateStep(stepIndex) {
+        let step = document.querySelectorAll('.step')[stepIndex];
+        let requiredInputs = step.querySelectorAll('[required]');
+        let isValid = true;
+        let firstInvalid = null;
+    
+        requiredInputs.forEach(input => {
+            if (!input.value.trim()) {
+                isValid = false;
+                if (!firstInvalid) firstInvalid = input;
+    
+                // Show warning below the field
+                let errorMsg = input.parentNode.querySelector(".error-msg");
+                if (!errorMsg) {
+                    errorMsg = document.createElement("small");
+                    errorMsg.className = "error-msg text-danger";
+                    input.parentNode.appendChild(errorMsg);
+                }
+                errorMsg.textContent = input.name.replace(/_/g, " ") + " is required.";
+            } else {
+                // Clear error if fixed
+                let errorMsg = input.parentNode.querySelector(".error-msg");
+                if (errorMsg) errorMsg.remove();
+            }
+        });
+    
+        if (!isValid && firstInvalid) {
+            firstInvalid.focus();
+        }
+        return isValid;
+    }
+    
+    function nextStep() {
+        if (!validateStep(currentStep)) return; // stop if invalid
+        if (currentStep < steps.length - 1) {
+            currentStep++;
+            showStep(currentStep);
+        }
+    }
+    
+    function prevStep() {
+        if (currentStep > 0) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    }
+    
+    // Final form validation before submit
+    document.getElementById("multiStepForm").addEventListener("submit", function (e) {
+        if (!validateStep(currentStep)) {
+            e.preventDefault();
+        }
+    });
+    </script>
+    
 
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:100px;">
         <div class="row p-3">

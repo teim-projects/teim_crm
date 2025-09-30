@@ -141,12 +141,12 @@
           class="mb-4">X</span>
 
         <h3 class="mt-4 mb-3" style=" margin-top: 5px;font-weight: 600;">Lead Management</h3>
-        <form method="POST" id="leadForm">
+        <form method="POST" id="multiStepForm">
           {% csrf_token %}
 
 
           <!-- Step 1: Lead Source Info -->
-          <div class="form-step active">
+          <div class="form-step active step">
             <div class="row">
               <div class="col-md-6 mb-4">
                 <label>Phone Number <span class="star">*</span></label>
@@ -244,7 +244,7 @@
           </div>
 
           <!-- Step 2:  -->
-          <div class="form-step">
+          <div class="form-step step">
             <div class="row">
               <div class="col-md-6 mb-4">
                 <label for="branch">Select Branch<span class="star">*</span></label>
@@ -1231,12 +1231,20 @@
       submitBtn.classList.toggle("d-none", index !== steps.length - 1);
     }
 
+    // nextBtn.addEventListener("click", () => {
+    //   if (currentStep < steps.length - 1) {
+    //     currentStep++;
+    //     showStep(currentStep);
+    //   }
+    // });
+
     nextBtn.addEventListener("click", () => {
-      if (currentStep < steps.length - 1) {
+    if (validateStep(currentStep)) {  // <-- validate before moving
         currentStep++;
         showStep(currentStep);
-      }
-    });
+    }
+});
+
 
     prevBtn.addEventListener("click", () => {
       if (currentStep > 0) {
@@ -1245,10 +1253,45 @@
       }
     });
 
+    submitBtn.addEventListener("click", (e) => {
+  if (!validateStep(currentStep)) {
+    e.preventDefault(); // stop form submission
+  }
+});
     // Show first step
     document.addEventListener("DOMContentLoaded", () => {
       showStep(currentStep);
     });
+
+    // Step validation function
+function validateStep(stepIndex) {
+  let valid = true;
+  const inputs = steps[stepIndex].querySelectorAll("input, select, textarea");
+
+  inputs.forEach(input => {
+    input.classList.remove("input-error"); // remove previous error
+    if (input.hasAttribute("required") && !input.value.trim()) {
+      input.classList.add("input-error");
+      valid = false;
+    }
+
+    // Custom pattern check (e.g., phone number)
+    if (input.getAttribute("pattern")) {
+      const pattern = new RegExp(input.getAttribute("pattern"));
+      if (input.value && !pattern.test(input.value)) {
+        input.classList.add("input-error");
+        valid = false;
+      }
+    }
+  });
+
+  if (!valid) {
+    alert("Please fill all required fields correctly before proceeding.");
+  }
+
+  return valid;
+}
+    
   </script>
 
 
@@ -1304,6 +1347,8 @@
       });
     });
   </script>
+
+
 
   <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:100px;">
     <div class="row p-3">

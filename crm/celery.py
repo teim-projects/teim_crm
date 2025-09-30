@@ -34,6 +34,14 @@ app.conf.timezone = 'Asia/Kolkata'
 #     },
 # }
 
+
+app.conf.beat_schedule = {
+    "send-due-payment-alerts-everyday": {
+        "task": "crmapp.tasks.send_due_payment_alerts",
+        "schedule": crontab(hour=10, minute=0),  # daily at 10 AM
+    },
+}
+
 @app.task(bind=True)
 def debug_task(self):
     print(f"Request: {self.request!r}")

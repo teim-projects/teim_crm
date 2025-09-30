@@ -180,77 +180,91 @@
         <div class="technician-container container ">
             <h2 class="text-center mt-3 mb-3">Technician Work List</h2>
             <div>
-               <div class="filter-section">
-                    <div class="row align-items-center mb-3 g-2">
-                                
+                <div class="filter-section">
+                    <form method="get">
+                      <div class="row align-items-center mb-3 g-2">
+                  
                         <!-- Search Bar -->
                         <div class="col-md-2">
-                            <form class="d-flex" method="get">
-                                <input class="form-control me-2" type="search" name="search"
-                                    placeholder="Mobile / Company Name"
-                                    aria-label="Search"
-                                    value="{{ request.GET.search }}">
-                                <button class="btn btn-outline-success" type="submit" style="min-width: 30px;"><i class="fa-solid fa-magnifying-glass"></i></button>
-                            </form>
+                          <div class="d-flex">
+                            <input class="form-control me-2" type="search" name="search"
+                                placeholder="Mobile / Company Name"
+                                aria-label="Search"
+                                value="{{ request.GET.search }}">
+                            <button class="btn btn-outline-success" type="submit" style="min-width: 30px;">
+                              <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                          </div>
                         </div>
-                    
-                        <!-- payment status Dropdown -->
+                  
+                        <!-- Payment Status Dropdown -->
                         <div class="col-md-2">
-                            <form method="get">
-                                <select class="form-select" name="payment_status" id="payment_status" onchange="this.form.submit()">
-                                    <option value="">Payment Status</option>
-                                    
-                                    {% for i in payment_status_choices %}
-                                    <option value="{{ i }}" {% if request.GET.payment_status == i|stringformat:"s" %}selected{% endif %}>
-                                      {{ i }}
-                                    </option>
-                                  {% endfor %}
-                                  
-                                        
-                                </select>
-                            </form>
+                          <select class="form-select" name="payment_status" id="payment_status" onchange="this.form.submit()">
+                            <option value="">Payment Status</option>
+                            {% for i in payment_status_choices %}
+                              <option value="{{ i }}" {% if request.GET.payment_status == i|stringformat:"s" %}selected{% endif %}>
+                                {{ i }}
+                              </option>
+                            {% endfor %}
+                          </select>
                         </div>
+                  
+                        <!-- Branch Dropdown -->
                         <div class="col-md-2">
-                            <form method="get">
-                                <select class="form-select" name="branch" id="branch" onchange="this.form.submit()">
-                                    <option value="">All Branches</option>
-                                    {% for branch in branch %}
-                                        <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </form>
+                          <select class="form-select" name="branch" id="branch" onchange="this.form.submit()">
+                            <option value="">All Branches</option>
+                            {% for b in branch %}
+                              <option value="{{ b.id }}" {% if request.GET.branch == b.id|stringformat:"s" %}selected{% endif %}>
+                                {{ b.branch_name }}
+                              </option>
+                            {% endfor %}
+                          </select>
                         </div>
+                  
+                        <!-- Work Status -->
                         <div class="col-md-2">
-                            <form method="get">
-                                <select class="form-select" name="work_status" id="work_status" onchange="this.form.submit()">
-                                    <option value="">Work Status</option>
-                                    
-                                    {% for i in w_status  %}
-                                        <option value="{{ i }}" {% if request.GET.work_status == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
-                                    {% endfor %}
-                                        
-                                </select>
-                            </form>
+                          <select class="form-select" name="work_status" id="work_status" onchange="this.form.submit()">
+                            <option value="">Work Status</option>
+                            {% for i in w_status %}
+                              <option value="{{ i }}" {% if request.GET.work_status == i|stringformat:"s" %}selected{% endif %}>
+                                {{ i }}
+                              </option>
+                            {% endfor %}
+                          </select>
                         </div>
+                  
+                        <!-- Technician -->
                         <div class="col-md-2">
-                            <form method="get">
-                                <select class="form-select" name="technician" id="technician" onchange="this.form.submit()">
-                                    <option value="">Technician</option>
-                                    {% for i in tech  %}
-                                        <option value="{{ i.id }}" {% if request.GET.technician == i.id|stringformat:"s" %}selected{% endif %}>{{ i.first_name }} {{ i.last_name }}</option>
-                                    {% endfor %}
-                                    
-                                </select>
-                            </form>
+                          <select class="form-select" name="technician" id="technician" onchange="this.form.submit()">
+                            <option value="">Technician</option>
+                            {% for i in tech %}
+                              <option value="{{ i.id }}" {% if request.GET.technician == i.id|stringformat:"s" %}selected{% endif %}>
+                                {{ i.first_name }} {{ i.last_name }}
+                              </option>
+                            {% endfor %}
+                          </select>
                         </div>
-                        <!-- Date Filter Button -->
+                  
+                        <!-- Date Filter -->
                         <div class="col-md-2">
-                          <button type="button" class="btn btn-outline-secondary w-100" name="date_filter" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
+                          <button type="button" class="btn btn-outline-secondary w-100" 
+                                  name="date_filter" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
                             <i class="fa fa-calendar"></i> <span id="selectedRange">Select Date Range</span>
                           </button>
                         </div>
-                    </div>
-               </div>
+                  
+                      </div>
+                    </form>
+                  </div>
+                  
+                  <div class="text-end mb-3">
+                    <a href="{% url 'export_technician_work_list' %}?{{ request.GET.urlencode }}" 
+                      class="btn btn-primary w-5" download>
+                     <i class="fa-solid fa-file-export"></i> Excel
+                    </a>
+                  </div>
+                  
+                  
                 <!-- Create a scrollable container for the table -->
                 <div class="table-container" style="max-height: 400px; overflow-y: auto;">
                     <table>
@@ -305,15 +319,15 @@
             <!-- Pagination -->
             <ul class="pagination">
                 {% if page_obj.has_previous %}
-                <li><a href="?page=1">&laquo; First</a></li>
-                <li><a href="?page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
+                <li><a href="?{{ querystring }} page=1">&laquo; First</a></li>
+                <li><a href="?{{ querystring }} page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
                 {% endif %}
 
                 <li><span class="current">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
 
                 {% if page_obj.has_next %}
-                <li><a href="?page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
-                <li><a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+                <li><a href="?{{ querystring }} page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
+                <li><a href="?{{ querystring }} page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
                 {% endif %}
             </ul>
 
@@ -326,7 +340,7 @@
           <div class="modal-content " style="margin-top: 50%;">
       
             <div class="modal-header">
-              <h5 class="modal-title text-primaryg" id="dateFilterModalLabel">Select Date Range</h5>
+              <h5 class="modal-title text-center text-primary" id="dateFilterModalLabel">Select Date Range</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
       

@@ -552,15 +552,29 @@
                                     title="Please enter a valid 10-digit phone number" required readonly>
                             </div>
                         </div>
-
-                        <label>Delivery Time<span class="star">*</span></label>
-                        <input type="time" class="form-control" name="delivery_time" required>
-
-                        <label>Lead Date<span class="star">*</span></label>
-                        <input type="date" name="lead_date" class="form-control" required>
-
-                        <label>Service Date<span class="star">*</span></label>
-                        <input type="date" name="service_date" class="form-control" required>
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Branch<span class="star">*</span></label>
+                                <select name="branch" class="form-control">
+                                    <option value="">-- Select Branch --</option>
+                                    {% for branch in branches %}
+                                        <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+                                    {% endfor %}     
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label>Delivery Time<span class="star">*</span></label>
+                                <input type="time" class="form-control" name="delivery_time" required>
+                            </div>
+                            <div class="col-6">
+                                <label>Lead Date<span class="star">*</span></label>
+                                <input type="date" name="lead_date" class="form-control" required>
+                            </div>
+                            <div class="col-6">
+                                <label>Service Date<span class="star">*</span></label>
+                                <input type="date" name="service_date" class="form-control" required>
+                            </div>
+                        </div>
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">

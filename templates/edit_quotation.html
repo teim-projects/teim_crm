@@ -316,7 +316,7 @@
                                         <div class="col-md-6">
                                             <label>Customer Contact<span class="star">*</span></label>
                                             <input type="text" id="customer_contact" name="contact_no" value="{{ quotation.customer.primarycontact }}" required  class="form-control">
-                                            <input type="hidden" name="customer_id" id="customer_id" required>
+                                            <input type="hidden" name="customer_id" id="customer_id" value="{{ quotation.customer.id }}" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label>Customer Email<span class="star">*</span></label>
@@ -455,6 +455,7 @@
                                             <tr>
                                                 <th>Sr No</th>
                                                 <th>Name</th>
+                                                <th>HSN Code</th>
                                                 <th>Price</th>
                                                 <th>Quantity</th>
                                                 <th>Description</th>
@@ -474,6 +475,10 @@
                                                     <input type="number" name="product_price_{{ x.id }}" class="form-control"
                                                         value="{{ x.price }}" step="0.01" min="0" 
                                                         onchange="calculateQuotationSummary()" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="product_hsn_{{ x.id }}" class="form-control"
+                                                        value="{{ x.hsn_code }}" onchange="calculateQuotationSummary()" />
                                                 </td>
                                                 <td>
                                                     <input type="number" name="product_quantity_{{ x.id }}" class="form-control"
@@ -1206,21 +1211,26 @@ function showCombinedGrandTotal() {
                         
                             <div class="row g-2">
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label>Price</label>
                                         <input type="number" class="form-control product-price" 
                                             placeholder="Price" value="${product.price}" step="0.01">
                                     </div>
                                 
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label>Quantity</label>
                                         <input type="number" class="form-control product-quantity"
                                                placeholder="Quantity"
                                                value="1"
                                                step="0.01" min="0.01">
                                     </div>
+                                    <div class="col-md-3">
+                                            <label>HSN Code</label>
+                                            <input type="text" class="form-control product-hsn" placeholder="HSN Code" value="">
+                                                
+                                        </div>
                                 
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label>Unit</label>
                                         <input type="text" class="form-control product-unit" placeholder="Unit">
                                     </div>
@@ -1259,6 +1269,7 @@ function showCombinedGrandTotal() {
         const unit = container.querySelector('.product-unit').value || '';
         const gstInput = container.querySelector('.product-gst');
         const gst = gstInput ? parseFloat(gstInput.value) || 0 : 0;
+        const hsn_code = container.querySelector('.product-hsn').value || '';
             
         selectedProducts.push({
             id: productInfo.product_id,
@@ -1268,6 +1279,7 @@ function showCombinedGrandTotal() {
             unit: unit,
             description: description,
             gst: gst,
+            hsn_code: hsn_code,
             uniqueKey: Date.now() + Math.random() // So each entry is unique
         });
     
@@ -1293,7 +1305,9 @@ function showCombinedGrandTotal() {
                 const productGST = gstInput ? parseFloat(gstInput.value) : 0;
                 const productUnit = unitInput ? unitInput.value : '';
                 const productDesc = descriptionInput ? descriptionInput.value : '';
-            
+                const hsnInput = document.querySelector(`input[data-product-id="${productId}"].product-hsn-input`);
+                const productHSN = hsnInput ? hsnInput.value : '';
+
                 selectedProducts.push({
                     id: productId,
                     name: productName,
@@ -1302,6 +1316,7 @@ function showCombinedGrandTotal() {
                     unit: productUnit,
                     description: productDesc,
                     gst: productGST,
+                    hsn_code: productHSN,
                     uniqueKey: Date.now() + Math.random(),
                     row_id: rowId
                 });
@@ -1384,6 +1399,15 @@ function showCombinedGrandTotal() {
         }
         calculateTotal();
     }
+
+    function updateProductHSN(input, productId) {
+            const newHSN = input.value || '';
+            const product = selectedProducts.find(p => p.id === productId);
+            if (product) {
+                product.hsn_code = newHSN;
+            }
+            updateSelectedServicesList();
+        }
 
     function calculateTotal() {
         totalPrice = selectedProducts.reduce((total, product) => total + (product.price * product.quantity), 0);
