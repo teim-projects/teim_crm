@@ -283,7 +283,7 @@
                         <tbody class="text-dark">
                             {% for work in page_obj %}
                             <tr>
-                                <td>{{ work.id }}</td>
+                              <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
                                 <td>
                                     {% for tech in work.technician.all %}
                                     {{ tech.first_name }} {{ tech.last_name }}{% if not forloop.last %}, {% endif %}
@@ -317,7 +317,7 @@
             </div>
 
             <!-- Pagination -->
-            <ul class="pagination">
+            <!-- <ul class="pagination">
                 {% if page_obj.has_previous %}
                 <li><a href="?{{ querystring }} page=1">&laquo; First</a></li>
                 <li><a href="?{{ querystring }} page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
@@ -329,8 +329,20 @@
                 <li><a href="?{{ querystring }} page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
                 <li><a href="?{{ querystring }} page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
                 {% endif %}
-            </ul>
+            </ul> -->
+            <ul class="pagination">
+              {% if page_obj.has_previous %}
+              <li><a href="?{{ querystring }}&page=1">&laquo; First</a></li>
+              <li><a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
+              {% endif %}
 
+              <li><span class="current">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+
+              {% if page_obj.has_next %}
+              <li><a href="?{{ querystring }}&page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
+              <li><a href="?{{ querystring }}&page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+              {% endif %}
+            </ul>
             {% include 'buttons.html' %}
         </div>
     </div>

@@ -6082,35 +6082,64 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Spacer(1, 10))
 
     # --- Product Table ---
-    # "HSN",
-    product_data = [["Sr. No.", "Product / Service", "Rate (Rs)", "Qty", "Total (Rs)"]]
+    # 
+    # product_data = [["Sr. No.", "Product / Service", "HSN", "Rate (Rs)", "Qty", "Total (Rs)"]]
+    # for idx, item in enumerate(quotation.product_details_json, start=1):
+    #     try:
+    #         price = float(item['price'])
+    #         hsn = item.get['hsn_code','']
+    #         quantity = float(item['quantity'])
+    #         total = price * quantity
+    #     except (ValueError, KeyError, TypeError):
+    #         price = quantity = total = 0.0
+
+    #     description = item.get('description', '').replace('\n', '<br/>')
+
+    #     product_data.append([
+    #         str(idx),
+    #          Paragraph(
+    #             f"<b>{item['name']}</b><br/><font size='8'><i>{description}</i></font>",
+    #             small
+    #         ),
+    #         hsn,
+    #         Paragraph(f"{price:,.2f}",ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+    #         Paragraph(f"{quantity:.2f}<br/>{item['unit']}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+    #         f"{total:,.2f}"
+    #     ])
+    product_data = [["Sr. No.", "Product / Service", "HSN", "Rate (Rs)", "Qty", "Total (Rs)"]]
+
     for idx, item in enumerate(quotation.product_details_json, start=1):
+        # always initialize
+        hsn = item.get('hsn_code', '')  
+        price = 0.0
+        quantity = 0.0
+        total = 0.0
+
         try:
-            # hsn = item['hsn_code']
-            price = float(item['price'])
-            quantity = float(item['quantity'])
+            price = float(item.get('price', 0))
+            quantity = float(item.get('quantity', 0))
             total = price * quantity
-        except (ValueError, KeyError, TypeError):
-            price = quantity = total = 0.0
+        except (ValueError, TypeError):
+            pass  # keep as 0.0
 
         description = item.get('description', '').replace('\n', '<br/>')
 
         product_data.append([
             str(idx),
-             Paragraph(
-                f"<b>{item['name']}</b><br/><font size='8'><i>{description}</i></font>",
+            Paragraph(
+                f"<b>{item.get('name', '')}</b><br/><font size='8'><i>{description}</i></font>",
                 small
             ),
-            # hsn,
-            Paragraph(f"{price:,.2f}",ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
-            Paragraph(f"{quantity:.2f}<br/>{item['unit']}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+            hsn,  # blank if missing
+            Paragraph(f"{price:,.2f}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+            Paragraph(f"{quantity:.2f}<br/>{item.get('unit', '')}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             f"{total:,.2f}"
         ])
 
 
     # Add empty rows if needed to maintain uniform height
    
-    col_widths = [15 * mm, 70 * mm, 25 * mm, 30 * mm, 30 * mm]
+    col_widths = [13 * mm, 70 * mm,20 * mm, 21 * mm, 21 * mm, 25 * mm]
     total_width = sum(col_widths)
 
     product_table = Table(product_data, colWidths=col_widths)
