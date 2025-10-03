@@ -91,6 +91,7 @@ from django.utils import timezone
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
     product_name = models.CharField(max_length=255)
+    hsn_code = models.CharField(max_length=100, blank=True, null=True)
 
     CATEGORY_CHOICES = [
         ('Pest Control', 'Pest Control'),

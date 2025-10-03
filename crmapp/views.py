@@ -1375,8 +1375,8 @@ def get_products_by_category(request):
     categories = request.GET.get('categories', '')
     category_list = categories.split(',') if categories else []
 
-    products = Product.objects.filter(category__in=category_list).values('product_id', 'product_name')
-    product_list = [{'product_id': product['product_id'], 'product_name': product['product_name']} for product in products]
+    products = Product.objects.filter(category__in=category_list).values('product_id', 'product_name','hsn_code')
+    product_list = [{'product_id': product['product_id'], 'product_name': product['product_name'], 'hsn_code':product['hsn_code']} for product in products]
 
     return JsonResponse({'products': product_list})
 
@@ -2482,7 +2482,7 @@ def display_quotation(request):
     #     m = m.order_by(f'{order_prefix}{sort_by}')
     # else:
     #     m = m.order_by('customer__fullname')
-    m = m.order_by('-id')
+    m = m.order_by('-quotation_date')
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -3187,7 +3187,7 @@ def edit_quotation(request, rid):
         or_name = request.POST.get('or_name')
         or_contact = request.POST.get('or_contact') 
         thank_u_note = request.POST.get('thank_u_note')
-
+        quotation_date = request.POST.get('quotation_date')
         customer.primarycontact = contact_no
         customer.fullname = customer_full_name
         customer.primaryemail = customer_email
@@ -3283,7 +3283,7 @@ def edit_quotation(request, rid):
         quotation.address = address
         quotation.subject = subject
         quotation.branch_id = branch_id
-
+        quotation.quotation_date = quotation_date
         quotation.product_details_json = updated_products
         quotation.total_price = total_without_gst
         quotation.gst_total = total_gst
@@ -5900,7 +5900,7 @@ from reportlab.lib.colors import HexColor
 from reportlab.lib.enums import TA_RIGHT
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.enums import TA_RIGHT
+from reportlab.lib.enums import TA_RIGHT, TA_CENTER
 
 def draw_footer_and_logo(canvas, doc, logo_path, footer_path, branch):
     # --- HEADER ---
@@ -6107,7 +6107,7 @@ def reportlab_quotation_pdf(request, id):
     #         f"{total:,.2f}"
     #     ])
     product_data = [["Sr. No.", "Product / Service", "HSN", "Rate (Rs)", "Qty", "Total (Rs)"]]
-
+    
     for idx, item in enumerate(quotation.product_details_json, start=1):
         # always initialize
         hsn = item.get('hsn_code', '')  
@@ -6115,6 +6115,14 @@ def reportlab_quotation_pdf(request, id):
         quantity = 0.0
         total = 0.0
 
+        hsn_style = ParagraphStyle(
+        name="hsn_style",
+        parent=small,
+        alignment=TA_CENTER,
+        wordWrap="CJK"  # keeps text in one line
+         )
+
+        hsn_text = Paragraph(hsn, hsn_style)
         try:
             price = float(item.get('price', 0))
             quantity = float(item.get('quantity', 0))
@@ -6130,7 +6138,7 @@ def reportlab_quotation_pdf(request, id):
                 f"<b>{item.get('name', '')}</b><br/><font size='8'><i>{description}</i></font>",
                 small
             ),
-            hsn,  # blank if missing
+            hsn_text,  # blank if missing
             Paragraph(f"{price:,.2f}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             Paragraph(f"{quantity:.2f}<br/>{item.get('unit', '')}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             f"{total:,.2f}"

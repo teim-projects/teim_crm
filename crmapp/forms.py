@@ -34,9 +34,10 @@ class InventoryAddForm(forms.ModelForm):
 class AddProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['product_name', 'category']
+        fields = ['product_name','hsn_code' ,'category']
         labels = {
             'product_name': 'Product Name',
+            'hsn_code':'HSN Code',
             'category': 'Select Category'
         }
 
@@ -44,9 +45,10 @@ class AddProductForm(forms.ModelForm):
 class UpdateProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['product_name', 'category']
+        fields = ['product_name','hsn_code', 'category']
         labels = {
             'product_name': 'Product Name',
+            'hsn_code':'HSN Code',
             'category': 'Select Category'
         }
 
