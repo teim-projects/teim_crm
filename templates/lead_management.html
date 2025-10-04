@@ -150,7 +150,7 @@
             <div class="row">
               <div class="col-md-6 mb-4">
                 <label>Phone Number <span class="star">*</span></label>
-                <input type="text" name="primarycontact" class="form-control" pattern="\d{10}" required />
+                <input type="text" name="primarycontact" class="form-control" pattern="[0-9]{10}" maxlength="10" minlength="10" title="Please enter exactly 10 digits"  required oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
               </div>
               <div class="col-md-6 mb-4">
 
@@ -250,15 +250,9 @@
                 <label for="branch">Select Branch<span class="star">*</span></label>
                 <select class="form-control" name="branch" required>
                   <option value="">Select Branch</option>
-                  <option value="Bhiwandi">Bhiwandi</option>
-                  <option value="Indore">Indore</option>
-                  <option value="Hyderabad">Hyderabad</option>
-                  <option value="Nagpur">Nagpur</option>
-                  <option value="Amravti">Amravti</option>
-                  <option value="Aurangabad">Aurangabad</option>
-                  <option value="Baramati">Baramati</option>
-                  <option value="Pune">Pune</option>
-                  <option value="Hyderabad">Hyderabad</option>
+                  {% for branch in branches %}
+                  <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+                  {% endfor %}
                 </select>
               </div>
               <div class="col-md-6 mb-4">
@@ -365,6 +359,7 @@
       toggleOrganizationFields();
     }
 </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     const stateCityMap = {
       "Andhra Pradesh": [
@@ -1145,71 +1140,144 @@
         "Uttar Dinajpur"
       ],
     };
+    
+// Function to populate cities
+function populateCities(selectedState, selectedCity = null) {
+    const citySelect = document.getElementById('city');
+    citySelect.innerHTML = ""; // clear previous options
 
-    document.getElementById('state').addEventListener('change', function () {
-      const selectedState = this.value;
-      const citySelect = document.getElementById('city');
-
-      citySelect.innerHTML = ""; // Clear old options
-
-      if (selectedState && stateCityMap[selectedState]) {
-        const cities = stateCityMap[selectedState];
-        cities.forEach(city => {
-          const option = document.createElement("option");
-          option.value = city;
-          option.textContent = city;
-          citySelect.appendChild(option);
+    if (selectedState && stateCityMap[selectedState]) {
+        stateCityMap[selectedState].forEach(city => {
+            const option = document.createElement("option");
+            option.value = city;
+            option.textContent = city;
+            citySelect.appendChild(option);
         });
-      } else {
+
+        // Select stored city if present
+        if (selectedCity && stateCityMap[selectedState].includes(selectedCity)) {
+            citySelect.value = selectedCity;
+        }
+    } else {
         const option = document.createElement("option");
         option.value = "";
         option.textContent = "Please select a state first";
         citySelect.appendChild(option);
-      }
+    }
+}
+
+// When user changes state manually
+document.getElementById('state').addEventListener('change', function () {
+    populateCities(this.value);
+});
+
+// AJAX call to fetch existing data
+$(document).ready(function () {
+    $("input[name='primarycontact']").on("blur", function () {
+        var primarycontact = $(this).val();
+        if (primarycontact.length === 10) {
+            $.ajax({
+                url: "{% url 'lead_management_create' %}",
+                data: { 'primarycontact': primarycontact },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status === 'exists') {
+                        const data = response.data;
+
+                        $("input[name='customername']").val(data.customername || '');
+                        $("input[name='secondarycontact']").val(data.secondarycontact || '');
+                        $("input[name='customeremail']").val(data.customeremail || '');
+                        $("textarea[name='customeraddress']").val(data.customeraddress || '');
+                        $("input[name='location']").val(data.location || '');
+                        // $("input[name='enquirydate']").val(data.enquirydate || '');
+
+                        // Populate state & city if present
+                        if(data.state) {
+                            populateCities(data.state, data.city);
+                            $('#state').val(data.state);
+                        }
+
+                        // Step 2 fields
+                        // $("select[name='branch']").val(data.branch || '');
+                        $("select[name='sourceoflead']").val(data.sourceoflead || '');
+                        // $("select[name='typeoflead']").val(data.typeoflead || '');
+                        $("select[name='customersegment']").val(data.customersegment || '');
+                        // $("select[name='salesperson']").val(data.salesperson || '');
+                        // $("input[name='contactedby']").val(data.contactedby || '');
+                        // $("input[name='maincategory']").val(data.maincategory || '');
+                        // $("input[name='subcategory']").val(data.subcategory || '');
+                        // $("input[name='firstfollowupdate']").val(data.firstfollowupdate || '');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                }
+            });
+        }
     });
-  </script>
+});
+    </script>
+  
 
 
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script>
+  <!-- <script>
     $(document).ready(function () {
       $("input[name='primarycontact']").on("blur", function () {
         var primarycontact = $(this).val();
         if (primarycontact.length === 10) {
           $.ajax({
-            url: "",  // same URL, so keep it blank
+            url: "{% url 'lead_management_create' %}",  // same URL, so keep it blank
             data: {
               'primarycontact': primarycontact
             },
             dataType: 'json',
             success: function (response) {
               if (response.status === 'exists') {
-                console.log(response.data);
+                console.log('Data found:', response.data);
                 const data = response.data;
-                $("select[name='sourceoflead']").val(data.sourceoflead);
-                $("input[name='salesperson']").val(data.salesperson);
-                $("input[name='customername']").val(data.customername);
-                $("select[name='customersegment']").val(data.customersegment);
-                $("input[name='enquirydate']").val(data.enquirydate);
-                $("input[name='contactedby']").val(data.contactedby);
-                $("input[name='maincategory']").val(data.maincategory);
-                $("input[name='subcategory']").val(data.subcategory);
-                $("input[name='secondarycontact']").val(data.secondarycontact);
-                $("input[name='customeremail']").val(data.customeremail);
-                $("input[name='customeraddress']").val(data.customeraddress);
-                $("input[name='location']").val(data.location);
-                $("input[name='city']").val(data.city);
-                $("select[name='typeoflead']").val(data.typeoflead);
-                $("input[name='firstfollowupdate']").val(data.firstfollowupdate);
-                $("select[name='branch']").val(data.branch);
+
+                // Fill Step 1 fields
+                $("input[name='customername']").val(data.customername || '');
+                $("input[name='secondarycontact']").val(data.secondarycontact || '');
+                $("input[name='customeremail']").val(data.customeremail || '');
+                $("select[name='state']").val(data.state || '');
+
+                $('#state').val(data.state).trigger('change');
+
+                  // ✅ Then once cities are loaded, select the correct one (delay slightly)
+                
+                $('#state').val(data.state).trigger('change');
+
+                $("textarea[name='customeraddress']").val(data.customeraddress || '');
+                $("input[name='location']").val(data.location || '');
+                $("input[name='enquirydate']").val(data.enquirydate || '');
+
+                // Fill Step 2 fields
+                $("select[name='branch']").val(data.branch || '');
+                $("select[name='sourceoflead']").val(data.sourceoflead || '');
+                $("select[name='typeoflead']").val(data.typeoflead || '');
+                $("select[name='customersegment']").val(data.customersegment || '');
+                $("select[name='salesperson']").val(data.salesperson || '');
+                $("input[name='contactedby']").val(data.contactedby || '');
+                $("input[name='maincategory']").val(data.maincategory || '');
+                $("input[name='subcategory']").val(data.subcategory || '');
+                $("input[name='firstfollowupdate']").val(data.firstfollowupdate || '');
+
+              } else {
+                console.log('No existing data found for this phone number');
+                // Optionally clear all fields if no data found
+                // clearFormFields();
               }
+            },
+            error: function(xhr, status, error) {
+              console.error('AJAX Error:', error);
             }
           });
         }
       });
     });
-  </script>
+  </script> -->
 
 
   <script>

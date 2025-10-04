@@ -667,13 +667,13 @@
                                             <select name="branch" class="form-control custom-select">
                                                 <option value="">All Branches</option>
                                                 {% for b in branches %}
-                                                <option value="{{ b }}" {% if request.GET.branch == b %}selected
-                                                {% endif %}>{{ b }}</option>
+                                                <option value="{{ b.id }}" {% if request.GET.branch == b.id %}selected
+                                                {% endif %}>{{ b.branch_name }}</option>
                                                 {% endfor %}
                                             </select>
-                                            {% if branch_count %}
+                                            <!-- {% if branch_count %}
                                             <small class="text-muted">Total leads in this branch: {{ branch_count }}</small>
-                                            {% endif %}
+                                            {% endif %} -->
                                         </div>
 
 
@@ -889,7 +889,7 @@
 
                                         <td>{{x.customername}}</td>
                                         <td>{{x.typeoflead}}</td>
-                                        <td>{{x.branch}}</td>
+                                        <td>{{x.branch.branch_name}}</td>
 
                                         <td>{{x.enquirydate}}</td>
                                         <td>{{x.primarycontact}}</td>

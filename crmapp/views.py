@@ -48,7 +48,8 @@ from .models import (
     firstfollowup,
     secondfollowup,
     thirdfollowup,
-    finalfollowup
+    finalfollowup,
+    BranchManager
 )
 
 from .decorators import role_required
@@ -101,6 +102,32 @@ state_map = {
 def landing_page(request):
     return render(request , 'landing_page.html')
 
+
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            try:
+                role = user.userprofile.role
+
+                if role in ["admin", "sales","branch_manager"]:
+                    login(request, user)
+                    return redirect("index")   # Admin/Sales Dashboard
+                elif role == "technician":
+                    login(request, user)
+                    return redirect("technician_dashboard")  # Technician Dashboard
+                else:
+                    messages.error(request, "Access denied: Invalid role.")
+            except UserProfile.DoesNotExist:
+                messages.error(request, "User profile not found.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    
+    return render(request, "landing_page.html")
 
 @login_required
 @role_required(['admin', 'sales'])
@@ -689,6 +716,131 @@ def delete_sales_person(request, pk):
 
     return render(request, 'delete_sales_person.html', {'person': person})
 
+
+@login_required
+@role_required(['admin'])
+def add_branch_manager(request):
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        mobile_no = request.POST.get('mobile_no')
+        email = request.POST.get('email')
+        date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
+        branch_id = request.POST.get('branch')
+        branch_instance = Branch.objects.get(pk=branch_id)
+
+        # Create Django User (username as email or phone, password default or random)
+        username = mobile_no
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        user.is_staff = True
+        user.save()
+        
+
+        # Assign role to user via UserProfile
+        user_profile = user.userprofile  # auto-created by the signal
+        user_profile.role = 'branch_manager'
+        user_profile.phone = mobile_no
+        user_profile.save()
+
+        # Create SalesPerson record
+        BranchManager.objects.create(
+            full_name=full_name,
+            date_of_joining=date_of_joining,
+            mobile_no=mobile_no,
+            email=email,
+            date_of_birth=date_of_birth,
+            branch=branch_instance
+            
+        )
+
+        return redirect('branch_manager_list')
+    
+    branch = Branch.objects.all()
+    return render(request, 'add_branch_manager.html',{'branch': branch})
+
+
+@login_required
+@role_required(['admin'])
+def branch_manager_list(request):
+    persons = BranchManager.objects.all()
+    return render(request, 'branch_manager_list.html', {'persons': persons})
+
+
+@login_required
+@role_required(['admin'])
+def edit_branch_manager(request, pk):
+    person = get_object_or_404(BranchManager, pk=pk)
+
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        mobile_no = request.POST.get('mobile_no')
+        email = request.POST.get('email')
+        date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
+        branch_id = request.POST.get('branch')
+        branch_instance = Branch.objects.get(pk=branch_id)
+        # Update SalesPerson
+        person.full_name = full_name
+        person.date_of_joining = date_of_joining
+        person.mobile_no = mobile_no
+        person.email = email
+        person.date_of_birth = date_of_birth
+        person.branch = branch_instance
+        person.save()
+
+        # Check for existing user
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            # Update existing user
+            user.first_name = full_name
+            user.username = mobile_no
+            user.email = email
+            if password:
+                user.set_password(password)
+            user.save()
+        else:
+            # Create new user
+            user = User.objects.create_user(
+                username=mobile_no,
+                email=email,
+                password=password or User.objects.make_random_password(),
+                first_name=full_name
+            )
+        user.is_staff = True
+        user.save()
+
+        # Update or create UserProfile
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        user_profile.role = 'branch_manager'
+        user_profile.phone = mobile_no
+        user_profile.save()
+
+        return redirect('branch_manager_list')
+    branch = Branch.objects.all()
+    return render(request, 'edit_branch_manager.html', {'person': person, 'branch':branch})
+
+@login_required
+@role_required(['admin'])
+def delete_branch_manager(request, pk):
+    person = get_object_or_404(BranchManager, pk=pk)
+
+    if request.method == 'POST':
+        # Delete the User whose username is the BranchManager's mobile number
+        try:
+            user = User.objects.get(username=person.mobile_no)
+            user.delete()  # This will also delete UserProfile if CASCADE
+        except User.DoesNotExist:
+            pass  # User not found, just continue
+
+        # Then delete the BranchManager object
+        person.delete()
+
+        return redirect('branch_manager_list')
+
+    return redirect('branch_manager_list')
 
 
 @login_required
@@ -1695,6 +1847,7 @@ from datetime import datetime
 @role_required(['admin','sales'])
 def lead_management_create(request):
     salespersons = SalesPerson.objects.all()
+    branches = Branch.objects.all()
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'primarycontact' in request.GET:
@@ -1704,8 +1857,9 @@ def lead_management_create(request):
             if lead:
                 data = {
                     'sourceoflead': lead.sourceoflead,
-                    'salesperson': lead.salesperson.id,
+                    'salesperson': lead.salesperson.id if lead.salesperson else '',
                     'customername': lead.customername,
+                    'customeremail':lead.customeremail,
                     'customersegment': lead.customersegment,
                     'enquirydate': lead.enquirydate.strftime('%Y-%m-%d') if lead.enquirydate else '',
                     'contactedby': lead.contactedby,
@@ -1717,7 +1871,7 @@ def lead_management_create(request):
                     'location': lead.location,
                     'state': lead.state,
                     'city': lead.city,
-                    'branch': lead.branch,
+                    'branch': lead.branch.id if lead.branch else '',
                     'typeoflead': lead.typeoflead,
                     'firstfollowupdate': lead.firstfollowupdate.strftime('%Y-%m-%d') if lead.firstfollowupdate else '',
                 }
@@ -1725,7 +1879,7 @@ def lead_management_create(request):
             else:
                 return JsonResponse({'status': 'not_found'})
 
-        return render(request, 'lead_management.html', {'salespersons': salespersons})
+        return render(request, 'lead_management.html', {'salespersons': salespersons, 'branches': branches})
 
     else:  # POST request
         try:
@@ -1767,7 +1921,8 @@ def lead_management_create(request):
             firstfollowupdate_str = request.POST.get('firstfollowupdate')
             firstfollowupdate = datetime.strptime(firstfollowupdate_str, '%Y-%m-%d').date() if firstfollowupdate_str else None
 
-            branch = request.POST.get('branch')
+            branch_id = request.POST.get('branch')
+            branch = branches.get(id = int(branch_id))
 
             # Create new lead (duplicates allowed)
             lead = lead_management.objects.create(
@@ -2150,6 +2305,7 @@ def display_customer(request):
     else:
         m = m.order_by('-customerid' if sort_order == 'desc' else 'customerid')
 
+    m = m.order_by('-id')
     # Pagination
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
@@ -2332,6 +2488,7 @@ def display_service_management(request):
     else:
         m = m.order_by('-customer__customerid' if sort_order == 'desc' else 'customer__customerid')
 
+    m = m.order_by('-id')
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -2530,6 +2687,7 @@ def display_invoice(request):
         else:
             m = m.order_by('customer__customerid')
 
+    m = m.order_by('-id')
     paginator = Paginator(m, 10)  
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -2650,9 +2808,9 @@ def display_lead_management(request):
     sources = sorted(set(source_choices))
 
 
-    branch_choices = [choice[0] for choice in lead_management._meta.get_field('branch').choices if choice[0]]
-    branch_used = lead_management.objects.values_list('branch', flat=True).distinct()
-    branches = sorted(set(branch_choices + list(branch_used)))
+    # branch_choices = [choice[0] for choice in lead_management._meta.get_field('branch').choices if choice[0]]
+    # branch_used = lead_management.objects.values_list('branch', flat=True).distinct()
+    # branches = sorted(set(branch_choices + list(branch_used)))
 
     salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
 
@@ -2683,6 +2841,7 @@ def display_lead_management(request):
     if 'page' in query_params:
         query_params.pop('page')
     # 11. Final context
+    branches = Branch.objects.all()
     context = {
         'page_obj': page_obj,
         'start_index': start_index,

@@ -10,6 +10,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('index', views.index, name="index"),
     path('', views.landing_page),
+    path("login/", views.login_view, name="login_view"),
     path('add-sales-person/', views.add_sales_person, name='add_sales_person'),
     path('sales-persons/', views.sales_person_list, name='sales_person_list'),
     path('edit-sales-person/<int:pk>/', views.edit_sales_person, name='edit_sales_person'),
@@ -17,7 +18,12 @@ urlpatterns = [
     path('sales-persons/export/', views.export_sales_person_csv, name='export_sales_person_csv'),
     path('customer_details_create',views.customer_details_create, name='customer_details_create'),
     path('service_management_create',views.service_management_create, name='service_management_create'),
-
+    
+    # Branch Manager
+    path('add-branch-manager/', views.add_branch_manager, name='add_branch_manager'), 
+    path('branch-manager-list/', views.branch_manager_list, name='branch_manager_list'),
+    path('edit-branch-manager/<int:pk>/', views.edit_branch_manager, name='edit_branch_manager'),
+    path('delete-branch-manager/<int:pk>/', views.delete_branch_manager, name='delete_branch_manager'),
      # Quotation Terms
     path('add_quotation_term/', views.add_quotation_term, name='add_quotation_term'),
     path('edit_quotation_term/<int:id>/', views.edit_quotation_term, name='edit_quotation_term'),

@@ -12,6 +12,23 @@ def generate_customerid():
     random_number = str(random.randint(1000, 9999))
     return f"DEFAULT{random_number}"
 
+class Branch(models.Model):
+    branch_name = models.CharField(max_length=100)
+    contact_1 = models.CharField(max_length=15)
+    contact_2 = models.CharField(max_length=15, blank=True, null=True)
+    email_1 = models.EmailField()
+    email_2 = models.EmailField(blank=True, null=True)
+    gst_number = models.CharField(max_length=20)
+    pan_number = models.CharField(max_length=20)
+    full_address = models.TextField()
+    state = models.CharField(max_length=50 )
+    code = models.IntegerField()
+    shortcut = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.branch_name
+
 
 
 
@@ -20,6 +37,7 @@ class UserProfile(models.Model):
         ('admin', 'Admin'),
         ('sales', 'Sales'),
         ('technician', 'Technician'),
+        ('branch_manager', 'Branch Manager'),
         ('customer', 'Customer'),
     ]
 
@@ -41,6 +59,19 @@ class SalesPerson(models.Model):
         return self.full_name
 
 
+
+
+class BranchManager(models.Model):
+    full_name = models.CharField(max_length=100)
+    date_of_joining = models.DateField()
+    mobile_no = models.CharField(max_length=15)
+    email = models.EmailField(unique=True)
+    date_of_birth = models.DateField()
+    branch = models.ForeignKey(Branch,on_delete=models.CASCADE, related_name='branch_manager')
+
+    def __str__(self):
+        return self.full_name
+    
 from django.db import models
 class QuotationTerm(models.Model):
     description = models.TextField()
@@ -304,7 +335,8 @@ class lead_management(models.Model):
     ]
 
     state = models.CharField(max_length=100, choices=STATE_CHOICES, default="Maharashtra")
-    branch = models.CharField(max_length=20, choices=BRANCH_CHOICES, default='NA')
+    old_branch = models.CharField(max_length=200, choices=BRANCH_CHOICES, default='NA')
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, null=True, blank=True)
     sourceoflead = models.CharField(max_length=200, choices=[
         ('Google', 'Google'),
         ('Justdial', 'Justdial'),
@@ -439,23 +471,6 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 from decimal import Decimal
-
-class Branch(models.Model):
-    branch_name = models.CharField(max_length=100)
-    contact_1 = models.CharField(max_length=15)
-    contact_2 = models.CharField(max_length=15, blank=True, null=True)
-    email_1 = models.EmailField()
-    email_2 = models.EmailField(blank=True, null=True)
-    gst_number = models.CharField(max_length=20)
-    pan_number = models.CharField(max_length=20)
-    full_address = models.TextField()
-    state = models.CharField(max_length=50 )
-    code = models.IntegerField()
-    shortcut = models.CharField(max_length=10)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.branch_name
 
 
 
