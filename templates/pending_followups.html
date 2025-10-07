@@ -198,13 +198,13 @@
 
 
                         <!-- Salesperson -->
-                         {% if request.user.userprofile.role == "admin" %}
-                         <div class="col-md-3">
+                        {% if request.user.userprofile.role == "admin" or request.user.userprofile.role == "branch_manager" %}
+                        <div class="col-md-3">
                              <label>Salesperson</label>
                              <select name="salesperson" class="form-control custom-select">
                                  <option value="">All Salespersons</option>
                                  {% for sp in salespersons %}
-                                <option value="{{ sp }}" {% if request.GET.salesperson == sp %}selected {% endif %}>
+                                <option value="{{ sp.id }}" {% if request.GET.salesperson|stringformat:"s" == sp.id|stringformat:"s" %}selected{% endif %}>
                                     {{ sp }}</option>
                                 {% endfor %}
                             </select>
@@ -212,19 +212,22 @@
                         {% endif %}
 
                         <!-- Branch -->
+                         
+                        {% if request.user.userprofile.role == "admin" %}
                         <div class="col-md-3">
-                            <label>Branch</label>
-                            <select name="branch" class="form-control custom-select">
-                                <option value="">All Branches</option>
-                                {% for b in branches %}
-                                <option value="{{ b }}" {% if request.GET.branch == b %}selected {% endif %}>{{ b }}
+                             <label>Branch</label>
+                             <select name="branch" class="form-control custom-select">
+                                 <option value="">All Branches</option>
+                                 {% for b in branches %}
+                                 <option value="{{ b.id }}" {% if request.GET.branch|stringformat:"s" == b.id|stringformat:"s" %}selected {% endif %}>{{ b }}
                                 </option>
                                 {% endfor %}
                             </select>
-                            {% if branch_count %}
+                            <!-- {% if branch_count %}
                             <small class="text-muted">Total leads in this branch: {{ branch_count }}</small>
-                            {% endif %}
+                            {% endif %} -->
                         </div>
+                        {% endif %}
 
 
                     </div>

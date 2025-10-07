@@ -450,24 +450,41 @@
                               </div>
                           
                               <!-- Branch Dropdown -->
-                              <div class="col-md-2">
-                                <select class="form-select" name="branch" onchange="this.form.submit()">
-                                  <option value="">All Branches</option>
-                                  {% for branch in branches %}
-                                    <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
-                                  {% endfor %}
-                                </select>
-                              </div>
-                          
-                              <!-- SFS Representative -->
-                              <div class="col-md-2">
-                                <select class="form-select" name="sfs_representatives" onchange="this.form.submit()">
-                                  <option value="">SFS Representative</option>
-                                  {% for rep in sfs_representatives %}
-                                    <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
-                                  {% endfor %}
-                                </select>
-                              </div>
+
+                               {% if request.user.userprofile.role == 'admin' or is_sales_coordinator %}
+                               <div class="col-md-2">
+                                   <select class="form-select" name="branch" onchange="this.form.submit()">
+                                       <option value="">All Branches</option>
+                                       {% for branch in branches %}
+                                       <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
+                                       {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- SFS Representative -->
+                                <div class="col-md-2">
+                                    <select class="form-select" name="sfs_representatives" onchange="this.form.submit()">
+                                        <option value="">SFS Representative</option>
+                                        {% for rep in sfs_representatives %}
+                                        <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                {% endif %}
+
+                                
+                                {% if request.user.userprofile.role == 'branch_manager' %}
+                                <!-- SFS Representative -->
+                                <div class="col-md-2">
+                                    <select class="form-select" name="sfs_representatives" onchange="this.form.submit()">
+                                        <option value="">SFS Representative</option>
+                                        {% for rep in sfs_representatives %}
+                                        <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                {% endif %}
+                                    
                           
                               <!-- Date Filter Button -->
                               <div class="col-md-2">
@@ -475,6 +492,12 @@
                                   <i class="fa fa-calendar"></i> <span id="selectedRange">Select Date Range</span>
                                 </button>
                               </div>
+
+
+                              {% if request.user.userprofile.role == 'branch_manager' %}
+                                <div class="col-md-2"></div>
+                              {% endif %}
+                                
                           
                               <!-- Export Button -->
                               <div class="col-md-2">
@@ -505,6 +528,7 @@
                                                 {% endif %}
                                             </a>
                                         </th>
+                                        <th>Quotation Date</th>
                                         <th>
                                             <a href="?sort_by=customer_full_name&order={% if current_sort_by == 'customer_full_name' and current_order == 'asc' %}desc{% else %}asc{% endif %}"
                                             class="text-decoration-none text-dark">
@@ -526,7 +550,6 @@
                                         <th>Total Price <br> (without GST)</th>
                                         <th>Total Price <br> (with GST)</th>
                                         <th>Subject</th>
-                                        <th>Quotation Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -552,6 +575,7 @@
                                             </a> 
                                         </td>
                                         <td>{{ x.quotation_no }}</td>
+                                        <td>{{ x.quotation_date }}</td>
                                         <td>{{ x.customer.fullname }}</td>
                                         <td>{{ x.customer.primarycontact }}</td>
                                         <td>{{ x.customer.primaryemail }}</td>
@@ -579,7 +603,7 @@
                                         <td>{{ x.total_price|floatformat:2 }}</td>
                                         <td>{{ x.total_price_with_gst|floatformat:2 }}</td>
                                         <td>{{ x.subject|truncatechars:25 }}</td>
-                                        <td>{{ x.quotation_date }}</td>
+                                        
                                         
                                     </tr>
                                     {% endfor %}

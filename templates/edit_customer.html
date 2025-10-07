@@ -152,6 +152,15 @@
                   placeholder="Primary Email" />
               </div>
               <div class="col-md-4 mb-3">
+                <label>Branch <span class="text-danger">*</span></label>
+                <select name="branch" id="" class="form-control" required>
+                    <option value="" disabled selected>Select Branch</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.id }}" {% if branch.id == x.branch.id %}selected{% endif %}>{{ branch.branch_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+              <div class="col-md-4 mb-3">
                 <label>Secondary Email </label>
                 <input type="email" class="form-control" name="usecondaryemail" value="{{ x.secondaryemail }}"
                   placeholder="Secondary Email" />

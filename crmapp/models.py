@@ -54,6 +54,8 @@ class SalesPerson(models.Model):
     mobile_no = models.CharField(max_length=15)
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField()
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="sales_person")
+    co_ordinator = models.BooleanField(blank=True, null=True, default=False)
 
     def __str__(self):
         return self.full_name
@@ -86,7 +88,7 @@ class InvoiceTerm(models.Model):
 
 
 class customer_details(models.Model):
-   
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="customer_details")
     fullname = models.CharField(max_length=100)
     primaryemail=models.EmailField(null=True, blank=True)
     secondaryemail=models.EmailField(null=True , blank=True)

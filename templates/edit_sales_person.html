@@ -47,10 +47,7 @@
             <label class="form-label">Full Name <span class="star">*</span></label>
             <input type="text" name="full_name" class="form-control" value="{{ person.full_name }}" required>
           </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Date of Joining <span class="star">*</span></label>
-            <input type="date" name="date_of_joining" class="form-control" value="{{ person.date_of_joining|date:'Y-m-d' }}" required>
-          </div>
+          
           <div class="col-md-6 mb-3">
             <label class="form-label">Mobile No <span class="star">*</span></label>
             <input type="text" name="mobile_no" class="form-control" value="{{ person.mobile_no }}" required>
@@ -59,15 +56,45 @@
             <label class="form-label">Email <span class="star">*</span></label>
             <input type="email" name="email" class="form-control" value="{{ person.email }}" required>
           </div>
-            <div class="col-md-6 mb-3 form-group">
+          <div class="col-md-6 mb-3">
+            <label>Branch <span class="star">*</span></label>
+            <select name="branch" id="" class="form-control" required>
+              <option value="" disabled selected>Select Branch</option>
+              {% for branch in branches %}
+              <option value="{{ branch.id }}" 
+              {% if branch.id == person.branch.id %}
+                selected
+              {% endif %}
+                >{{ branch.branch_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+            <div class="col-md-3 mb-3 form-group">
                 <label for="password">Password (leave blank to keep unchanged):</label>
                 <input type="password" name="password" class="form-control" id="password">
             </div>
-          <div class="col-md-6 mb-3">
+            <div class="col-md-3">
+              <label>Co-ordinator</label><br>
+              <label><input type="radio" name="co_ordinator" value="True" 
+              {% if person.co_ordinator %}
+                checked
+              {% endif %}
+                > Yes</label>
+              <label class="ms-3"><input type="radio" name="co_ordinator" value="False" 
+              {% if not person.co_ordinator %}
+                checked
+              {% endif %}
+                > No</label>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Date of Joining <span class="star">*</span></label>
+                <input type="date" name="date_of_joining" class="form-control" value="{{ person.date_of_joining|date:'Y-m-d' }}" required>
+              </div>
+          <div class="col-md-3 mb-3">
             <label class="form-label">Date of Birth <span class="star">*</span></label>
             <input type="date" name="date_of_birth" class="form-control"  value="{{ person.date_of_birth|date:'Y-m-d' }}" required>
           </div>
-          <div class="col-md-6"></div>
+          <!-- <div class="col-md-6"></div> -->
 <div class="row">
           <div class="col-md-6 mt-3 mb-3  ">
             <a href="{% url 'sales_person_list' %}" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">

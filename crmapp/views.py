@@ -130,7 +130,7 @@ def login_view(request):
     return render(request, "landing_page.html")
 
 @login_required
-@role_required(['admin', 'sales'])
+@role_required(['admin', 'sales', 'branch_manager'])
 def index(request):
         # Fetch data for Service Management
         service_data = service_management.objects.values('selected_services').annotate(total_charges=Sum('total_charges'))
@@ -583,7 +583,7 @@ def user_logout(request):
 
 # Add Sales Person
 @login_required
-@role_required(['admin'])
+@role_required(['admin','branch_manager'])
 def add_sales_person(request):
     if request.method == 'POST':
         full_name = request.POST.get('full_name')
@@ -592,7 +592,9 @@ def add_sales_person(request):
         email = request.POST.get('email')
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
-
+        branch_id = request.POST.get('branch')
+        branch = Branch.objects.get(id = branch_id)
+        co_ordinator = request.POST.get('co_ordinator') == True
         # Create Django User (username as email or phone, password default or random)
         username = mobile_no
         user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
@@ -613,22 +615,24 @@ def add_sales_person(request):
             mobile_no=mobile_no,
             email=email,
             date_of_birth=date_of_birth,
+            branch = branch,
+            co_ordinator = co_ordinator
             
         )
 
         return redirect('sales_person_list')
-
-    return render(request, 'add_sales_person.html')
+    branches = Branch.objects.all()
+    return render(request, 'add_sales_person.html',{"branches":branches})
 
 # List Sales Persons
 @login_required
-@role_required(['admin'])
+@role_required(['admin', 'branch_manager'])
 def sales_person_list(request):
     sales_persons = SalesPerson.objects.all()
     return render(request, 'sales_person_list.html', {'sales_persons': sales_persons})
 
 @login_required
-@role_required(['admin'])
+@role_required(['admin', 'branch_manager'])
 def export_sales_person_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="sales_persons.csv"'
@@ -653,7 +657,7 @@ def export_sales_person_csv(request):
 
 # Edit Sales Person
 @login_required
-@role_required(['admin'])
+@role_required(['admin','branch_manager'])
 def edit_sales_person(request, pk):
     person = get_object_or_404(SalesPerson, pk=pk)
 
@@ -664,13 +668,17 @@ def edit_sales_person(request, pk):
         email = request.POST.get('email')
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
-
+        branch_id = request.POST.get('branch')
+        branch = Branch.objects.get(id = branch_id)
+        co_ordinator = request.POST.get('co_ordinator')
         # Update SalesPerson
         person.full_name = full_name
         person.date_of_joining = date_of_joining
         person.mobile_no = mobile_no
         person.email = email
         person.date_of_birth = date_of_birth
+        person.branch = branch
+        person.co_ordinator = co_ordinator
         person.save()
 
         # Check for existing user
@@ -702,8 +710,8 @@ def edit_sales_person(request, pk):
         user_profile.save()
 
         return redirect('sales_person_list')
-
-    return render(request, 'edit_sales_person.html', {'person': person})
+    branches = Branch.objects.all()
+    return render(request, 'edit_sales_person.html', {'person': person, 'branches':branches})
 
 @login_required
 @role_required(['admin'])
@@ -863,11 +871,14 @@ def customer_details_create(request):
                     'customer_type':lead.customer_type or '',
                     'or_name':lead.or_name or '',
                     'or_contact': lead.or_contact or None,
+                    'branch': lead.branch_id or None,
                 }
                 print(data)
+
                 return JsonResponse({'status': 'exists', 'data': data})
             return JsonResponse({'status': 'not_found'})
-        return render(request, 'customer_details.html')
+        branches = Branch.objects.all()
+        return render(request, 'customer_details.html',{'branches':branches})
     elif request.method == 'POST':
             fullname = request.POST.get('fullname', '').strip()
             primarycontact = request.POST.get('primarycontact', '').strip()
@@ -889,7 +900,7 @@ def customer_details_create(request):
             customer_type = request.POST.get('customer_type', 'Individual')
             or_name = request.POST.get('or_name', '')
             or_contact = request.POST.get('or_contact') or None
-
+            branch = Branch.objects.get(id = request.POST.get("branch"))
             # validate required fields
             if not fullname or not primarycontact:
                 return render(request, "customer_details.html", {
@@ -918,6 +929,7 @@ def customer_details_create(request):
                 customer_type=customer_type,
                 or_name=or_name,
                 or_contact=or_contact,
+                branch = branch
             )
 
             # Conditional redirect
@@ -1001,7 +1013,7 @@ def delete_product(request, product_id):
 
 
 @login_required
-@role_required(['admin','sales'])
+@role_required(['admin','sales', 'branch_manager'])
 def service_management_create(request):
     customers = customer_details.objects.all()
     category_choices = Product.CATEGORY_CHOICES
@@ -1135,7 +1147,7 @@ from .models import Branch
 
 # New----------------
 @login_required
-@role_required(['admin','sales'])
+@role_required(['admin','sales', 'branch_manager'])
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
     terms = QuotationTerm.objects.all() 
@@ -2050,7 +2062,7 @@ from django.core.paginator import Paginator
 from itertools import chain
 
 @login_required
-@role_required(['admin','sales'])
+@role_required(['admin','sales','branch_manager'])
 def today_work(request):
     today = date.today()
 
@@ -2065,6 +2077,13 @@ def today_work(request):
                                                     salesperson__mobile_no = request.user.username )
         followups = main_followup.objects.filter(next_followup_date=today, 
                                                  lead__salesperson__mobile_no=request.user.username ).select_related('lead')
+    elif request.user.userprofile.role == 'branch_manager': 
+        branch = BranchManager.objects.get(mobile_no = request.user.username ).branch
+        lead_folloup = lead_management.objects.filter(firstfollowupdate = today ,
+                                                    branch = branch)
+        followups = main_followup.objects.filter(next_followup_date=today, 
+                                                 lead__branch = branch ).select_related('lead')
+            
     # lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
     # followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
 
@@ -2110,10 +2129,12 @@ from django.db.models import Q
 from .models import lead_management, main_followup, SalesPerson
 
 @login_required
-@role_required(['admin','sales'])
+@role_required(['admin','sales', 'branch_manager'])
 def pending_followups(request):
     today = date.today()
-
+    branches = Branch.objects.all()
+    salespersons = []
+    
     # Get filters from request
     search_query = request.GET.get('search', '').strip()
     typeoflead_filter = request.GET.get('typeoflead')
@@ -2133,11 +2154,21 @@ def pending_followups(request):
     # Base queryset filtered by role
     if request.user.userprofile.role == 'admin':
         lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today)
-    else:  # Sales role
+        salespersons = SalesPerson.objects.all()
+    elif request.user.userprofile.role == 'sales':
         lead_folloup = lead_management.objects.filter(
             firstfollowupdate__lt=today,
             salesperson__mobile_no=request.user.username
         )
+    elif request.user.userprofile.role == 'branch_manager':
+        branch_manager = BranchManager.objects.get(mobile_no =request.user.username)
+        lead_folloup = lead_management.objects.filter(
+            firstfollowupdate__lt=today,
+            branch = branch_manager.branch
+        )
+
+        salespersons = SalesPerson.objects.filter(branch=branch_manager.branch)
+
     followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
     # Apply additional filters
     if typeoflead_filter:
@@ -2146,8 +2177,8 @@ def pending_followups(request):
     if source_filter:
         lead_folloup = lead_folloup.filter(sourceoflead=source_filter)
     if branch_filter:
-        lead_folloup = lead_folloup.filter(branch=branch_filter)
-        followups = followups.filter(lead__branch=branch_filter)
+        lead_folloup = lead_folloup.filter(branch_id=branch_filter)
+        followups = followups.filter(lead__branch_id=branch_filter)
     if segment_filter:
         lead_folloup = lead_folloup.filter(customersegment=segment_filter)
         followups = followups.filter(lead__customersegment=segment_filter)
@@ -2161,8 +2192,8 @@ def pending_followups(request):
     if request.user.userprofile.role != 'admin':
         followups = followups.filter(lead__salesperson__mobile_no=request.user.username)
     if salesperson_filter:
-        lead_folloup = lead_folloup.filter(salesperson__full_name=salesperson_filter)
-        followups = followups.filter(lead__salesperson__full_name=salesperson_filter)
+        lead_folloup = lead_folloup.filter(salesperson = salesperson_filter)
+        followups = followups.filter(lead__salesperson = salesperson_filter)
 
     # Combine leads: followups + leads without any followup
     combined_leads = list(chain(
@@ -2215,8 +2246,8 @@ def pending_followups(request):
     # Dropdown options
     typeoflead_choices = [c[0] for c in lead_management._meta.get_field('typeoflead').choices if c[0]]
     source_choices = [c[0] for c in lead_management._meta.get_field('sourceoflead').choices if c[0]]
-    branch_choices = [c[0] for c in lead_management._meta.get_field('branch').choices if c[0]]
-    salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
+    # branch_choices = [c[0] for c in lead_management._meta.get_field('branch').choices if c[0]]
+    # salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
     segments = [c[0] for c in lead_management._meta.get_field('customersegment').choices if c[0] != "NOT SELECTED"]
 
     return render(request, 'pending_followups.html', {
@@ -2226,7 +2257,7 @@ def pending_followups(request):
         'start_index': start_index,
         'lead_types': typeoflead_choices,
         'sources': source_choices,
-        'branches': branch_choices,
+        'branches': branches,
         'salespersons': salespersons,
         'selected_salesperson': salesperson_filter,
         'current_sort': sort_by,
@@ -2283,8 +2314,18 @@ def display_customer(request):
     sort_by = request.GET.get('sort_by', 'customerid')
     customer_type = request.GET.get('customer_type')
 
+    if request.user.userprofile.role == 'admin': 
+        m = customer_details.objects.all()
+
+    elif request.user.userprofile.role == 'sales':
+        sales_person_name = SalesPerson.objects.get(full_name = SalesPerson.objects.get(mobile_no = request.user.username).full_name)
+        m = customer_details.objects.filter(contactperson__iexact = sales_person_name)
+
+    elif request.user.userprofile.role == 'branch_manager':
+        branch = BranchManager.objects.get(mobile_no = request.user.username ).branch
+        m = customer_details.objects.filter(branch_id = branch)
+        
     # Base queryset
-    m = customer_details.objects.all()
 
     # Apply search filters
     if query:
@@ -2427,7 +2468,7 @@ def display_reschedule(request):
     return render(request, 'display_reschedule.html', context)
 
 @login_required
-@role_required(['admin','sales'])
+@role_required(['admin','sales', 'branch_manager'])
 def display_service_management(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
@@ -2445,6 +2486,9 @@ def display_service_management(request):
         m = service_management.objects.all()
     elif request.user.userprofile.role == 'sales':
         m = service_management.objects.filter(sales_person_contact_no = request.user.username)
+    elif request.user.userprofile.role == 'branch_manager':
+        m = service_management.objects.filter(branch = BranchManager.objects.get(mobile_no = request.user.username).branch)
+    
     if query:
         m = m.filter(
             Q(customer__customerid__icontains=query) | 
@@ -2605,7 +2649,21 @@ def display_quotation(request):
     sfs_representatives = request.GET.get('sfs_representatives')
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
-    m = quotation_management.objects.all()
+    is_sales_coordinator = False
+
+    if request.user.userprofile.role == 'admin':
+        m = quotation_management.objects.all()
+
+    elif request.user.userprofile.role == 'sales':
+        sales = SalesPerson.objects.get(mobile_no = request.user.username)
+        if sales.co_ordinator:
+            is_sales_coordinator = True
+            m = quotation_management.objects.all()
+        else:
+            m = quotation_management.objects.filter(contact_by_no = sales.mobile_no)
+
+    elif request.user.userprofile.role == 'branch_manager':
+        m = quotation_management.objects.filter(branch = BranchManager.objects.get(mobile_no = request.user.username).branch)
     if query:
         m = m.filter(
             Q(customer__fullname__icontains=query) |
@@ -2658,6 +2716,8 @@ def display_quotation(request):
         'from_date': from_date,
         'to_date': to_date,
         "querystring": request.GET.urlencode(),
+        # "role": request.user.userprofile.role,
+        'is_sales_coordinator': is_sales_coordinator, 
     }
     return render(request, 'display_quotation.html', context)
 
@@ -2727,14 +2787,21 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from .models import lead_management, SalesPerson, main_followup
 
-
+@login_required
 def display_lead_management(request):
     # 1. Start with all leads
+    salespersons = []
     if request.user.userprofile.role =='admin':
         filtered_leads = lead_management.objects.all()
+        salespersons = SalesPerson.objects.all()
     elif request.user.userprofile.role == 'sales':
         salesperson = SalesPerson.objects.get(mobile_no =request.user.username)
         filtered_leads = lead_management.objects.filter(salesperson=salesperson)
+
+    elif request.user.userprofile.role == 'branch_manager':
+        branch_manager = BranchManager.objects.get(mobile_no =request.user.username)
+        filtered_leads = lead_management.objects.filter(branch=branch_manager.branch)
+        salespersons = SalesPerson.objects.filter(branch=branch_manager.branch)
     # 2. Get filters from request
     search_query = request.GET.get('search','').strip()
     typeoflead_filter = request.GET.get('typeoflead')
@@ -2764,7 +2831,7 @@ def display_lead_management(request):
     if source_filter:
         filtered_leads = filtered_leads.filter(sourceoflead=source_filter)
     if salesperson_filter:
-        filtered_leads = filtered_leads.filter(salesperson__full_name=salesperson_filter)
+        filtered_leads = filtered_leads.filter(salesperson = salesperson_filter)
     if branch_filter:
         filtered_leads = filtered_leads.filter(branch=branch_filter)
     if enquiry_from and enquiry_to:
@@ -2812,7 +2879,7 @@ def display_lead_management(request):
     # branch_used = lead_management.objects.values_list('branch', flat=True).distinct()
     # branches = sorted(set(branch_choices + list(branch_used)))
 
-    salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
+    # salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
 
     # segments = lead_management.objects.exclude( customersegment__in=["NOT SELECTED", "", None] ).values_list('customersegment', flat=True).distinct()
     segments = [ choice[0] for choice in lead_management._meta.get_field('customersegment').choices if choice[0] != "NOT SELECTED" ]
@@ -3024,8 +3091,9 @@ def delete_lead_management(request , rid):
 def edit_customer(request , rid):
     if request.method =='GET':
         m=customer_details.objects.filter(id=rid)
-        context={}
-        context['data']=m
+        branches = Branch.objects.all()
+        context={'branches':branches, 'data':m}
+        # context['data']=m
         return render(request , 'edit_customer.html' , context)
     
     else:
@@ -3046,11 +3114,14 @@ def edit_customer(request , rid):
         usoldtopartypostal=request.POST['usoldtopartypostal']
         ucustomer_type = request.POST['ucustomer_type']
         uor_name = request.POST['uor_name']
-        uor_contact = request.POST['uor_contact'] or None      
+        uor_contact = request.POST['uor_contact'] or None   
+        ubranch = request.POST['branch'] 
+
+        branch = Branch.objects.get(id = ubranch)  
 
         m=customer_details.objects.filter(id=rid)
 
-        m.update(fullname=ufullname , primaryemail=uprimaryemail,  secondaryemail=usecondaryemail , primarycontact=uprimarycontact , secondarycontact=usecondarycontact , contactperson=ucontactperson , designation=udesignation , shifttopartyaddress=ushifttopartyaddress , shifttopartycity=ushifttopartycity , shifttopartystate=ushifttopartystate , shifttopartypostal=ushifttopartypostal , soldtopartyaddress=usoldtopartyaddress , soldtopartycity=usoldtopartycity , soldtopartystate=usoldtopartystate , soldtopartypostal=usoldtopartypostal, customer_type = ucustomer_type, or_name = uor_name, or_contact = uor_contact)
+        m.update(fullname=ufullname , primaryemail=uprimaryemail,  secondaryemail=usecondaryemail , primarycontact=uprimarycontact , secondarycontact=usecondarycontact , contactperson=ucontactperson , designation=udesignation , shifttopartyaddress=ushifttopartyaddress , shifttopartycity=ushifttopartycity , shifttopartystate=ushifttopartystate , shifttopartypostal=ushifttopartypostal , soldtopartyaddress=usoldtopartyaddress , soldtopartycity=usoldtopartycity , soldtopartystate=usoldtopartystate , soldtopartypostal=usoldtopartypostal, customer_type = ucustomer_type, or_name = uor_name, or_contact = uor_contact , branch = branch)
 
         return redirect( '/display_customer')
     
@@ -5584,15 +5655,26 @@ def display_tax_invoice(request):
     sort_by = request.GET.get('sort_by', '')
     sort_order = request.GET.get('order', 'asc')
     
-    
+    if request.user.userprofile.role == 'admin':
+        m = TaxInvoice.objects.all()
+    elif request.user.userprofile.role == 'branch_manager':
+        branch = BranchManager.objects.get(mobile_no=request.user.username).branch
+        m = TaxInvoice.objects.filter(branch=branch)
+    elif request.user.userprofile.role == 'sales':
+        sales = SalesPerson.objects.get(mobile_no=request.user.username)
+        if sales.co_ordinator:
+            m = TaxInvoice.objects.all()
+        else:
+            m = TaxInvoice.objects.filter(created_by_no=sales.mobile_no)
+    else:
+        m = TaxInvoice.objects.none()
+
     if query:
-        m = TaxInvoice.objects.filter(
+        m = m.filter(
             Q(customer__customerid__icontains=query) |
             Q(tax_invoice_no__icontains=query)
         )
-    else:
-        m = TaxInvoice.objects.all().prefetch_related('items')
-
+   
     
     if sort_by == 'name':
         sort_field = 'customer__fullname'
