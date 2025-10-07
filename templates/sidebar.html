@@ -1031,8 +1031,12 @@
                     {% if role == 'admin' or role == 'branch_manager' %}
                     <li class="has-submenu">
                         <i class="fas fa-users-cog"></i> Staff <span class="arrow-down"></span>
+                        
+                        
+                        
                         <div class="submenu">
                             <ul>
+                                {% if role == 'admin' %}
                                 <!-- Branch Managers Section -->
                                 <li class="submenu-header fw-bold">Branch Managers</li>
                                 <a href="/add-branch-manager/">
@@ -1041,7 +1045,8 @@
                                 <a href="/branch-manager-list/">
                                     <li data-link="/branch-manager-list/">View Branch Managers</li>
                                 </a>
-                    
+                                
+                                {% endif %}
                                 <!-- Sales Person Section -->
                                 <li class="submenu-header mt-2 fw-bold">Sales Person</li>
                                 <a href="/add-sales-person/">
