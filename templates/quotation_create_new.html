@@ -701,12 +701,20 @@ input:checked + .slider:before {
                                 
                                   <!-- First Row: Basic Customer Details -->
                                   <div class="row">
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
                                       <label>Primary Contact No <span class="text-danger">*</span></label>
                                       <input type="text" class="form-control" name="primarycontact" placeholder="Primary Contact No" pattern="\d{10}" required>
                                     </div>
-                                
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
+                                        <label>Branch <span class="text-danger">*</span></label>
+                                        <select name="branch" id="" class="form-control" required>
+                                            <option value="" disabled selected>Select Branch</option>
+                                            {% for branch in branches %}
+                                            <option value="{{ branch.id }}" >{{ branch.branch_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
                                       <label>Customer ID <span class="text-danger">*</span></label>
                                       <input type="text" class="form-control" name="customerid" value="{{ customerid }}" readonly required>
                                     </div>

@@ -1185,7 +1185,8 @@ def quotation_management_create(request):
                     customer_type = request.POST.get('customer_type')
                     or_name = request.POST.get('or_name') or None
                     or_contact = request.POST.get('or_contact') or None
-
+                    branch_id = request.POST.get('branch')
+                    branch = Branch.objects.get(id = branch_id)
                     # Assign values to the existing instance
                     customer.fullname = customer_full_name
                     customer.secondarycontact = secondary_contact_no
@@ -1194,6 +1195,7 @@ def quotation_management_create(request):
                     customer.customer_type = customer_type
                     customer.or_name = or_name
                     customer.or_contact = or_contact
+                    customer.branch = branch
                     
                     # Save changes
                     customer.save(update_fields=[
