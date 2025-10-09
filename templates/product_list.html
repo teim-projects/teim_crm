@@ -262,31 +262,57 @@ tr:nth-child(even) td {
                     <div class="table-wrapper bg-light shadow  ">
                         <h4 class="text-center text-dark">Product Details</h4>
                 
-                        <!-- Filter Section -->
-                        <div class="filter-container d-flex justify-content-between align-items-center flex-wrap gap-2 my-3">
-
-                            <!-- Filter by Category -->
+                        <!-- 🔎 Filter Section -->
+                        <div class="filter-container d-flex justify-content-between align-items-center flex-wrap gap-3 my-3">
+                        
+                          <!-- 🧭 Left Filters (Search + Category) -->
+                          <div class="d-flex align-items-center flex-wrap gap-4">
+                        
+                            <!-- 🔍 Search Bar -->
                             <div class="d-flex align-items-center gap-2">
-                                <label for="category-select" class="mb-0 fw-bold">Filter by Category:</label>
-                                <select id="category-select" onchange="filterByCategory()" class="form-select"
-                                        style="width: 180px;">
-                                    <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All Categories</option>
-                                    {% for category in categories %}
-                                        <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>
-                                            {{ category }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                              <label for="search-input" class="fw-bold mb-0" style="white-space: nowrap;">Search:</label>
+                              <input
+                                type="text"
+                                id="search-input"
+                                name="search"
+                                value="{{ request.GET.search|default:'' }}"
+                                placeholder="Search..."
+                                class="form-control"
+                                style="width: 220px;"
+                                onkeypress="if(event.key === 'Enter') applyFilters();"
+                              />
                             </div>
                         
-                            <!-- Export Button -->
-                            <div>
-                                <a href="{% url 'export_product_list_csv' %}">
-                                    <button class="btn btn-primary">📤 Export Product List</button>
-                                </a>
+                            <!-- 🏷️ Category Filter -->
+                            <div class="d-flex align-items-center gap-2">
+                              <label for="category-select" class="fw-bold mb-0" style="white-space: nowrap;">Category:</label>
+                              <select
+                                id="category-select"
+                                name="category"
+                                onchange="applyFilters()"
+                                class="form-select"
+                                style="width: 180px;"
+                              >
+                                <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All Categories</option>
+                                {% for category in categories %}
+                                  <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>
+                                    {{ category }}
+                                  </option>
+                                {% endfor %}
+                              </select>
                             </div>
+                        
+                          </div>
+                        
+                          <!-- 📤 Export Button -->
+                          <div>
+                            <a href="{% url 'export_product_list_csv' %}">
+                              <button class="btn btn-primary">📤 Export Product List</button>
+                            </a>
+                          </div>
                         
                         </div>
+                        
 
                         <p class="text-primary text-end me-3">
                            {{ page_obj.paginator.count }} product{{ page_obj.paginator.count|pluralize }} 
@@ -546,5 +572,20 @@ tr:nth-child(even) td {
         updatePagination(); // Initial call
     });
 </script>
+<script>
+    function applyFilters() {
+      const category = document.getElementById("category-select").value;
+      const search = document.getElementById("search-input").value;
+      const params = new URLSearchParams(window.location.search);
+    
+      params.set("category", category);
+      params.set("search", search);
+      params.set("page", 1); // Reset to first page when filters change
+    
+      window.location.search = params.toString();
+    }
+    </script>
+    
+  
 </body>
 </html>

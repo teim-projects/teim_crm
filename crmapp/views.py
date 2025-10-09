@@ -1099,25 +1099,39 @@ def export_customer_excel(request):
 
 @login_required
 def product_list(request):
+    # 🏷️ Get filters
     category_filter = request.GET.get('category', 'all')
+    search_query = request.GET.get('search', '').strip()
+
+    # 🧭 Base queryset
+    products = Product.objects.all()
+
+    # 🔍 Search filter
+    if search_query:
+        products = products.filter(
+            Q(product_name__icontains=search_query) |
+            Q(hsn_code__icontains=search_query) |
+            Q(category__icontains=search_query)
+        )
+
+    # 🏷️ Category filter
     if category_filter and category_filter != 'all':
-        products = Product.objects.filter(category=category_filter)
-    else:
-        products = Product.objects.all()
-    
+        products = products.filter(category=category_filter)
+
+    # 📄 Pagination
     paginator = Paginator(products, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # 🗂️ Category list
+    categories = [choice[0] for choice in Product.CATEGORY_CHOICES]
 
-    categories = Product.CATEGORY_CHOICES
-    categories = [choice[0] for choice in categories]
-
+    # 🧩 Context
     context = {
-        'products': products,
         'page_obj': page_obj,
         'categories': categories,
         'selected_category': category_filter,
+        'search_query': search_query,
         'product_count': paginator.count,
     }
     return render(request, 'product_list.html', context)
