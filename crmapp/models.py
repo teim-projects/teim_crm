@@ -38,6 +38,7 @@ class UserProfile(models.Model):
         ('sales', 'Sales'),
         ('technician', 'Technician'),
         ('branch_manager', 'Branch Manager'),
+        ('operation_person', 'Operation Person'),
         ('customer', 'Customer'),
     ]
 
@@ -74,6 +75,15 @@ class BranchManager(models.Model):
     def __str__(self):
         return self.full_name
     
+class OperationPerson(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="operation_person")
+    full_name = models.CharField(max_length=100)
+    date_of_joining = models.DateField()
+    mobile_no = models.CharField(max_length=15)
+    email = models.EmailField(unique=True)
+    date_of_birth = models.DateField()
+    branch = models.ForeignKey(Branch,on_delete=models.CASCADE, related_name='operation_person')
+
 from django.db import models
 class QuotationTerm(models.Model):
     description = models.TextField()
@@ -527,7 +537,7 @@ class TechnicianProfile(models.Model):
     state = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
     date_of_joining = models.DateField(default=timezone.now)
-
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='technician')
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

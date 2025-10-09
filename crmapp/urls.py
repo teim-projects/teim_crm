@@ -24,6 +24,13 @@ urlpatterns = [
     path('branch-manager-list/', views.branch_manager_list, name='branch_manager_list'),
     path('edit-branch-manager/<int:pk>/', views.edit_branch_manager, name='edit_branch_manager'),
     path('delete-branch-manager/<int:pk>/', views.delete_branch_manager, name='delete_branch_manager'),
+
+    # Operation person 
+    path('operation-person-list/', views.operation_person_list, name='operation_person_list'),
+    path('add-operation-person/',views.add_operation_person, name='add_operation_person'),
+    path('edit-operation-person/<int:pk>/',views.edit_operation_person, name='edit_operation_person'),
+    path('delete-operation-person/<int:pk>/', views.delete_operation_person, name='delete_operation_person'),
+
      # Quotation Terms
     path('add_quotation_term/', views.add_quotation_term, name='add_quotation_term'),
     path('edit_quotation_term/<int:id>/', views.edit_quotation_term, name='edit_quotation_term'),
@@ -60,7 +67,7 @@ urlpatterns = [
     path('display_customer', views.display_customer, name="display_customer"),
     path('import-customers/', views.import_customers, name='import_customers'),
     path('display_service_management', views.display_service_management, name="display_service_management"),
-    path('display_allocation', views.display_allocation),
+    path('display_allocation', views.display_allocation, name="display_allocation"),
     path('display_quotation', views.display_quotation, name="display_quotation"),
     path('display_invoice', views.display_invoice),
     # Payment gateway

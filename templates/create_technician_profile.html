@@ -221,6 +221,17 @@
                                 <input type="date" class="form-control form-control-lg" name="date_of_joining"
                                     value="{{ form_data.date_of_joining }}" />
                             </div>
+                            <div class="col-md-6 mb-4">
+                                <label>Branch <span class="star">*</span></label>
+                                <select class="form-control form-control-lg" name="branch">
+                                    <option value="">Select Branch</option>
+                                    {% for branch in branches %}
+                                    <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            
                        
                         </div>
 

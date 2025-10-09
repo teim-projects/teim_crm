@@ -946,89 +946,96 @@
                     <a href="/index" style="text-decoration: none;">
                         <li data-link="/index"><i class="fas fa-home"></i> Dashboard</li>
                     </a>
-                    <a href="{% url 'today_work' %}" style="text-decoration: none;">
-                        <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Today Work</li>
-                    </a>
 
-                    <a href="{% url 'pending_followups' %}" style="text-decoration: none;">
-                        <li><i class="fas fa-clock"></i> Pending Follow-ups</li>
-                    </a>
-
-
-                    <li class="has-submenu"><i class="fas fa-info-circle"></i> View Records <span class="arrow-down"></span>
-                        <div class="submenu">
-                            <ul>
-                                <a href="/display_lead_management">
-                                    <li data-link="/display_lead_management">1.Lead Management Records</li>
-                                </a>
-                                <a href="/display_customer">
-                                    <li data-link="/display_customer">2. Customer Details</li>
-                                </a>
-                                <a href="/display_service_management">
-                                    <li data-link="/display_service_management">3. Service Management</li>
-                                </a>
-                                <a href="/display_quotation">
-                                    <li data-link="/display_quotation">4. Quotation</li>
-                                </a>
-                                <a href="/display_tax_invoice">
-                                    <li data-link="/display_tax_invoice">5. Invoice</li>
-                                </a> 
-                                
-                                <a href="/payment-records/list/">
-                                    <li data-link="/payment-record/list/">6. Payment Records</li>
-                                </a>
-                                <a href="/display_reschedule">
-                                    <li data-link="/display_reschedule">7. Reschedule log</li>
-                                </a>
-                                <a href="/schedule_meetings/display_meeting">
-                                    <li data-link="/schedule_meetings/display_meeting">8. Meeting Records Log</li>
-                                </a>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <li class="has-submenu"><i class="fas fa-folder-open"></i> Transaction <span class="arrow-down"></span>
-                        <div class="submenu">
-                            <ul>
-                                <a href="/lead_management_create">
-                                    <li data-link="/lead_management_create">1. Lead Management</li>
-                                </a>
-                                <a href="/customer_details_create">
-                                    <li data-link="/customer_details_create">2. Customer Details</li>
-                                </a>
-                                <a href="/service_management_create">
-                                    <li data-link="/service_management_create">3. Service Management</li>
-                                </a>
-                                <a href="/create_quotation">
-                                    <li data-link="/quotation_create">4. Quotation</li>
-                                </a>
-                                <!-- <li onclick="openInvoicePopup()" style="cursor: pointer;">5. Invoice</li> -->
-                                 <a href="/tax-invoice/create">
-                                    <li data-link="/tax-invoice/create">5. Invoice</li>
-                                </a>
-                                <a href="/payment-records/create">
-                                    <li data-link="/tax-invoice/create">6. Payment Records</li>
-                                </a>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <li class="has-submenu"><i class="fas fa-box"></i> Products <span class="arrow-down"></span>
-                        <div class="submenu">
-                            <ul>
-                                <a href="/add_product">
-                                    <li data-link="/add_product">1. Add Products</li>
-                                </a>
-                                <a href="/products">
-                                    <li data-link="/products">2. All Products</li>
-                                </a>
-                            </ul>
-                        </div>
-                    </li>
-                    
-                    
-
-                    {% if role == 'admin' or role == 'branch_manager' %}
+                    {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
+                        <a href="{% url 'add_operation_person' %}" style="text-decoration: none;">
+                            <li data-link="/add-operation-person"><i class="fas fa-plus-circle"></i> Add Operation Person</li>
+                        </a>
+                        
+                        <a href="{% url 'today_work' %}" style="text-decoration: none;">
+                            <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Today Work</li>
+                        </a>
+                        
+                        <a href="{% url 'pending_followups' %}" style="text-decoration: none;">
+                            <li><i class="fas fa-clock"></i> Pending Follow-ups</li>
+                        </a>
+                        
+                        
+                        <li class="has-submenu"><i class="fas fa-info-circle"></i> View Records <span class="arrow-down"></span>
+                            <div class="submenu">
+                                <ul>
+                                    <a href="/display_lead_management">
+                                        <li data-link="/display_lead_management">1.Lead Management Records</li>
+                                    </a>
+                                    <a href="/display_customer">
+                                        <li data-link="/display_customer">2. Customer Details</li>
+                                    </a>
+                                    <a href="/display_service_management">
+                                        <li data-link="/display_service_management">3. Service Management</li>
+                                    </a>
+                                    <a href="/display_quotation">
+                                        <li data-link="/display_quotation">4. Quotation</li>
+                                    </a>
+                                    <a href="/display_tax_invoice">
+                                        <li data-link="/display_tax_invoice">5. Invoice</li>
+                                    </a> 
+                                    
+                                    <a href="/payment-records/list/">
+                                        <li data-link="/payment-record/list/">6. Payment Records</li>
+                                    </a>
+                                    <a href="/display_reschedule">
+                                        <li data-link="/display_reschedule">7. Reschedule log</li>
+                                    </a>
+                                    <a href="/schedule_meetings/display_meeting">
+                                        <li data-link="/schedule_meetings/display_meeting">8. Meeting Records Log</li>
+                                    </a>
+                                </ul>
+                            </div>
+                        </li>
+                        
+                        <li class="has-submenu"><i class="fas fa-folder-open"></i> Transaction <span class="arrow-down"></span>
+                            <div class="submenu">
+                                <ul>
+                                    <a href="/lead_management_create">
+                                        <li data-link="/lead_management_create">1. Lead Management</li>
+                                    </a>
+                                    <a href="/customer_details_create">
+                                        <li data-link="/customer_details_create">2. Customer Details</li>
+                                    </a>
+                                    <a href="/service_management_create">
+                                        <li data-link="/service_management_create">3. Service Management</li>
+                                    </a>
+                                    <a href="/create_quotation">
+                                        <li data-link="/quotation_create">4. Quotation</li>
+                                    </a>
+                                    <!-- <li onclick="openInvoicePopup()" style="cursor: pointer;">5. Invoice</li> -->
+                                    <a href="/tax-invoice/create">
+                                        <li data-link="/tax-invoice/create">5. Invoice</li>
+                                    </a>
+                                    <a href="/payment-records/create">
+                                        <li data-link="/tax-invoice/create">6. Payment Records</li>
+                                    </a>
+                                </ul>
+                            </div>
+                        </li>
+                        
+                        <li class="has-submenu"><i class="fas fa-box"></i> Products <span class="arrow-down"></span>
+                            <div class="submenu">
+                                <ul>
+                                    <a href="/add_product">
+                                        <li data-link="/add_product">1. Add Products</li>
+                                    </a>
+                                    <a href="/products">
+                                        <li data-link="/products">2. All Products</li>
+                                    </a>
+                                </ul>
+                            </div>
+                        </li>
+                        
+                        
+                        
+                    {% endif %}
+                    {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
                     <li class="has-submenu">
                         <i class="fas fa-users-cog"></i> Staff <span class="arrow-down"></span>
                         
@@ -1047,6 +1054,7 @@
                                 </a>
                                 
                                 {% endif %}
+                                {% if role == 'admin' or role == 'branch_manager' %}
                                 <!-- Sales Person Section -->
                                 <li class="submenu-header mt-2 fw-bold">Sales Person</li>
                                 <a href="/add-sales-person/">
@@ -1055,7 +1063,9 @@
                                 <a href="/sales-persons/">
                                     <li data-link="/sales-persons/">View Sales Persons</li>
                                 </a>
-                    
+                                {% endif %}
+                                
+                                {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
                                 <!-- Technicians Section -->
                                 <li class="submenu-header mt-2 fw-bold">Technicians</li>
                                 <a href="/create">
@@ -1070,6 +1080,7 @@
                                 <a href="/completed_work">
                                     <li data-link="/completed_work">Completed Work List</li>
                                 </a>
+                                {% endif %}
                             </ul>
                         </div>
                     </li>
@@ -1128,7 +1139,7 @@
                     <a href="/display_allocation" style="text-decoration: none;">
                         <li class="has-submenu" data-link="/display_allocation"><i class="fas fa-tasks"></i> Allocate Work</li>
                     </a>
-
+                    {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
                     <!-- QUOTATION TERMS -->
                     <li class="has-submenu">
                         <i class="fas fa-file-alt"></i> Quotation Terms <span class="arrow-down"></span>
@@ -1185,6 +1196,7 @@
                     <a href="/open_ai/chatbot/" style="text-decoration: none;">
                         <li class="has-submenu" data-link="/open_ai/chatbot/"><i class="fa-solid fa-comments"></i> Chat Bot</li>
                     </a>
+                    {% endif %}
                 </ul>
 
                 <div class="notification" id="notification">
