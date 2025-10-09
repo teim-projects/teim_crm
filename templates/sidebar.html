@@ -1063,6 +1063,14 @@
                                 <a href="/sales-persons/">
                                     <li data-link="/sales-persons/">View Sales Persons</li>
                                 </a>
+                                <!-- Operation Person Section -->
+                                <li class="submenu-header mt-2 fw-bold">Operation Person</li>
+                                <a href="/add-operation-person/">
+                                    <li data-link="/add-operation-person/">Add Operation Person</li>
+                                </a>
+                                <a href="/operation-person-list/">
+                                    <li data-link="/operation-person-list/">View Operation Persons</li>
+                                </a>
                                 {% endif %}
                                 
                                 {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
@@ -1170,14 +1178,6 @@
                         </div>
                     </li>
 
-
-
-                 
-
-
-                    
-
-                    
 
                     <a href="/ocrapp/scan/" style="text-decoration: none;">
                         <li class="has-submenu" data-link="/ocrapp/scan/"><i class="fas fa-id-card"></i> Scan Card</li>
