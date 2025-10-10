@@ -1143,10 +1143,12 @@
                         </div>
                     </li>
                     {% endif %}
-                        
+                    {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
                     <a href="/display_allocation" style="text-decoration: none;">
                         <li class="has-submenu" data-link="/display_allocation"><i class="fas fa-tasks"></i> Allocate Work</li>
                     </a>
+                    {% endif %}
+
                     {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
                     <!-- QUOTATION TERMS -->
                     <li class="has-submenu">
