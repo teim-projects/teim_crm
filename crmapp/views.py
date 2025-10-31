@@ -23,7 +23,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
-
+from django.contrib.auth import get_user_model
 from .forms import (
     InventoryServiceForm,
     InventoryAddForm,
@@ -583,8 +583,10 @@ def user_logout(request):
     return redirect("/")
 
 # Add Sales Person
+User = get_user_model()
+
 @login_required
-@role_required(['admin','branch_manager'])
+@role_required(['admin'])
 def add_sales_person(request):
     if request.method == 'POST':
         full_name = request.POST.get('full_name')
@@ -594,36 +596,67 @@ def add_sales_person(request):
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
         branch_id = request.POST.get('branch')
-        branch = Branch.objects.get(id = branch_id)
-        co_ordinator = request.POST.get('co_ordinator') == True
-        # Create Django User (username as email or phone, password default or random)
-        username = mobile_no
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
-        user.is_staff = True
-        user.save()
-        
+        branch = Branch.objects.get(id=branch_id)
+        co_ordinator = request.POST.get('co_ordinator') == 'on'  # ✅ Fixed checkbox boolean
 
-        # Assign role to user via UserProfile
-        user_profile = user.userprofile  # auto-created by the signal
+        # -------------------------------------------
+        # ✅ Step 1: Check if user exists (reactivate if inactive)
+        # -------------------------------------------
+        user = User.objects.filter(username=mobile_no).first()
+
+        if user:
+            if not user.is_active:
+                user.is_active = True
+                user.email = email
+                user.first_name = full_name
+                user.set_password(password)
+                user.save()
+                messages.info(request, f"Reactivated existing user {mobile_no}.")
+            else:
+                messages.error(request, f"A user with this mobile number already exists and is active.")
+                return redirect('sales_person_list')
+        else:
+            # Create new user
+            user = User.objects.create_user(
+                username=mobile_no,
+                password=password,
+                email=email,
+                first_name=full_name,
+                is_staff=True
+            )
+            user.save()
+            messages.success(request, f"Created new user {mobile_no}.")
+
+        # -------------------------------------------
+        # ✅ Step 2: Create or update UserProfile
+        # -------------------------------------------
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
         user_profile.role = 'sales'
         user_profile.phone = mobile_no
         user_profile.save()
 
-        # Create SalesPerson record
-        SalesPerson.objects.create(
-            full_name=full_name,
-            date_of_joining=date_of_joining,
+        # -------------------------------------------
+        # ✅ Step 3: Create or update SalesPerson record
+        # -------------------------------------------
+        salesperson, created = SalesPerson.objects.update_or_create(
             mobile_no=mobile_no,
-            email=email,
-            date_of_birth=date_of_birth,
-            branch = branch,
-            co_ordinator = co_ordinator
-            
+            defaults={
+                'full_name': full_name,
+                'date_of_joining': date_of_joining,
+                'email': email,
+                'date_of_birth': date_of_birth,
+                'branch': branch,
+                'co_ordinator': co_ordinator,
+                'user_profile': user_profile
+            }
         )
 
+        messages.success(request, f"SalesPerson '{full_name}' added/updated successfully.")
         return redirect('sales_person_list')
+
     branches = Branch.objects.all()
-    return render(request, 'add_sales_person.html',{"branches":branches})
+    return render(request, 'add_sales_person.html', {"branches": branches})
+
 
 # List Sales Persons
 @login_required
@@ -719,6 +752,9 @@ def edit_sales_person(request, pk):
     branches = Branch.objects.all()
     return render(request, 'edit_sales_person.html', {'person': person, 'branches':branches})
 
+
+User = get_user_model()
+
 @login_required
 @role_required(['admin'])
 def delete_sales_person(request, pk):
@@ -728,7 +764,11 @@ def delete_sales_person(request, pk):
          # Delete the User whose username is the BranchManager's mobile number
         try:
             user = User.objects.get(username=person.mobile_no)
-            user.delete()  # This will also delete UserProfile if CASCADE
+            if user:
+                # Soft delete user instead of hard deleting
+                user.is_active = False
+                user.save(update_fields=['is_active'])
+
         except User.DoesNotExist:
             pass  # User not found, just continue
         person.delete()
@@ -748,43 +788,73 @@ def add_branch_manager(request):
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
         branch_id = request.POST.get('branch')
-        branch_instance = Branch.objects.get(pk=branch_id)
+        branch_instance = get_object_or_404(Branch, pk=branch_id)
 
-        # Create Django User (username as email or phone, password default or random)
-        username = mobile_no
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
-        user.is_staff = True
-        user.save()
-        
+        # ---------------------------------------------------
+        # ✅ STEP 1: Check if a user already exists (reactivate if inactive)
+        # ---------------------------------------------------
+        user = User.objects.filter(username=mobile_no).first()
 
-        # Assign role to user via UserProfile
-        user_profile = user.userprofile  # auto-created by the signal
+        if user:
+            # Reactivate the old user if inactive
+            if not user.is_active:
+                user.is_active = True
+                user.first_name = full_name
+                user.email = email
+                user.set_password(password)
+                user.save(update_fields=['is_active', 'first_name', 'email', 'password'])
+                messages.info(request, f"Reactivated existing user {mobile_no}.")
+            else:
+                messages.warning(request, "A user with this mobile number already exists and is active.")
+                return redirect('branch_manager_list')
+        else:
+            # Create new user
+            user = User.objects.create_user(
+                username=mobile_no,
+                password=password,
+                email=email,
+                first_name=full_name,
+                is_staff=True
+            )
+            messages.success(request, f"Created new user {mobile_no}.")
+
+        # ---------------------------------------------------
+        # ✅ STEP 2: Create or update the UserProfile
+        # ---------------------------------------------------
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
         user_profile.role = 'branch_manager'
         user_profile.phone = mobile_no
         user_profile.save()
 
-        # Create SalesPerson record
-        BranchManager.objects.create(
-            full_name=full_name,
-            date_of_joining=date_of_joining,
+        # ---------------------------------------------------
+        # ✅ STEP 3: Create or update BranchManager record
+        # ---------------------------------------------------
+        branch_manager, created = BranchManager.objects.update_or_create(
             mobile_no=mobile_no,
-            email=email,
-            date_of_birth=date_of_birth,
-            branch=branch_instance
-            
+            defaults={
+                'full_name': full_name,
+                'date_of_joining': date_of_joining,
+                'email': email,
+                'date_of_birth': date_of_birth,
+                'branch': branch_instance
+            }
         )
 
+        messages.success(request, f"Branch Manager '{full_name}' added or updated successfully.")
         return redirect('branch_manager_list')
-    
-    branch = Branch.objects.all()
-    return render(request, 'add_branch_manager.html',{'branch': branch})
 
+    branches = Branch.objects.all()
+    return render(request, 'add_branch_manager.html', {'branch': branches})
 
 @login_required
 @role_required(['admin'])
 def branch_manager_list(request):
-    persons = BranchManager.objects.all()
-    return render(request, 'branch_manager_list.html', {'persons': persons})
+    persons = BranchManager.objects.all().order_by('id') 
+    paginator = Paginator(persons, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'branch_manager_list.html',  {'page_obj': page_obj})
 
 
 @login_required
@@ -851,7 +921,10 @@ def delete_branch_manager(request, pk):
         # Delete the User whose username is the BranchManager's mobile number
         try:
             user = User.objects.get(username=person.mobile_no)
-            user.delete()  # This will also delete UserProfile if CASCADE
+            if user:
+                # Soft delete user instead of hard deleting
+                user.is_active = False
+                user.save(update_fields=['is_active'])
         except User.DoesNotExist:
             pass  # User not found, just continue
 
@@ -876,9 +949,20 @@ def add_operation_person(request):
         branch = Branch.objects.get(id = branch_id)
         # Create Django User (username as email or phone, password default or random)
         username = mobile_no
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
-        user.is_staff = True
-        user.save()
+        user = User.objects.get(username = username)
+        if user:
+            user.username = username
+            user.password = password 
+            user.email = email
+            user.first_name = full_name
+            user.is_active = True
+            user.is_staff = True
+            user.save()
+
+        else:
+            user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+            user.is_staff = True
+            user.save()
         
 
         # Assign role to user via UserProfile
@@ -981,9 +1065,11 @@ def delete_operation_person(request, pk):
 
     # Delete OperationPerson first
     operation_person.delete()
-
-    # Then delete user account
-    user.delete()
+    
+    if user:
+        # Soft delete user instead of hard deleting
+        user.is_active = False
+        user.save(update_fields=['is_active'])
 
     messages.success(request, "Operation Person deleted successfully.")
     return redirect('operation_person_list')
@@ -995,11 +1081,22 @@ def customer_details_create(request):
             primarycontact = request.GET.get('primarycontact')
             lead = lead_management.objects.filter(primarycontact=primarycontact).order_by('-enquirydate').first()
             if lead:
+
+                if getattr(lead, 'salesperson', None):
+                    contactperson = getattr(lead.salesperson, 'full_name', None)
+                elif getattr(lead, 'branch_manager', None):
+                    contactperson = getattr(lead.branch_manager, 'full_name', None)
+
+                elif getattr(lead, 'admin', None):
+                    admin_user = getattr(lead, 'admin', None)
+                    contactperson = f"{admin_user.first_name or ''} {admin_user.last_name or ''}".strip()
+                else:
+                    contactperson = None
                 data = {
                     'fullname': lead.customername or '',
                     'primaryemail': lead.customeremail or '',
                     'secondarycontact': lead.secondarycontact or '',
-                    'contactperson': lead.salesperson.full_name or '',
+                    'contactperson': contactperson or '',
                     'contactedby': lead.contactedby or '',
                     'shifttopartyaddress': lead.customeraddress or '',
                     'shifttopartycity': lead.city or '',
@@ -1169,7 +1266,10 @@ def service_management_create(request):
     customers = customer_details.objects.all()
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
-    sales_persons = SalesPerson.objects.all()
+    sp = SalesPerson.objects.all()
+    bm = BranchManager.objects.all()
+    sales_persons = list(chain(sp, bm))
+    # sales_persons = SalesPerson.objects.all()
     branch = Branch.objects.all()
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
     segments = service_management._meta.get_field('segment').choices
@@ -1304,7 +1404,10 @@ def quotation_management_create(request):
     terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
     products = Product.objects.all()
-    sales_person_list = SalesPerson.objects.all()
+    sp = SalesPerson.objects.all()
+    bm = BranchManager.objects.all()
+    sales_person_list = list(chain(sp, bm))
+
     thank_notes_qs = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     thank_notes = [note for note in thank_notes_qs if note]  
     
@@ -1444,6 +1547,8 @@ def quotation_management_create(request):
                 total_gst = 0
 
                 total_price_with_gst = total_price
+            
+
 
             # Create the quotation
             quotation = quotation_management.objects.create(
@@ -2009,9 +2114,10 @@ from datetime import datetime
 # change
 
 @login_required
-@role_required(['admin','sales'])
+@role_required(['admin','sales',"branch_manager"])
 def lead_management_create(request):
     salespersons = SalesPerson.objects.all()
+    # branch_managers = BranchManager.objects.all()
     branches = Branch.objects.all()
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
@@ -2053,7 +2159,8 @@ def lead_management_create(request):
             salesperson_id = request.POST.get("salesperson")
             # salesperson_mobile = request.user.username
             # print(salesperson_mobile)
-            sp = SalesPerson.objects.get(id = salesperson_id)
+            
+         
             customername = request.POST.get('customername')
             customersegment = request.POST.get('customersegment')
             
@@ -2088,11 +2195,24 @@ def lead_management_create(request):
 
             branch_id = request.POST.get('branch')
             branch = branches.get(id = int(branch_id))
+            sp = None
+            branch_manager = None
+            ad = None
+            if request.user.userprofile.role == "branch_manager":
+                bm =  request.user.username
+                branch_manager = BranchManager.objects.get(mobile_no = bm) or None
+            elif request.user.userprofile.role == "sales":
+                sp = SalesPerson.objects.get(id = salesperson_id) or None
+
+            elif request.user.userprofile.role == "admin":
+                ad = request.user
 
             # Create new lead (duplicates allowed)
             lead = lead_management.objects.create(
                 sourceoflead=sourceoflead,
                 salesperson=sp,
+                admin = ad,
+                branch_manager = branch_manager,
                 customername=customername,
                 customersegment=customersegment,
                 enquirydate=enquirydate,
@@ -3554,7 +3674,9 @@ from .models import quotation_management, QuotationTerm, Product  # adjust as ne
 
 def edit_quotation(request, rid):
     quotation = quotation_management.objects.get(id=rid)
-    sales_person_list = SalesPerson.objects.all()
+    sp = SalesPerson.objects.all()
+    bm = BranchManager.objects.all()
+    sales_person_list = list(chain(sp, bm))
     thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     products = Product.objects.all()
     customer = quotation.customer
@@ -4281,7 +4403,10 @@ def delete_technician(request, technician_id):
     technician = get_object_or_404(TechnicianProfile, id=technician_id)
     user = technician.user
     technician.delete()
-    user.delete()
+    if user:
+        # Soft delete user instead of hard deleting
+        user.is_active = False
+        user.save(update_fields=['is_active'])
     messages.success(request, "Technician deleted successfully.")
     return redirect('display_technician')
 

@@ -150,7 +150,7 @@
             <div class="row">
               <div class="col-md-6 mb-4">
                 <label>Phone Number <span class="star">*</span></label>
-                <input type="text" name="primarycontact" class="form-control" pattern="[0-9]{10}" maxlength="10" minlength="10" title="Please enter exactly 10 digits"  required oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
+                <input type="text" name="primarycontact" class="form-control" pattern="[0-9]{10}" maxlength="11" minlength="10" title="Please enter exactly 10 digits"  required oninput="this.value=this.value.replace(/\s+/g,'').replace(/[^0-9]/g,'');" />
               </div>
               <div class="col-md-6 mb-4">
 
@@ -293,7 +293,10 @@
                   <option value="Irrelevant Lead">Irrelevant Lead</option>
                 </select>
               </div>
-
+              
+              {% if request.user.userprofile.role == 'sales' %}
+                
+              
               <div class="col-md-6 mb-4">
                 <label>Salesperson<span class="star">*</span></label>
                 <select name="salesperson" class="form-control" >
@@ -303,11 +306,12 @@
                   {% endfor %}
                 </select>
               </div>
-
+              
               <div class="col-md-6 mb-4">
                 <label>Contacted By<span class="star">*</span></label>
                 <input type="text" name="contactedby" class="form-control" required />
               </div>
+              {% endif %}
               <div class="col-md-6 mb-4">
                 <label>Main Category<span class="star">*</span></label>
                 <input type="text" name="maincategory" class="form-control" required />
