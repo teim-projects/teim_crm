@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'generate_invoice',
 	'chat_app',
     'dashboard',
+    'inventory',
 ]
 
 MIDDLEWARE = [

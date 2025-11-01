@@ -21,6 +21,7 @@ from django.urls import path , include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('crmapp.urls')),
+    path('inventory/', include('inventory.urls')),
     path('ocrapp/', include('ocrapp.urls')),
     path('open_ai/', include('open_ai.urls')),
     path('lead_automation/', include('lead_automation.urls')),
