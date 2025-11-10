@@ -313,6 +313,32 @@
             padding: 2px !important;
             padding-left: 6px;
         }
+
+        /* Apply GST Toggle Alignment Fix */
+        .gst-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        .gst-toggle-container label {
+            margin-bottom: 0 !important;
+            line-height: 26px;
+        }
+
+        @media (max-width: 768px) {
+            .gst-toggle-container {
+                margin-top: 25px;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Custom col-12 spacing for form fields */
+        .col-12 {
+            margin-bottom: -15px;
+        }
     </style>
 </head>
 
@@ -362,20 +388,20 @@
                             <input type="text" name="subject" value="" class="form-control"><br>
                         </div>
 
-                        <div class="row">
-                            <div class="col-4 my-2 d-flex align-items-center">
-                                <label class="me-2 mb-0">Apply GST</label>
-                                <label class="switch mb-0">
-                                    <input type="checkbox" id="apply_gst" name="apply_gst" onchange="toggleGST()">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
+                    <div class="row">
+                        <div class="col-12 col-md-4 gst-toggle-container">
+                            <label>Apply GST</label>
+                            <label class="switch">
+                                <input type="checkbox" id="apply_gst" name="apply_gst" onchange="toggleGST()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
 
-                            <!-- Service Type -->
-                            <div class="col-8">
-                                <label>Service Type<span class="star">*</span></label>
-                                <select id="servicetype" name="servicetype" class="form-control"
-                                    onchange="fetchProducts(this)">
+                        <!-- Service Type -->
+                        <div class="col-12 col-md-8 " style="margin-top: 30px;">
+                            <label>Service Type<span class="star">*</span></label>
+                            <select id="servicetype" name="servicetype" class="form-control"
+                                onchange="fetchProducts(this)">
                                     <option value="">Select service types</option>
                                     {% for category, display_name in category_choices %}
                                     <option value="{{ category }}">{{ display_name }}</option>
@@ -384,7 +410,7 @@
                             </div>
                         </div>
                         <!-- Product Selection -->
-                        <div class="row">
+                        <div class="row" style="margin-top:30px">
                             <label>Select Products</label>
                             <div id="products-container" style="max-height: 300px; overflow: auto;">
                                 <!-- Dynamically loaded via AJAX -->

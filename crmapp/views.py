@@ -1300,6 +1300,8 @@ from .models import Branch
 @login_required
 @role_required(['admin','sales', 'branch_manager'])
 def quotation_management_create(request):
+    import time
+    time.sleep(2) 
     category_choices = Product.CATEGORY_CHOICES
     terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()

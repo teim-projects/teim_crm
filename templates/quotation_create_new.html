@@ -641,14 +641,13 @@ input:checked + .slider:before {
                                                 readonly></textarea>
                                         </div>
                                     </div>
-                                    <form id="quotation-management-form" method="post" action="{% url 'create_quotation' %}">
-                                        <div class="text-center mt-3">
-                                            <button type="button" class="btn btn-secondary prev-step mt-2"
-                                                style="width: 150px;">Previous</button>
-                                            <button class="btn btn-info mt-2" type="submit"
-                                                style="width: 150px;" target="_blank">Submit</button>
-                                        </div>
-                                    </form>
+                                    <div class="text-center mt-3">
+                                        <button type="button" class="btn btn-secondary prev-step mt-2"
+                                            style="width: 150px;">Previous</button>
+                                        <button id="submit-btn" class="btn btn-info mt-2" type="submit"
+                                            style="width: 150px;">Submit</button>
+                                    </div>
+
 
                                 </div>
 
@@ -1657,7 +1656,41 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
 </script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("quotation-management-form");
+    const btn = document.querySelector('#quotation-management-form button[type="submit"]');
+
+    if (!form || !btn) return;
+
+    form.addEventListener("submit", function (e) {
+
+        // ✅ If validation fails, do NOT disable button
+        if (typeof selectedProducts !== "undefined" && selectedProducts.length === 0) {
+            return;
+        }
+
+        // ✅ Disable ONLY when form is truly submitting
+        btn.disabled = true;
+        btn.innerText = "Submitting...";
+        btn.style.opacity = "0.7";
+    });
+
+    // ✅ BLOCK ENTER KEY to avoid accidental submits
+    form.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+
+
 <!-- <script>
     window.addEventListener('beforeunload', function () {
         const currentPath = window.location.pathname;

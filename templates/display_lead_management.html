@@ -314,24 +314,26 @@
         }
 
         #modal {
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-            right: -100%;
-            width: 60vh;
-            height: 100%;
-            background-color: white;
-            box-shadow: -2px 0 7px rgba(0, 0, 0, 0.2);
-            border-radius: 1px;
-            transition: 0.3s;
-            overflow-y: auto;
-            padding: 20px;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    right: -100%;
+    width: 0;
+    max-width: 0;
+    height: 100%;
+    background-color: white;
+    box-shadow: -2px 0 7px rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+    overflow-y: auto;
+    padding: 20px;
+}
 
-        }
+#modal.active {
+    right: 0;
+    width: 350px;
+    max-width: 80%;
+}
 
-        #modal.active {
-            right: 0;
-        }
 
         .close-btn {
             background: none;
@@ -1086,7 +1088,7 @@
         }
     </script>
 
-    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:400px;">
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:60px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">
                 <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
