@@ -48,11 +48,29 @@
         }
 
         h3 {
-            text-align: center;
-            font-family: 'Playfair Display', serif;
-            font-weight: 900;
-            color: #03AED2;
-            margin-bottom: 30px;
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    color: #03AED2;
+    margin-bottom: 30px;
+    padding: 0 40px;
+    word-wrap: break-word;
+}
+
+        @media (max-width: 768px) {
+            h3 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+                padding: 0 50px;
+                margin-top: 10px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            h3 {
+                font-size: 1.3rem;
+                padding: 0 45px;
+            }
         }
 
         h6 {
@@ -131,13 +149,19 @@
     <div class="main-container">
         <div class="card   card-registration  ">
             <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4" style="position: relative;">
                 <span onclick="window.location.href='/index'"
-                    style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i
-                        class="fas fa-house-chimney"></i></span>
-                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;"
-                    class="mb-4">X</span>
-
-                <h3 class="mt-4 mb-3">Customer Details</h3>
+                    style="cursor: pointer; color:rgb(75, 162, 255); font-size:20px; position: absolute; left: 0; top: 0;">
+                    <i class="fas fa-house-chimney"></i>
+                </span>
+    
+                <h3 class="flex-grow-1 text-center mb-0" style="font-weight: 600; margin: 0; padding-bottom: 15px; border-bottom: 2px solid #e0e0e0;">Customer Details</h3>
+    
+                <span onclick="goBackAndRefresh()" 
+                 style="cursor: pointer; color:red; font-size:20px; position: absolute; right: 0; top: 0;">
+             X
+    </span>
+</div>
                 <div class="col-md-12">
                     <p style="color: red; text-align: center;">{{msg1}}</p>
                 </div>
@@ -302,7 +326,7 @@
                                 <button type="button" class="btn btn-secondary  " onclick="prevStep()"
                                     style="width: 100%;">Previous</button>
                             </div>
-                            <div class="col-md-3 col-12">
+                            <div class="col-md-3 col-12" style="margin-top: 10px;">
                                 <input type="submit" class="btn btn-success   " value="Submit" style="width: 100%;">
                             </div>
                             <div class="col-md-3"></div>
