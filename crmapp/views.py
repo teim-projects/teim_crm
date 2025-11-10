@@ -3117,7 +3117,29 @@ def display_lead_management(request):
     if source_filter:
         filtered_leads = filtered_leads.filter(sourceoflead=source_filter)
     if salesperson_filter:
-        filtered_leads = filtered_leads.filter(salesperson = salesperson_filter)
+        try:
+            # Try to find by full_name in SalesPerson first
+            salesperson_obj = SalesPerson.objects.filter(full_name=salesperson_filter).first()
+            branch_manager_obj = BranchManager.objects.filter(full_name=salesperson_filter).first()
+    
+            # Get IDs safely (if they exist)
+            salesperson_id = salesperson_obj.id if salesperson_obj else None
+            branch_manager_id = branch_manager_obj.id if branch_manager_obj else None
+    
+            # Combine Q filters dynamically
+            q_filter = Q()
+            if salesperson_id:
+                q_filter |= Q(salesperson_id=salesperson_id)
+            if branch_manager_id:
+                q_filter |= Q(branch_manager_id=branch_manager_id)
+    
+            if q_filter:  # only apply if at least one match
+                filtered_leads = filtered_leads.filter(q_filter)
+    
+        except Exception as e:
+            print("Filter error:", e)
+            pass
+
     if branch_filter:
         filtered_leads = filtered_leads.filter(branch=branch_filter)
     if enquiry_from and enquiry_to:
