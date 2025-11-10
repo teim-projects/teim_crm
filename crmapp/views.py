@@ -647,7 +647,7 @@ def add_sales_person(request):
                 'date_of_birth': date_of_birth,
                 'branch': branch,
                 'co_ordinator': co_ordinator,
-                'user_profile': user_profile
+                # 'user_profile': user_profile
             }
         )
 
@@ -3079,7 +3079,7 @@ def display_lead_management(request):
     salespersons = []
     if request.user.userprofile.role =='admin':
         filtered_leads = lead_management.objects.all()
-        salespersons = SalesPerson.objects.all()
+        salespersons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
     elif request.user.userprofile.role == 'sales':
         salesperson = SalesPerson.objects.get(mobile_no =request.user.username)
         filtered_leads = lead_management.objects.filter(salesperson=salesperson)
