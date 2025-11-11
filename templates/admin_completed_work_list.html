@@ -3,40 +3,33 @@
 <!DOCTYPE html>
 <html>
 
-
 <head>
-    <link rel="stylesheet" href="{% static '\css\bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css\customer.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/customer.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Cardo:ital@0;1&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Outfit:wght@100..900&display=swap"
         rel="stylesheet">
-    <title>Completed Work List</title>
-    <style>
-        /* General Styles */
 
+    <title>Completed Work List</title>
+
+    <style>
         .container {
             padding: 20px !important;
             min-height: 300px;
             margin-top: 100px !important;
             border-radius: 5px;
             box-shadow: 0px 0px 10px white;
-
-
         }
 
         h2 {
             background: linear-gradient(to right, #2575fc, #6a11cb);
-            /* Gradient definition */
             -webkit-background-clip: text;
-            /* Clip the gradient to the text boundaries */
             -webkit-text-fill-color: transparent;
             border-bottom: 3px solid rgb(80, 16, 177);
-            /*Script MT */
             text-align: center;
         }
-
 
         .table-container {
             display: flex;
@@ -51,10 +44,6 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 10px;
             min-height: 100px;
-        }
-
-        table:hover {
-            box-shadow: 0px 0px 10px rgb(206, 206, 206);
         }
 
         table th,
@@ -73,50 +62,130 @@
             background: #f9f9f9;
         }
 
-        table a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        table a:hover {
-            text-decoration: underline;
-        }
-
         .table-responsive {
             overflow-x: auto;
             white-space: nowrap;
-
         }
+
+        .filter-box {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgb(220, 220, 220);
+            margin-bottom: 20px;
+        }
+
+            @media (max-width: 768px) {
+    .table-container {
+        justify-content: flex-start !important; /* Align table to left */
+        padding-left: 0 !important;
+    }
+
+    table {
+        max-width: none !important;   /* Removes 800px cap */
+        width: max-content !important; /* Allows full width */
+    }
+
+    .table-responsive {
+        overflow-x: auto !important;
+    }
+}
+
+
+
+
     </style>
 </head>
 
 <body>
+
     {% include 'sidebar.html' %}
 
     <div class="main">
-        <div class="container bg-light ">
+        <div class="container bg-light">
+
             <h2>Completed Work List</h2>
-            <div class="p mb-3">
-                <p class="scroll-instruction">Scroll to view more content ➡️ </p>
+
+            <!-- ✅ FILTER BAR -->
+            <div class="filter-box mt-4">
+
+                <!-- ✅ 1) SEARCH FORM (Independent Search Button) -->
+                <form method="GET" class="mb-3">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <input type="text" name="search" value="{{ search }}"
+                                class="form-control" placeholder="Search by Name or Mobile">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <button class="btn btn-primary w-100">Search</button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- ✅ 2) OTHER FILTERS FORM (Apply button works for dropdown + date range) -->
+                <form method="GET">
+
+                    <div class="row">
+
+                        <!-- Technician Filter -->
+                        <div class="col-md-3 mb-2">
+                            <select name="technician" class="form-select">
+                                <option value="">All Technicians</option>
+                                {% for tech in technicians %}
+                                <option value="{{ tech.id }}"
+                                    {% if technician == tech.id|stringformat:'s' %}selected{% endif %}>
+                                    {{ tech.user.first_name }} {{ tech.user.last_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn btn-secondary w-100"
+                                data-bs-toggle="modal" data-bs-target="#dateRangeModal">
+                                Date Range
+                            </button>
+                        </div>
+
+                        <!-- Apply -->
+                        <div class="col-md-2 mb-2">
+                            <button class="btn btn-primary w-100">Apply</button>
+                        </div>
+
+                        <!-- Clear -->
+                        <div class="col-md-2 mb-2">
+                            <a href="{% url 'admin_completed_work' %}"
+                                class="btn btn-danger w-100">Clear</a>
+                        </div>
+                    </div>
+
+                </form>
             </div>
+
+            <div class="p mb-3">
+                <p class="scroll-instruction">Scroll to view more content ➡️</p>
+            </div>
+
+            <!-- ✅ TABLE -->
             <div class="table-responsive mb-5">
                 <div class="table-container mt-3">
                     <table>
                         <thead>
                             <tr>
                                 <th>Sr.No</th>
-                                <!-- <th>ID</th> -->
                                 <th>Customer Name</th>
                                 <th>Technician Name</th>
                                 <th>Completion Date and Time</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
+
                         <tbody class="text-dark">
-                            {% for work in completed_work_list %}
+                            {% for work in page_obj %}
                             <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <!-- <td>{{ work.id }}</td> -->
+                                <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+
                                 <td>
                                     {% with work.work.first as wa %}
                                     {% if wa %}
@@ -124,85 +193,103 @@
                                     {% endif %}
                                     {% endwith %}
                                 </td>
-                                <td>{{ work.technician.first_name }} {{ work.technician.last_name }}</td>
+
+                                <td>
+                                    {{ work.technician.first_name }} {{ work.technician.last_name }}
+                                </td>
+
                                 <td>{{ work.completion_datetime|date:"d-m-Y H:i" }}</td>
+
                                 <td><a href="{% url 'admin_work_details' work.pk %}">View More</a></td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="6">No completed work with signatures.</td>
+                                <td colspan="6">No completed work found.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
-
-
                 </div>
-
             </div>
+
+            <!-- ✅ PAGINATION -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-3">
+                <ul class="pagination justify-content-center">
+
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.previous_page_number }}&{{ querystring }}">Previous</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ num }}&{{ querystring }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.next_page_number }}&{{ querystring }}">Next</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                    {% endif %}
+
+                </ul>
+            </nav>
+            {% endif %}
 
             {% include 'buttons.html' %}
 
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
-            menuItems.forEach(item => {
-                item.addEventListener('click', function () {
-                    const submenu = this.querySelector('.submenu');
-                    const arrow = this.querySelector('.arrow-down');
 
-                    // Hide all other submenus
-                    menuItems.forEach(otherItem => {
-                        if (otherItem !== this) {
-                            const otherSubmenu = otherItem.querySelector('.submenu');
-                            const otherArrow = otherItem.querySelector('.arrow-down');
-                            if (otherSubmenu) {
-                                otherSubmenu.style.display = 'none';
-                                if (otherArrow.classList.contains('arrow-up')) {
-                                    otherArrow.classList.remove('arrow-up');
-                                }
-                            }
-                        }
-                    });
+    <!-- ✅ DATE RANGE MODAL -->
+    <div class="modal fade" id="dateRangeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
 
-                    // Toggle current submenu
-                    if (submenu) {
-                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
-                        arrow.classList.toggle('arrow-up');
-                    }
-                });
-            });
-        });
-    </script>
-    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:300px;">
-        <div class="row p-3">
-            <div class="col-md-12 text-center">
-                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
-                    © 2025. Powered by
-                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
-                        style="height: 20px; vertical-align: middle;">
-                    <a href="http://www.chronoanalytics.in/"
-                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
-                        Solution</a>
-                    All Rights Reserved.
-                </p>
-            </div>
-            <div class="col-md-12 text-center">
-                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
-                    © 2025. Marketed by
-                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
-                        style="height: 20px; vertical-align: middle;">
-                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
-        -webkit-background-clip: text; 
-        -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
-                    All Rights Reserved.
-                </p>
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Date Range</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form method="GET">
+                    <div class="modal-body">
+
+                        <label>From Date</label>
+                        <input type="date" name="from_date" class="form-control mb-3" value="{{ from_date }}">
+
+                        <label>To Date</label>
+                        <input type="date" name="to_date" class="form-control" value="{{ to_date }}">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary">Apply</button>
+                    </div>
+                </form>
+
             </div>
         </div>
     </div>
+
+    <!-- ✅ FIXED BOOTSTRAP JS (Modal Works 100%) -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>

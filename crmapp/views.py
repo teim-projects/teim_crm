@@ -2011,7 +2011,7 @@ from datetime import datetime
 @login_required
 @role_required(['admin','sales'])
 def lead_management_create(request):
-    salespersons = SalesPerson.objects.all()
+    salespersons = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
     branches = Branch.objects.all()
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
@@ -5191,29 +5191,78 @@ from .models import TechWorkList
 
 class AdminCompletedWorkView(ListView):
     model = TechWorkList
-    template_name = 'admin_completed_work_list.html'  
+    template_name = 'admin_completed_work_list.html'
     context_object_name = 'completed_work_list'
-    
+    paginate_by = 10  # 10 rows per page
+
     def get_queryset(self):
-        user_profile = self.request.user.userprofile
-        base_qs = TechWorkList.objects.filter(status='Completed').exclude(customer_signature_photo='')
+        request = self.request
+        user_profile = request.user.userprofile
 
-        # Admin: show all
-        if user_profile.role == 'admin':
-            return base_qs
+        qs = (
+            TechWorkList.objects
+            .filter(status='Completed')
+            .exclude(customer_signature_photo='')
+            .prefetch_related('work', 'work__technician', 'work__service', 'work__service__customer')
+        )
 
-        # Branch Manager: show only their branch
-        elif user_profile.role == 'branch_manager':
-            branch_manager = BranchManager.objects.get(mobile_no = self.request.user.username)
-            return base_qs.filter(branch=branch_manager.branch)
+        # Role-based access
+        if user_profile.role == 'branch_manager':
+            branch_manager = BranchManager.objects.get(mobile_no=request.user.username)
+            qs = qs.filter(service__branch=branch_manager.branch)
 
-        # Operation Person: show only their branch
         elif user_profile.role == 'operation_person':
-            operation_person = OperationPerson.objects.get(user=self.request.user)
-            return base_qs.filter(branch=operation_person.branch)
+            operation_person = OperationPerson.objects.get(user=request.user)
+            qs = qs.filter(service__branch=operation_person.branch)
 
-        # Others: empty list
-        return TechWorkList.objects.none()
+        elif user_profile.role != 'admin':
+            return TechWorkList.objects.none()
+
+        # --- Filters ---
+        search = request.GET.get("search", "").strip()
+        technician = request.GET.get("technician", "").strip()
+        from_date = request.GET.get("from_date", "").strip()
+        to_date = request.GET.get("to_date", "").strip()
+
+        # Search filter
+        if search:
+            qs = qs.filter(
+                Q(work__service__customer__fullname__icontains=search) |
+                Q(work__service__customer__primarycontact__icontains=search)
+            )
+
+        # Technician dropdown
+        if technician:
+            qs = qs.filter(work__technician__id=technician)
+
+        # Date range filters
+        if from_date:
+            qs = qs.filter(completion_datetime__date__gte=from_date)
+
+        if to_date:
+            qs = qs.filter(completion_datetime__date__lte=to_date)
+
+        return qs.distinct()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        
+        ctx["technicians"] = TechnicianProfile.objects.all().order_by('first_name')
+        
+        # preserve filters
+        query = self.request.GET.copy()
+        if "page" in query:
+            query.pop("page")
+        ctx["querystring"] = query.urlencode()
+
+        # pass filter values back
+        ctx["search"] = self.request.GET.get("search", "")
+        ctx["technician"] = self.request.GET.get("technician", "")
+        ctx["from_date"] = self.request.GET.get("from_date", "")
+        ctx["to_date"] = self.request.GET.get("to_date", "")
+
+        return ctx
+
     
 class AdminWorkDetailView(DetailView):
     model = TechWorkList
