@@ -2012,6 +2012,7 @@ from datetime import datetime
 @role_required(['admin','sales'])
 def lead_management_create(request):
     salespersons = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+    
     branches = Branch.objects.all()
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
@@ -5192,8 +5193,7 @@ from .models import TechWorkList
 class AdminCompletedWorkView(ListView):
     model = TechWorkList
     template_name = 'admin_completed_work_list.html'
-    context_object_name = 'completed_work_list'
-    paginate_by = 10  # 10 rows per page
+    paginate_by = 10  # ✅ Enable pagination
 
     def get_queryset(self):
         request = self.request
@@ -5203,22 +5203,27 @@ class AdminCompletedWorkView(ListView):
             TechWorkList.objects
             .filter(status='Completed')
             .exclude(customer_signature_photo='')
-            .prefetch_related('work', 'work__technician', 'work__service', 'work__service__customer')
+            .prefetch_related(
+                'work',
+                'work__technician',
+                'work__service',
+                'work__service__customer'
+            )
         )
 
-        # Role-based access
+        # ✅ Role-based access
         if user_profile.role == 'branch_manager':
             branch_manager = BranchManager.objects.get(mobile_no=request.user.username)
-            qs = qs.filter(service__branch=branch_manager.branch)
+            qs = qs.filter(work__service__branch=branch_manager.branch)
 
         elif user_profile.role == 'operation_person':
             operation_person = OperationPerson.objects.get(user=request.user)
-            qs = qs.filter(service__branch=operation_person.branch)
+            qs = qs.filter(work__service__branch=operation_person.branch)
 
         elif user_profile.role != 'admin':
             return TechWorkList.objects.none()
 
-        # --- Filters ---
+        # ✅ Filters
         search = request.GET.get("search", "").strip()
         technician = request.GET.get("technician", "").strip()
         from_date = request.GET.get("from_date", "").strip()
@@ -5246,16 +5251,17 @@ class AdminCompletedWorkView(ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        
+
+        # ✅ Technician dropdown list
         ctx["technicians"] = TechnicianProfile.objects.all().order_by('first_name')
-        
-        # preserve filters
+
+        # ✅ Preserve filters
         query = self.request.GET.copy()
         if "page" in query:
             query.pop("page")
         ctx["querystring"] = query.urlencode()
 
-        # pass filter values back
+        # ✅ Return filter values to template
         ctx["search"] = self.request.GET.get("search", "")
         ctx["technician"] = self.request.GET.get("technician", "")
         ctx["from_date"] = self.request.GET.get("from_date", "")
