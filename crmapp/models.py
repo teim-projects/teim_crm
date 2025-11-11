@@ -622,6 +622,7 @@ class quotation_management(models.Model):
     igst = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)  
     gst_total = models.DecimalField(max_digits=30, decimal_places=2, null=True, blank=True)  
 
+
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
