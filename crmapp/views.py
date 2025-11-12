@@ -23,7 +23,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model
+
 from .forms import (
     InventoryServiceForm,
     InventoryAddForm,
@@ -583,10 +583,8 @@ def user_logout(request):
     return redirect("/")
 
 # Add Sales Person
-User = get_user_model()
-
 @login_required
-@role_required(['admin'])
+@role_required(['admin','branch_manager'])
 def add_sales_person(request):
     if request.method == 'POST':
         full_name = request.POST.get('full_name')
@@ -596,67 +594,36 @@ def add_sales_person(request):
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
         branch_id = request.POST.get('branch')
-        branch = Branch.objects.get(id=branch_id)
-        co_ordinator = request.POST.get('co_ordinator') == 'on'  # ✅ Fixed checkbox boolean
+        branch = Branch.objects.get(id = branch_id)
+        co_ordinator = request.POST.get('co_ordinator') == True
+        # Create Django User (username as email or phone, password default or random)
+        username = mobile_no
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        user.is_staff = True
+        user.save()
+        
 
-        # -------------------------------------------
-        # ✅ Step 1: Check if user exists (reactivate if inactive)
-        # -------------------------------------------
-        user = User.objects.filter(username=mobile_no).first()
-
-        if user:
-            if not user.is_active:
-                user.is_active = True
-                user.email = email
-                user.first_name = full_name
-                user.set_password(password)
-                user.save()
-                messages.info(request, f"Reactivated existing user {mobile_no}.")
-            else:
-                messages.error(request, f"A user with this mobile number already exists and is active.")
-                return redirect('sales_person_list')
-        else:
-            # Create new user
-            user = User.objects.create_user(
-                username=mobile_no,
-                password=password,
-                email=email,
-                first_name=full_name,
-                is_staff=True
-            )
-            user.save()
-            messages.success(request, f"Created new user {mobile_no}.")
-
-        # -------------------------------------------
-        # ✅ Step 2: Create or update UserProfile
-        # -------------------------------------------
-        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        # Assign role to user via UserProfile
+        user_profile = user.userprofile  # auto-created by the signal
         user_profile.role = 'sales'
         user_profile.phone = mobile_no
         user_profile.save()
 
-        # -------------------------------------------
-        # ✅ Step 3: Create or update SalesPerson record
-        # -------------------------------------------
-        salesperson, created = SalesPerson.objects.update_or_create(
+        # Create SalesPerson record
+        SalesPerson.objects.create(
+            full_name=full_name,
+            date_of_joining=date_of_joining,
             mobile_no=mobile_no,
-            defaults={
-                'full_name': full_name,
-                'date_of_joining': date_of_joining,
-                'email': email,
-                'date_of_birth': date_of_birth,
-                'branch': branch,
-                'co_ordinator': co_ordinator,
-                # 'user_profile': user_profile
-            }
+            email=email,
+            date_of_birth=date_of_birth,
+            branch = branch,
+            co_ordinator = co_ordinator
+            
         )
 
-        messages.success(request, f"SalesPerson '{full_name}' added/updated successfully.")
         return redirect('sales_person_list')
-
     branches = Branch.objects.all()
-    return render(request, 'add_sales_person.html', {"branches": branches})
-
+    return render(request, 'add_sales_person.html',{"branches":branches})
 
 # List Sales Persons
 @login_required
@@ -752,9 +719,6 @@ def edit_sales_person(request, pk):
     branches = Branch.objects.all()
     return render(request, 'edit_sales_person.html', {'person': person, 'branches':branches})
 
-
-User = get_user_model()
-
 @login_required
 @role_required(['admin'])
 def delete_sales_person(request, pk):
@@ -764,11 +728,7 @@ def delete_sales_person(request, pk):
          # Delete the User whose username is the BranchManager's mobile number
         try:
             user = User.objects.get(username=person.mobile_no)
-            if user:
-                # Soft delete user instead of hard deleting
-                user.is_active = False
-                user.save(update_fields=['is_active'])
-
+            user.delete()  # This will also delete UserProfile if CASCADE
         except User.DoesNotExist:
             pass  # User not found, just continue
         person.delete()
@@ -788,73 +748,43 @@ def add_branch_manager(request):
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
         branch_id = request.POST.get('branch')
-        branch_instance = get_object_or_404(Branch, pk=branch_id)
+        branch_instance = Branch.objects.get(pk=branch_id)
 
-        # ---------------------------------------------------
-        # ✅ STEP 1: Check if a user already exists (reactivate if inactive)
-        # ---------------------------------------------------
-        user = User.objects.filter(username=mobile_no).first()
+        # Create Django User (username as email or phone, password default or random)
+        username = mobile_no
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        user.is_staff = True
+        user.save()
+        
 
-        if user:
-            # Reactivate the old user if inactive
-            if not user.is_active:
-                user.is_active = True
-                user.first_name = full_name
-                user.email = email
-                user.set_password(password)
-                user.save(update_fields=['is_active', 'first_name', 'email', 'password'])
-                messages.info(request, f"Reactivated existing user {mobile_no}.")
-            else:
-                messages.warning(request, "A user with this mobile number already exists and is active.")
-                return redirect('branch_manager_list')
-        else:
-            # Create new user
-            user = User.objects.create_user(
-                username=mobile_no,
-                password=password,
-                email=email,
-                first_name=full_name,
-                is_staff=True
-            )
-            messages.success(request, f"Created new user {mobile_no}.")
-
-        # ---------------------------------------------------
-        # ✅ STEP 2: Create or update the UserProfile
-        # ---------------------------------------------------
-        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        # Assign role to user via UserProfile
+        user_profile = user.userprofile  # auto-created by the signal
         user_profile.role = 'branch_manager'
         user_profile.phone = mobile_no
         user_profile.save()
 
-        # ---------------------------------------------------
-        # ✅ STEP 3: Create or update BranchManager record
-        # ---------------------------------------------------
-        branch_manager, created = BranchManager.objects.update_or_create(
+        # Create SalesPerson record
+        BranchManager.objects.create(
+            full_name=full_name,
+            date_of_joining=date_of_joining,
             mobile_no=mobile_no,
-            defaults={
-                'full_name': full_name,
-                'date_of_joining': date_of_joining,
-                'email': email,
-                'date_of_birth': date_of_birth,
-                'branch': branch_instance
-            }
+            email=email,
+            date_of_birth=date_of_birth,
+            branch=branch_instance
+            
         )
 
-        messages.success(request, f"Branch Manager '{full_name}' added or updated successfully.")
         return redirect('branch_manager_list')
+    
+    branch = Branch.objects.all()
+    return render(request, 'add_branch_manager.html',{'branch': branch})
 
-    branches = Branch.objects.all()
-    return render(request, 'add_branch_manager.html', {'branch': branches})
 
 @login_required
 @role_required(['admin'])
 def branch_manager_list(request):
-    persons = BranchManager.objects.all().order_by('id') 
-    paginator = Paginator(persons, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, 'branch_manager_list.html',  {'page_obj': page_obj})
+    persons = BranchManager.objects.all()
+    return render(request, 'branch_manager_list.html', {'persons': persons})
 
 
 @login_required
@@ -921,10 +851,7 @@ def delete_branch_manager(request, pk):
         # Delete the User whose username is the BranchManager's mobile number
         try:
             user = User.objects.get(username=person.mobile_no)
-            if user:
-                # Soft delete user instead of hard deleting
-                user.is_active = False
-                user.save(update_fields=['is_active'])
+            user.delete()  # This will also delete UserProfile if CASCADE
         except User.DoesNotExist:
             pass  # User not found, just continue
 
@@ -949,20 +876,9 @@ def add_operation_person(request):
         branch = Branch.objects.get(id = branch_id)
         # Create Django User (username as email or phone, password default or random)
         username = mobile_no
-        user = User.objects.get(username = username)
-        if user:
-            user.username = username
-            user.password = password 
-            user.email = email
-            user.first_name = full_name
-            user.is_active = True
-            user.is_staff = True
-            user.save()
-
-        else:
-            user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
-            user.is_staff = True
-            user.save()
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        user.is_staff = True
+        user.save()
         
 
         # Assign role to user via UserProfile
@@ -1065,11 +981,9 @@ def delete_operation_person(request, pk):
 
     # Delete OperationPerson first
     operation_person.delete()
-    
-    if user:
-        # Soft delete user instead of hard deleting
-        user.is_active = False
-        user.save(update_fields=['is_active'])
+
+    # Then delete user account
+    user.delete()
 
     messages.success(request, "Operation Person deleted successfully.")
     return redirect('operation_person_list')
@@ -1081,22 +995,11 @@ def customer_details_create(request):
             primarycontact = request.GET.get('primarycontact')
             lead = lead_management.objects.filter(primarycontact=primarycontact).order_by('-enquirydate').first()
             if lead:
-
-                if getattr(lead, 'salesperson', None):
-                    contactperson = getattr(lead.salesperson, 'full_name', None)
-                elif getattr(lead, 'branch_manager', None):
-                    contactperson = getattr(lead.branch_manager, 'full_name', None)
-
-                elif getattr(lead, 'admin', None):
-                    admin_user = getattr(lead, 'admin', None)
-                    contactperson = f"{admin_user.first_name or ''} {admin_user.last_name or ''}".strip()
-                else:
-                    contactperson = None
                 data = {
                     'fullname': lead.customername or '',
                     'primaryemail': lead.customeremail or '',
                     'secondarycontact': lead.secondarycontact or '',
-                    'contactperson': contactperson or '',
+                    'contactperson': lead.salesperson.full_name or '',
                     'contactedby': lead.contactedby or '',
                     'shifttopartyaddress': lead.customeraddress or '',
                     'shifttopartycity': lead.city or '',
@@ -1266,10 +1169,7 @@ def service_management_create(request):
     customers = customer_details.objects.all()
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
-    sp = SalesPerson.objects.all()
-    bm = BranchManager.objects.all()
-    sales_persons = list(chain(sp, bm))
-    # sales_persons = SalesPerson.objects.all()
+    sales_persons = SalesPerson.objects.all()
     branch = Branch.objects.all()
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
     segments = service_management._meta.get_field('segment').choices
@@ -1404,10 +1304,7 @@ def quotation_management_create(request):
     terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
     products = Product.objects.all()
-    sp = SalesPerson.objects.all()
-    bm = BranchManager.objects.all()
-    sales_person_list = list(chain(sp, bm))
-
+    sales_person_list = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
     thank_notes_qs = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     thank_notes = [note for note in thank_notes_qs if note]  
     
@@ -1547,8 +1444,6 @@ def quotation_management_create(request):
                 total_gst = 0
 
                 total_price_with_gst = total_price
-            
-
 
             # Create the quotation
             quotation = quotation_management.objects.create(
@@ -2114,10 +2009,10 @@ from datetime import datetime
 # change
 
 @login_required
-@role_required(['admin','sales',"branch_manager"])
+@role_required(['admin','sales','branch_manager'])
 def lead_management_create(request):
-    salespersons = SalesPerson.objects.all()
-    # branch_managers = BranchManager.objects.all()
+    salespersons = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+    
     branches = Branch.objects.all()
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
@@ -2154,13 +2049,11 @@ def lead_management_create(request):
 
     else:  # POST request
         try:
+            role = request.user.userprofile.role
             # Get all form data
             sourceoflead = request.POST.get('sourceoflead')
-            salesperson_id = request.POST.get("salesperson")
-            # salesperson_mobile = request.user.username
-            # print(salesperson_mobile)
-            
-         
+            # salesperson_id = request.POST.get("salesperson")
+          
             customername = request.POST.get('customername')
             customersegment = request.POST.get('customersegment')
             
@@ -2196,23 +2089,20 @@ def lead_management_create(request):
             branch_id = request.POST.get('branch')
             branch = branches.get(id = int(branch_id))
             sp = None
-            branch_manager = None
+            bm = None
             ad = None
-            if request.user.userprofile.role == "branch_manager":
-                bm =  request.user.username
-                branch_manager = BranchManager.objects.get(mobile_no = bm) or None
-            elif request.user.userprofile.role == "sales":
-                sp = SalesPerson.objects.get(id = salesperson_id) or None
-
-            elif request.user.userprofile.role == "admin":
+            if role == "sales":
+                sp = SalesPerson.objects.get(mobile_no = request.user.username)
+            elif role == "branch_manager":
+                bm = BranchManager.objects.get(mobile_no = request.user.username)
+            else: 
                 ad = request.user
-
             # Create new lead (duplicates allowed)
             lead = lead_management.objects.create(
                 sourceoflead=sourceoflead,
                 salesperson=sp,
+                branch_manager = bm,
                 admin = ad,
-                branch_manager = branch_manager,
                 customername=customername,
                 customersegment=customersegment,
                 enquirydate=enquirydate,
@@ -3079,7 +2969,7 @@ def display_lead_management(request):
     salespersons = []
     if request.user.userprofile.role =='admin':
         filtered_leads = lead_management.objects.all()
-        salespersons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+        salespersons = SalesPerson.objects.all()
     elif request.user.userprofile.role == 'sales':
         salesperson = SalesPerson.objects.get(mobile_no =request.user.username)
         filtered_leads = lead_management.objects.filter(salesperson=salesperson)
@@ -3117,29 +3007,7 @@ def display_lead_management(request):
     if source_filter:
         filtered_leads = filtered_leads.filter(sourceoflead=source_filter)
     if salesperson_filter:
-        try:
-            # Try to find by full_name in SalesPerson first
-            salesperson_obj = SalesPerson.objects.filter(full_name=salesperson_filter).first()
-            branch_manager_obj = BranchManager.objects.filter(full_name=salesperson_filter).first()
-    
-            # Get IDs safely (if they exist)
-            salesperson_id = salesperson_obj.id if salesperson_obj else None
-            branch_manager_id = branch_manager_obj.id if branch_manager_obj else None
-    
-            # Combine Q filters dynamically
-            q_filter = Q()
-            if salesperson_id:
-                q_filter |= Q(salesperson_id=salesperson_id)
-            if branch_manager_id:
-                q_filter |= Q(branch_manager_id=branch_manager_id)
-    
-            if q_filter:  # only apply if at least one match
-                filtered_leads = filtered_leads.filter(q_filter)
-    
-        except Exception as e:
-            print("Filter error:", e)
-            pass
-
+        filtered_leads = filtered_leads.filter(salesperson = salesperson_filter)
     if branch_filter:
         filtered_leads = filtered_leads.filter(branch=branch_filter)
     if enquiry_from and enquiry_to:
@@ -3696,9 +3564,7 @@ from .models import quotation_management, QuotationTerm, Product  # adjust as ne
 
 def edit_quotation(request, rid):
     quotation = quotation_management.objects.get(id=rid)
-    sp = SalesPerson.objects.all()
-    bm = BranchManager.objects.all()
-    sales_person_list = list(chain(sp, bm))
+    sales_person_list =  list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
     thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     products = Product.objects.all()
     customer = quotation.customer
@@ -3975,8 +3841,9 @@ def edit_lead_management(request, rid):
         return render(request , 'edit_lead_management.html' , context)
     
     elif request.method == 'POST':
+        role = request.user.userprofile.role
         usourceoflead = request.POST.get('usourceoflead', '')
-        usalesperson = request.POST.get('usalesperson')
+        # usalesperson = request.POST.get('usalesperson')
         ucustomername = request.POST.get('ucustomername', '')
         ucustomersegment = request.POST.get('ucustomersegment', '')
         utypeoflead = request.POST.get('utypeoflead', '')
@@ -4009,11 +3876,21 @@ def edit_lead_management(request, rid):
             ufirstfollowupdate = None  # Handle invalid date format
 
         m=lead_management.objects.filter(id=rid)
-        usalesperson = SalesPerson.objects.get(id  = usalesperson)
+        sp = None
+        bm = None
+        ad = None
+        if role == "sales":
+            sp = SalesPerson.objects.get(mobile_no = request.user.username)
+        elif role == "branch_manager":
+            bm = BranchManager.objects.get(mobile_no = request.user.username)
+        else: 
+            ad = request.user
 
         m.update(
             sourceoflead = usourceoflead,
-            salesperson = usalesperson,
+            salesperson=sp,
+            branch_manager = bm,
+            admin = ad,
             customername = ucustomername,
             customersegment = ucustomersegment,
             typeoflead = utypeoflead,
@@ -4425,10 +4302,7 @@ def delete_technician(request, technician_id):
     technician = get_object_or_404(TechnicianProfile, id=technician_id)
     user = technician.user
     technician.delete()
-    if user:
-        # Soft delete user instead of hard deleting
-        user.is_active = False
-        user.save(update_fields=['is_active'])
+    user.delete()
     messages.success(request, "Technician deleted successfully.")
     return redirect('display_technician')
 
@@ -5338,29 +5212,83 @@ from .models import TechWorkList
 
 class AdminCompletedWorkView(ListView):
     model = TechWorkList
-    template_name = 'admin_completed_work_list.html'  
-    context_object_name = 'completed_work_list'
-    
+    template_name = 'admin_completed_work_list.html'
+    paginate_by = 10  # ✅ Enable pagination
+
     def get_queryset(self):
-        user_profile = self.request.user.userprofile
-        base_qs = TechWorkList.objects.filter(status='Completed').exclude(customer_signature_photo='')
+        request = self.request
+        user_profile = request.user.userprofile
 
-        # Admin: show all
-        if user_profile.role == 'admin':
-            return base_qs
+        qs = (
+            TechWorkList.objects
+            .filter(status='Completed')
+            .exclude(customer_signature_photo='')
+            .prefetch_related(
+                'work',
+                'work__technician',
+                'work__service',
+                'work__service__customer'
+            )
+        )
 
-        # Branch Manager: show only their branch
-        elif user_profile.role == 'branch_manager':
-            branch_manager = BranchManager.objects.get(mobile_no = self.request.user.username)
-            return base_qs.filter(branch=branch_manager.branch)
+        # ✅ Role-based access
+        if user_profile.role == 'branch_manager':
+            branch_manager = BranchManager.objects.get(mobile_no=request.user.username)
+            qs = qs.filter(work__service__branch=branch_manager.branch)
 
-        # Operation Person: show only their branch
         elif user_profile.role == 'operation_person':
-            operation_person = OperationPerson.objects.get(user=self.request.user)
-            return base_qs.filter(branch=operation_person.branch)
+            operation_person = OperationPerson.objects.get(user=request.user)
+            qs = qs.filter(work__service__branch=operation_person.branch)
 
-        # Others: empty list
-        return TechWorkList.objects.none()
+        elif user_profile.role != 'admin':
+            return TechWorkList.objects.none()
+
+        # ✅ Filters
+        search = request.GET.get("search", "").strip()
+        technician = request.GET.get("technician", "").strip()
+        from_date = request.GET.get("from_date", "").strip()
+        to_date = request.GET.get("to_date", "").strip()
+
+        # Search filter
+        if search:
+            qs = qs.filter(
+                Q(work__service__customer__fullname__icontains=search) |
+                Q(work__service__customer__primarycontact__icontains=search)
+            )
+
+        # Technician dropdown
+        if technician:
+            qs = qs.filter(work__technician__id=technician)
+
+        # Date range filters
+        if from_date:
+            qs = qs.filter(completion_datetime__date__gte=from_date)
+
+        if to_date:
+            qs = qs.filter(completion_datetime__date__lte=to_date)
+
+        return qs.distinct()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # ✅ Technician dropdown list
+        ctx["technicians"] = TechnicianProfile.objects.all().order_by('first_name')
+
+        # ✅ Preserve filters
+        query = self.request.GET.copy()
+        if "page" in query:
+            query.pop("page")
+        ctx["querystring"] = query.urlencode()
+
+        # ✅ Return filter values to template
+        ctx["search"] = self.request.GET.get("search", "")
+        ctx["technician"] = self.request.GET.get("technician", "")
+        ctx["from_date"] = self.request.GET.get("from_date", "")
+        ctx["to_date"] = self.request.GET.get("to_date", "")
+
+        return ctx
+
     
 class AdminWorkDetailView(DetailView):
     model = TechWorkList
