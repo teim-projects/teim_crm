@@ -907,27 +907,33 @@
 <body>
     {% if request.user.is_authenticated %}
         {% with request.user.userprofile.role as role %}
-            <div class="header">
+        <div class="header d-flex justify-content-between align-items-center p-2">
 
-                <div class="hamburger" id="hamburger">
-                    <i class="fas fa-bars"></i>
-
+            <!-- Left: Hamburger + Logo -->
+            <div class="d-flex align-items-center">
+                <div class="hamburger me-3" id="hamburger">
+                    <i class="fas fa-bars fa-lg"></i>
                 </div>
-                <div class="navbar-header ">
-                    <a class="navbar-brand " href="https://sevafacility.com/" target="_blank">
-                        <img src="{% static 'images/Logo2.webp' %}" alt="Logo" style="height: 70px;   margin-bottom: 5px; "
-                            class="navbar-header_logo">
-                    </a>
-                </div>
-                
-                <div class="navbar-header tem">
-                    <a class="navbar-brand " href="https://chronoanalytics.in/" target="_blank">
-                        <img src="{% static 'images/crono.png' %}" alt="Logo" class="imgg"
-                            style="height: 50px;   margin-bottom: 8px; ">
-                    </a>
-                </div>
+        
+                <a class="navbar-brand me-3" href="https://sevafacility.com/" target="_blank">
+                    <img src="{% static 'images/Logo2.webp' %}" alt="Logo" style="height: 70px; margin-bottom: 5px;">
+                </a>
             </div>
-
+        
+            <!-- Right side: Welcome + Chrono logo -->
+            <div class="d-flex align-items-center">
+                <h4 class="m-0 me-3 text-dark font-size[10px]">
+                    Welcome, <span class="fw-bold">{{ request.user.first_name }}</span>
+                </h4>
+                
+        
+                <a class="navbar-brand" href="https://chronoanalytics.in/" target="_blank">
+                    <img src="{% static 'images/crono.png' %}" alt="Logo" style="height: 50px; margin-bottom: 8px;">
+                </a>
+            </div>
+        
+        </div>
+        
 
             <div class="sidebar">
 
