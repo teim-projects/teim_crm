@@ -369,11 +369,7 @@
     <nav class="navbar navbar-default">
         <div class="container-fluid navbarr">
             <div class="navbar-header ">
-                <!-- <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>                        
-                </button> -->
+                
                 <a class="navbar-brand " href="#">
                     <img src="{% static 'images/Logo.webp' %}" alt="Logo" style="height: 120px;   margin-bottom: 10px; "
                         class="navbar-header_logo">
@@ -384,27 +380,18 @@
             </div>
 
             <div class="navbar-header tem">
-                <!-- <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>                        
-                </button> -->
+               
                 <a class="navbar-brand mt-3" href="https://chronoanalytics.in/">
                     <img src="{% static 'images/crono.png' %}" alt="Logo" style="height: 70px;   margin-bottom: 10px; ">
                 </a>
             </div>
-            <!-- <div class="collapse navbar-collapse" id="myNavbar">
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
-                    <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-                </ul>
-            </div> -->
+            
         </div>
     </nav>
  <!-- Navbar End -->
 
 <!-- Main Content Start -->
-    <div class="container-fluid background-image">
+    <!-- <div class="container-fluid background-image">
         <div class="row" >
             <div class="col-md-3 mt-5"></div>
             <div class="col-md-6 mt-5 col-12 login" style="width: 100%;">
@@ -425,8 +412,45 @@
             <div class="col-md-3 mt-5"></div>
 
         </div>
+    </div> -->
+    <div class="container-fluid background-image">
+    <div class="row">
+        <div class="col-md-3 mt-5"></div>
+        <div class="col-md-6 mt-5 col-12 login" style="width: 100%;">
+            <center>
+                <form method="POST" class="login-form">
+                    {% csrf_token %}
+                    <h1 class="login-title">Login</h1>
+                    <p class="login-description">
+                        Please enter your <span class="highlight-text">Username</span> and 
+                        <span class="highlight-text">Password</span>
+                    </p>
+                    
+                    <!-- Display Django messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <p class="error-message" style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
+                                {{ message }}
+                            </p>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Existing input fields -->
+                    <input type="text" name="uname" placeholder="Username" class="input-field">
+                    <input type="password" name="upass" placeholder="Password" class="input-field">
+                    <input type="submit" value="Submit" class="submit-btn">
+                    
+                    <!-- Still keep old error if passed via context -->
+                    <p class="error-message" style="color: red;">{{ msg1 }}</p>
+                    
+                    <p class="login-link">Don't Have an Account? <a href="/signup" class="signup-link">Signup</a></p>
+                </form>
+            </center>
+        </div>
+        <div class="col-md-3 mt-5"></div>
     </div>
-    
+</div>
+
 <!-- Main Content End -->
 
 <!-- Footer Start -->

@@ -178,13 +178,13 @@
                                 <input type="text" class="form-control form-control-lg" name="city"
                                     value="{{ form_data.city }}" placeholder="City" />
                             </div>
+                            
                         </div>
  
                         <div class="row">
                             <div class="col-md-4"></div>
                             <div class="col-md-4">
-                                                            <button type="button" class="btn btn-primary w-100" onclick="nextStep()">Next</button>
-
+                                <button type="button" class="btn btn-primary w-100" onclick="nextStep()">Next</button>
                             </div>
                             <div class="col-md-4"></div>
                         </div>
@@ -221,6 +221,17 @@
                                 <input type="date" class="form-control form-control-lg" name="date_of_joining"
                                     value="{{ form_data.date_of_joining }}" />
                             </div>
+                            <div class="col-md-6 mb-4">
+                                <label>Branch <span class="star">*</span></label>
+                                <select class="form-control form-control-lg" name="branch">
+                                    <option value="">Select Branch</option>
+                                    {% for branch in branches %}
+                                    <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            
                        
                         </div>
 

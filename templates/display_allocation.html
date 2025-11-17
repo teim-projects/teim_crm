@@ -423,7 +423,7 @@
         <div class="row">
             <div class="col-md-12 ">
                 <div class="col-12 ">
-                    <div class="table-wrapper">
+                    <div class="table-wrapper addnewshadow">
 
                         <h1> Technician Work Allocation</h1>
                         <div class="navbar">
@@ -443,6 +443,9 @@
                                 <thead>
                                     <tr>
                                         <th>Sr No.</th>
+                                        <th>Allocate Work</th>
+                                        <th>Reschedule</th>
+                                        <th>Cancel</th>
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
                                                 href="?sort_by=customerid&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
@@ -471,9 +474,7 @@
                                         <th>GPS Location</th>
                                         <th>Delivery Time</th>
                                         <th>Service Date</th>
-                                        <th>Allocate Work</th>
-                                        <th>Reschedule</th>
-                                        <th>Cancel</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -481,6 +482,25 @@
                                     <tr>
 
                                         <td>{{ forloop.counter|add:start_index }}</td>
+                                        <td>
+                                            {% if x.id in unallocated_ids %}
+                                            <a href="/allocate/{{ x.id }}/" class="btn btn-primary">Allocate Work</a>
+                                            {% else %}
+                                            <button class="btn btn-secondary "style="font-size: 13px;" disabled>Already Allocated</button>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% for alloc in x.work_allocations.all %}
+                                                {% if alloc.status == "Pending" %}
+                                                    <a href="/reschedule/{{ x.id }}/" class="btn btn-success">Reschedule</a>
+                                                {% else %}
+                                                    <a href="#" class="btn btn-secondary disabled">Reschedule</a>
+                                                {% endif %}
+                                            {% endfor %}
+
+                                        </td>
+                                        <td><a href="/delete_service_management/{{ x.id }}"
+                                                class="btn btn-danger delete-link" role="button"><i class="fa-solid fa-trash"></i></a></td>
                                         <td>{{ x.customer }}</td>
                                         <td>{{ x.customer.fullname }}</td>
                                         <td>{{ x.customer.primarycontact }}</td>
@@ -490,22 +510,7 @@
                                         <td>{{ x.delivery_time }}</td>
                                         <td>{{ x.service_date }}</td>
                                         <!-- Allocated button  -->
-                                        <td>
-                                            {% if x.id in allocated_service_ids %}
-                                            <button class="btn btn-secondary" disabled>Already Allocated</button>
-                                            {% else %}
-                                            <a href="/allocate/{{ x.id }}/" class="btn btn-primary">Allocate Work</a>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if x.id in allocated_service_ids %}
-                                            <a href="/reschedule/{{ x.id }}/" class="btn btn-success"
-                                                role="button">Reschedule</a>
-                                            {% endif %}
-                                        </td>
-
-                                        <td><a href="/delete_service_management/{{ x.id }}"
-                                                class="btn btn-danger delete-link" role="button">Cancel</a></td>
+                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>

@@ -1,19 +1,53 @@
+from datetime import date
 from django.db import models
 import random
 from django.contrib.auth.models import User
 from django.utils import timezone
 from num2words import num2words # type: ignore
 from django.contrib.auth.models import User
+from pydantic import ValidationError
 
 
 def generate_customerid():
     random_number = str(random.randint(1000, 9999))
     return f"DEFAULT{random_number}"
 
+class Branch(models.Model):
+    branch_name = models.CharField(max_length=100)
+    contact_1 = models.CharField(max_length=15)
+    contact_2 = models.CharField(max_length=15, blank=True, null=True)
+    email_1 = models.EmailField()
+    email_2 = models.EmailField(blank=True, null=True)
+    gst_number = models.CharField(max_length=20)
+    pan_number = models.CharField(max_length=20)
+    full_address = models.TextField()
+    state = models.CharField(max_length=50 )
+    code = models.IntegerField()
+    shortcut = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.branch_name
 
 
 
-from django.db import models
+
+class UserProfile(models.Model):
+    ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('sales', 'Sales'),
+        ('technician', 'Technician'),
+        ('branch_manager', 'Branch Manager'),
+        ('operation_person', 'Operation Person'),
+        ('customer', 'Customer'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    phone = models.CharField(max_length=15, blank=True, null=True)  
+
+    def __str__(self):
+        return f"{self.user.username} - {self.role}"
 
 class SalesPerson(models.Model):
     full_name = models.CharField(max_length=100)
@@ -21,13 +55,37 @@ class SalesPerson(models.Model):
     mobile_no = models.CharField(max_length=15)
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField()
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True,related_name="sales_person")
+    co_ordinator = models.BooleanField(blank=True, null=True, default=False)
+    
 
     def __str__(self):
         return self.full_name
 
 
-from django.db import models
 
+
+class BranchManager(models.Model):
+    full_name = models.CharField(max_length=100)
+    date_of_joining = models.DateField()
+    mobile_no = models.CharField(max_length=15)
+    email = models.EmailField(unique=True)
+    date_of_birth = models.DateField()
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True, null=True, related_name='branch_manager')
+
+    def __str__(self):
+        return self.full_name
+    
+class OperationPerson(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True ,related_name="operation_person")
+    full_name = models.CharField(max_length=100)
+    date_of_joining = models.DateField()
+    mobile_no = models.CharField(max_length=15)
+    email = models.EmailField(unique=True)
+    date_of_birth = models.DateField()
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL, blank=True, null=True, related_name='operation_person')
+
+from django.db import models
 class QuotationTerm(models.Model):
     description = models.TextField()
 
@@ -41,14 +99,14 @@ class InvoiceTerm(models.Model):
 
 
 class customer_details(models.Model):
-   
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL,blank=True, null=True, related_name="customer_details")
     fullname = models.CharField(max_length=100)
-    primaryemail=models.EmailField()
+    primaryemail=models.EmailField(null=True, blank=True)
     secondaryemail=models.EmailField(null=True , blank=True)
-    primarycontact=models.BigIntegerField()
+    primarycontact=models.BigIntegerField( unique=True)
     secondarycontact=models.BigIntegerField(null=True , blank=True)
-    contactperson=models.CharField(max_length=100)
-    customersegment=models.CharField(max_length=100)
+    contactperson=models.CharField(max_length=100, blank=True, null=True)
+    designation=models.CharField(max_length=100)
     shifttopartyaddress=models.CharField(max_length=1000)
     shifttopartycity=models.CharField(max_length=100)
     shifttopartystate=models.CharField(max_length=100)
@@ -58,15 +116,15 @@ class customer_details(models.Model):
     soldtopartystate=models.CharField(max_length=100)
     soldtopartypostal=models.CharField(max_length=100)
     customerid = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    customer_type = models.CharField(max_length=100, null=True, blank=True)
+    or_name = models.CharField(max_length=100, null=True, blank=True)
+    or_contact = models.BigIntegerField(null=True, blank=True)
 
 
    
     def __str__(self):
         return self.fullname
    
-    def __str__(self):
-        return self.customerid
-
 
 
 
@@ -77,13 +135,12 @@ from django.utils import timezone
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
     product_name = models.CharField(max_length=255)
-    # price = models.DecimalField(max_digits=10, decimal_places=2)
-    # quantity = models.PositiveIntegerField()
-   
+    hsn_code = models.CharField(max_length=100, blank=True, null=True)
+
     CATEGORY_CHOICES = [
         ('Pest Control', 'Pest Control'),
         ('Fumigation', 'Fumigation'),
-        ('Product Sell', 'Product Sell'),
+        ('Product Sale', 'Product Sale'),
     ]
    
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="NULL")
@@ -231,29 +288,6 @@ class invoice(models.Model):
         return f"Invoice No: {self.invoice_no}"
 
 
-# class inventory(models.Model):
-#     itemnumber=models.IntegerField()
-#     itemname=models.CharField(max_length=100)
-#     price=models.IntegerField()
-#     quantity=models.IntegerField()
-
-
-# class lead_management(models.Model):
-#     sourceoflead = models.CharField(max_length=100)
-#     salesperson = models.CharField(max_length=100)
-#     havedonepestcontrolearlier = models.CharField(max_length=100)
-#     leadstatus = models.CharField(max_length=100, choices=[('Call', 'Call'), ('Visit', 'Visit'), ('Quotation', 'Quotation')])
-#     typeoflead = models.CharField(max_length=100,null=True, choices=[('Hot','Hot'),('Warm','Warm'),('Cold','Cold'),('Not Interested','Not Interested'),('Loss of Order','Loss of Order')])
-#     typeofcontract = models.CharField(max_length=100, choices=[('Monthly', 'Monthly'), ('Quarterly', 'Quarterly')])
-#     dateoflead = models.DateField(default=timezone.now)
-#     contactno = models.BigIntegerField(null=True)
-#     customeremail = models.EmailField(null=True)
-#     customeraddress = models.CharField(max_length=255 , null=True)
-#     visitorsname=models.CharField(max_length=200 , default='Null')
-
-
-#     def __str__(self):
-#         return self.sourceoflead
 
 class lead_management(models.Model):
     STATE_CHOICES = [
@@ -306,8 +340,16 @@ class lead_management(models.Model):
         ('Loss of Order', 'Loss of Order'),
     ]
 
+    SEGMENTS_CHOICES = [
+        ('Residential', 'Residential'),
+        ('Industrial / Commercial', 'Industrial / Commercial'),
+        ('Institutional', 'Institutional'),
+        ('Irrelevant Leads', 'Irrelevant Leads')
+    ]
+
     state = models.CharField(max_length=100, choices=STATE_CHOICES, default="Maharashtra")
-    branch = models.CharField(max_length=20, choices=BRANCH_CHOICES, default='NA')
+    # old_branch = models.CharField(max_length=200, choices=BRANCH_CHOICES, default='NA')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)
     sourceoflead = models.CharField(max_length=200, choices=[
         ('Google', 'Google'),
         ('Justdial', 'Justdial'),
@@ -318,15 +360,13 @@ class lead_management(models.Model):
         ('Employee Reference', 'Employee Reference'),
         ('Others', 'Others')
     ], default="NOT SELECTED")
-    salesperson = models.CharField(max_length=100)
+    admin = models.ForeignKey(User, on_delete=models.SET_NULL,blank=True, null=True, related_name='admin_leads')
+    salesperson = models.ForeignKey(SalesPerson, on_delete=models.SET_NULL, blank=True, null=True, related_name="sales_leads")
+    branch_manager = models.ForeignKey(BranchManager, on_delete=models.SET_NULL, blank=True, null=True, related_name='manager_lead')
+    old_salesperson_id = models.BigIntegerField(null=True, blank=True)
     customername = models.CharField(max_length=100, null=True, blank=True)
-    customersegment = models.CharField(max_length=100, choices=[
-        ('Residential', 'Residential'),
-        ('Industrial', 'Industrial'),
-        ('Commercial', 'Commercial'),
-        ('Institutional', 'Institutional'),
-        ('Irrelevant Leads', 'Irrelevant Leads')
-    ], default="NOT SELECTED")
+    customer_type = models.CharField(max_length=100, null=True, blank=True)
+    customersegment = models.CharField(max_length=100, choices=SEGMENTS_CHOICES)
     enquirydate = models.DateField(default=timezone.now)
     contactedby = models.CharField(max_length=100, null=True, blank=True)
     maincategory = models.CharField(max_length=200, null=True, blank=True)
@@ -334,12 +374,16 @@ class lead_management(models.Model):
     primarycontact = models.BigIntegerField(null=True, blank=True)
     secondarycontact = models.BigIntegerField(null=True, blank=True)
     customeremail = models.EmailField(null=True, blank=True)
+    or_name = models.CharField(max_length=100, null=True, blank=True)
+    or_contact = models.BigIntegerField(null=True, blank=True)
     customeraddress = models.CharField(max_length=1000, null=True, blank=True)
     location = models.URLField(null=True, blank=True)
     city = models.CharField(max_length=100, default="Unknown City")
     typeoflead = models.CharField(max_length=100, null=True, choices=TYPEOFLEAD_CHOICES)
     firstfollowupdate = models.DateField(default=timezone.now)
     stage = models.IntegerField(default=1)
+    
+
 
     def __str__(self):
         return self.customername or "Unnamed Lead"
@@ -444,6 +488,9 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 
+
+
+
 class Inventory_summary(models.Model):
     customer_id = models.CharField(max_length=100, default='unknown')
     customer_name = models.CharField(max_length=255)
@@ -494,17 +541,23 @@ class TechnicianProfile(models.Model):
     state = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
     date_of_joining = models.DateField(default=timezone.now)
-
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='technician')
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
 
 class service_management(models.Model):
+    SEGMENTS_CHOICES = [('Residential', 'Residential'),
+        ('Industrial / Commercial', 'Industrial / Commercial'),
+        ('Institutional', 'Institutional'),
+        ('Irrelevant Leads', 'Irrelevant Leads')]
     customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, null=True, blank=True)
-    selected_services = models.ManyToManyField(Product, related_name="selected_services")
-    # gst_checkbox = models.BooleanField(default=False)
-    # gst_status = models.CharField(max_length=10, default='NON-GST')
+    branch = models.ForeignKey("Branch", on_delete=models.CASCADE,null=True, blank=True)
+    service_subject = models.CharField(max_length=500, blank=True, null=True)
+    # selected_services = models.ManyToManyField(Product, related_name="selected_services")
+    selected_services = models.ManyToManyField(Product, through='ServiceProduct', related_name="selected_services")
+    segment = models.CharField(max_length=100, choices=SEGMENTS_CHOICES, null=True, blank=True)
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)    
@@ -526,68 +579,67 @@ class service_management(models.Model):
     lead_date = models.DateField(default=timezone.now)
     service_date = models.DateField(null=True, blank=True)
     technicians = models.ManyToManyField(TechnicianProfile, blank=True, related_name='assigned_services')
-
+    gst_status = models.CharField(
+        max_length=10,
+        choices=[('GST', 'GST'), ('NON-GST', 'NON-GST')],
+        default='GST'
+    )
 
     def __str__(self):
         selected_services = ', '.join([str(service) for service in self.selected_services.all()])
         return f'Service Management - {self.customer} ({selected_services})'
 
-
-class Branch(models.Model):
-    branch_name = models.CharField(max_length=100)
-    contact_1 = models.CharField(max_length=15)
-    contact_2 = models.CharField(max_length=15, blank=True, null=True)
-    email_1 = models.EmailField()
-    email_2 = models.EmailField(blank=True, null=True)
-    gst_number = models.CharField(max_length=20)
-    pan_number = models.CharField(max_length=20)
-    full_address = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
+class ServiceProduct(models.Model):
+    service = models.ForeignKey('service_management', on_delete=models.CASCADE, related_name='service_products')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1.0)
+    gst_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    total_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    
     def __str__(self):
-        return self.branch_name
-
+        return f"{self.product.product_name} ({self.quantity} @ ₹{self.price} + GST {self.gst_percentage}%)"
 
 
 from django.db import models
 from django.utils import timezone
 from .models import Product
-from crmapp.models import Branch
+
 from .models import QuotationTerm  # adjust path if needed
+from django.db.models import Sum
 
+# New ----------
 class quotation_management(models.Model):
-    customer_full_name = models.CharField(max_length=255, null=True, blank=True)
-    contact_no = models.CharField(max_length=15, null=True, blank=True)
-    secondary_contact_no = models.CharField(max_length=15, null=True, blank=True)
-    customer_email = models.EmailField(null=True, blank=True)
-    secondary_email = models.EmailField(null=True, blank=True)  # ✅ Added
-
+    customer = models.ForeignKey(customer_details, on_delete = models.CASCADE, null=True, blank=True)
+    quotation_no = models.CharField(max_length=20, blank=True, null=True, unique=True)  
+    contact_by = models.CharField(max_length=100 , null=True, blank=True)
+    contact_by_no = models.CharField(max_length=11,null=True,blank=True)
     address = models.TextField(null=True, blank=True)
-    city = models.CharField(max_length=100, null=True, blank=True)
-    state = models.CharField(max_length=100, null=True, blank=True)
-    pincode = models.CharField(max_length=6, default="000000")
-    gps_location = models.URLField(null=True, blank=True)
-
-    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)  # ✅ Used for shipping
-
-    selected_services = models.ManyToManyField(Product, related_name="quotation_services")
-
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)  
+    selected_services = models.ManyToManyField(Product, related_name="quotation_services", blank=True)
+    product_details_json = models.JSONField(null=True, blank=True)
     apply_gst = models.BooleanField(default=False)
     gst_status = models.CharField(max_length=10, default='NON-GST')
-
-    cgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
-    sgst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
-    igst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Optional, if interstate
-    gst_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # ✅ Added
+    cgst = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)  
+    sgst = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)  
+    igst = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)  
+    gst_total = models.DecimalField(max_digits=30, decimal_places=2, null=True, blank=True)  
 
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     subject = models.CharField(max_length=1000, null=True, blank=True)
+    thank_u_note = models.CharField(max_length=1000, null=True, blank=True)
     quotation_date = models.DateField(default=timezone.now)
+    custom_terms = models.TextField(blank=True, null=True)
+    or_name = models.CharField(max_length=100, null=True, blank=True)
+    or_contact = models.CharField(max_length=10, null=True, blank=True)
 
+    
     terms_and_conditions = models.ManyToManyField(QuotationTerm, blank=True)
+    terms_order = models.JSONField(blank=True, null=True)
     gst_number = models.CharField(
         max_length=15,
         blank=True,
@@ -595,13 +647,23 @@ class quotation_management(models.Model):
         help_text="Enter 15-digit GSTIN (optional)"
     )
 
-    def __str__(self):
-        return f"Quotation for {self.customer_full_name}"
 
     def __str__(self):
         selected_services = ', '.join([str(service) for service in self.selected_services.all()])
-        return f'Quotation Management - {self.customer_full_name} ({selected_services})'
+        customer_name = self.customer.fullname if self.customer else "No Customer"
+        return f'Quotation Management - {customer_name} ({selected_services})'
 
+
+    def save(self, *args, **kwargs):
+        creating = self.pk is None
+        super().save(*args, **kwargs)  
+
+        if creating and not self.quotation_no:
+            today = date.today()
+            year = today.year
+            month = str(today.month).zfill(2)
+            self.quotation_no = f"{year}/{month}/{self.id}"
+            super().save(update_fields=['quotation_no'])
 
 
 
@@ -612,7 +674,7 @@ class WorkAllocation(models.Model):
         ('Completed', 'Completed'),
         ('workdesk','workdesk'),
     ]
-    service = models.ForeignKey(service_management, on_delete=models.CASCADE)
+    service = models.ForeignKey(service_management, on_delete=models.CASCADE, related_name='work_allocations')
     technician = models.ManyToManyField(TechnicianProfile)
     fullname = models.CharField(max_length=100)
     customer_contact = models.CharField(max_length=15) 
@@ -645,7 +707,7 @@ class UploadedFile(models.Model):
 
 class TechWorkList(models.Model):
     technician = models.ForeignKey(User, on_delete=models.CASCADE)
-    work = models.ManyToManyField(WorkAllocation)
+    work = models.ManyToManyField(WorkAllocation, related_name='work')
     service = models.ForeignKey(service_management, on_delete=models.CASCADE, default=None, null=True, blank=True)
     status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Completed', 'Completed')], default='Pending')
     photos_before_service = models.ManyToManyField(UploadedFile, related_name='photos_before_service', blank=True)
@@ -653,7 +715,13 @@ class TechWorkList(models.Model):
     customer_signature_photo = models.ImageField(upload_to='photos/signatures/', blank=True, null=True)
     payment_photos = models.ManyToManyField(UploadedFile, related_name='payment_photos', blank=True)
     completion_datetime = models.DateTimeField(default=timezone.now)
+    payment_mode = models.CharField(max_length=20, choices=[('UPI','UPI'),('Cash','Cash'),('UPI+Cash','UPI Cash')], blank=True, null=True)
+    payment_type = models.CharField(max_length=20, choices=[('Full Payment','Full Payment'),('Half Payment','Half Payment')], blank=True, null=True)
+    remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    next_due_date = models.DateField(blank=True, null=True)
+    is_notified = models.BooleanField(default=False)
 
+    
     def __str__(self):
         return f"Work by {self.technician.username}"
 
@@ -668,3 +736,259 @@ class BankAccounts(models.Model):
 
     def __str__(self):
         return self.bank_name + " - " + self.branch + " - " + self.account_number 
+
+
+#  Tax Invoice model NEW
+class TaxInvoice(models.Model):
+    GST_TYPE_CHOICES = [
+        ('CGST_SGST', 'CGST + SGST'),
+        ('IGST', 'IGST'),
+    ]
+    quotation = models.ForeignKey(quotation_management, on_delete=models.CASCADE, related_name="tax_invoice", null=True, blank=True)
+    customer = models.ForeignKey(customer_details, on_delete=models.CASCADE, related_name="customer_details")
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="branch")
+    bank = models.ForeignKey(BankAccounts, on_delete=models.CASCADE, related_name="bank_details")
+    # hsn_sac = models.CharField(max_length=50, blank=True, null=True)
+    tax_invoice_no = models.CharField(max_length=30, blank=True, null=True, unique=True) 
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2,default=Decimal('0.00')) 
+    created_at = models.DateTimeField(auto_now_add=True)
+    referance_no_and_date = models.CharField(max_length=100, blank=True, null=True)
+    other_referance = models.CharField(max_length=500, blank=True, null=True)
+    delivery_note = models.CharField(max_length=100, blank=True, null=True)
+    modern_terms_of_payment = models.CharField(max_length=100, blank=True, null=True)
+    buyers_order_no = models.CharField(max_length=100, blank=True, null=True)
+    dated = models.DateField(blank=True, null=True)
+    dispatch_doc_no = models.CharField(max_length=100, blank=True, null=True)
+    delivery_note_date = models.DateField(blank=True, null=True)
+    dispatched_through = models.CharField(max_length=100, blank=True, null=True)
+    destination = models.CharField(max_length=1000, blank=True, null=True)
+    service_titel = models.CharField(max_length=200)
+    shift_gstin_uin = models.CharField(max_length=100,blank=True, null=True)
+    shift_pan_number = models.CharField(max_length=50, blank=True,null=True)
+    shifttopartystate = models.CharField(max_length=100)
+    shifttopartystatecode = models.CharField(max_length=10)
+    sold_gstin_uin = models.CharField(max_length=100, blank=True, null=True)
+    sold_pan_number = models.CharField(max_length=50, blank=True,null=True)
+    soldtopartystate = models.CharField(max_length=100)
+    soldtopartystatecode = models.CharField(max_length=10)
+    gst_type = models.CharField( max_length=20, choices=GST_TYPE_CHOICES, blank=True, null=True )
+    remarks =  models.TextField(blank=True, null=True)
+    terms_of_delivery = models.TextField(blank=True, null=True)
+    ship_to_address = models.TextField(blank=True, null=True)
+    bill_to_address = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.tax_invoice_no
+
+    def generate_tax_invoice_no(self):
+        # Step 1: Financial year
+        today = date.today()
+        start_year = today.year - 1 if today.month < 4 else today.year
+        fy = f"{str(start_year)[-2:]}-{str(start_year + 1)[-2:]}"  
+
+        # Step 2: Branch shortcut from quotation
+        try:
+            branch_code = self.quotation.branch.shortcut.upper()
+        except AttributeError:
+            branch_code = "NA"
+
+        padded_id = str(self.id).zfill(5)
+
+        return f"{fy}/{branch_code}/{padded_id}"
+
+    def save(self, *args, **kwargs):
+     creating = self.pk is None
+     super().save(*args, **kwargs)  # First save to get an ID
+
+     if creating and not self.tax_invoice_no:
+         self.tax_invoice_no = self.generate_tax_invoice_no()
+
+         # Check again to avoid duplicate tax_invoice_no (very rare case)
+         if not TaxInvoice.objects.filter(tax_invoice_no=self.tax_invoice_no).exists():
+             super().save(update_fields=['tax_invoice_no'])
+         else:
+             # In rare case of collision (e.g., deleted invoice reused ID),
+             # regenerate with extra logic like appending a suffix or throw error
+             suffix = str(self.id).zfill(5)
+             self.tax_invoice_no = f"{self.generate_tax_invoice_no()}-{suffix}"
+             super().save(update_fields=['tax_invoice_no'])
+
+
+class TaxInvoiceItem(models.Model):
+    tax_invoice = models.ForeignKey(TaxInvoice, on_delete=models.CASCADE, related_name='items')
+    product_name = models.CharField(max_length=255)
+    hsn_code = models.CharField(max_length=50, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True, null=True)
+    unit = models.CharField(max_length=20, blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    gst_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    gst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=10, decimal_places=2)  
+
+    def __str__(self):
+        return f"{self.product_name} ({self.quantity})"
+
+
+from django.core.exceptions import ValidationError
+# Payments Record 
+class PaymentsRecord(models.Model):
+    PAYMENT_MODE_DICT  = {
+    "UPI": "upi",
+    "CASH": "cash",
+    "CREDIT CARD": "credit_card",
+    "DEBIT CARD": "debit_card",
+    "NET BANKING": "net_banking",
+    "WALLET": "wallet",
+    "BANK TRANSFER": "bank_transfer",
+    "CHEQUE": "cheque",
+    "PAY LATER": "pay_later",
+    "EMI": "emi",
+    "NEFT": "neft",
+    "RTGS": "rtgs",
+    "IMPS": "imps"
+    }
+
+    PAYMENT_MODE_CHOICES = [(value, key) for key, value in PAYMENT_MODE_DICT.items()]
+
+    payment_invoice_no = models.CharField(max_length=100, unique=True, blank=True)
+    main_invoice = models.ForeignKey(TaxInvoice, on_delete=models.CASCADE, related_name='payments')
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_remaining = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    payment_date = models.DateField()
+    next_due_date = models.DateField(blank=True, null=True)
+    previous_due_date = models.DateField(blank=True, null=True)
+    work_type = models.CharField(max_length=100, blank=True, null=True)
+    payment_details = models.CharField(max_length=500, blank=True, null=True)
+    payment_mode = models.CharField(max_length=100, choices=PAYMENT_MODE_CHOICES)
+    payment_rating = models.IntegerField(choices=[(i, f"{i} Star") for i in range(1, 6)], null=True, blank=True)
+    remarks = models.TextField(blank=True, null=True)
+    attachment = models.FileField(upload_to='payment_attachments/', null=True, blank=True)
+    base_invoice_ref = models.CharField(max_length=100, editable=False)
+    last_alert_sent = models.DateField(blank=True, null=True)
+    def clean(self):
+        if self.attachment and self.attachment.size > 5 * 1024 * 1024:
+            raise ValidationError("Attachment size cannot exceed 5MB.")
+        
+        creating = self.pk is None
+        previous_payments = PaymentsRecord.objects.filter(main_invoice=self.main_invoice)
+        if not creating:
+            previous_payments = previous_payments.exclude(pk=self.pk)
+    
+        total_paid = previous_payments.aggregate(total=Sum('amount_paid'))['total'] or 0
+        grand_total = self.main_invoice.grand_total
+    
+        if total_paid >= grand_total:
+            raise ValidationError("This invoice is already fully paid. No further payments are allowed.")
+    
+        if (total_paid + self.amount_paid) > grand_total:
+            raise ValidationError("Total paid exceeds invoice amount.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  
+
+        creating = self.pk is None
+
+        previous_payments = PaymentsRecord.objects.filter(main_invoice=self.main_invoice)
+        if not creating:
+            previous_payments = previous_payments.exclude(pk=self.pk)
+
+        total_paid = previous_payments.aggregate(total=Sum('amount_paid'))['total'] or 0
+        grand_total = self.main_invoice.grand_total
+
+        self.amount_remaining = grand_total - (total_paid + self.amount_paid)
+
+        super().save(*args, **kwargs)
+
+        if creating and not self.payment_invoice_no:
+            base_invoice_no = self.main_invoice.tax_invoice_no or f"INV={self.main_invoice.pk}"
+            count = PaymentsRecord.objects.filter(main_invoice=self.main_invoice).count()
+            suffix = str(count).zfill(3)
+            generated_no = f"PAY/{base_invoice_no}/{suffix}"
+
+            if not PaymentsRecord.objects.filter(payment_invoice_no=generated_no).exists():
+                self.payment_invoice_no = generated_no
+                self.base_invoice_ref = base_invoice_no
+            else:
+                self.payment_invoice_no = f"{generated_no}-{self.pk}"
+
+            super().save(update_fields=['payment_invoice_no','base_invoice_ref'])
+
+    @property
+    def ageing(self):
+        invoice_date = None
+        if hasattr(self.main_invoice, 'created_at') and self.main_invoice.created_at:
+            invoice_date = self.main_invoice.created_at.date()
+        elif hasattr(self.main_invoice, 'dated') and self.main_invoice.dated:
+            invoice_date = self.main_invoice.dated
+
+        if not invoice_date:
+            return "Unknown"
+
+        # If invoice fully paid, stop ageing at the last payment date
+        if self.amount_remaining == 0:
+            last_payment = PaymentsRecord.objects.filter(main_invoice=self.main_invoice).order_by('-payment_date').first()
+            if last_payment:
+                end_date = last_payment.payment_date
+            else:
+                end_date = timezone.now().date()
+        else:
+            # Still not fully paid → ageing continues till today
+            end_date = timezone.now().date()
+
+        days = (end_date - invoice_date).days
+
+        if days <= 7:
+            return "0–7 Days"
+        elif days <= 15:
+            return "8–15 Days"
+        elif days <= 21:
+            return "16–21 Days"
+        elif days <= 30:
+            return "22–30 Days"
+        return "30+ Days"
+    def __str__(self):
+        return self.payment_invoice_no
+    
+
+class MessageTemplates(models.Model):
+    MESSAGE_TYPE_CHOICE = [
+        ('email','Email'),
+        ('whatsapp','WhatsApp'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ('lead','Lead'),
+        ('service','Service Schedule'),
+        ('quotation','Quotation'),
+        ('invoice','Invoice'),
+        ('payment','Payment Tracker'),
+    ]
+
+    LEAD_STATUS_CHOICES =[
+        ('hot','Hot'),
+        ('warm','Warm'),
+        ('cold','Cold'),
+        ('not interested','Not Interested'),
+        ('loss of order','Loss of Order'),
+    ]
+
+    name = models.CharField(max_length=200, help_text="Template name (eg.Lead-hot)")
+    message_type = models.CharField(max_length=20, choices=MESSAGE_TYPE_CHOICE)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    # For leads only other keep blank 
+    lead_status = models.CharField(max_length=50, choices=LEAD_STATUS_CHOICES, blank=True, null=True)
+    # Subject is only for email 
+    subject = models.CharField(max_length=500, blank=True, null=True)
+    body = models.TextField()
+    attachment = models.FileField(upload_to="message_attachments/", null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.get_message_type_display()} - {self.category} - {self.name}"
+    
+
+
+    

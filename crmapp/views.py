@@ -1,196 +1,305 @@
-from django.shortcuts import render , redirect , HttpResponse , get_object_or_404
-from httpcore import request
-from .forms import InventoryServiceForm, InventoryAddForm ,  AddProductForm, UpdateProductForm
-from django.utils import timezone
-from crmapp.models import customer_details, service_management , quotation ,invoice , lead_management , Product , Inventory_summary , Inventory_add  
-from django .db.models import Q
-import random
-from django.http import JsonResponse
-from django.http import HttpResponse
-from django import contrib
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate,login,logout , admin
-from django.db.models import Sum, Count
-from crmapp.models import lead_management
-from crmapp.models import firstfollowup
-from crmapp.models import secondfollowup
-from crmapp.models import thirdfollowup
-from crmapp.models import finalfollowup
 import csv
+import json
+import random
 import datetime
-import matplotlib.pyplot as plt
 from io import BytesIO
+from decimal import Decimal
 import base64
-from django.shortcuts import render
-from crmapp.models import lead_management
+from time import time
+import traceback
+import matplotlib.pyplot as plt
+import openpyxl
 
-from django.shortcuts import render
-from django.http import JsonResponse
+from django import contrib
+from django.conf import settings
+from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.db.models import Q, Sum, Count, Max
+from django.db.models.functions import Lower
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
+
+from .forms import (
+    InventoryServiceForm,
+    InventoryAddForm,
+    AddProductForm,
+    UpdateProductForm,
+    LeadImportForm
+)
+
+from .models import (
+    ServiceProduct,
+    customer_details,
+    service_management,
+    quotation,
+    invoice,
+    Product,
+    Inventory_summary,
+    Inventory_add,
+    UserProfile,
+    SalesPerson,
+    TechnicianProfile,
+    lead_management,
+    firstfollowup,
+    secondfollowup,
+    thirdfollowup,
+    finalfollowup,
+    BranchManager,
+    OperationPerson
+)
+
+from .decorators import role_required
 from schedule_meetings.models import Meeting
 
-import openpyxl
-from .forms import LeadImportForm
-from django.contrib import messages
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.decorators import login_required
-from .models import TechnicianProfile
-from datetime import datetime
-import json
-from django.utils.dateparse import parse_date
-from django.db.models import Count
+
+state_map = {
+        'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
+        'Andhra Pradesh': {'code': 37, 'shortcut': 'AP'},
+        'Arunachal Pradesh': {'code': 12, 'shortcut': 'AR'},
+        'Assam': {'code': 18, 'shortcut': 'AS'},
+        'Bihar': {'code': 10, 'shortcut': 'BR'},
+        'Chandigarh': {'code': 4, 'shortcut': 'CH'},
+        'Chhattisgarh': {'code': 22, 'shortcut': 'CG'},
+        'Dadra and Nagar Haveli and Daman and Diu': {'code': 26, 'shortcut': 'DNHDD'},
+        'Delhi': {'code': 7, 'shortcut': 'DL'},
+        'Goa': {'code': 30, 'shortcut': 'GA'},
+        'Gujarat': {'code': 24, 'shortcut': 'GJ'},
+        'Haryana': {'code': 6, 'shortcut': 'HR'},
+        'Himachal Pradesh': {'code': 2, 'shortcut': 'HP'},
+        'Jammu and Kashmir': {'code': 1, 'shortcut': 'JK'},
+        'Jharkhand': {'code': 20, 'shortcut': 'JH'},
+        'Karnataka': {'code': 29, 'shortcut': 'KA'},
+        'Kerala': {'code': 32, 'shortcut': 'KL'},
+        'Ladakh': {'code': 38, 'shortcut': 'LA'},
+        'Lakshadweep': {'code': 31, 'shortcut': 'LD'},
+        'Madhya Pradesh': {'code': 23, 'shortcut': 'MP'},
+        'Maharashtra': {'code': 27, 'shortcut': 'MH'},
+        'Manipur': {'code': 14, 'shortcut': 'MN'},
+        'Meghalaya': {'code': 17, 'shortcut': 'ML'},
+        'Mizoram': {'code': 15, 'shortcut': 'MZ'},
+        'Nagaland': {'code': 13, 'shortcut': 'NL'},
+        'Odisha': {'code': 21, 'shortcut': 'OD'},
+        'Other Country': {'code': 99, 'shortcut': 'OC'},
+        'Other Territory': {'code': 97, 'shortcut': 'OT'},
+        'Puducherry': {'code': 34, 'shortcut': 'PY'},
+        'Punjab': {'code': 3, 'shortcut': 'PB'},
+        'Rajasthan': {'code': 8, 'shortcut': 'RJ'},
+        'Sikkim': {'code': 11, 'shortcut': 'SK'},
+        'Tamil Nadu': {'code': 33, 'shortcut': 'TN'},
+        'Telangana': {'code': 36, 'shortcut': 'TS'},
+        'Tripura': {'code': 16, 'shortcut': 'TR'},
+        'Uttar Pradesh': {'code': 9, 'shortcut': 'UP'},
+        'Uttarakhand': {'code': 5, 'shortcut': 'UK'},
+        'West Bengal': {'code': 19, 'shortcut': 'WB'}
+        } 
+
+
 
 def landing_page(request):
     return render(request , 'landing_page.html')
 
 
-import json
-from datetime import datetime
-from django.db.models import Count, Sum, Q
-from django.shortcuts import render
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            try:
+                role = user.userprofile.role
+
+                if role in ["admin", "sales","branch_manager","operation_person"]:
+                    login(request, user)
+                    return redirect("index")   # Admin/Sales Dashboard
+                elif role == "technician":
+                    login(request, user)
+                    return redirect("technician_dashboard")  # Technician Dashboard
+                else:
+                    messages.error(request, "Access denied: Invalid role.")
+            except UserProfile.DoesNotExist:
+                messages.error(request, "User profile not found.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    
+    return render(request, "landing_page.html")
+
+@login_required
+@role_required(['admin', 'sales', 'branch_manager','operation_person'])
 def index(request):
-    # Fetch data for Service Management
-    service_data = service_management.objects.values('selected_services').annotate(total_charges=Sum('total_charges'))
+        # Fetch data for Service Management
+        service_data = service_management.objects.values('selected_services').annotate(total_charges=Sum('total_charges'))
 
-    # Fetch data for Quotations
-    quotation_data = quotation.objects.values('quotation_date').annotate(total_amount=Sum('total_amount'))
+        # Fetch data for Quotations
+        quotation_data = quotation.objects.values('quotation_date').annotate(total_amount=Sum('total_amount'))
 
-    # Fetch data for Invoices
-    invoice_data = invoice.objects.values('company_name').annotate(total_amount=Sum('total_amount'))
+        # Fetch data for Invoices
+        invoice_data = invoice.objects.values('company_name').annotate(total_amount=Sum('total_amount'))
 
-    # Fetch data for Lead Management
-    lead_data1 = lead_management.objects.values('typeoflead').annotate(count=Count('id'))
+        # Fetch data for Lead Management
+        lead_data1 = lead_management.objects.values('typeoflead').annotate(count=Count('id'))
 
-    # Lead type chart data (filtered by enquirydate range)
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    if start_date and end_date:
-        filtered_leads = lead_management.objects.filter(enquirydate__range=[start_date, end_date])
-    else:
-        filtered_leads = lead_management.objects.all()
+        # Lead type chart data (filtered by enquirydate range)
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        if start_date and end_date:
+            filtered_leads = lead_management.objects.filter(enquirydate__range=[start_date, end_date])
+        else:
+            filtered_leads = lead_management.objects.all()
 
-    lead_data = {
-        "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
-        "datasets": [{
-            "data": [
-                filtered_leads.filter(typeoflead='Hot').count(),
-                filtered_leads.filter(typeoflead='Warm').count(),
-                filtered_leads.filter(typeoflead='Cold').count(),
-                filtered_leads.filter(typeoflead='NotInterested').count(),
-                filtered_leads.filter(typeoflead='LossofOrder').count()
-            ],
-            "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-        }]
-    }
-    lead_data_json = json.dumps(lead_data)
+        lead_data = {
+            "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
+            "datasets": [{
+                "data": [
+                    filtered_leads.filter(typeoflead='Hot').count(),
+                    filtered_leads.filter(typeoflead='Warm').count(),
+                    filtered_leads.filter(typeoflead='Cold').count(),
+                    filtered_leads.filter(typeoflead='NotInterested').count(),
+                    filtered_leads.filter(typeoflead='LossofOrder').count()
+                ],
+                "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+            }]
+        }
+        lead_data_json = json.dumps(lead_data)
 
-    # Follow-up remark chart data (from main_followup model)
-    start_date_followup = request.GET.get('start_date_followup')
-    end_date_followup = request.GET.get('end_date_followup')
+    
 
-    # Filter main_followup records by enquirydate if date range is provided
-    from crmapp.models import main_followup  # Adjust import according to your app structure
+        # Follow-up remark chart data (from main_followup model)
+        start_date_followup = request.GET.get('start_date_followup')
+        end_date_followup = request.GET.get('end_date_followup')
 
-    followup_queryset = main_followup.objects.all()
-    if start_date_followup and end_date_followup:
-        try:
-            start_dt_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
-            end_dt_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
-            # Assuming main_followup has a date field like enquirydate or followup_date to filter by
-            followup_queryset = followup_queryset.filter(enquirydate__range=[start_dt_followup, end_dt_followup])
-        except ValueError:
-            pass  # Ignore if date parsing fails
+        # Filter main_followup records by enquirydate if date range is provided
+         # Adjust import according to your app structure
 
-    # Count by followup_remark choices
-    followup_counts = followup_queryset.values('followup_remark').annotate(count=Count('id'))
-    # Prepare labels and counts based on your choices order
-    followup_labels = [
-        'Call not received',
-        'Give next Follow up date',
-        'Call Out of Coverage Area',
-    ]
-    # Create data list aligned with labels order
-    followup_data_list = []
-    for label in followup_labels:
-        entry = next((item for item in followup_counts if item['followup_remark'] == label), None)
-        followup_data_list.append(entry['count'] if entry else 0)
+        followup_queryset = main_followup.objects.all()
+        if start_date_followup and end_date_followup:
+            try:
+                start_dt_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
+                end_dt_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
+                # Assuming main_followup has a date field like enquirydate or followup_date to filter by
+                followup_queryset = followup_queryset.filter(enquirydate__range=[start_dt_followup, end_dt_followup])
+            except ValueError:
+                pass  # Ignore if date parsing fails
 
-    # Bar chart data for products by category
-    pest_control_count = Product.objects.filter(category='Pest Control').count()
-    fumigation_count = Product.objects.filter(category='Fumigation').count()
-    product_sell_count = Product.objects.filter(category='Product Sell').count()
+        # Count by followup_remark choices
+        followup_counts = followup_queryset.values('followup_remark').annotate(count=Count('id'))
+        # Prepare labels and counts based on your choices order
+        followup_labels = [
+            'Call not received',
+            'Give next Follow up date',
+            'Call Out of Coverage Area',
+        ]
+        # Create data list aligned with labels order
+        followup_data_list = []
+        for label in followup_labels:
+            entry = next((item for item in followup_counts if item['followup_remark'] == label), None)
+            followup_data_list.append(entry['count'] if entry else 0)
 
-    bar_chart_data = {
-        "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
-        "datasets": [{
-            "label": "Number of Products per Category",
-            "data": [pest_control_count, fumigation_count, product_sell_count],
-            "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
-        }]
-    }
+        # Bar chart data for products by category
+        pest_control_count = Product.objects.filter(category='Pest Control').count()
+        fumigation_count = Product.objects.filter(category='Fumigation').count()
+        product_sell_count = Product.objects.filter(category='Product Sell').count()
 
-    # Contract Type Distribution chart filtering
-    start_date_service = request.GET.get('start_date_service')
-    end_date_service = request.GET.get('end_date_service')
+        bar_chart_data = {
+            "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
+            "datasets": [{
+                "label": "Number of Products per Category",
+                "data": [pest_control_count, fumigation_count, product_sell_count],
+                "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
+            }]
+        }
 
-    if start_date_service and end_date_service:
-        start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
-        end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
-        service_data = service_management.objects.filter(
-            Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
-        ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
-    else:
-        service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+        # Contract Type Distribution chart filtering
+        start_date_service = request.GET.get('start_date_service')
+        end_date_service = request.GET.get('end_date_service')
 
-    labellist = [entry["contract_type"] for entry in service_data]
-    countlist = [entry["count"] for entry in service_data]
+        if start_date_service and end_date_service:
+            start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
+            end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
+            service_data = service_management.objects.filter(
+                Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
+            ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+        else:
+            service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
 
-    # Quotation and Invoice counts filtered by date and type
-    start_date_qo = request.GET.get('start_date_qo')
-    end_date_qo = request.GET.get('end_date_qo')
-    filter_type = request.GET.get('filter_type')
+        labellist = [entry["contract_type"] for entry in service_data]
+        countlist = [entry["count"] for entry in service_data]
 
-    quotations_count = 0
-    orders_count = 0
+        # Quotation and Invoice counts filtered by date and type
+        start_date_qo = request.GET.get('start_date_qo')
+        end_date_qo = request.GET.get('end_date_qo')
+        filter_type = request.GET.get('filter_type')
 
-    if start_date_qo and end_date_qo:
-        start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
-        end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
-        if filter_type == 'quotation':
-            quotations_count = quotation.objects.filter(
-                Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
-            ).count()
-            orders_count = invoice.objects.count()
-        elif filter_type == 'invoice':
-            orders_count = invoice.objects.filter(
-                Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
-            ).count()
+        quotations_count = 0
+        orders_count = 0
+
+        if start_date_qo and end_date_qo:
+            start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
+            end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
+            if filter_type == 'quotation':
+                quotations_count = quotation.objects.filter(
+                    Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
+                ).count()
+                orders_count = invoice.objects.count()
+            elif filter_type == 'invoice':
+                orders_count = invoice.objects.filter(
+                    Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
+                ).count()
+                quotations_count = quotation.objects.count()
+        else:
             quotations_count = quotation.objects.count()
-    else:
-        quotations_count = quotation.objects.count()
-        orders_count = invoice.objects.count()
+            orders_count = invoice.objects.count()
 
-    context = {
-        'lead_data': lead_data_json,
-        'service_data': service_data,
-        'quotation_data': quotation_data,
-        'invoice_data': invoice_data,
-        'labellist': json.dumps(labellist),
-        'countlist': json.dumps(countlist),
-        "quotationlist": json.dumps(["Quotations", "Orders"]),
-        "order": json.dumps([quotations_count, orders_count]),
-        'bar_chart_data': json.dumps(bar_chart_data),
+        start_date = request.GET.get("start_date_order")
+        end_date = request.GET.get("end_date_order")
+        followups = main_followup.objects.all()
+        # print("followups",followups)
 
-        # Follow-up chart context
-        'follow_up_labels': json.dumps(followup_labels),
-        'follow_up_data': json.dumps(followup_data_list),
-    }
+        if start_date and end_date:
+            try:
+                start = datetime.strptime(start_date, "%Y-%m-%d").date()
+                end = datetime.strptime(end_date, "%Y-%m-%d")+ timedelta(days=1) 
+                followups = followups.filter(created_at__range=(start, end))
+                # print("followup_filter", followups)
+            except ValueError:
+                pass  
 
-    return render(request, 'index.html', context)
+        # Create labels and data
+        order_status_labels = ['Close Win', 'Close Loss', 'Not Closed']
+        queryset = followups.values('order_status').annotate(count=Count('id'))
 
-   
+        order_status_data = []
+        for label in order_status_labels:
+            match = next((item for item in queryset if item['order_status'] == label), None)
+            order_status_data.append(match['count'] if match else 0)
 
-import random
+
+        context = {
+            'lead_data': lead_data_json,
+            'service_data': service_data,
+            'quotation_data': quotation_data,
+            'invoice_data': invoice_data,
+            'labellist': json.dumps(labellist),
+            'countlist': json.dumps(countlist),
+            "quotationlist": json.dumps(["Quotations", "Orders"]),
+            "order": json.dumps([quotations_count, orders_count]),
+            'bar_chart_data': json.dumps(bar_chart_data),
+
+
+            "order_status_labels": order_status_labels,
+            "order_status_data": order_status_data,
+            # Follow-up chart context
+            'follow_up_labels': json.dumps(followup_labels),
+            'follow_up_data': json.dumps(followup_data_list),
+        }
+
+        return render(request, 'index.html', context)
 
 def generate_customerid(fullname):
     names = fullname.strip().split()
@@ -209,12 +318,7 @@ def generate_customerid(fullname):
     return first_part + last_part + random_number
 
 
-
-from django.http import JsonResponse
-from .models import customer_details
-from django.db.models import Count, Max, Q
-
-
+@role_required(['admin', 'sales'])
 def get_customer_name(request):
     customer_id = request.GET.get('customer_id', None)
     if customer_id:
@@ -228,7 +332,6 @@ def get_customer_name(request):
 
 
 
-from django.conf import settings
 def signup(request):
     if request.method == "GET":
         return render(request, 'signup.html')
@@ -263,220 +366,225 @@ def signup(request):
             return render(request, "signup.html", context)
 
 
+# def user_login(request):
+#     if request.method == "GET":
+#         return render(request, 'login.html')
+    
+#     else:
+#         uname = request.POST.get('uname') 
+#         upass = request.POST.get('upass')
 
-from django.db.models import Count, Max, Q
-from django.db.models.functions import Lower
+#         u = authenticate(username=uname, password=upass,  )
+
+#         if u is not None:
+#             login(request, u)
+#             start_date = request.GET.get('start_date')
+#             end_date = request.GET.get('end_date')
+
+#             latest_followups_qs = main_followup.objects.values('lead').annotate(
+#                 latest_id=Max('id')
+#             ).values_list('latest_id', flat=True)
+
+#             if start_date and end_date:
+#                 filtered_leads = main_followup.objects.filter(
+#                     id__in=latest_followups_qs,
+#                     lead__enquirydate__range=[start_date, end_date]
+#                 )
+#             else:
+#                 filtered_leads = main_followup.objects.filter(id__in=latest_followups_qs)
+
+#             # Prepare lead type chart data
+#             lead_data = {
+#             "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
+#             "datasets": [{
+#             "data": [
+#             filtered_leads.filter(typeoflead='Hot').count(),
+#             filtered_leads.filter(typeoflead='Warm').count(),
+#             filtered_leads.filter(typeoflead='Cold').count(),
+#             filtered_leads.filter(typeoflead='NotInterested').count(),
+#             filtered_leads.filter(typeoflead='LossofOrder').count()
+#              ],
+#                 "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+#             }]
+#             }
+
+
+#             # Serialize the data to JSON
+#             lead_data_json = json.dumps(lead_data)
+
+#             # Retrieve the start and end dates from query parameters
+#             start_date_followup = request.GET.get('start_date_followup')
+#             end_date_followup = request.GET.get('end_date_followup')
+
+#             # Default to today's date if no date range is provided
+#             if start_date_followup:
+#                 start_date_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
+#             if end_date_followup:
+#                 end_date_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
+
+#             # Define the stages
+#             stages = {
+#                 1: "No Follow-Up Done",
+#                 2: "First Follow-Up Done",
+#                 3: "Second Follow-Up Done",
+#                 4: "Third Follow-Up Done",
+#                 5: "Final Follow-Up Done"
+#             }
+
+#             # Filter the lead_management table by the date range if provided
+#             if start_date_followup and end_date_followup:
+#                 stage_counts = lead_management.objects.filter(enquirydate__range=[start_date_followup, end_date_followup]) \
+#                     .values('stage') \
+#                     .annotate(count=Count('id')) \
+#                     .order_by('stage')
+#             else:
+#                 # If no date range, fetch all data
+#                 stage_counts = lead_management.objects.values('stage') \
+#                     .annotate(count=Count('id')) \
+#                     .order_by('stage')
+
+#             # Prepare the labels and data for the chart
+
+
+#             pest_control_count = Product.objects.filter(category='Pest Control').count()
+#             fumigation_count = Product.objects.filter(category='Fumigation').count()
+#             product_sell_count = Product.objects.filter(category='Product Sell').count()
+
+#             # Bar chart data
+#             bar_chart_data = {
+#                 "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
+#                 "datasets": [{
+#                     "label": "Number of Products per Category",
+#                     "data": [pest_control_count, fumigation_count, product_sell_count],
+#                     "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
+#                 }]
+#             }
+
+    
+#             # Extract service-specific date filters
+#             start_date_service = request.GET.get('start_date_service')
+#             end_date_service = request.GET.get('end_date_service')
+
+#             # Filter service management data by service_date range if present
+#             if start_date_service and end_date_service:
+#                 start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
+#                 end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
+
+#                 # Apply date filter on service_date field for contract type distribution
+#                 service_data = service_management.objects.filter(
+#                     Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
+#                 ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+#             else:
+#                 # Default data if no service date filter is applied
+#                 service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
+
+#             # Prepare data for the Contract Type Distribution chart
+#             labellist = [entry["contract_type"] for entry in service_data]
+#             countlist = [entry["count"] for entry in service_data]
+
+#             # Extract query parameters
+#             start_date_qo = request.GET.get('start_date_qo')
+#             end_date_qo = request.GET.get('end_date_qo')
+#             filter_type = request.GET.get('filter_type')
+
+#             # Initialize counts
+#             quotations_count = 0
+#             orders_count = 0
+
+#             # Apply date filters if present
+#             if start_date_qo and end_date_qo:
+#                 # Parse dates
+#                 start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
+#                 end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
+
+#                 if filter_type == 'quotation':
+#                     # Filter quotations by date range
+#                     quotations_count = quotation.objects.filter(
+#                         Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
+#                     ).count()
+#                     orders_count = invoice.objects.count()  # Unfiltered
+#                 elif filter_type == 'invoice':
+#                     # Filter invoices by date range
+#                     orders_count = invoice.objects.filter(
+#                         Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
+#                     ).count()
+#                     quotations_count = quotation.objects.count()  # Unfiltered
+#             else:
+#                 # Default counts without filters
+#                 quotations_count = quotation.objects.count()
+#                 orders_count = invoice.objects.count()
+            
+            
+#             # Prepare context
+#             context = {
+#                 # 'total_leads': leads.count(),
+#                 # 'hot_leads': hot_leads,
+#                 # 'warm_leads': warm_leads,
+#                 # 'cold_leads': cold_leads,
+#                 # 'not_interested': not_interested,
+#                 # 'loss_of_order': loss_of_order,
+#                 'lead_data': lead_data_json,
+#                 'service_data': service_data,
+#                 # 'quotation_data': quotation_data,
+#                 # 'invoice_data': invoice_data,
+#                 # 'lead_data1': lead_data1,
+#                 'labellist': json.dumps(labellist),  # Serialize labels
+#                 'countlist': json.dumps(countlist),  # Serialize counts
+#                 "quotationlist": json.dumps(["Quotations", "Orders"]),
+#                 "order": json.dumps([quotations_count, orders_count]),
+#                 'lead_data': json.dumps(lead_data),
+#                 'bar_chart_data': json.dumps(bar_chart_data),
+                
+#             }
+            
+#             # return render(request, 'index.html', context)
+#             return redirect('index')
+
+
+#             # return render(request, "index.html")
+        
+
+#         else:
+#             context = {'msg1': 'Wrong Username Or Password'}
+#             return render(request, "login.html", context)
 
 def user_login(request):
     if request.method == "GET":
         return render(request, 'login.html')
-    
+
+    uname = request.POST.get('uname') 
+    upass = request.POST.get('upass')
+    user = authenticate(username=uname, password=upass)
+
+    if user:
+        try:
+            role = user.userprofile.role
+            if role not in ['admin', 'sales']:
+                messages.error(request, "Only admin and sales users are allowed to log in.")
+                return render(request, 'login.html')
+
+            # Login only if role is valid
+            login(request, user)
+
+
+            # return render(request, "index.html", context)
+            return redirect('index')
+
+        except UserProfile.DoesNotExist:
+            messages.error(request, "User profile not found.")
+            return render(request, 'login.html')
     else:
-        uname = request.POST.get('uname')  # Use .get() to avoid MultiValueDictKeyError
-        upass = request.POST.get('upass')
-
-        u = authenticate(username=uname, password=upass)
-
-        if u is not None:
-            login(request, u)
+        return render(request, "login.html", {'msg1': 'Wrong Username Or Password'})
 
 
-           
-            start_date = request.GET.get('start_date')
-            end_date = request.GET.get('end_date')
-
-            latest_followups_qs = main_followup.objects.values('lead').annotate(
-                latest_id=Max('id')
-            ).values_list('latest_id', flat=True)
-
-            if start_date and end_date:
-                filtered_leads = main_followup.objects.filter(
-                    id__in=latest_followups_qs,
-                    lead__enquirydate__range=[start_date, end_date]
-                )
-            else:
-                filtered_leads = main_followup.objects.filter(id__in=latest_followups_qs)
-
-            # Prepare lead type chart data
-            lead_data = {
-            "labels": ["Hot", "Warm", "Cold", "NotInterested", "LossOfOrder"],
-            "datasets": [{
-            "data": [
-            filtered_leads.filter(typeoflead='Hot').count(),
-            filtered_leads.filter(typeoflead='Warm').count(),
-            filtered_leads.filter(typeoflead='Cold').count(),
-            filtered_leads.filter(typeoflead='NotInterested').count(),
-            filtered_leads.filter(typeoflead='LossofOrder').count()
-             ],
-                "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-            }]
-            }
-
-
-            # Serialize the data to JSON
-            lead_data_json = json.dumps(lead_data)
-
-            # Retrieve the start and end dates from query parameters
-            start_date_followup = request.GET.get('start_date_followup')
-            end_date_followup = request.GET.get('end_date_followup')
-
-            # Default to today's date if no date range is provided
-            if start_date_followup:
-                start_date_followup = datetime.strptime(start_date_followup, "%Y-%m-%d")
-            if end_date_followup:
-                end_date_followup = datetime.strptime(end_date_followup, "%Y-%m-%d")
-
-            # Define the stages
-            stages = {
-                1: "No Follow-Up Done",
-                2: "First Follow-Up Done",
-                3: "Second Follow-Up Done",
-                4: "Third Follow-Up Done",
-                5: "Final Follow-Up Done"
-            }
-
-            # Filter the lead_management table by the date range if provided
-            if start_date_followup and end_date_followup:
-                stage_counts = lead_management.objects.filter(enquirydate__range=[start_date_followup, end_date_followup]) \
-                    .values('stage') \
-                    .annotate(count=Count('id')) \
-                    .order_by('stage')
-            else:
-                # If no date range, fetch all data
-                stage_counts = lead_management.objects.values('stage') \
-                    .annotate(count=Count('id')) \
-                    .order_by('stage')
-
-            # Prepare the labels and data for the chart
-
-
-            pest_control_count = Product.objects.filter(category='Pest Control').count()
-            fumigation_count = Product.objects.filter(category='Fumigation').count()
-            product_sell_count = Product.objects.filter(category='Product Sell').count()
-
-            # Bar chart data
-            bar_chart_data = {
-                "labels": ['Pest Control', 'Fumigation', 'Product Sell'],
-                "datasets": [{
-                    "label": "Number of Products per Category",
-                    "data": [pest_control_count, fumigation_count, product_sell_count],
-                    "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56'],
-                }]
-            }
-
-            print('testtttttttttttttttttttt')
-
-
-
-            # Extract service-specific date filters
-            start_date_service = request.GET.get('start_date_service')
-            end_date_service = request.GET.get('end_date_service')
-
-            # Filter service management data by service_date range if present
-            if start_date_service and end_date_service:
-                start_date_service_obj = datetime.strptime(start_date_service, "%Y-%m-%d")
-                end_date_service_obj = datetime.strptime(end_date_service, "%Y-%m-%d")
-
-                # Apply date filter on service_date field for contract type distribution
-                service_data = service_management.objects.filter(
-                    Q(service_date__gte=start_date_service_obj) & Q(service_date__lte=end_date_service_obj)
-                ).values("contract_type").annotate(count=Count("id")).order_by("contract_type")
-            else:
-                # Default data if no service date filter is applied
-                service_data = service_management.objects.values("contract_type").annotate(count=Count("id")).order_by("contract_type")
-
-            # Prepare data for the Contract Type Distribution chart
-            labellist = [entry["contract_type"] for entry in service_data]
-            countlist = [entry["count"] for entry in service_data]
-
-            # Extract query parameters
-            start_date_qo = request.GET.get('start_date_qo')
-            end_date_qo = request.GET.get('end_date_qo')
-            filter_type = request.GET.get('filter_type')
-
-            # Initialize counts
-            quotations_count = 0
-            orders_count = 0
-
-            # Apply date filters if present
-            if start_date_qo and end_date_qo:
-                # Parse dates
-                start_date_obj = datetime.strptime(start_date_qo, "%Y-%m-%d")
-                end_date_obj = datetime.strptime(end_date_qo, "%Y-%m-%d")
-
-                if filter_type == 'quotation':
-                    # Filter quotations by date range
-                    quotations_count = quotation.objects.filter(
-                        Q(quotation_date__gte=start_date_obj) & Q(quotation_date__lte=end_date_obj)
-                    ).count()
-                    orders_count = invoice.objects.count()  # Unfiltered
-                elif filter_type == 'invoice':
-                    # Filter invoices by date range
-                    orders_count = invoice.objects.filter(
-                        Q(date__gte=start_date_obj) & Q(date__lte=end_date_obj)
-                    ).count()
-                    quotations_count = quotation.objects.count()  # Unfiltered
-            else:
-                # Default counts without filters
-                quotations_count = quotation.objects.count()
-                orders_count = invoice.objects.count()
-            
-            
-            # Prepare context
-            context = {
-                # 'total_leads': leads.count(),
-                # 'hot_leads': hot_leads,
-                # 'warm_leads': warm_leads,
-                # 'cold_leads': cold_leads,
-                # 'not_interested': not_interested,
-                # 'loss_of_order': loss_of_order,
-                'lead_data': lead_data_json,
-                'service_data': service_data,
-                # 'quotation_data': quotation_data,
-                # 'invoice_data': invoice_data,
-                # 'lead_data1': lead_data1,
-                'labellist': json.dumps(labellist),  # Serialize labels
-                'countlist': json.dumps(countlist),  # Serialize counts
-                "quotationlist": json.dumps(["Quotations", "Orders"]),
-                "order": json.dumps([quotations_count, orders_count]),
-                'lead_data': json.dumps(lead_data),
-                'bar_chart_data': json.dumps(bar_chart_data),
-                
-            }
-            print("chartctfgvbhjnbgtfvrdcew:::::::::::::::::::")
-
-
-            return render(request, 'index.html', context)
-
-
-            # return render(request, "index.html")
-        
-
-        else:
-            context = {'msg1': 'Wrong Username Or Password'}
-            return render(request, "login.html", context)
-        
-
-    
+@login_required
 def user_logout(request):
-
     logout(request)
-
     return redirect("/")
 
-
-
-
-
-
-
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import SalesPerson
-from django.utils.dateparse import parse_date
-
 # Add Sales Person
+@login_required
+@role_required(['admin','branch_manager'])
 def add_sales_person(request):
     if request.method == 'POST':
         full_name = request.POST.get('full_name')
@@ -484,60 +592,403 @@ def add_sales_person(request):
         mobile_no = request.POST.get('mobile_no')
         email = request.POST.get('email')
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
+        branch_id = request.POST.get('branch')
+        branch = Branch.objects.get(id = branch_id)
+        co_ordinator = request.POST.get('co_ordinator') == True
+        # Create Django User (username as email or phone, password default or random)
+        username = mobile_no
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        user.is_staff = True
+        user.save()
+        
 
+        # Assign role to user via UserProfile
+        user_profile = user.userprofile  # auto-created by the signal
+        user_profile.role = 'sales'
+        user_profile.phone = mobile_no
+        user_profile.save()
+
+        # Create SalesPerson record
         SalesPerson.objects.create(
             full_name=full_name,
             date_of_joining=date_of_joining,
             mobile_no=mobile_no,
             email=email,
-            date_of_birth=date_of_birth
+            date_of_birth=date_of_birth,
+            branch = branch,
+            co_ordinator = co_ordinator
+            
         )
+
         return redirect('sales_person_list')
-
-    return render(request, 'add_sales_person.html')
-
+    branches = Branch.objects.all()
+    return render(request, 'add_sales_person.html',{"branches":branches})
 
 # List Sales Persons
+@login_required
+@role_required(['admin', 'branch_manager'])
 def sales_person_list(request):
-    sales_persons = SalesPerson.objects.all()
+    if request.user.userprofile.role == 'admin':
+        sales_persons = SalesPerson.objects.all()
+    elif request.user.userprofile.role == 'branch_manager':
+        branch_manager = BranchManager.objects.get(mobile_no = request.user.username)
+        sales_persons = SalesPerson.objects.filter(branch=branch_manager.branch)
+    
     return render(request, 'sales_person_list.html', {'sales_persons': sales_persons})
+
+@login_required
+@role_required(['admin', 'branch_manager'])
+def export_sales_person_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="sales_persons.csv"'
+
+    writer = csv.writer(response)
+    
+    # Header row
+    writer.writerow(['Full Name', 'Date of Joining', 'Mobile No', 'Email', 'Date of Birth'])
+
+    # Data rows
+    for sp in SalesPerson.objects.all():
+        writer.writerow([
+            sp.full_name,
+            sp.date_of_joining.strftime('%Y-%m-%d'),
+            sp.mobile_no,
+            sp.email,
+            sp.date_of_birth.strftime('%Y-%m-%d'),
+        ])
+
+    return response
 
 
 # Edit Sales Person
+@login_required
+@role_required(['admin','branch_manager'])
 def edit_sales_person(request, pk):
     person = get_object_or_404(SalesPerson, pk=pk)
 
     if request.method == 'POST':
-        person.full_name = request.POST.get('full_name')
-        person.date_of_joining = parse_date(request.POST.get('date_of_joining'))
-        person.mobile_no = request.POST.get('mobile_no')
-        person.email = request.POST.get('email')
-        person.date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        full_name = request.POST.get('full_name')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        mobile_no = request.POST.get('mobile_no')
+        email = request.POST.get('email')
+        date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
+        branch_id = request.POST.get('branch')
+        branch = Branch.objects.get(id = branch_id)
+        co_ordinator = request.POST.get('co_ordinator')
+        # Update SalesPerson
+        person.full_name = full_name
+        person.date_of_joining = date_of_joining
+        person.mobile_no = mobile_no
+        person.email = email
+        person.date_of_birth = date_of_birth
+        person.branch = branch
+        person.co_ordinator = co_ordinator
         person.save()
+
+        # Check for existing user
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            # Update existing user
+            user.first_name = full_name
+            user.username = mobile_no
+            user.email = email
+            if password:
+                user.set_password(password)
+            user.save()
+        else:
+            # Create new user
+            user = User.objects.create_user(
+                username=mobile_no,
+                email=email,
+                password=password or User.objects.make_random_password(),
+                first_name=full_name
+            )
+        user.is_staff = True
+        user.save()
+
+        # Update or create UserProfile
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        user_profile.role = 'sales'
+        user_profile.phone = mobile_no
+        user_profile.save()
+
         return redirect('sales_person_list')
+    branches = Branch.objects.all()
+    return render(request, 'edit_sales_person.html', {'person': person, 'branches':branches})
 
-    return render(request, 'edit_sales_person.html', {'person': person})
-
-
-# Delete Sales Person
+@login_required
+@role_required(['admin'])
 def delete_sales_person(request, pk):
     person = get_object_or_404(SalesPerson, pk=pk)
 
     if request.method == 'POST':
+         # Delete the User whose username is the BranchManager's mobile number
+        try:
+            user = User.objects.get(username=person.mobile_no)
+            user.delete()  # This will also delete UserProfile if CASCADE
+        except User.DoesNotExist:
+            pass  # User not found, just continue
         person.delete()
         return redirect('sales_person_list')
 
     return render(request, 'delete_sales_person.html', {'person': person})
 
 
+@login_required
+@role_required(['admin'])
+def add_branch_manager(request):
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        mobile_no = request.POST.get('mobile_no')
+        email = request.POST.get('email')
+        date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
+        branch_id = request.POST.get('branch')
+        branch_instance = Branch.objects.get(pk=branch_id)
+
+        # Create Django User (username as email or phone, password default or random)
+        username = mobile_no
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        user.is_staff = True
+        user.save()
+        
+
+        # Assign role to user via UserProfile
+        user_profile = user.userprofile  # auto-created by the signal
+        user_profile.role = 'branch_manager'
+        user_profile.phone = mobile_no
+        user_profile.save()
+
+        # Create SalesPerson record
+        BranchManager.objects.create(
+            full_name=full_name,
+            date_of_joining=date_of_joining,
+            mobile_no=mobile_no,
+            email=email,
+            date_of_birth=date_of_birth,
+            branch=branch_instance
+            
+        )
+
+        return redirect('branch_manager_list')
+    
+    branch = Branch.objects.all()
+    return render(request, 'add_branch_manager.html',{'branch': branch})
 
 
+@login_required
+@role_required(['admin'])
+def branch_manager_list(request):
+    persons = BranchManager.objects.all()
+    return render(request, 'branch_manager_list.html', {'persons': persons})
 
 
+@login_required
+@role_required(['admin'])
+def edit_branch_manager(request, pk):
+    person = get_object_or_404(BranchManager, pk=pk)
 
-from django.http import JsonResponse
-from .models import customer_details, lead_management
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        mobile_no = request.POST.get('mobile_no')
+        email = request.POST.get('email')
+        date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
+        branch_id = request.POST.get('branch')
+        branch_instance = Branch.objects.get(pk=branch_id)
+        # Update SalesPerson
+        person.full_name = full_name
+        person.date_of_joining = date_of_joining
+        person.mobile_no = mobile_no
+        person.email = email
+        person.date_of_birth = date_of_birth
+        person.branch = branch_instance
+        person.save()
 
+        # Check for existing user
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            # Update existing user
+            user.first_name = full_name
+            user.username = mobile_no
+            user.email = email
+            if password:
+                user.set_password(password)
+            user.save()
+        else:
+            # Create new user
+            user = User.objects.create_user(
+                username=mobile_no,
+                email=email,
+                password=password or User.objects.make_random_password(),
+                first_name=full_name
+            )
+        user.is_staff = True
+        user.save()
+
+        # Update or create UserProfile
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        user_profile.role = 'branch_manager'
+        user_profile.phone = mobile_no
+        user_profile.save()
+
+        return redirect('branch_manager_list')
+    branch = Branch.objects.all()
+    return render(request, 'edit_branch_manager.html', {'person': person, 'branch':branch})
+
+@login_required
+@role_required(['admin'])
+def delete_branch_manager(request, pk):
+    person = get_object_or_404(BranchManager, pk=pk)
+
+    if request.method == 'POST':
+        # Delete the User whose username is the BranchManager's mobile number
+        try:
+            user = User.objects.get(username=person.mobile_no)
+            user.delete()  # This will also delete UserProfile if CASCADE
+        except User.DoesNotExist:
+            pass  # User not found, just continue
+
+        # Then delete the BranchManager object
+        person.delete()
+
+        return redirect('branch_manager_list')
+
+    return redirect('branch_manager_list')
+
+@login_required
+@role_required(['admin','branch_manager'])
+def add_operation_person(request):
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        mobile_no = request.POST.get('mobile_no')
+        email = request.POST.get('email')
+        date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
+        branch_id = request.POST.get('branch')
+        branch = Branch.objects.get(id = branch_id)
+        # Create Django User (username as email or phone, password default or random)
+        username = mobile_no
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        user.is_staff = True
+        user.save()
+        
+
+        # Assign role to user via UserProfile
+        user_profile = user.userprofile  # auto-created by the signal
+        user_profile.role = 'operation_person'
+        user_profile.phone = mobile_no
+        user_profile.save()
+
+        # Create SalesPerson record
+        OperationPerson.objects.create(
+            user = user,
+            full_name=full_name,
+            date_of_joining=date_of_joining,
+            mobile_no=mobile_no,
+            email=email,
+            date_of_birth=date_of_birth,
+            branch = branch,
+           
+            
+        )
+
+        return redirect('operation_person_list')
+    branches = Branch.objects.all()
+    return render(request, 'add_operation_person.html',{"branches":branches})
+
+@login_required
+@role_required(['admin','branch_manager'])
+def operation_person_list(request):
+    u = request.user
+    if request.user.userprofile.role == 'admin':
+        persons = OperationPerson.objects.all()
+    elif request.user.userprofile.role == 'branch_manager':
+        branch_manager = BranchManager.objects.get(mobile_no = request.user.username)
+        persons = OperationPerson.objects.filter(branch=branch_manager.branch)
+    return render(request, 'operation_person_list.html', {'persons': persons})
+
+@login_required
+@role_required(['admin','branch_manager'])
+def edit_operation_person(request, pk):
+    person = get_object_or_404(OperationPerson, pk=pk)
+
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
+        mobile_no = request.POST.get('mobile_no')
+        email = request.POST.get('email')
+        date_of_birth = parse_date(request.POST.get('date_of_birth'))
+        password = request.POST.get('password')
+        branch_id = request.POST.get('branch')
+        branch_instance = Branch.objects.get(pk=branch_id)
+        # Update SalesPerson
+        person.full_name = full_name
+        person.date_of_joining = date_of_joining
+        person.mobile_no = mobile_no
+        person.email = email
+        person.date_of_birth = date_of_birth
+        person.branch = branch_instance
+        person.save()
+
+        # Check for existing user
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            # Update existing user
+            user.first_name = full_name
+            user.username = mobile_no
+            user.email = email
+            if password:
+                user.set_password(password)
+            user.save()
+        else:
+            # Create new user
+            user = User.objects.create_user(
+                username=mobile_no,
+                email=email,
+                password=password or User.objects.make_random_password(),
+                first_name=full_name
+            )
+        user.is_staff = True
+        user.save()
+        person.user = user
+
+        # Update or create UserProfile
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        user_profile.role = 'operation_person'
+        user_profile.phone = mobile_no
+        user_profile.save()
+
+        return redirect('operation_person_list')
+    branch = Branch.objects.all()
+    return render(request, 'edit_operation_person.html', {'person': person, 'branches':branch})
+
+@login_required
+@role_required(['admin','branch_manager'])
+def delete_operation_person(request, pk):
+    operation_person = get_object_or_404(OperationPerson, pk=pk)
+
+    # Also delete linked User (to avoid orphan user accounts)
+    user = operation_person.user
+
+    # Delete OperationPerson first
+    operation_person.delete()
+
+    # Then delete user account
+    user.delete()
+
+    messages.success(request, "Operation Person deleted successfully.")
+    return redirect('operation_person_list')
+
+@login_required
 def customer_details_create(request):
     if request.method == 'GET':
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -548,163 +999,223 @@ def customer_details_create(request):
                     'fullname': lead.customername or '',
                     'primaryemail': lead.customeremail or '',
                     'secondarycontact': lead.secondarycontact or '',
-                    'contactperson': lead.contactedby or '',
-                    'customersegment': lead.customersegment or '',
+                    'contactperson': (
+                        lead.salesperson.full_name if lead.salesperson 
+                        else lead.branch_manager.full_name if getattr(lead, 'branch_manager', None)
+                        else ''
+                    ),
+                    'contactedby': lead.contactedby or '',
                     'shifttopartyaddress': lead.customeraddress or '',
                     'shifttopartycity': lead.city or '',
                     'soldtopartyaddress': lead.customeraddress or '',
                     'soldtopartycity': lead.city or '',
+                    'customer_type':lead.customer_type or '',
+                    'or_name':lead.or_name or '',
+                    'or_contact': lead.or_contact or None,
+                    'branch': lead.branch_id or None,
                 }
+                print(data)
+
                 return JsonResponse({'status': 'exists', 'data': data})
             return JsonResponse({'status': 'not_found'})
-        return render(request, 'customer_details.html')
+        branches = Branch.objects.all()
+        return render(request, 'customer_details.html',{'branches':branches})
+    elif request.method == 'POST':
+            fullname = request.POST.get('fullname', '').strip()
+            primarycontact = request.POST.get('primarycontact', '').strip()
 
-    else:
-        fullname = request.POST['fullname']
-        primaryemail = request.POST['primaryemail']
-        secondaryemail = request.POST['secondaryemail']
-        primarycontact = request.POST['primarycontact']
-        secondarycontact = request.POST['secondarycontact'] or None
-        contactperson = request.POST['contactperson']
-        customersegment = request.POST['customersegment']
-        shifttopartyaddress = request.POST['shifttopartyaddress']
-        shifttopartycity = request.POST['shifttopartycity']
-        shifttopartystate = request.POST['shifttopartystate']
-        shifttopartypostal = request.POST['shifttopartypostal']
-        soldtopartyaddress = request.POST['soldtopartyaddress']
-        soldtopartycity = request.POST['soldtopartycity']
-        soldtopartystate = request.POST['soldtopartystate']
-        soldtopartypostal = request.POST['soldtopartypostal']
+            # fallback email if empty
+            primaryemail = request.POST.get('primaryemail') or "test@sample.com"
+            secondaryemail = request.POST.get('secondaryemail', '')
+            secondarycontact = request.POST.get('secondarycontact') or None
+            contactperson = request.POST.get('contactperson', '')
+            designstion = request.POST.get('designstion', '')
+            shifttopartyaddress = request.POST.get('shifttopartyaddress', '')
+            shifttopartycity = request.POST.get('shifttopartycity', '')
+            shifttopartystate = request.POST.get('shifttopartystate', '')
+            shifttopartypostal = request.POST.get('shifttopartypostal', '')
+            soldtopartyaddress = request.POST.get('soldtopartyaddress', '')
+            soldtopartycity = request.POST.get('soldtopartycity', '')
+            soldtopartystate = request.POST.get('soldtopartystate', '')
+            soldtopartypostal = request.POST.get('soldtopartypostal', '')
+            customer_type = request.POST.get('customer_type', 'Individual')
+            or_name = request.POST.get('or_name', '')
+            or_contact = request.POST.get('or_contact') or None
+            branch = Branch.objects.get(id = request.POST.get("branch"))
+            # validate required fields
+            if not fullname or not primarycontact:
+                return render(request, "customer_details.html", {
+                    'msg1': 'Full Name and Primary Contact are required'
+                })
 
-        if not fullname or not primaryemail or not primarycontact:
-            return render(request, "customer_details.html", {'msg1': 'Field cannot be empty'})
+            customerid = generate_customerid(fullname)
 
-        customerid = generate_customerid(fullname)
+            customer_details.objects.create(
+                fullname=fullname,
+                primaryemail=primaryemail,
+                secondaryemail=secondaryemail,
+                primarycontact=primarycontact,
+                secondarycontact=secondarycontact,
+                contactperson=contactperson,
+                designation=designstion,
+                shifttopartyaddress=shifttopartyaddress,
+                shifttopartycity=shifttopartycity,
+                shifttopartystate=shifttopartystate,
+                shifttopartypostal=shifttopartypostal,
+                soldtopartyaddress=soldtopartyaddress,
+                soldtopartycity=soldtopartycity,
+                soldtopartystate=soldtopartystate,
+                soldtopartypostal=soldtopartypostal,
+                customerid=customerid,
+                customer_type=customer_type,
+                or_name=or_name,
+                or_contact=or_contact,
+                branch = branch
+            )
 
-        customer_details.objects.create(
-            fullname=fullname,
-            primaryemail=primaryemail,
-            secondaryemail=secondaryemail,
-            primarycontact=primarycontact,
-            secondarycontact=secondarycontact,
-            contactperson=contactperson,
-            customersegment=customersegment,
-            shifttopartyaddress=shifttopartyaddress,
-            shifttopartycity=shifttopartycity,
-            shifttopartystate=shifttopartystate,
-            shifttopartypostal=shifttopartypostal,
-            soldtopartyaddress=soldtopartyaddress,
-            soldtopartycity=soldtopartycity,
-            soldtopartystate=soldtopartystate,
-            soldtopartypostal=soldtopartypostal,
-            customerid=customerid
-        )
-        return redirect('/display_customer')
+            # Conditional redirect
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect('/display_customer')
+    
+
+@login_required
+def export_customer_excel(request):
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="customer_list.csv"'
+
+    writer = csv.writer(response)
+
+    # Get all model field names
+    model_fields = [field.name for field in customer_details._meta.fields]
+
+    # Write header row
+    writer.writerow([field.replace('_', ' ').title() for field in model_fields])
+
+    # Write data rows
+    for obj in customer_details.objects.all().values_list(*model_fields):
+        writer.writerow(obj)
+
+    return response
 
 
-from django.shortcuts import render
-from .models import Product
-
-from django.shortcuts import render
-from .models import Product
+@login_required
 def product_list(request):
+    # 🏷️ Get filters
     category_filter = request.GET.get('category', 'all')
+    search_query = request.GET.get('search', '').strip()
+
+    # 🧭 Base queryset
+    products = Product.objects.all()
+
+    # 🔍 Search filter
+    if search_query:
+        products = products.filter(
+            Q(product_name__icontains=search_query) |
+            Q(hsn_code__icontains=search_query) |
+            Q(category__icontains=search_query)
+        )
+
+    # 🏷️ Category filter
     if category_filter and category_filter != 'all':
-        products = Product.objects.filter(category=category_filter)
-    else:
-        products = Product.objects.all()
+        products = products.filter(category=category_filter)
 
-    categories = Product.CATEGORY_CHOICES
-    categories = [choice[0] for choice in categories]
+    # 📄 Pagination
+    paginator = Paginator(products, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
+    # 🗂️ Category list
+    categories = [choice[0] for choice in Product.CATEGORY_CHOICES]
+
+    # 🧩 Context
     context = {
-        'products': products,
+        'page_obj': page_obj,
         'categories': categories,
         'selected_category': category_filter,
+        'search_query': search_query,
+        'product_count': paginator.count,
     }
     return render(request, 'product_list.html', context)
 
+@login_required
+def export_product_list_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="product_list.csv"'
 
+    writer = csv.writer(response)
+    
+    # Header row
+    writer.writerow(['Name', 'Category'])
 
+    # Data rows
+    for p in Product.objects.all():
+        writer.writerow([
+            p.product_name,
+            p.category
+        ])
 
+    return response
 
+@login_required
 def delete_product(request, product_id):
     product = get_object_or_404(Product, product_id=product_id)
     product.delete()
     return redirect('/products')
 
 
-from django.shortcuts import render, redirect
-from django.utils import timezone
-from .models import service_management, customer_details
 
-
+@login_required
+@role_required(['admin','sales', 'branch_manager'])
 def service_management_create(request):
     customers = customer_details.objects.all()
-    category_choices = Product.CATEGORY_CHOICES  # Pass category choices to the template
-    print("category choice0", category_choices)
-    products = Product.objects.all()  # Adjust filter as necessary
-    print("product in all ", products)
-
+    category_choices = Product.CATEGORY_CHOICES
+    products = Product.objects.all()
+    sales_persons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+    branch = Branch.objects.all()
+    frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
+    segments = service_management._meta.get_field('segment').choices
     if request.method == 'POST':
         try:
-            # Parse and validate form data
-            customer_id = request.POST['customer_id']
-            customer = customer_details.objects.get(id=customer_id)
-            address=request.POST.get('address', 'Null')
+            customer_contact = request.POST['customer_contact']
+            customer = customer_details.objects.get(primarycontact=customer_contact)
+            address = request.POST.get('address', 'Null')
             lead_date = request.POST.get('lead_date')
             service_date = request.POST.get('service_date')
+
             lead_date = datetime.strptime(lead_date, '%Y-%m-%d').date() if lead_date else None
             service_date = datetime.strptime(service_date, '%Y-%m-%d').date() if service_date else None
-            
-            # Extract and validate selected services
-            selected_service_names = request.POST.get('selected_services_names', '').strip()
-            if not selected_service_names:
-                raise ValueError("No services selected. Please select at least one service.")
 
-            selected_service_names_list = selected_service_names.split(',') if selected_service_names else []
-            print(f"Selected Product Names: {selected_service_names_list}")
+            total_price = float(request.POST.get('total_price', 0) or 0)
+            total_with_gst = float(request.POST.get('total_with_gst', 0) or 0)
+            total_gst = float(request.POST.get('gst_price', 0) or 0)
 
-            # Validate price fields
-            total_price = request.POST.get('total_price', '').strip()
-            total_with_gst = request.POST.get('total_with_gst', '').strip()
-
-            if not total_price or not total_price.replace('.', '', 1).isdigit():
-                raise ValueError("Invalid total price. Please provide a valid number.")
-            if total_with_gst and not total_with_gst.replace('.', '', 1).isdigit():
-                raise ValueError("Invalid total price with GST. Please provide a valid number.")
-
-            total_price = float(total_price)
-            total_with_gst = float(total_with_gst) if total_with_gst else None
-
-            # Determine if GST should be applied
             apply_gst = request.POST.get('apply_gst') == 'on'
-            gst_number = request.POST.get('gst_number', '') if apply_gst else ''
-            if apply_gst :
-                gst_status = 'GST'
-            else :
-                total_with_gst = total_price   
-                gst_status = 'NON-GST'    
-            delivery_time = request.POST['delivery_time']
+            gst_status = 'GST' if apply_gst else 'NON-GST'
+            if not apply_gst:
+                total_with_gst = total_price
 
-            # Create and save the service management instance
-            instance = service_management(
-
+            delivery_time = request.POST.get('delivery_time', timezone.now().time())
+            branch_id = request.POST.get('branch')
+            branch_instance = Branch.objects.get(id=branch_id) if branch_id else None
+            # Create service instance
+            instance = service_management.objects.create(
                 customer=customer,
-                address = address,
-                gst_checkbox=apply_gst,  # Store whether GST is applied
-                gst_number=gst_number,  # Save GST number only if provided
-                gst_status = gst_status,
+                address=address,
                 total_price=total_price,
                 total_price_with_gst=total_with_gst,
+                total_charges = total_gst,
+                service_subject = request.POST.get('subject'),
                 contract_type=request.POST.get('contract_type', 'NOT SELECTED'),
                 contract_status=request.POST.get('contract_status', 'NOT SELECTED'),
-                property_type=request.POST.get('property_type'),
-                warranty_period=request.POST.get('warranty_period'),
+                segment = request.POST.get('segments'),
+                property_type=request.POST.get('property_type',''),
+                warranty_period=request.POST.get('warranty_period',''),
                 state=request.POST.get('state', 'Null'),
                 city=request.POST.get('city', 'Null'),
                 pincode=request.POST.get('pincode', '000000'),
-               
                 gps_location=request.POST.get('gps_location'),
                 frequency_count=request.POST.get('frequency_count', 'NOT SELECTED'),
                 payment_terms=request.POST.get('payment_terms', '100% Advance payment OR Whatever mutually Decided'),
@@ -713,37 +1224,59 @@ def service_management_create(request):
                 delivery_time=delivery_time,
                 lead_date=lead_date,
                 service_date=service_date,
+                gst_status=gst_status,
+                branch=branch_instance,
             )
 
-            # Save the instance first before assigning many-to-many fields
-            instance.save()
-            print("Instance saved:", instance.customer)
-            # technician = TechnicianProfile.objects.all()
-            # Fetch and assign selected products
-            products = Product.objects.filter(product_name__in=selected_service_names_list)
-            if not products.exists():
-                raise ValueError("Selected products not found in the database.")
+            # Get products from JSON string
+            selected_products_json = request.POST.get('selected_products_json', '[]')
+            selected_products = json.loads(selected_products_json)
 
-            print("Selected products:", products)
-            instance.selected_services.set(products)
-            instance.save()
+            print("Selected Products:", selected_products)
 
+            # Loop through product entries (allowing duplicates)
+            for item in selected_products:
+                product_id = item.get('p_id')
+                price = item.get('price')
+                quantity = item.get('quantity')
+                gst_percentage = item.get('gst', 0)
+                description = item.get('description', '')
 
-            return redirect('/display_service_management')  # Redirect after successful submission
+                if not product_id or price is None or quantity is None:
+                    continue  # Skip invalid entries
+
+                product = Product.objects.get(product_id=product_id)
+
+                ServiceProduct.objects.create(
+                    service=instance,
+                    product=product,
+                    price=Decimal(price),
+                    quantity=Decimal(quantity),
+                    gst_percentage=Decimal(gst_percentage) or Decimal('0.00'),
+                    description=description,
+                )
+
+            return redirect('/display_service_management')
 
         except Exception as e:
-            # Handle any errors
-            print(f"Error: {e}")
             return render(request, 'service_management.html', {
                 'error': str(e),
                 'category_choices': category_choices,
                 'products': products,
-                'customers' : customers,
+                'customers': customers,
+                'sales_persons': sales_persons,
+                'frequency_choices': frequency_choices,
             })
 
-    return render(request, 'service_management.html', {'category_choices': category_choices, 'products': products,'customers' : customers})
-
-
+    return render(request, 'service_management.html', {
+        'category_choices': category_choices,
+        'products': products,
+        'customers': customers,
+        'sales_persons': sales_persons,
+        'frequency_choices': frequency_choices,
+        'segments':segments,
+        'branches':branch
+    })
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -763,45 +1296,99 @@ from datetime import datetime
 from .models import quotation_management, QuotationTerm
 from .models import Product
 from .models import customer_details
-from .models import Branch  # ✅ Import branch model
-#eee
+from .models import Branch  
+
+
+
+# New----------------
+@login_required
+@role_required(['admin','sales', 'branch_manager'])
 def quotation_management_create(request):
     category_choices = Product.CATEGORY_CHOICES
-    products = Product.objects.all()
-    terms = QuotationTerm.objects.all()
+    terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
-
-    if request.method == 'GET' and 'contact_no' in request.GET:
-        contact_no = request.GET.get('contact_no')
-        try:
-            customer = customer_details.objects.get(primarycontact=contact_no)
-            data = {
-                'customer_full_name': customer.fullname,
-                'customer_email': customer.primaryemail,
-                'soldtopartyaddress': customer.soldtopartyaddress,  # Add this line
-                'city': customer.soldtopartycity,
-                'state': customer.soldtopartystate,
-            }
-            return JsonResponse(data)
-        except customer_details.DoesNotExist:
-            return JsonResponse({'error': 'Customer not found'}, status=404)
-
+    products = Product.objects.all()
+    sales_person_list =  list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+    thank_notes_qs = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
+    thank_notes = [note for note in thank_notes_qs if note]  
+    
     if request.method == 'POST':
+        custom_terms = request.POST.get('add_terms_conditions') or None
+        customer_id = request.POST.get('customer_id')
+        customer = None
+        data = request.POST.copy()
+        data['terms_and_conditions'] = request.POST.getlist('terms_and_conditions')
+        customer_id = request.POST.get('customer_id')
+        if customer_id:
+            data['customer_id'] = customer_id
+
+        request.session['quotation_form_data'] = data
+        print("Session stored terms:", request.session['quotation_form_data'].get('product_json_data'))
+        request.session.modified = True
+        if customer_id:
+            try:
+                customer = customer_details.objects.get(id=customer_id)
+                contact_no = request.POST.get('contact_no')
+                customer = customer_details.objects.filter(primarycontact=contact_no).first()
+
+                if customer:
+                    # Update customer details
+                    customer_full_name = request.POST.get('customer_full_name')
+                    secondary_contact_no = request.POST.get('secondary_contact_no') or None
+                    customer_email = request.POST.get('customer_email')
+                    secondary_email = request.POST.get('secondary_email') or None
+                    customer_type = request.POST.get('customer_type')
+                    or_name = request.POST.get('or_name') or None
+                    or_contact = request.POST.get('or_contact') or None
+                    c_branch_id = request.POST.get('branch')
+                    # branch = Branch.objects.get(id = branch_id)
+                    # Assign values to the existing instance
+                    customer.fullname = customer_full_name
+                    customer.secondarycontact = secondary_contact_no
+                    customer.primaryemail = customer_email
+                    customer.secondaryemail = secondary_email
+                    customer.customer_type = customer_type
+                    customer.or_name = or_name
+                    customer.or_contact = or_contact
+                    customer.branch = c_branch_id
+                    
+                    # Save changes
+                    customer.save(update_fields=[
+                        "fullname",
+                        "secondarycontact",
+                        "primaryemail",
+                        "secondaryemail",
+                        "customer_type",
+                        "or_name",
+                        "or_contact",
+
+                    ])
+            except customer_details.DoesNotExist:
+                raise ValueError("Invalid customer ID.")
+
+
         try:
             # Core data
-            customer_full_name = request.POST.get('customer_full_name')
-            contact_no = request.POST.get('contact_no')
-            secondary_contact_no = request.POST.get('secondary_contact_no')
-            customer_email = request.POST.get('customer_email')
-            secondary_email = request.POST.get('secondary_email')
+            # customer_full_name = request.POST.get('customer_full_name')
+            # contact_no = request.POST.get('contact_no')
+            # secondary_contact_no = request.POST.get('secondary_contact_no')
+            # customer_email = request.POST.get('customer_email')
+            # secondary_email = request.POST.get('secondary_email')
+            contact_by = request.POST.get('sales_person_list')
+            contact_by_no = request.POST.get('contact_by_no')
             address = request.POST.get('address')
-            city = request.POST.get('city')
-            state = request.POST.get('state')
-            gps_location = request.POST.get('gps_location')
-            pincode = request.POST.get('pincode', '000000')
+            # city = request.POST.get('city')
+            # state = request.POST.get('state')
+            # gps_location = request.POST.get('gps_location')
+            # pincode = request.POST.get('pincode', '000000')
             subject = request.POST.get('subject')
             branch_id = request.POST.get('branch_id')
-
+            product_details_json = request.POST.get('product_details_json')
+            or_name = request.POST.get('or_name')
+            or_contact = request.POST.get('or_contact')
+            thank_u_note = request.POST.get('thank_u_note')
+            ordered_term_ids_str = request.POST.get('terms_and_conditions_ordered', '')
+            
             # Handle quotation date
             date_str = request.POST.get('quotation_date')
             if date_str:
@@ -832,7 +1419,7 @@ def quotation_management_create(request):
                 total_gst = float(total_gst) if total_gst else 0
                 total_price_with_gst = float(total_price_with_gst) if total_price_with_gst else total_price
     
-    # Ensure total_with_gst is at least total_price
+        # Ensure total_with_gst is at least total_price
                 if total_price_with_gst < total_price:
                     total_price_with_gst = total_price + total_gst
             except (ValueError, TypeError):
@@ -864,16 +1451,10 @@ def quotation_management_create(request):
 
             # Create the quotation
             quotation = quotation_management.objects.create(
-                customer_full_name=customer_full_name,
-                contact_no=contact_no,
-                secondary_contact_no=secondary_contact_no,
-                customer_email=customer_email,
-                secondary_email=secondary_email,
+                customer=customer,
+                contact_by = contact_by,
+                contact_by_no = contact_by_no,
                 address=address,
-                city=city,
-                state=state,
-                gps_location=gps_location,
-                pincode=pincode,
                 subject=subject,
                 quotation_date=quotation_date,
                 apply_gst=enable_gst,
@@ -885,14 +1466,44 @@ def quotation_management_create(request):
                 sgst=sgst,
                 igst=igst,
                 gst_total=total_gst,
-                branch_id=branch_id if branch_id else None
+                branch_id=branch_id if branch_id else None,
+                product_details_json=json.loads(product_details_json),
+                custom_terms = custom_terms,
+                or_name = or_name,
+                or_contact = or_contact,
+                thank_u_note = thank_u_note,
+                terms_order = ordered_term_ids_str
             )
 
-            quotation.selected_services.set(selected_services)
-            selected_term_ids = request.POST.getlist('terms_and_conditions')
-            quotation.terms_and_conditions.set(selected_term_ids)
+            # Ensure it's safe
+            custom_terms_list = [term.strip() for term in (custom_terms or '').split('\n') if term.strip()]
 
-            return render(request, 'display_quotation.html')
+            quotation_terms_to_add = []
+
+            for term_text in custom_terms_list:
+                # Check if term already exists
+                term_obj, created = QuotationTerm.objects.get_or_create(description=term_text)
+                quotation_terms_to_add.append(term_obj)
+
+            ordered_term_ids = [int(tid) for tid in ordered_term_ids_str.split(',') if tid.isdigit()]
+            print('term', ordered_term_ids)
+            quotation.terms_and_conditions.set(ordered_term_ids)
+    
+            quotation.terms_order = ordered_term_ids
+            quotation.save()
+            # Add terms to the quotation's terms_and_conditions field
+            quotation.terms_and_conditions.add(*quotation_terms_to_add)
+
+            quotation.selected_services.set(selected_services)
+            selected_term_ids = request.POST.getlist('terms_and_conditions[]')
+            quotation.terms_and_conditions.set(selected_term_ids)
+            request.session.pop('quotation_form_data', None)
+            request.session.modified = True
+
+           
+
+            return redirect(f'/create_quotation/?pdf={quotation.id}')
+
 
         except Exception as e:
             print(f"Error saving quotation: {e}")
@@ -903,16 +1514,154 @@ def quotation_management_create(request):
                 'terms': terms,
                 'branches': branches
             })
+    form_data = request.session.get('quotation_form_data', {})
+    print('form_data',form_data)
+    print('product', form_data.get('product_details_json'))
+    product_json = form_data.get('product_details_json', '[]')
+    form_data['terms_and_conditions_ordered_list'] = form_data.get('terms_and_conditions_ordered', '').split(',')
+    order_list = form_data.get('terms_and_conditions_ordered_list', [])
+    terms = sorted(
+        terms,
+        key=lambda t: order_list.index(str(t.id)) if str(t.id) in order_list else 999
+    )
 
-    return render(request, 'quotation_create_new.html', {
+    pdf_id = request.GET.get("pdf")
+
+    context = {
         'products': products,
         'category_choices': category_choices,
+        'sales_person_list': sales_person_list,
         'terms': terms,
-        'branches': Branch.objects.all()  # Add this line
-})
+        'branches': Branch.objects.all(),
+        'form': AddProductForm(),   # always fresh
+        'form_data':form_data,            # reset session cleared already
+        'thank_notes': json.dumps(thank_notes),
+        "product_details_json": product_json
+    }
+
+    if pdf_id:  # just submitted
+        context['pdf_url'] = f'/generate_quotation/quotation/pdf/{pdf_id}/view'
+        context['show_pdf_script'] = True
+
+    return render(request, 'quotation_create_new.html', context)
+
+    
+
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def save_quotation_session(request):
+    if request.method == 'POST':
+        data = request.POST.dict()
+
+        # Manually fix the multi-select checkbox field
+        data['terms_and_conditions'] = request.POST.getlist('terms_and_conditions[]')
+
+        request.session['quotation_form_data'] = data
+        request.session.modified = True
+        return JsonResponse({'status': 'success'})
+    
+    return JsonResponse({'status': 'invalid request'}, status=400)
+# @csrf_exempt
+# def clear_quotation_session(request):
+#     request.session.pop('quotation_form_data', None)
+#     return JsonResponse({'status': 'success'})
+
+from django.http import JsonResponse
+from .models import quotation_management
+@login_required
+@role_required(['admin','sales'])
+def export_quotation_excel(request):
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="Quotation_list.csv"'
+
+    writer = csv.writer(response)
+
+    # Get all model field names
+    model_fields = [field.name for field in quotation_management._meta.fields]
+
+    # Write header row
+    writer.writerow([field.replace('_', ' ').title() for field in model_fields])
+
+    # Write data rows
+    for obj in quotation_management.objects.all().values_list(*model_fields):
+        writer.writerow(obj)
+
+    return response
 
 
 
+def get_quotation_details_by_no(request):
+    quotation_no = request.GET.get('quotation_no')
+    if not quotation_no:
+        return JsonResponse({'error': 'Quotation number is required'}, status=400)
+
+    try:
+        quotation = quotation_management.objects.select_related('branch').get(quotation_no=quotation_no)
+        branch = quotation.branch
+        product = quotation.product_details_json
+        aplly_gst = quotation.apply_gst
+        cgst = quotation.cgst
+        sgst = quotation.sgst
+        igst = quotation.igst
+        total = quotation.total_price_with_gst
+        bank_accounts = BankAccounts.objects.all().values('id', 'bank_name', 'account_number', 'ifs_code', 'branch')
+        # Fetch customer manually by customer_id string field
+        customer_contact = quotation.customer.primarycontact
+        customer = customer_details.objects.get(primarycontact=customer_contact)
+
+        print(customer.customer_type)
+        print(customer.or_name)
+        print(customer.or_contact)
+        return JsonResponse({
+            # Branch data
+            'branch_name':branch.branch_name if branch else '',
+            'branch_contact_1': branch.contact_1 if branch else '',
+            'branch_email_1': branch.email_1 if branch else '',
+            'branch_gst': branch.gst_number if branch else '',
+            'branch_pan': branch.pan_number if branch else '',
+            'branch_address': branch.full_address if branch else '',
+            'state':branch.state if branch else '',
+            'code':branch.code if branch else '',
+
+            # Customer data
+            'fullname': customer.fullname,
+            'primarycontact': customer.primarycontact,
+            'primaryemail': customer.primaryemail,
+            'soldtopartyaddress': customer.soldtopartyaddress,
+            'soldtopartycity': customer.soldtopartycity,
+            'soldtopartystate': customer.soldtopartystate,
+            'soldtopartypostal': customer.soldtopartypostal,
+            'shifttopartyaddress': customer.shifttopartyaddress,
+            'shifttopartycity': customer.shifttopartycity,
+            'shifttopartystate': customer.shifttopartystate,
+            'shifttopartypostal': customer.shifttopartypostal,
+            'customer_type': customer.customer_type,
+            'or_name': customer.or_name,
+            'or_contact':customer.or_contact,
+            
+            # Product data
+            'product':product,
+            'apply_gst':aplly_gst,
+            'cgst':cgst,
+            'sgst':sgst,
+            'igst':igst,
+            'total':total,
+            
+
+            # Bank data
+            'bank': list(bank_accounts),
+            'state_map': state_map,
+        })
+       
+
+    except quotation_management.DoesNotExist:
+        return JsonResponse({'error': 'Quotation not found'}, status=404)
+    except customer_details.DoesNotExist:
+        return JsonResponse({'error': 'Customer not found for this quotation'}, status=404)
+    
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
@@ -932,28 +1681,23 @@ def generate_quotation_pdf_download(request, id):
         return HttpResponse('Error generating PDF', status=500)
     return response
 
-def generate_quotation_pdf_view(request, id):
-    quotation = quotation_management.objects.get(id=id)
-    template_path = 'pdf_template.html'
-    context = {'quotation': quotation}
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="quotation.pdf"'
-    template = get_template(template_path)
-    html = template.render(context)
 
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    if pisa_status.err:
-        return HttpResponse('Error generating PDF', status=500)
-    return response
 
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from crmapp.custom_filters import price_in_words
+from xhtml2pdf import pisa
+import json
+import os
 
 
 def get_products_by_category(request):
     categories = request.GET.get('categories', '')
     category_list = categories.split(',') if categories else []
 
-    products = Product.objects.filter(category__in=category_list).values('product_id', 'product_name')
-    product_list = [{'product_id': product['product_id'], 'product_name': product['product_name']} for product in products]
+    products = Product.objects.filter(category__in=category_list).values('product_id', 'product_name','hsn_code')
+    product_list = [{'product_id': product['product_id'], 'product_name': product['product_name'], 'hsn_code':product['hsn_code']} for product in products]
 
     return JsonResponse({'products': product_list})
 
@@ -979,6 +1723,7 @@ def add_quotation_term(request):
 
 def edit_quotation_term(request, id):
     term = get_object_or_404(QuotationTerm, id=id)
+    
     if request.method == 'POST':
         term.description = request.POST.get('description')
         term.save()
@@ -1021,78 +1766,11 @@ def delete_invoice_term(request, id):
 
 
 
-def quotation_create(request):
-    customers = customer_details.objects.all()
-
-    if request.method == 'POST':
-        quantity = int(request.POST.get('quantity'))
-        price = float(request.POST.get('price'))
-
-        total_amount = quantity * price
-        discount = float(request.POST.get('discount'))
-        company_name = request.POST.get('company_name')
-        company_email = request.POST.get('company_email')
-        company_contact_no = request.POST.get('company_contact_no')
-        quotation_date = request.POST.get('quotation_date')
-        company_address = request.POST.get('company_address')
-        subject = request.POST.get('subject')
-        termsandcondition = request.POST.get('termsandcondition')
-        servicetype_q = request.POST.get('servicetype_q')
-        gst_checkbox = request.POST.get('gst_checkbox') == 'on'
-        customer_id = request.POST.get('customer_id')
-        customer = customer_details.objects.get(id=customer_id)
-
-        discounted_amount = total_amount - (total_amount * (discount / 100))
-        total_amount_with_gst = discounted_amount * 1.18 if gst_checkbox else discounted_amount
-
-        # Get latest version of quotation for the customer
-        latest_quotation = quotation.objects.filter(customer=customer, servicetype_q=servicetype_q).order_by('-version').first()
-
-        # Increment version for the new quotation
-        if latest_quotation:
-            new_version = latest_quotation.version + 1
-        else:
-            new_version = 1
-
-        # Create quotation object and save to database
-        quotation_obj = quotation(
-            total_amount=total_amount,
-            discount=discount,
-            company_name=company_name,
-            company_email=company_email,
-            company_contact_no=company_contact_no,
-            quotation_date=quotation_date,
-            company_address=company_address,
-            subject=subject,
-            quantity=quantity,
-            price=price,
-            termsandcondition=termsandcondition,
-            servicetype_q=servicetype_q,
-            gst_checkbox=gst_checkbox,
-            customer=customer,
-            total_amount_with_gst=total_amount_with_gst,
-            version = new_version,
-            status = 'active'
-        )
-
-        # Mark the previous version as inactive
-        if latest_quotation:
-            latest_quotation.status = 'inactive'
-            latest_quotation.save()
-
-        quotation_obj.save()
-        return redirect('/display_quotation')  
-
-    context = {
-        'customers': customers,
-    }
-    return render(request, 'quotation.html', context)
-
 
 def quotation_history(request, customer_id):
     customer = customer_details.objects.get(id=customer_id)
-    quotations = quotation.objects.filter(customer=customer).order_by('-version')  # Get all versions of quotations
-
+    print(customer, customer_id)
+    quotations = quotation_management.objects.filter(customer=customer).order_by('-quotation_date')  
     context = {
         'customer': customer,
         'quotations': quotations,
@@ -1304,23 +1982,7 @@ def finalfollowup_create(request,lead_id,next_stage):
         }
     return render(request, 'final_followup.html', context)
 
-# def inventory_create(request):
-#     if request.method=='GET':
-#         return render(request ,'inventory.html')
-    
-    
-#     else:
-#         itemnumber=request.POST['itemnumber']
-#         itemname=request.POST['itemname']
-#         price=request.POST['price']
-#         quantity=request.POST['quantity']
-        
-    
-#         m=inventory.objects.create(itemnumber=itemnumber, itemname=itemname , price=price ,quantity=quantity )
 
-#         m.save()
-#         return redirect( '/index')
-    
 
 
 from django.http import JsonResponse
@@ -1350,10 +2012,12 @@ from datetime import datetime
 
 # change
 
-
+@login_required
+@role_required(['admin','sales','branch_manager'])
 def lead_management_create(request):
-    salespersons = SalesPerson.objects.all()
-
+    salespersons = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+    
+    branches = Branch.objects.all()
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'primarycontact' in request.GET:
@@ -1363,8 +2027,9 @@ def lead_management_create(request):
             if lead:
                 data = {
                     'sourceoflead': lead.sourceoflead,
-                    'salesperson': lead.salesperson,
+                    'salesperson': lead.salesperson.id if lead.salesperson else '',
                     'customername': lead.customername,
+                    'customeremail':lead.customeremail,
                     'customersegment': lead.customersegment,
                     'enquirydate': lead.enquirydate.strftime('%Y-%m-%d') if lead.enquirydate else '',
                     'contactedby': lead.contactedby,
@@ -1376,7 +2041,7 @@ def lead_management_create(request):
                     'location': lead.location,
                     'state': lead.state,
                     'city': lead.city,
-                    'branch': lead.branch,
+                    'branch': lead.branch.id if lead.branch else '',
                     'typeoflead': lead.typeoflead,
                     'firstfollowupdate': lead.firstfollowupdate.strftime('%Y-%m-%d') if lead.firstfollowupdate else '',
                 }
@@ -1384,13 +2049,15 @@ def lead_management_create(request):
             else:
                 return JsonResponse({'status': 'not_found'})
 
-        return render(request, 'lead_management.html', {'salespersons': salespersons})
+        return render(request, 'lead_management.html', {'salespersons': salespersons, 'branches': branches})
 
     else:  # POST request
         try:
+            role = request.user.userprofile.role
             # Get all form data
             sourceoflead = request.POST.get('sourceoflead')
-            salesperson = request.POST.get('salesperson')
+            # salesperson_id = request.POST.get("salesperson")
+          
             customername = request.POST.get('customername')
             customersegment = request.POST.get('customersegment')
             
@@ -1408,7 +2075,9 @@ def lead_management_create(request):
             
             secondarycontact = request.POST.get('secondarycontact')
             secondarycontact = int(secondarycontact) if secondarycontact and secondarycontact.isdigit() else None
-
+            or_contact = request.POST.get('or_contact')
+            or_contact = int(or_contact) if or_contact and or_contact.isdigit() else None
+            or_name = request.POST.get('or_name')
             # Other fields
             customeremail = request.POST.get('customeremail')
             customeraddress = request.POST.get('customeraddress')
@@ -1416,16 +2085,28 @@ def lead_management_create(request):
             city = request.POST.get('city', 'Unknown City')
             state = request.POST.get('state')
             typeoflead = request.POST.get('typeoflead')
+            customer_type = request.POST.get('customer_type')
             
             firstfollowupdate_str = request.POST.get('firstfollowupdate')
             firstfollowupdate = datetime.strptime(firstfollowupdate_str, '%Y-%m-%d').date() if firstfollowupdate_str else None
-            
-            branch = request.POST.get('branch')
 
+            branch_id = request.POST.get('branch')
+            branch = branches.get(id = int(branch_id))
+            sp = None
+            bm = None
+            ad = None
+            if role == "sales":
+                sp = SalesPerson.objects.get(mobile_no = request.user.username)
+            elif role == "branch_manager":
+                bm = BranchManager.objects.get(mobile_no = request.user.username)
+            else: 
+                ad = request.user
             # Create new lead (duplicates allowed)
             lead = lead_management.objects.create(
                 sourceoflead=sourceoflead,
-                salesperson=salesperson,
+                salesperson=sp,
+                branch_manager = bm,
+                admin = ad,
                 customername=customername,
                 customersegment=customersegment,
                 enquirydate=enquirydate,
@@ -1442,6 +2123,9 @@ def lead_management_create(request):
                 branch=branch,
                 typeoflead=typeoflead,
                 firstfollowupdate=firstfollowupdate,
+                or_contact = or_contact,
+                or_name = or_name,
+                customer_type = customer_type,
             )
 
             return redirect('/display_lead_management')
@@ -1513,13 +2197,19 @@ def main_followup_view(request, lead_id):
         # Update the lead's status
        # Update the lead's status
         lead.typeoflead = typeoflead
-        main_followup.order_status = order_status  # ✅ important to reflect in lead model
+        main_followup.order_status = order_status  
         if order_status in ['Close Win', 'Close Loss']:
-            lead.stage = 0  # mark lead as closed
-        lead.save()
-
-
-        return redirect('main_followup_view', lead_id=lead.id)
+            lead.stage = 0  
+            lead.save()
+            if order_status == 'Close Win':
+                return redirect('service_management_create')
+        else:
+            lead.save()  
+        query_string = request.GET.urlencode()
+        redirect_url = reverse('pending_followups')
+        if query_string:
+            redirect_url += f"?{query_string}"
+        return redirect(redirect_url)
 
     context = {
         'lead': lead,
@@ -1531,75 +2221,228 @@ def main_followup_view(request, lead_id):
     return render(request, 'main_followup.html', context)
 
 
-
-
-
-
-
 from django.shortcuts import render
 from .models import main_followup, lead_management
 from django.utils import timezone
 from datetime import date
 from django.core.paginator import Paginator
+from itertools import chain
 
+@login_required
+@role_required(['admin','sales','branch_manager'])
 def today_work(request):
     today = date.today()
+
     salesperson_filter = request.GET.get('salesperson')
 
     # Filter today's follow-ups
-    followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
+    if request.user.userprofile.role =='admin':
+        lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
+        followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
+    elif request.user.userprofile.role == 'sales': 
+        lead_folloup = lead_management.objects.filter(firstfollowupdate = today ,
+                                                    salesperson__mobile_no = request.user.username )
+        followups = main_followup.objects.filter(next_followup_date=today, 
+                                                 lead__salesperson__mobile_no=request.user.username ).select_related('lead')
+    elif request.user.userprofile.role == 'branch_manager': 
+        branch = BranchManager.objects.get(mobile_no = request.user.username ).branch
+        lead_folloup = lead_management.objects.filter(firstfollowupdate = today ,
+                                                    branch = branch)
+        followups = main_followup.objects.filter(next_followup_date=today, 
+                                                 lead__branch = branch ).select_related('lead')
+            
+    # lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
+    # followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
 
     if salesperson_filter:
         followups = followups.filter(lead__salesperson=salesperson_filter)
+        lead_folloup = lead_folloup.filter(salesperson = salesperson_filter)
 
+    # Combine followups and lead_folloup
+    combined = list(chain(
+        followups,  # main_followup objects (with .lead field)
+        [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]  # avoid duplication
+    ))
+    
+    count = len(combined)
     # Pagination
-    paginator = Paginator(followups, 10)  # Show 10 records per page
+    paginator = Paginator(combined, 10)  # Show 10 records per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     # Get all unique salespersons
-    salespersons = lead_management.objects.values_list('salesperson', flat=True).distinct()
+    salespersons = SalesPerson.objects.all()
 
     # Used for correct indexing
     start_index = (page_obj.number - 1) * paginator.per_page
+
 
     return render(request, 'today_work.html', {
         'page_obj': page_obj,
         'salespersons': salespersons,
         'selected_salesperson': salesperson_filter,
-        'start_index': start_index
+        'start_index': start_index,
+        'count': count,
     })
 
 
 
-from datetime import date
 
+from itertools import chain
+from datetime import date
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from django.db.models import Q
+from .models import lead_management, main_followup, SalesPerson
+
+@login_required
+@role_required(['admin','sales', 'branch_manager'])
 def pending_followups(request):
     today = date.today()
+    branches = Branch.objects.all()
+    salespersons = []
+    
+    # Get filters from request
+    search_query = request.GET.get('search', '').strip()
+    typeoflead_filter = request.GET.get('typeoflead')
+    source_filter = request.GET.get('sourceoflead')
     salesperson_filter = request.GET.get('salesperson')
+    branch_filter = request.GET.get('branch')
+    enquiry_from = request.GET.get('enquiry_from')
+    enquiry_to = request.GET.get('enquiry_to')
+    followup_from = request.GET.get('followup_from')
+    followup_to = request.GET.get('followup_to')
+    sort_by = request.GET.get('sort', 'customername')
+    order = request.GET.get('order', 'asc')
+    segment_filter = request.GET.get('segments')
 
-    # Get followups with a past next_followup_date
+    order_prefix = '-' if order == 'desc' else ''
+
+    # Base queryset filtered by role
+    if request.user.userprofile.role == 'admin':
+        lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today)
+        salespersons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+    elif request.user.userprofile.role == 'sales':
+        lead_folloup = lead_management.objects.filter(
+            firstfollowupdate__lt=today,
+            salesperson__mobile_no=request.user.username
+        )
+    elif request.user.userprofile.role == 'branch_manager':
+        branch_manager = BranchManager.objects.get(mobile_no =request.user.username)
+        lead_folloup = lead_management.objects.filter(
+            firstfollowupdate__lt=today,
+            branch = branch_manager.branch
+        )
+
+        salespersons = SalesPerson.objects.filter(branch=branch_manager.branch)
+
     followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
+    # Apply additional filters
+    if typeoflead_filter:
+        lead_folloup = lead_folloup.filter(typeoflead=typeoflead_filter)
+        followups = followups.filter(lead__typeoflead=typeoflead_filter) 
+    if source_filter:
+        lead_folloup = lead_folloup.filter(sourceoflead=source_filter)
+    if branch_filter:
+        lead_folloup = lead_folloup.filter(branch_id=branch_filter)
+        followups = followups.filter(lead__branch_id=branch_filter)
+    if segment_filter:
+        lead_folloup = lead_folloup.filter(customersegment=segment_filter)
+        followups = followups.filter(lead__customersegment=segment_filter)
+    if enquiry_from and enquiry_to:
+        lead_folloup = lead_folloup.filter(enquirydate__range=[enquiry_from, enquiry_to])
+    if followup_from and followup_to:
+        lead_folloup = lead_folloup.filter(firstfollowupdate__range=[followup_from, followup_to])
+
+    # Overdue leads with followup
+    # followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
+    if request.user.userprofile.role != 'admin':
+        followups = followups.filter(lead__salesperson__mobile_no=request.user.username)
+    # if salesperson_filter:
+    #     lead_folloup = lead_folloup.filter(salesperson__full_name = salesperson_filter)
+    #     followups = followups.filter(lead__salesperson__full_name = salesperson_filter)
 
     if salesperson_filter:
-        followups = followups.filter(lead__salesperson=salesperson_filter)
+        lead_folloup = lead_folloup.filter(
+            Q(salesperson__full_name=salesperson_filter) |
+            Q(branch_manager__full_name=salesperson_filter)
+        )
+    
+        followups = followups.filter(
+            Q(lead__salesperson__full_name=salesperson_filter) |
+            Q(lead__branch_manager__full_name=salesperson_filter)
+        )
+    
+    # Combine leads: followups + leads without any followup
+    combined_leads = list(chain(
+        followups,
+        [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]
+    ))
+
+    # Apply search and filters manually
+    filtered = []
+    count_data = 0
+    for item in combined_leads:
+        lead = item.lead if hasattr(item, 'lead') else item
+
+        if search_query and not (
+            search_query.lower() in str(lead.primarycontact).lower() or
+            search_query.lower() in str(lead.customername).lower() or
+            search_query.lower() in str(lead.typeoflead).lower()
+        ):
+            continue
+        if typeoflead_filter and lead.typeoflead != typeoflead_filter:
+            continue
+        if source_filter and lead.sourceoflead != source_filter:
+            continue
+        if branch_filter and lead.branch != branch_filter:
+            continue
+        if enquiry_from and enquiry_to and not (enquiry_from <= str(lead.enquirydate) <= enquiry_to):
+            continue
+        if followup_from and followup_to and not (followup_from <= str(lead.firstfollowupdate) <= followup_to):
+            continue
+        if segment_filter and lead.customersegment != segment_filter:
+            continue
+
+        filtered.append(item)
+
+        count_data = len(filtered)
+
+    # Sort
+    def get_sort_value(obj):
+        lead = obj.lead if hasattr(obj, 'lead') else obj
+        return getattr(lead, sort_by, '')
+
+    combined_leads.sort(key=get_sort_value, reverse=(order == 'desc'))
 
     # Pagination
-    paginator = Paginator(followups, 10)
+    paginator = Paginator(combined_leads, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
-    salespersons = lead_management.objects.values_list('salesperson', flat=True).distinct()
     start_index = (page_obj.number - 1) * paginator.per_page
+
+    # Dropdown options
+    typeoflead_choices = [c[0] for c in lead_management._meta.get_field('typeoflead').choices if c[0]]
+    source_choices = [c[0] for c in lead_management._meta.get_field('sourceoflead').choices if c[0]]
+    # branch_choices = [c[0] for c in lead_management._meta.get_field('branch').choices if c[0]]
+    # salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
+    segments = [c[0] for c in lead_management._meta.get_field('customersegment').choices if c[0] != "NOT SELECTED"]
 
     return render(request, 'pending_followups.html', {
         'page_obj': page_obj,
+        'count_data': paginator.count,
+        'search_query': search_query,
+        'start_index': start_index,
+        'lead_types': typeoflead_choices,
+        'sources': source_choices,
+        'branches': branches,
         'salespersons': salespersons,
         'selected_salesperson': salesperson_filter,
-        'start_index': start_index
+        'current_sort': sort_by,
+        'current_order': order,
+        'segments': segments,
+        'selected_segment': segment_filter,
     })
-
-
 
 
 # In crmapp/views.py
@@ -1610,6 +2453,8 @@ from .models import lead_management, firstfollowup, secondfollowup, thirdfollowu
 
 from django.db.models import Q  # For complex queries
 
+@login_required
+@role_required(['admin','sales', 'branch_manager','operation_person'])
 def display_followup(request):
     search_query = request.GET.get('q', '')  # Get the search query
     
@@ -1636,7 +2481,7 @@ def display_followup(request):
     }
     return render(request, 'display_followup.html', context)
 
-def get_customer_details(request, customer_id):
+def fetch_customer_details(request, customer_id):
     customer = get_object_or_404(customer_details, customerid=customer_id)
     return render(request, 'customer_details_modal.html', {'customer': customer})
 
@@ -1645,24 +2490,42 @@ def display_customer(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
     sort_by = request.GET.get('sort_by', 'customerid')
+    customer_type = request.GET.get('customer_type')
 
-    if query:
-        m = (customer_details.objects.filter(customerid__icontains=query) |
-             customer_details.objects.filter(primarycontact__icontains=query))
-    else:
+    if request.user.userprofile.role == 'admin': 
         m = customer_details.objects.all()
 
-    if sort_by == 'firstname':
-        if sort_order == 'desc':
-            m = m.order_by('-firstname')  
-        else:
-            m = m.order_by('firstname')  
-    else:
-        if sort_order == 'desc':
-            m = m.order_by('-customerid')  
-        else:
-            m = m.order_by('customerid')
+    elif request.user.userprofile.role == 'sales':
+        sales_person_name = SalesPerson.objects.get(full_name = SalesPerson.objects.get(mobile_no = request.user.username).full_name)
+        m = customer_details.objects.filter(contactperson__iexact = sales_person_name)
 
+    elif request.user.userprofile.role == 'branch_manager':
+        branch = BranchManager.objects.get(mobile_no = request.user.username ).branch
+        m = customer_details.objects.filter(branch_id = branch)
+        
+    # Base queryset
+
+    # Apply search filters
+    if query:
+        m = m.filter(
+            Q(customerid__icontains=query) |
+            Q(primarycontact__icontains=query) |
+            Q(fullname__icontains=query)
+        )
+
+    # Apply customer type filter
+    if customer_type:
+        m = m.filter(customer_type=customer_type)
+
+    filter_count = m.count()
+    # Apply sorting
+    if sort_by == 'firstname':
+        m = m.order_by('-firstname' if sort_order == 'desc' else 'firstname')
+    else:
+        m = m.order_by('-customerid' if sort_order == 'desc' else 'customerid')
+
+    m = m.order_by('-id')
+    # Pagination
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -1673,13 +2536,73 @@ def display_customer(request):
         'current_sort_by': sort_by,
         'page_obj': page_obj,
         'start_index': start_index,
-        'data': page_obj.object_list,  
+        'data': page_obj.object_list,
+        'selected_type': customer_type,  
+        'search_query': query,   
+        'filter_count' : filter_count,         
     }
 
     return render(request, 'display_customer.html', context)
 
+def import_customers(request):
+    if request.method == 'POST':
+        form = CustomerImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['file']
+            file_type = file.name.split('.')[-1]
+
+            if file_type == 'csv':
+                handle_customer_csv(file)
+                messages.success(request, "Customer data imported successfully.")
+            else:
+                messages.error(request, 'Only CSV files are supported.')
+                return redirect('import_customers')
+
+            return redirect('display_customer')  # Update as per your success page
+    else:
+        form = CustomerImportForm()
+
+    return render(request, 'import_customer.html', {'form': form})
+
+
+def handle_customer_csv(file):
+    decoded_file = file.read().decode('utf-8').splitlines()
+    reader = csv.reader(decoded_file)
+    next(reader)  # Skip header
+
+    for row in reader:
+        try:
+            if len(row) < 16:
+                print(f"⚠️ Skipped incomplete row: {row}")
+                continue
+
+            customer_details.objects.create(
+                fullname=row[1].strip(),
+                primaryemail=row[2].strip(),
+                secondaryemail=row[3].strip() if row[3].strip().lower() != 'null' else None,
+                primarycontact=int(row[4].strip()),
+                secondarycontact=int(row[5].strip()) if row[5].strip().lower() != 'null' else None,
+                contactperson=row[6].strip(),
+                customersegment=row[7].strip(),
+                shifttopartyaddress=row[8].strip(),
+                shifttopartycity=row[9].strip(),
+                shifttopartystate=row[10].strip(),
+                shifttopartypostal=row[11].strip(),
+                soldtopartyaddress=row[12].strip(),
+                soldtopartycity=row[13].strip(),
+                soldtopartystate=row[14].strip(),
+                soldtopartypostal=row[15].strip(),
+                customerid=row[16].strip() if row[16].strip() else None,
+            )
+
+        except Exception as e:
+            print(f"❌ Error importing row {row}: {e}")
+
 
 from crmapp.models import Reschedule
+from django.db.models import Prefetch
+@login_required
+@role_required(['admin','sales','branch_manager','operation_person'])
 def display_reschedule(request):
     query = request.GET.get('search', '').strip()
     sort_order = request.GET.get('order', 'asc')
@@ -1722,87 +2645,171 @@ def display_reschedule(request):
 
     return render(request, 'display_reschedule.html', context)
 
-
+@login_required
+@role_required(['admin','sales', 'branch_manager'])
 def display_service_management(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
     sort_by = request.GET.get('sort_by', 'customerid')  
-    contract_type = request.GET.get('contract_type', '')
+    selected_contract_type = request.GET.get('contract_type', '')
 
-    if query:
-        m = service_management.objects.filter(customer__customerid__icontains=query) | service_management.objects.filter(customer__primarycontact__icontains=query)
-    else:
+    selected_segment = request.GET.get('segments', '')
+    selected_salesperson = request.GET.get('salesperson', '')
+    service_from = request.GET.get('service_from', '')
+    service_to = request.GET.get('service_to', '')
+    customer_type = request.GET.get('customer_type')
+
+    m = service_management.objects.all()
+    if request.user.userprofile.role =='admin':
         m = service_management.objects.all()
+    elif request.user.userprofile.role == 'sales':
+        m = service_management.objects.filter(sales_person_contact_no = request.user.username)
+    elif request.user.userprofile.role == 'branch_manager':
+        m = service_management.objects.filter(branch = BranchManager.objects.get(mobile_no = request.user.username).branch)
+    
+    if query:
+        m = m.filter(
+            Q(customer__customerid__icontains=query) | 
+            Q(customer__primarycontact__icontains=query)
+        )
+
+    # Apply Segment filter
+    if selected_segment:
+        m = m.filter(segment=selected_segment)
+
+    # Apply Salesperson filter
+    if selected_salesperson:
+        m = m.filter(sales_person_name = selected_salesperson)
 
     # Filter by contract type if provided
-    if contract_type:
-        m = m.filter(contract_type=contract_type)
+    if selected_contract_type:
+        m = m.filter(contract_type=selected_contract_type)
 
+    # Filter by customer type 
+    if customer_type:
+        m=m.filter(customer__customer_type=customer_type)
+
+    # Apply Service Date Range Filter
+    if service_from:
+        try:
+            service_from_date = datetime.strptime(service_from, '%Y-%m-%d').date()
+            m = m.filter(service_date__gte=service_from_date)
+        except ValueError:
+            pass  
+        
+    if service_to:
+        try:
+            service_to_date = datetime.strptime(service_to, '%Y-%m-%d').date()
+            m = m.filter(service_date__lte=service_to_date)
+        except ValueError:
+            pass
+    
     # Sorting logic
     if sort_by == 'firstname':
-        if sort_order == 'desc':
-            m = m.order_by('-customer__firstname')  
-        else:
-            m = m.order_by('customer__firstname')  
+        m = m.order_by('-customer__firstname' if sort_order == 'desc' else 'customer__firstname')
     else:
-        if sort_order == 'desc':
-            m = m.order_by('-customer__customerid')  
-        else:
-            m = m.order_by('customer__customerid')
+        m = m.order_by('-customer__customerid' if sort_order == 'desc' else 'customer__customerid')
 
+    m = m.order_by('-id')
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
+
+    count_data = m.count()
+
+    # Get distinct segments and salespersons for dropdowns
+    segments_choices = service_management._meta.get_field('segment').choices
+    segments = [choice[0] for choice in segments_choices]
+    salespersons = SalesPerson.objects.all()
+    contract_types = ['One Time', 'AMC', 'Warranty']
 
     context = {
         'current_order': sort_order,
         'current_sort_by': sort_by,
         'page_obj': page_obj,
         'start_index': start_index,
-        'contract_type': contract_type,
+        'contract_type': contract_types,
+        'count_data':count_data,
+        'segments': segments,
+        'salespersons': salespersons,
+        'selected_segment': selected_segment,
+        
     }
     context['data'] = m
-
     return render(request, 'display_service_management.html', context)
+
 
 def get_service_details(request, service_id):
     service = get_object_or_404(service_management, id=service_id)
     return render(request, 'service_details_modal.html', {'service': service})
 
+
+from itertools import chain
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 def display_allocation(request):
+    user_profile = request.user.userprofile
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
-    sort_by = request.GET.get('sort_by', 'customerid')  
-    allocated_service_ids = WorkAllocation.objects.values_list('service_id', flat=True)
-    
+    sort_by = request.GET.get('sort_by', 'customerid')
+
+    # ✅ Base queryset depending on role
+    if user_profile.role == 'admin':
+        base_qs = service_management.objects.all()
+        print("Admin called")
+
+    elif user_profile.role == 'branch_manager':
+        branch_manager = BranchManager.objects.get( mobile_no = request.user.username)
+        base_qs = service_management.objects.filter(branch = branch_manager.branch)
+        print("Manager called")
+    elif user_profile.role == 'operation_person':
+        operation_person = OperationPerson.objects.get( user = request.user)
+        base_qs = service_management.objects.filter(branch=operation_person.branch)
+        print("Operation called")
+
+    # ✅ Base queryset depending on search
     if query:
-        m = service_management.objects.filter(
-            customer__customerid__icontains=query
-        ) | service_management.objects.filter(
-            customer__primarycontact__icontains=query
+        base_qs = service_management.objects.filter(
+            Q(customer__customerid__icontains=query) |
+            Q(customer__primarycontact__icontains=query)
         )
-    else:
-        m = service_management.objects.all()
 
+    # ✅ Split into groups
+    allocated_ids = WorkAllocation.objects.values_list('service_id', flat=True)
+
+    unallocated = base_qs.exclude(id__in=allocated_ids)
+    pending = base_qs.filter(work_allocations__status="Pending").distinct()
+    completed = base_qs.filter(work_allocations__status="Completed").distinct()
+
+    # ✅ Sorting field
     if sort_by == 'firstname':
-        if sort_order == 'desc':
-            m = m.order_by('-customer__firstname')  
-        else:
-            m = m.order_by('customer__firstname')  
+        order_field = 'customer__firstname'
     else:
-        if sort_order == 'desc':
-            m = m.order_by('-customer__customerid')  
-        else:
-            m = m.order_by('customer__customerid')
+        order_field = 'customer__customerid'
 
+    if sort_order == 'desc':
+        order_field = f'-{order_field}'
+
+    # ✅ Apply sorting
+    unallocated = unallocated.order_by(order_field)
+    pending = pending.order_by(order_field)
+    completed = completed.order_by(order_field)
+
+    # ✅ Merge in required order
+    m = list(chain(unallocated, pending, completed))
+
+    # ✅ Pagination
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
 
     context = {
-        'allocated_service_ids': list(allocated_service_ids),
+        'unallocated_ids': list(unallocated.values_list('id', flat=True)),
+        'pending_ids': list(pending.values_list('id', flat=True)),
+        'completed_ids': list(completed.values_list('id', flat=True)),
         'current_order': sort_order,
         'current_sort_by': sort_by,
         'page_obj': page_obj,
@@ -1826,31 +2833,82 @@ def display_quotation(request):
     query = request.GET.get('search', '')
     sort_order = request.GET.get('order', 'asc')
     sort_order = sort_order if sort_order in ['asc', 'desc'] else 'asc'
-    sort_by = request.GET.get('sort_by', 'customer_full_name')
+    sort_by = request.GET.get('sort_by', 'customer__fullname')
+    customer_type = request.GET.get('customer_type')
+    valid_sort_fields = ['quotation_no','customer__fullname', 'quotation_date', 'total_price', 'total_price_with_gst']
+    branch = request.GET.get('branch')
+    sfs_representatives = request.GET.get('sfs_representatives')
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+    is_sales_coordinator = False
 
-    valid_sort_fields = ['customer_full_name', 'quotation_date', 'total_price', 'total_price_with_gst']
+    if request.user.userprofile.role == 'admin':
+        m = quotation_management.objects.all()
 
-    m = quotation_management.objects.all()
+    elif request.user.userprofile.role == 'sales':
+        sales = SalesPerson.objects.get(mobile_no = request.user.username)
+        if sales.co_ordinator:
+            is_sales_coordinator = True
+            m = quotation_management.objects.all()
+        else:
+            m = quotation_management.objects.filter(contact_by_no = sales.mobile_no)
+
+    elif request.user.userprofile.role == 'branch_manager':
+        m = quotation_management.objects.filter(branch = BranchManager.objects.get(mobile_no = request.user.username).branch)
     if query:
-        m = m.filter(customer_full_name__icontains=query)
+        m = m.filter(
+            Q(customer__fullname__icontains=query) |
+            Q(quotation_no__icontains=query) |
+            Q(customer__customerid__icontains=query) |
+            Q(customer__primarycontact__icontains=query)
+        )
+    # Filter by customer type 
+    if customer_type:
+        m=m.filter(customer__customer_type=customer_type)
 
-    if sort_by in valid_sort_fields:
-        order_prefix = '-' if sort_order == 'desc' else ''
-        m = m.order_by(f'{order_prefix}{sort_by}')
-    else:
-        m = m.order_by('customer_full_name')
+    if branch:
+        m = m.filter(branch = branch)
+    
+    if sfs_representatives:
+        m = m.filter(contact_by = sfs_representatives)
 
+     # Date range filter
+    if from_date:
+        from_date_obj = parse_date(from_date)
+        if from_date_obj:
+            m = m.filter(quotation_date__gte=from_date_obj)
+    if to_date:
+        to_date_obj = parse_date(to_date)
+        if to_date_obj:
+            m = m.filter(quotation_date__lte=to_date_obj)
+
+    filter_count = m.count()
+    # if sort_by in valid_sort_fields:
+    #     order_prefix = '-' if sort_order == 'desc' else ''
+    #     m = m.order_by(f'{order_prefix}{sort_by}')
+    # else:
+    #     m = m.order_by('customer__fullname')
+    m = m.order_by('-quotation_date')
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
-
+    branch_list = Branch.objects.all()
+    sfs_representatives = quotation_management.objects.values_list("contact_by", flat=True).distinct()
     context = {
         'current_order': sort_order,
         'current_sort_by': sort_by,
         'page_obj': page_obj,
         'start_index': start_index,
         'search_query': query,
+        'filter_count':filter_count,
+        'branches':branch_list,
+        'sfs_representatives':sfs_representatives,
+        'from_date': from_date,
+        'to_date': to_date,
+        "querystring": request.GET.urlencode(),
+        # "role": request.user.userprofile.role,
+        'is_sales_coordinator': is_sales_coordinator, 
     }
     return render(request, 'display_quotation.html', context)
 
@@ -1880,6 +2938,7 @@ def display_invoice(request):
         else:
             m = m.order_by('customer__customerid')
 
+    m = m.order_by('-id')
     paginator = Paginator(m, 10)  
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -1918,14 +2977,31 @@ from django.shortcuts import render
 from django.db.models import Q
 from django.core.paginator import Paginator
 from .models import lead_management, SalesPerson, main_followup
+from django.contrib.auth import get_user_model
 
-
+@login_required
 def display_lead_management(request):
     # 1. Start with all leads
-    filtered_leads = lead_management.objects.all()
+    salespersons = []
+    User = get_user_model()
+    if request.user.userprofile.role =='admin':
+        filtered_leads = lead_management.objects.all()
+        # salespersons = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
 
+        salespersons = (
+            list(SalesPerson.objects.all()) +
+            list(BranchManager.objects.all()) 
+        )
+    elif request.user.userprofile.role == 'sales':
+        salesperson = SalesPerson.objects.get(mobile_no =request.user.username)
+        filtered_leads = lead_management.objects.filter(salesperson=salesperson)
+
+    elif request.user.userprofile.role == 'branch_manager':
+        branch_manager = BranchManager.objects.get(mobile_no =request.user.username)
+        filtered_leads = lead_management.objects.filter(branch=branch_manager.branch)
+        salespersons = SalesPerson.objects.filter(branch=branch_manager.branch)
     # 2. Get filters from request
-    search_query = request.GET.get('search', '').strip()
+    search_query = request.GET.get('search','').strip()
     typeoflead_filter = request.GET.get('typeoflead')
     source_filter = request.GET.get('sourceoflead')
     salesperson_filter = request.GET.get('salesperson')
@@ -1936,6 +3012,8 @@ def display_lead_management(request):
     followup_to = request.GET.get('followup_to')
     sort_by = request.GET.get('sort', 'customername')
     order = request.GET.get('order', 'asc')
+    segment_filter = request.GET.get('segments')
+    customer_type = request.GET.get('customer_type')
 
     # 3. Apply search filter
     if search_query:
@@ -1951,21 +3029,26 @@ def display_lead_management(request):
     if source_filter:
         filtered_leads = filtered_leads.filter(sourceoflead=source_filter)
     if salesperson_filter:
-        filtered_leads = filtered_leads.filter(salesperson=salesperson_filter)
+        filtered_leads = filtered_leads.filter(
+        Q(salesperson__full_name=salesperson_filter) |
+        Q(branch_manager__full_name=salesperson_filter) |
+        Q(admin__first_name=salesperson_filter)
+    )
     if branch_filter:
         filtered_leads = filtered_leads.filter(branch=branch_filter)
     if enquiry_from and enquiry_to:
         filtered_leads = filtered_leads.filter(enquirydate__range=[enquiry_from, enquiry_to])
     if followup_from and followup_to:
         filtered_leads = filtered_leads.filter(firstfollowupdate__range=[followup_from, followup_to])
-
+    if segment_filter:
+        filtered_leads = filtered_leads.filter(customersegment=segment_filter)
+    if customer_type:
+        filtered_leads = filtered_leads.filter(customer_type=customer_type)
     # 5. Count for display
     branch_count = filtered_leads.count()
 
     # 6. Apply sorting
-    order_prefix = '-' if order == 'desc' else ''
-    leads = filtered_leads.order_by(f'{order_prefix}{sort_by}')
-
+    leads = filtered_leads.order_by('-id')
     # 7. Apply pagination
     paginator = Paginator(leads, 10)
     page_number = request.GET.get('page')
@@ -1988,18 +3071,24 @@ def display_lead_management(request):
 
     # 9. Get dropdown filter values
     typeoflead_choices = [choice[0] for choice in lead_management._meta.get_field('typeoflead').choices if choice[0]]
-    typeoflead_used = lead_management.objects.values_list('typeoflead', flat=True).distinct()
-    lead_types = sorted(set(typeoflead_choices + list(typeoflead_used)))
-
+    lead_types = sorted(set(typeoflead_choices))
     source_choices = [choice[0] for choice in lead_management._meta.get_field('sourceoflead').choices if choice[0]]
-    source_used = lead_management.objects.values_list('sourceoflead', flat=True).distinct()
-    sources = sorted(set(source_choices + list(source_used)))
 
-    branch_choices = [choice[0] for choice in lead_management._meta.get_field('branch').choices if choice[0]]
-    branch_used = lead_management.objects.values_list('branch', flat=True).distinct()
-    branches = sorted(set(branch_choices + list(branch_used)))
+    sources = sorted(set(source_choices))
 
-    salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
+
+    # branch_choices = [choice[0] for choice in lead_management._meta.get_field('branch').choices if choice[0]]
+    # branch_used = lead_management.objects.values_list('branch', flat=True).distinct()
+    # branches = sorted(set(branch_choices + list(branch_used)))
+
+    # salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
+
+    # segments = lead_management.objects.exclude( customersegment__in=["NOT SELECTED", "", None] ).values_list('customersegment', flat=True).distinct()
+    segments = [ choice[0] for choice in lead_management._meta.get_field('customersegment').choices if choice[0] != "NOT SELECTED" ]
+
+    c_types = ['Organization','Individual']
+    
+
 
     # 10. No data message if needed
     no_data_message = ""
@@ -2017,7 +3106,11 @@ def display_lead_management(request):
         else:
             no_data_message = "No data found for the selected filters."
 
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        query_params.pop('page')
     # 11. Final context
+    branches = Branch.objects.all()
     context = {
         'page_obj': page_obj,
         'start_index': start_index,
@@ -2025,11 +3118,15 @@ def display_lead_management(request):
         'sources': sources,
         'branches': branches,
         'salespersons': salespersons,
+        'segments':segments,
         'search_query': search_query,
         'current_sort': sort_by,
         'current_order': order,
         'no_data_message': no_data_message,
         'branch_count': branch_count,
+        'selected_segment': segment_filter,
+        'c_types' : c_types,
+        'query_params': query_params.urlencode(),
     }
 
     return render(request, 'display_lead_management.html', context)
@@ -2041,30 +3138,25 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 import xlwt
+from .models import lead_management
 
 def export_leads_excel(request):
-    from .models import lead_management
 
-    response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="leads_full.xls"'
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="leads_full.csv"'
 
-    wb = xlwt.Workbook(encoding='utf-8')
-    ws = wb.add_sheet('Leads')
+    writer = csv.writer(response)
 
     # Get all model field names
     model_fields = [field.name for field in lead_management._meta.fields]
 
-    # Write header
-    for col_num, field_name in enumerate(model_fields):
-        ws.write(0, col_num, field_name.replace('_', ' ').title())
+    # Write header row
+    writer.writerow([field.replace('_', ' ').title() for field in model_fields])
 
     # Write data rows
-    data = lead_management.objects.all().values_list(*model_fields)
-    for row_num, row in enumerate(data, start=1):
-        for col_num, cell_value in enumerate(row):
-            ws.write(row_num, col_num, str(cell_value))
+    for obj in lead_management.objects.all().values_list(*model_fields):
+        writer.writerow(obj)
 
-    wb.save(response)
     return response
 
 
@@ -2127,23 +3219,22 @@ def delete_service_management(request, rid):
 
 # Delete Quotation
 
-def delete_quotation(request , rid):
+def delete_quotation(request, rid):
     if request.method == "POST":
         password = request.POST.get("password")
-        correct_password = "seva123"  # Replace with the actual password you want to use
+        correct_password = "seva123"  # Ideally, move to settings or env variable for security
 
         if password == correct_password:
             try:
-                m=quotation.objects.filter(id=rid)
-                m.delete()
-                messages.success(request, "Record deleted successfully.")
-            except quotation.DoesNotExist:
-                messages.error(request, "Record not found.")
+                quotation_obj = get_object_or_404(quotation_management, id=rid)
+                quotation_obj.delete()
+                messages.success(request, "Quotation deleted successfully.")
+            except Exception as e:
+                messages.error(request, f"An error occurred: {e}")
         else:
             messages.error(request, "Invalid password. Deletion failed.")
-
+    
     return redirect('/display_quotation')
-
 # Delete Invoice
 
 def delete_invoice(request , rid):
@@ -2200,28 +3291,21 @@ def delete_lead_management(request , rid):
 # Edit Customer Details
 
 def edit_customer(request , rid):
-    
-
     if request.method =='GET':
-
         m=customer_details.objects.filter(id=rid)
-
-        context={}
-        context['data']=m
-    
+        branches = Branch.objects.all()
+        context={'branches':branches, 'data':m}
+        # context['data']=m
         return render(request , 'edit_customer.html' , context)
     
     else:
-        ufirstname=request.POST['ufirstname']
-        ulastname=request.POST['ulastname']
+        ufullname=request.POST['ufullname']
         uprimaryemail=request.POST['uprimaryemail']
-        usecondaryemail=request.POST['usecondaryemail']
+        usecondaryemail=request.POST['usecondaryemail'] or ""
         uprimarycontact=request.POST['uprimarycontact']
-        usecondarycontact=request.POST['usecondarycontact']
-        if not usecondarycontact:
-            usecondarycontact = None
+        usecondarycontact=request.POST['usecondarycontact'] or None
         ucontactperson=request.POST['ucontactperson']
-        ucustomersegment=request.POST['ucustomersegment']
+        udesignation=request.POST['udesignation']
         ushifttopartyaddress=request.POST['ushifttopartyaddress']
         ushifttopartycity=request.POST['ushifttopartycity']
         ushifttopartystate=request.POST['ushifttopartystate']
@@ -2230,79 +3314,172 @@ def edit_customer(request , rid):
         usoldtopartycity=request.POST['usoldtopartycity']
         usoldtopartystate=request.POST['usoldtopartystate']
         usoldtopartypostal=request.POST['usoldtopartypostal']
-        
+        ucustomer_type = request.POST['ucustomer_type']
+        uor_name = request.POST['uor_name']
+        uor_contact = request.POST['uor_contact'] or None   
+        ubranch = request.POST['branch'] 
+
+        branch = Branch.objects.get(id = ubranch)  
 
         m=customer_details.objects.filter(id=rid)
 
-        m.update(firstname=ufirstname, lastname=ulastname , primaryemail=uprimaryemail,  secondaryemail=usecondaryemail , primarycontact=uprimarycontact , secondarycontact=usecondarycontact , contactperson=ucontactperson , customersegment=ucustomersegment , shifttopartyaddress=ushifttopartyaddress , shifttopartycity=ushifttopartycity , shifttopartystate=ushifttopartystate , shifttopartypostal=ushifttopartypostal , soldtopartyaddress=usoldtopartyaddress , soldtopartycity=usoldtopartycity , soldtopartystate=usoldtopartystate , soldtopartypostal=usoldtopartypostal)
+        m.update(fullname=ufullname , primaryemail=uprimaryemail,  secondaryemail=usecondaryemail , primarycontact=uprimarycontact , secondarycontact=usecondarycontact , contactperson=ucontactperson , designation=udesignation , shifttopartyaddress=ushifttopartyaddress , shifttopartycity=ushifttopartycity , shifttopartystate=ushifttopartystate , shifttopartypostal=ushifttopartypostal , soldtopartyaddress=usoldtopartyaddress , soldtopartycity=usoldtopartycity , soldtopartystate=usoldtopartystate , soldtopartypostal=usoldtopartypostal, customer_type = ucustomer_type, or_name = uor_name, or_contact = uor_contact , branch = branch)
 
-       
         return redirect( '/display_customer')
     
 
 
 
-
-# Edit Service Management
-
-# from datetime import datetime
-# def edit_service_management(request , rid):
-
-#     if request.method =='GET':
-
-#         m=service_management.objects.filter(id=rid)
-
-#         context={}
-#         context['data']=m
-    
-#         return render(request , 'edit_service_management.html' , context)  
-#     else:
-#         upestcontrolservice=request.POST['upestcontrolservice']
-#         uservices=request.POST['uservices']
-#         uservicetype=request.POST['uservicetype']
-#         uservice_frequency=request.POST['uservice_frequency']
-#         uservice_charges=request.POST['uservice_charges']
-
-#         if 'ugst_checkbox' in request.POST:
-#             ugst_checkbox = True
-#         else:
-#             ugst_checkbox = False
-
-#         upayment_terms_checkbox = request.POST.get('upayment_terms_checkbox')
-#         uservice_date_str=request.POST['uservice_date']
-#         ulead_date_str=request.POST['ulead_date']
-#         usales_person_name=request.POST['usales_person_name']
-#         usales_person_contact_no=request.POST['usales_person_contact_no']
-#         utechnician_operator_name=request.POST['utechnician_operator_name']
-
-#         try:
-#             uservice_date = datetime.strptime(uservice_date_str, '%Y-%m-%d').date()
-#         except ValueError:
-#             uservice_date = None
-        
-#         try:
-#             ulead_date = datetime.strptime(ulead_date_str, '%Y-%m-%d').date()
-#         except ValueError:
-#             ulead_date = None
-
-#         if ugst_checkbox:
-#             total_charges = float(uservice_charges) * 1.18  # Adding 18% GST
-#             upayment_terms_checkbox = "Payment Due in 15 days (including GST)"
-#         else:
-#             total_charges = float(uservice_charges)
-#             upayment_terms_checkbox = "100% Advance Payment"
-
-        
-        
-
-#         m=service_management.objects.filter(id=rid)
-
-#         m.update(pestcontrolservice=upestcontrolservice, services=uservices , servicetype=uservicetype, service_frequency=uservice_frequency , service_charges=uservice_charges , gst_checkbox = True if ugst_checkbox == 'on' else False , payment_terms_checkbox=upayment_terms_checkbox , service_date=uservice_date , lead_date=ulead_date , sales_person_name=usales_person_name , sales_person_contact_no=usales_person_contact_no , technician_operator_name=utechnician_operator_name , total_charges=total_charges)
-
-       
-#         return redirect( '/display_service_management')
 from .models import Reschedule
 from datetime import datetime
+
+
+@csrf_exempt
+def edit_service_records(request, rid):
+    service = get_object_or_404(service_management, id=rid)
+    selected_products = ServiceProduct.objects.filter(service_id=service).select_related('product')
+    customer = get_object_or_404(customer_details, id=service.customer_id)
+    category_choices = Product.CATEGORY_CHOICES
+    products = Product.objects.all()
+    sales_persons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+    frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
+
+    if request.method == "POST":
+        try:
+            total_price = Decimal('0.00')
+            total_charges = Decimal('0.00')
+            total_with_gst = Decimal('0.00')
+
+            # --- Update existing ServiceProducts ---
+            for sp in selected_products:
+                price = Decimal(request.POST.get(f'price_{sp.id}', sp.price))
+                quantity = Decimal(request.POST.get(f'quantity_{sp.id}', sp.quantity))
+                gst = Decimal(request.POST.get(f'gst_{sp.id}', sp.gst_percentage))
+                description = request.POST.get(f'description_{sp.id}', sp.description)
+
+                line_total = price * quantity
+                line_total_charges = line_total * gst / Decimal('100')
+                line_total_with_gst = line_total + line_total_charges
+
+                sp.price = price
+                sp.quantity = quantity
+                sp.gst_percentage = gst
+                sp.description = description
+                sp.total_with_gst = line_total_with_gst
+                sp.save()
+
+                total_price += line_total
+                total_charges += line_total_charges
+                total_with_gst += line_total_with_gst
+
+            # --- Add new selected products ---
+            selected_products_json = (request.POST.get('selected_products_json') or '[]').strip()
+            try:
+                selected_products = json.loads(selected_products_json)
+            except json.JSONDecodeError:
+                selected_products = []
+                print("⚠️ Warning: Invalid JSON in selected_products_json, defaulting to empty list.")
+
+            print("Selected Products:", selected_products)
+
+
+            for item in selected_products:
+                product_id = item.get('p_id')
+                price = item.get('price')
+                quantity = item.get('quantity')
+                gst_percentage = item.get('gst', 0)
+                description = item.get('description', '')
+
+                if not price or not quantity or not gst_percentage:
+                    continue
+
+                try:
+                    product = Product.objects.get(product_id=product_id)
+                    price = Decimal(price)
+                    quantity = Decimal(quantity)
+                    gst = Decimal(gst_percentage)
+
+                    line_total = price * quantity
+                    line_total_charges = line_total * gst / Decimal('100')
+                    line_total_with_gst = line_total + line_total_charges
+
+                    ServiceProduct.objects.create(
+                        service=service,
+                        product=product,
+                        price=price,
+                        quantity=quantity,
+                        gst_percentage=gst,
+                        total_with_gst=line_total_with_gst,
+                        description=description,
+                    )
+
+                    total_price += line_total
+                    total_with_gst += line_total_with_gst
+
+                except Product.DoesNotExist:
+                    print(f"Product with ID {product_id} does not exist.")
+                    continue
+
+            # --- Save updated totals to service ---
+            service.total_price = total_price
+            service.total_charges = total_charges
+            service.total_price_with_gst = total_with_gst
+            service.contract_type = request.POST.get('contract_type')
+            service.contract_status = request.POST.get('contract_status')
+            service.property_type = request.POST.get('property_type')
+            service.warranty_period = request.POST.get('warranty_period')
+            service.state = request.POST.get('state')
+            service.city = request.POST.get('city')
+            service.address = request.POST.get('address')
+            service.pincode = request.POST.get('pincode')
+            service.gps_location = request.POST.get('gps_location')
+            service.frequency_count = request.POST.get('frequency_count')
+            service.sales_person_name = request.POST.get('sales_person_name')
+            service.sales_person_contact_no = request.POST.get('sales_person_contact_no')
+            service.lead_date = request.POST.get('lead_date')
+            service.delivery_time = request.POST.get('delivery_time')
+            service.service_date = request.POST.get('service_date')
+            service.save()
+
+            # messages.success(request, "Service record updated successfully.")
+            return redirect('display_service_management')
+
+        except Exception as e:
+            print("Error in edit_service_records:", str(e))
+            traceback.print_exc()
+            messages.error(request, f"Error updating service record: {str(e)}")
+
+    context = {
+        'service': service,
+        'selected_products': selected_products,
+        'customer': customer,
+        'category_choices': category_choices,
+        'products': products,
+        'sales_persons': sales_persons,
+        'frequency_choices': frequency_choices,
+    }
+    return render(request, 'edit_service_records.html', context)
+
+def delete_service_records(request, rid):
+    service_management.objects.get(id = rid).delete()
+    return redirect('display_service_management')
+
+# This is for the delete product inside the edit field 
+
+@csrf_exempt
+def delete_service_product(request, pid):
+    if request.method == 'POST':
+        try:
+            product = get_object_or_404(ServiceProduct, id=pid)
+            product.delete()
+            return JsonResponse({'success': True, 'message': 'Product deleted'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+
+
+from .signals import service_scheduled
+# This function is for edit service management in reshdule 
 def edit_service_management(request, rid):
     if request.method == 'GET':
         service_obj = get_object_or_404(service_management, id=rid)
@@ -2311,7 +3488,7 @@ def edit_service_management(request, rid):
 
         # Get users already assigned as technicians (via TechWorkList)
         allocated_technicians = User.objects.filter(techworklist__service=service_obj).distinct()
-        print("selected_technicians :",allocated_technicians)
+   
         context = {
             'data': [service_obj],
             'previous_reschedules': previous_reschedules,
@@ -2323,7 +3500,6 @@ def edit_service_management(request, rid):
 
     else:
         service_obj = get_object_or_404(service_management, id=rid)
-
         technician_ids = request.POST.getlist('technicians')
         print("technician_ids :", technician_ids)
         ucustomer_id = request.POST.get('ucustomer')
@@ -2367,7 +3543,7 @@ def edit_service_management(request, rid):
         # Step 3: Assign new technicians
         technician_profiles = TechnicianProfile.objects.filter(id__in=technician_ids)
         work_allocation.technician.set(technician_profiles)  # update technicians for WorkAllocation
-
+        
         for tech_profile in technician_profiles:
             tech_user = tech_profile.user  # convert to User model
             tech_work = TechWorkList.objects.create(
@@ -2379,7 +3555,7 @@ def edit_service_management(request, rid):
 
         # Step 4: Update service fields
         try:
-            customer = customer_details.objects.get(customerid=ucustomer_id)
+            customer = customer_details.objects.get(id=ucustomer_id)
         except customer_details.DoesNotExist:
             return HttpResponse("Customer not found")
 
@@ -2404,77 +3580,206 @@ def edit_service_management(request, rid):
         service_obj.service_date = uservice_date
         service_obj.technicians.set(technician_ids)
         service_obj.save()
-
+        work_allocation.save()
+        service_scheduled.send(sender=WorkAllocation, service_id=service_obj.id, created=False)
         return redirect('/display_allocation')
 
 # Edit Quotation
+import json
+from .models import quotation_management, QuotationTerm, Product  # adjust as needed
 
-# new try
 def edit_quotation(request, rid):
-    if request.method == 'GET':
-        m = quotation.objects.filter(id=rid)
-        context = {'data': m}
-        return render(request, 'edit_quotation.html', context)
-    
-    else:
-        ucustomer_id = request.POST.get('ucustomer')
-        uquantity = int(request.POST['uquantity'])
-        uprice = float(request.POST['uprice'])
-        utermsandcondition = request.POST['utermsandcondition']
-        uservicetype_q = request.POST['uservicetype_q']
-        utotal_amount = float(request.POST['hidden_total_amount'])  # Use hidden input value
-        utotal_amount_with_gst = float(request.POST['hidden_total_amount_with_gst'])  # Use hidden input value
-        udiscount = float(request.POST['udiscount']) if request.POST['udiscount'] else None
-        ugst_checkbox = 'ugst' in request.POST  # Check for the GST checkbox
-        ucompany_name = request.POST.get('ucompany_name')
-        ucompany_email = request.POST.get('ucompany_email')
-        ucompany_contact_no = request.POST.get('ucompany_contact_no')
-        uquotation_date = request.POST.get('uquotation_date')
+    quotation = quotation_management.objects.get(id=rid)
+    sales_person_list = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+    thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
+    products = Product.objects.all()
+    customer = quotation.customer
+    if request.method == "POST":
+        delete_ids = request.POST.getlist('delete_product_ids[]')
+        existing_products = quotation.product_details_json or []
 
+        updated_products = []
+        existing_product_ids = []
+
+        # Get form fields
+        customer_full_name = request.POST.get('customer_full_name')
+        contact_no = request.POST.get('contact_no')
+        secondary_contact_no = request.POST.get('secondary_contact_no') or None
+        customer_email = request.POST.get('customer_email')
+        secondary_email = request.POST.get('secondary_email')
+        contact_by = request.POST.get('contact_by')
+        contact_by_no = request.POST.get('contact_by_no')
+        address = request.POST.get('address')
+        subject = request.POST.get('subject')
+        branch_id = request.POST.get('branch_id')
+        selected_term_ids = request.POST.getlist('terms_and_conditions[]')  # get selected terms
+        ordered_term_ids_str = request.POST.get('terms_and_conditions_ordered', '')
+        custom_terms = request.POST.get('add_terms_conditions')
+        customer_type = request.POST.get('customer_type')
+        or_name = request.POST.get('or_name')
+        or_contact = request.POST.get('or_contact') 
+        thank_u_note = request.POST.get('thank_u_note')
+        quotation_date = request.POST.get('quotation_date')
+        customer.primarycontact = contact_no
+        customer.fullname = customer_full_name
+        customer.primaryemail = customer_email
+        customer.secondaryemail = secondary_email
+        customer.secondarycontact = secondary_contact_no
+        customer.customer_type = customer_type
+        customer.or_name = or_name
         try:
-            uquotation_date = datetime.strptime(uquotation_date, '%Y-%m-%d').date() if uquotation_date else timezone.now().date()
-        except ValueError:
-            uquotation_date = None
+            customer.or_contact = int(or_contact) if or_contact not in (None, "", "None") else None
+        except (TypeError, ValueError):
+            customer.or_contact = None
 
-        ucompany_address = request.POST.get('ucompany_address')
-        usubject = request.POST.get('usubject')
+         # Save changes
+        customer.save(update_fields=[
+            "primarycontact",
+            "fullname",
+            "secondarycontact",
+            "primaryemail",
+            "secondaryemail",
+            "customer_type",
+            "or_name",
+            "or_contact",
+        ])
+        
+        for counter , product in enumerate(existing_products, start=1):
+            product_id = str(product['id'])
+            if product_id in delete_ids:
+                continue
+            existing_product_ids.append(product_id)
+
+            try:
+                price = float(request.POST.get(f'product_price_{product_id}', product.get('price', 0)))
+                quantity = float(request.POST.get(f'product_quantity_{product_id}', product.get('quantity', 0)))
+                gst = float(request.POST.get(f'product_gst_{product_id}', product.get('gst', 0)))
+                description = request.POST.get(f'product_description_{product_id}', product.get('description', ''))
+                unit = request.POST.get(f'product_unit_{product_id}', product.get('unit', ''))
+                hsn_code =  request.POST.get(f'product_hsn_{product_id}',product.get('hsn_code',''))
+            except (TypeError, ValueError):
+                continue
+
+            updated_products.append({
+                'id': counter,
+                'p_id': product_id,
+                'name': product.get('name'),
+                'price': price,
+                'quantity': quantity,
+                'hsn_code':hsn_code,
+                'gst': gst,
+                'description': description,
+                'unit': unit
+            })
+
+        # New products
+        try:
+            new_products = json.loads(request.POST.get("product_details_json", "[]"))
+        except json.JSONDecodeError:
+            new_products = []
+
+        for new_product in new_products:
+            if str(new_product.get('id')):
+                updated_products.append(new_product)
+
+        # Totals
+        try:
+            total_without_gst = float(request.POST.get("grand_total_without_gst", 0))
+            total_gst = float(request.POST.get("grand_total_gst", 0))
+        except ValueError:
+            total_without_gst = 0
+            total_gst = 0
+
+        enable_gst = request.POST.get('enable_gst') == 'on'
+        gst_type = request.POST.get('gst_type', 'cgst_sgst')
+
+        if enable_gst:
+            gst_status = 'GST'
+            cgst = total_gst / 2 if gst_type == 'cgst_sgst' else 0
+            sgst = total_gst / 2 if gst_type == 'cgst_sgst' else 0
+            igst = total_gst if gst_type == 'igst' else 0
+        else:
+            gst_status = 'NON-GST'
+            cgst = sgst = igst = total_gst = 0
+
+        total_with_gst = total_without_gst + total_gst
+
+        # Save quotation fields
+        # quotation.customer_full_name = customer_full_name
+        # quotation.contact_no = contact_no
+        # quotation.secondary_contact_no = secondary_contact_no
+        # quotation.customer_email = customer_email
+        # quotation.secondary_email = secondary_email
+        quotation.contact_by = contact_by
+        quotation.contact_by_no = contact_by_no
+        quotation.address = address
+        quotation.subject = subject
+        quotation.branch_id = branch_id
+        quotation.quotation_date = quotation_date
+        quotation.product_details_json = updated_products
+        quotation.total_price = total_without_gst
+        quotation.gst_total = total_gst
+        quotation.total_price_with_gst = total_with_gst
+        quotation.cgst = cgst
+        quotation.sgst = sgst
+        quotation.igst = igst
+        quotation.gst_status = gst_status
+        quotation.apply_gst = enable_gst
+        quotation.custom_terms = custom_terms
+        quotation.or_name = or_name
+        try:
+            quotation.or_contact = int(or_contact) if or_contact not in (None, "", "None") else None
+        except (TypeError, ValueError):
+            quotation.or_contact = None
+        quotation.thank_u_note = thank_u_note
+        quotation.save()
+
+        # Save terms
+        # quotation.terms_and_conditions.set(selected_term_ids)
+        # Parse and apply ordered term IDs
+        ordered_term_ids = [int(tid) for tid in ordered_term_ids_str.split(',') if tid.isdigit()]
+        print('term', ordered_term_ids)
+        quotation.terms_and_conditions.set(ordered_term_ids)
+
+        quotation.terms_order = ordered_term_ids
+        quotation.save()
+        return redirect('display_quotation')
+
+    else:
+        terms = QuotationTerm.objects.all()
+        terms_order = quotation.terms_order or []  # fallback to empty list if None
+
+        ordered_terms = [term for tid in terms_order for term in terms if term.id == tid]
+        remaining_terms = [term for term in terms if term.id not in terms_order]
+        all_terms = ordered_terms + remaining_terms
+
+        branches = Branch.objects.all()
+        branch = Branch.objects.get(id = quotation.branch_id)
         
         try:
-            customer = customer_details.objects.get(customerid=ucustomer_id)
-        except customer_details.DoesNotExist:
-            return HttpResponse("Customer not found")
+            product_details = json.loads(quotation.product_details_json)
+        except Exception:
+            product_details = []
 
-        # Fetch the latest quotation for the customer and increment the version
-        latest_quotation = quotation.objects.filter(customer=customer,servicetype_q=uservicetype_q).order_by('-version').first()
-        new_version = latest_quotation.version + 1 if latest_quotation else 1
-
-        # Update the existing quotation and mark it inactive
-        m = quotation.objects.filter(id=rid)
-        m.update(status='inactive')
-
-        # Update the quotation details with new values
-        m.update(
-            customer=customer,
-            quantity=uquantity,
-            price=uprice,
-            termsandcondition=utermsandcondition,
-            servicetype_q=uservicetype_q,
-            discount=udiscount,
-            total_amount=utotal_amount,
-            company_name=ucompany_name,
-            company_email=ucompany_email,
-            company_contact_no=ucompany_contact_no,
-            quotation_date=uquotation_date,
-            company_address=ucompany_address,
-            subject=usubject,
-            total_amount_with_gst=utotal_amount_with_gst,
-            gst_checkbox=ugst_checkbox,
-            version=new_version,
-            status='active'
+        product_ids = [item['id'] for item in product_details if 'id' in item]
+        selected_categories = list(
+            Product.objects.filter(product_id__in=product_ids)
+            .values_list('category', flat=True)
+            .distinct()
         )
-       
-        return redirect('/display_quotation')
 
+        return render(request, 'edit_quotation.html', {
+            'quotation': quotation,
+            'all_terms': all_terms,
+            'branch':branch,
+            'branches': branches,
+            'product_details': json.dumps(product_details),
+            'selected_categories': selected_categories,
+            'category_choices': Product.CATEGORY_CHOICES,
+            "sales_person_list": sales_person_list,
+            "thank_notes": list(thank_notes),
+            'products': products,
+        })
 
 # Edit Invoice
 
@@ -2543,39 +3848,6 @@ def edit_invoice(request , rid):
         return redirect( '/display_invoice')
 
 
-
-# Edit Inventory
-
-
-
-# def edit_inventory(request , rid):
-
-#     if request.method =='GET':
-
-#         m=inventory.objects.filter(id=rid)
-
-#         context={}
-#         context['data']=m
-    
-#         return render(request , 'edit_inventory.html' , context)
-    
-#     else:
-#         uitemnumber=request.POST['uitemnumber']
-#         uitemname=request.POST['uitemname']
-#         uprice=request.POST['uprice']
-#         uquantity=request.POST['uquantity']
-       
-        
-
-#         m=inventory.objects.filter(id=rid)
-
-#         m.update(itemnumber=uitemnumber, itemname=uitemname , price=uprice,  quantity=uquantity)
-
-       
-#         return redirect( '/display_inventory')
-    
-
-
 # Edit Lead Management
 
 
@@ -2588,20 +3860,25 @@ def edit_lead_management(request, rid):
     if request.method =='GET':
 
         m=lead_management.objects.filter(id=rid)
-
-        context={}
+        salesperson = SalesPerson.objects.all()
+        context={'salespersons':salesperson}
         context['data']=m
     
         return render(request , 'edit_lead_management.html' , context)
     
     elif request.method == 'POST':
+        role = request.user.userprofile.role
         usourceoflead = request.POST.get('usourceoflead', '')
-        usalesperson = request.POST.get('usalesperson', '')
+        # usalesperson = request.POST.get('usalesperson')
         ucustomername = request.POST.get('ucustomername', '')
         ucustomersegment = request.POST.get('ucustomersegment', '')
         utypeoflead = request.POST.get('utypeoflead', '')
         ucontactedby = request.POST.get('ucontactedby', '')
         uenquirydate = request.POST.get('uenquirydate', '')
+        ucustomer_type = request.POST.get('ucustomer_type','')
+        uor_name = request.POST.get('uor_name') or None
+        uor_contact = request.POST.get('uor_contact') or None
+
 
         try:
             uenquirydate = datetime.strptime(uenquirydate, '%Y-%m-%d').date() if uenquirydate else timezone.now().date()
@@ -2611,7 +3888,8 @@ def edit_lead_management(request, rid):
         umaincategory = request.POST.get('umaincategory', '')
         usubcategory = request.POST.get('usubcategory', '')
         uprimarycontact = request.POST.get('uprimarycontact', '')
-        usecondarycontact = request.POST.get('usecondarycontact', '')
+        usecondarycontact_raw = request.POST.get('usecondarycontact')
+        usecondarycontact = int(usecondarycontact_raw) if usecondarycontact_raw else None
         ucustomeremail = request.POST.get('ucustomeremail', '')
         ucustomeraddress = request.POST.get('ucustomeraddress', '')
         ulocation = request.POST.get('ulocation', '')       
@@ -2624,10 +3902,21 @@ def edit_lead_management(request, rid):
             ufirstfollowupdate = None  # Handle invalid date format
 
         m=lead_management.objects.filter(id=rid)
+        sp = None
+        bm = None
+        ad = None
+        if role == "sales":
+            sp = SalesPerson.objects.get(mobile_no = request.user.username)
+        elif role == "branch_manager":
+            bm = BranchManager.objects.get(mobile_no = request.user.username)
+        else: 
+            ad = request.user
 
         m.update(
             sourceoflead = usourceoflead,
-            salesperson = usalesperson,
+            salesperson=sp,
+            branch_manager = bm,
+            admin = ad,
             customername = ucustomername,
             customersegment = ucustomersegment,
             typeoflead = utypeoflead,
@@ -2641,7 +3930,10 @@ def edit_lead_management(request, rid):
             customeraddress = ucustomeraddress,
             location = ulocation,
             city = ucity,
-            firstfollowupdate=ufirstfollowupdate
+            firstfollowupdate=ufirstfollowupdate,
+            customer_type = ucustomer_type,
+            or_name = uor_name,
+            or_contact = uor_contact,
         )
         
        
@@ -2664,112 +3956,6 @@ def search_inventory(request):
 
 
 def search(request):
-    # search_query = request.GET.get('q', '').strip()
-    # if search_query:
-    #     # Perform case-insensitive search operation based on the query in the specified fields
-    #     results = (
-    #         customer_details.objects.filter(firstname__icontains=search_query) |
-    #         customer_details.objects.filter(lastname__icontains=search_query) |
-    #         customer_details.objects.filter(customerid__icontains=search_query)
-    #     )
-
-    #     data = [
-    #         {
-    #             'customerid': customer.customerid,
-    #             'firstname': customer.firstname,
-    #             'lastname': customer.lastname,
-    #             'primaryemail': customer.primaryemail,
-    #             'secondaryemail': customer.secondaryemail,
-    #             'primarycontact': customer.primarycontact,
-    #             'secondarycontact': customer.secondarycontact,
-    #             'contactperson': customer.contactperson,
-    #             'customersegment': customer.customersegment,
-    #             'shifttopartyaddress': customer.shifttopartyaddress,
-    #             'shifttopartycity': customer.shifttopartycity,
-    #             'shifttopartystate': customer.shifttopartystate,
-    #             'shifttopartypostal': customer.shifttopartypostal,
-    #             'soldtopartyaddress': customer.soldtopartyaddress,
-    #             'soldtopartycity': customer.soldtopartycity,
-    #             'soldtopartystate': customer.soldtopartystate,
-    #             'soldtopartypostal': customer.soldtopartypostal,
-    #         }
-    #         for customer in results
-    #     ]
-
-    #     return render(request, 'search.html', {'results': data})
-    # else:
-    #     return render(request, 'search.html', {'message': 'No search query provided'})
-
-
-
-    # search_query = request.GET.get('q', '').strip()
-    # sort_field = request.GET.get('sort', 'firstname')  # Default sort field is 'firstname'
-    # sort_order = request.GET.get('order', 'asc')  # Default sort order is 'asc'
-
-    # if sort_order == 'desc':
-    #     sort_field = f'-{sort_field}'  # Prefix the field with '-' for descending order
-
-    # results = customer_details.objects.all()
-
-    # if search_query:
-    #     results = results.filter(
-    #         Q(firstname__icontains=search_query) |
-    #         Q(lastname__icontains=search_query) |
-    #         Q(customerid__icontains=search_query)
-    #     )
-
-    # results = results.order_by(sort_field)
-
-    # # Paginate results
-    # paginator = Paginator(results, 10)  # Show 10 results per page
-    # page_number = request.GET.get('page')
-    # page_obj = paginator.get_page(page_number)
-
-    # context = {
-    #     'search_query': search_query,
-    #     'page_obj': page_obj,
-    #     'sort_order': sort_order,
-    #     'sort_field': sort_field.lstrip('-'),  # Remove '-' to pass only field name
-    # }
-
-    # return render(request, 'search.html', context)
-
-
-    # search_query = request.GET.get('q', '').strip()
-    # sort_field = request.GET.get('sort', 'firstname')  # Default sorting field
-    # sort_order = '' if sort_field.startswith('-') else '-'
-    # sort_field = f"{sort_order}{sort_field}"
-    
-    # if search_query:
-    #     # Perform case-insensitive search operation
-    #     results = (
-    #         customer_details.objects.filter(firstname__icontains=search_query) |
-    #         customer_details.objects.filter(lastname__icontains=search_query) |
-    #         customer_details.objects.filter(customerid__icontains=search_query)
-    #     ).order_by(sort_field)
-
-    #     paginator = Paginator(results, 10)  # Paginate with 10 results per page
-    #     page_number = request.GET.get('page', 1)
-    #     page_obj = paginator.get_page(page_number)
-
-    #     context = {
-    #         'search_query': search_query,
-    #         'page_obj': page_obj,
-    #         'sort_order': 'asc' if sort_order == '' else 'desc',
-    #         'sort_field': sort_field.lstrip('-'),
-    #         'no_results': results.exists() == False,  # True if no results found
-    #     }
-    # else:
-    #     context = {
-    #         'search_query': search_query,
-    #         'page_obj': None,
-    #         'sort_order': 'asc',
-    #         'sort_field': 'firstname',
-    #         'no_results': True,  # True because no query was provided
-    #     }
-
-    # return render(request, 'search.html', context)
-
     search_query = request.GET.get('q', '').strip()
     sort_field = request.GET.get('sort', 'firstname')  # Default sort by 'firstname'
     
@@ -2811,7 +3997,7 @@ def search(request):
 
 # In crmapp/views.py
 from django.shortcuts import render
-from .forms import InventoryServiceForm
+from .forms import InventoryServiceForm , CustomerImportForm
 from .models import customer_details, Product, Inventory_summary
 
 def inventory_service(request):
@@ -2885,36 +4071,71 @@ def inventory_summary(request):
     return render(request, 'inventory_summary.html', context)
 
 
+# @login_required
+# def add_product(request):
+#     from_quotation = request.GET.get('from_quotation') == 'true'
 
+#     if request.method == 'POST':
+#         form = AddProductForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+
+#             if from_quotation:
+#                 # Redirect back to quotation form (retain user input via session or back button)
+#                 return redirect(reverse('create_quotation'))
+#             else:
+#                 return render(request, 'add_product_success.html')
+#     else:
+#         form = AddProductForm()
+
+#     # Render either as a modal or full page based on access
+#     return render(request, 'add_product.html', {
+#         'form': form,
+#         'from_quotation': from_quotation
+#     })
+
+@login_required
 def add_product(request):
+    from_quotation = request.GET.get('from_quotation') == 'true'
+
     if request.method == 'POST':
         form = AddProductForm(request.POST)
         if form.is_valid():
-            form.save()
-            return render(request, 'add_product_success.html')
+            product = form.save()
+
+            # If AJAX -> return JSON
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'product_id': product.id, 'product_name': product.name})
+
+            if from_quotation:
+                return redirect(reverse('create_quotation'))
+            else:
+                return render(request, 'add_product_success.html')
     else:
         form = AddProductForm()
-    return render(request, 'add_product.html', {'form': form})
 
-def update_product(request):
-    if request.method == 'POST':
-        form = UpdateProductForm(request.POST)
-        if form.is_valid():
-            product = form.cleaned_data['product']
-            price = form.cleaned_data['price']
-            add_quantity = form.cleaned_data['add_quantity']
+    # If AJAX -> return only the form HTML
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'add_product_form.html', {'form': form})
 
-            if price is not None:
-                product.price = price
-            if add_quantity is not None:
-                product.quantity += add_quantity
-            product.save()
-            return render(request, 'update_product_success.html', {'product': product})
-    else:
-        form = UpdateProductForm()
+    # Otherwise, render full page
+    return render(request, 'add_product.html', {'form': form, 'from_quotation': from_quotation})
+
+
+
+@login_required
+def update_product(request, product_id):
+    product = get_object_or_404(Product, product_id=product_id)
+    form = UpdateProductForm(request.POST or None, instance=product)
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('/products/')  
+
     return render(request, 'update_product.html', {'form': form})
 
 @login_required
+@role_required(['admin','sales','branch_manager','operation_person'])
 def create_technician_profile(request):
     if not request.user.is_staff:
         return redirect('not_authorized')
@@ -2931,7 +4152,8 @@ def create_technician_profile(request):
         date_of_joining = request.POST.get('date_of_joining')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
-
+        branch_id = request.POST.get('branch')
+        branch = Branch.objects.get(id = int(branch_id))
         errors = {}
 
         if TechnicianProfile.objects.filter(contact_number=contact_number).exists():
@@ -2952,16 +4174,25 @@ def create_technician_profile(request):
                 'form_data': request.POST
             })
 
-        # Create a user account for the technician
+        # ✅ Create Django User
+        username = contact_number
         user = User.objects.create_user(
-            username=contact_number,
-            email=email,
+            username=username,
             password=password,
+            email=email,
             first_name=first_name,
             last_name=last_name
         )
 
-        # Create the TechnicianProfile linked to the user
+        # ✅ Assign role to user via UserProfile
+       # update the auto-created profile
+        user_profile = user.userprofile  
+        user_profile.role = 'technician'
+        user_profile.phone = contact_number
+        user_profile.save()
+
+
+        # ✅ Create the TechnicianProfile linked to the user
         TechnicianProfile.objects.create(
             user=user,
             first_name=first_name,
@@ -2972,12 +4203,13 @@ def create_technician_profile(request):
             city=city,
             state=state,
             postal_code=postal_code,
-            date_of_joining=date_of_joining
+            date_of_joining=date_of_joining,
+            branch = branch
         )
 
-        return redirect('/index')  # Replace with your success page or URL name
-
-    return render(request, 'create_technician_profile.html')
+        return redirect('/technicians')  # Replace with your success page or named URL
+    branches = Branch.objects.all()
+    return render(request, 'create_technician_profile.html',{'branches':branches})
 
 
 
@@ -2992,9 +4224,17 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import TechnicianProfile
 
 # Display technicians with demo passwords
+@login_required
+@role_required(['admin','branch_manager','operation_person'])
 def display_technician(request):
-    technicians = TechnicianProfile.objects.all()
-
+    if request.user.userprofile.role == 'admin':
+        technicians = TechnicianProfile.objects.all()
+    elif request.user.userprofile.role == 'branch_manager':
+        branch_manager = BranchManager.objects.get(mobile_no = request.user.username)
+        technicians = TechnicianProfile.objects.filter(branch = branch_manager.branch)
+    elif request.user.userprofile.role == 'operation_person':
+        operation_person = OperationPerson.objects.get(user=request.user)
+        technicians = TechnicianProfile.objects.filter(branch=operation_person.branch)
     # Manual dictionary to simulate decrypted passwords for each technician
     # This is just for demonstration/testing purposes — do not use in production!
     password_map = {
@@ -3020,34 +4260,70 @@ def display_technician(request):
 
 
 # Edit technician
+@login_required
+@role_required(['admin','sales','branch_manager','operation_person'])
 def edit_technician(request, technician_id):
     technician = get_object_or_404(TechnicianProfile, id=technician_id)
     user = technician.user
-
+    branches = Branch.objects.all()
     if request.method == 'POST':
-        technician.first_name = request.POST.get('first_name')
-        technician.last_name = request.POST.get('last_name')
-        technician.email = request.POST.get('email')
-        technician.contact_number = request.POST.get('contact_number')
-        technician.address = request.POST.get('address')
-        technician.city = request.POST.get('city')
-        technician.state = request.POST.get('state')
-        technician.postal_code = request.POST.get('postal_code')
-        technician.date_of_joining = request.POST.get('date_of_joining')
+        # Collect POST data
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        contact_number = request.POST.get('contact_number')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        state = request.POST.get('state')
+        postal_code = request.POST.get('postal_code')
+        date_of_joining = parse_date(request.POST.get('date_of_joining'))
         password = request.POST.get('password')
-
-        if password:
-            user.password = make_password(password)
+        branch_id = request.POST.get('branch')
+        branch = Branch.objects.get(id = int(branch_id))
+        # ✅ Create or update User
+        if user:
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            user.username = contact_number
+            if password:
+                user.set_password(password)
             user.save()
+        else:
+            user = User.objects.create_user(
+                username=contact_number,
+                password=password or User.objects.make_random_password(),
+                email=email,
+                first_name=first_name,
+                last_name=last_name
+            )
+            technician.user = user  # Link new user to technician
 
+        # ✅ Create or update UserProfile
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        user_profile.role = 'technician'
+        user_profile.phone = contact_number
+        user_profile.save()
+
+        # ✅ Update TechnicianProfile
+        technician.first_name = first_name
+        technician.last_name = last_name
+        technician.email = email
+        technician.contact_number = contact_number
+        technician.address = address
+        technician.city = city
+        technician.state = state
+        technician.postal_code = postal_code
+        technician.date_of_joining = date_of_joining
+        technician.branch = branch
         technician.save()
+
         messages.success(request, "Technician updated successfully.")
         return redirect('display_technician')
 
-    return render(request, 'edit_technician.html', {'technician': technician, 'password': user.password})
-
-
+    return render(request, 'edit_technician.html', {'technician': technician,'branches':branches})
 # Delete technician
+@role_required(['admin','sales','branch_manager','operation_person'])
 def delete_technician(request, technician_id):
     technician = get_object_or_404(TechnicianProfile, id=technician_id)
     user = technician.user
@@ -3061,19 +4337,43 @@ def not_authorized(request):
     return render(request, 'not_authorized.html')
 
 
+# def technician_login(request):
+#     if request.method == 'POST':
+#         contact_number = request.POST.get('contact_number')
+#         password = request.POST.get('password')
+        
+#         user = authenticate(request, username=contact_number, password=password)
+#         if user is not None:
+#             login(request, user)
+#             return redirect('technician_dashboard')
+#         else:
+#             return render(request, 'technician_login.html', {'error': 'Invalid login credentials'})
+
+#     return render(request, 'technician_login.html')
+
 def technician_login(request):
     if request.method == 'POST':
         contact_number = request.POST.get('contact_number')
         password = request.POST.get('password')
         
         user = authenticate(request, username=contact_number, password=password)
+
         if user is not None:
-            login(request, user)
-            return redirect('technician_dashboard')
+            try:
+                if user.userprofile.role == 'technician':
+                    login(request, user)
+                    return redirect('technician_dashboard')
+                else:
+                    error = 'Access denied: Not a technician.'
+            except UserProfile.DoesNotExist:
+                error = 'User profile not found.'
         else:
-            return render(request, 'technician_login.html', {'error': 'Invalid login credentials'})
+            error = 'Invalid login credentials.'
+        
+        return render(request, 'technician_login.html', {'error': error})
 
     return render(request, 'technician_login.html')
+
 
 # @login_required
 # def technician_dashboard(request):
@@ -3106,7 +4406,118 @@ from django.db.models import Count
 from django.utils.timezone import make_aware
 from datetime import datetime
 
+
+# def technician_dashboard(request):
+#     user = request.user
+#     try:
+#         technician_profile = TechnicianProfile.objects.get(user=user)
+#     except TechnicianProfile.DoesNotExist:
+#         technician_profile = None
+
+
+#     techworklistobj = TechWorkList.objects.all()
+#     for i in techworklistobj:
+#         print('tech',i.technician.first_name,'completion time',i.completion_datetime )
+
+
+#     works = WorkAllocation.objects.all()
+#     for work in works:
+#         if work.status == 'Pending':
+#             work.status = 'workdesk'
+#             work.save()
+#             TechWorkList.objects.create(technician=request.user, work=work)
+
+#     # Get the current date or use the month and year from query parameters
+#     query_month = request.GET.get('month')
+#     query_year = request.GET.get('year')
+
+#     if query_month and query_year:
+#         selected_month = int(query_month)
+#         selected_year = int(query_year)
+#     else:
+#         today = now()
+#         selected_month = today.month
+#         selected_year = today.year
+
+#     # Get the start and end dates for the selected month
+#     from django.utils.timezone import make_aware
+
+#     print('selected month: ', selected_month)
+#     print('selected year',selected_year)
+#     # Make the start and end dates timezone-aware
+#     first_day_of_month = make_aware(datetime(selected_year, selected_month, 1))
+#     last_day_of_month = make_aware(datetime(selected_year, selected_month, monthrange(selected_year, selected_month)[1], 23, 59, 59))
+
+#     print("first day",first_day_of_month)
+#     print('last day of month', last_day_of_month)
+
+
+#     # Filter works for the selected month
+#     print('Filter Range:', first_day_of_month, '-', last_day_of_month)
+
+#     completed_works = TechWorkList.objects.filter(
+#         technician=user,
+#         status='Completed',
+#         completion_datetime__range=[first_day_of_month, last_day_of_month]
+#     )
+
+#     print('Completed Works:', completed_works)
+
+#     # Group works by week
+#     weekly_work_counts = {}
+#     current_date = first_day_of_month
+#     while current_date <= last_day_of_month:
+#         week_start = current_date
+#         week_end = week_start + timedelta(days=6)
+
+#         week_label = f"{week_start.strftime('%d %b')} - {week_end.strftime('%d %b')}"
+#         count = completed_works.filter(
+#             completion_datetime__range=[week_start, min(week_end, last_day_of_month)]
+#         ).count()
+
+#         weekly_work_counts[week_label] = count
+#         print(f"Week: {week_label}, Count: {count}")  # Debugging output
+#         current_date = week_end + timedelta(days=1)
+
+#     # Prepare data for the chart
+#     labels = list(weekly_work_counts.keys())
+#     data = list(weekly_work_counts.values())
+
+
+#     chart_data = {
+#         'labels': labels,
+#         'data': data
+#     }
+#     chart_data_json = json.dumps(chart_data)
+
+#     # Determine previous and next months for navigation
+#     previous_month = first_day_of_month - timedelta(days=1)
+#     next_month = last_day_of_month + timedelta(days=1)
+#     if "notifications" not in request.session:
+#          request.session["notifications"] = [
+#              {"title": "Work Assigned", "message": "You have a new job today", "timestamp": now().strftime("%d %b %Y %H:%M")},
+#              {"title": "Reminder", "message": "Check your completed jobs for this week", "timestamp": now().strftime("%d %b %Y %H:%M")},
+#          ]
+
+#     notifications = request.session.get("notifications", [])
+
+#     context = {
+#         'user': user,
+#         'technician_profile': technician_profile,
+#         'chart_data_json': chart_data_json,  # Pass chart data to the template
+#         'selected_month': selected_month,
+#         'selected_year': selected_year,
+#         'previous_month': previous_month,
+#         'next_month': next_month,
+#         "notifications": notifications,
+#         "notifications_count": len(notifications),
+#     }
+
+
+#     return render(request, 'technician_dashboard.html', context)
+
 @login_required
+@role_required(['technician'])
 def technician_dashboard(request):
     user = request.user
     try:
@@ -3114,40 +4525,10 @@ def technician_dashboard(request):
     except TechnicianProfile.DoesNotExist:
         technician_profile = None
 
-    # Filter works completed in the past month
-    # one_month_ago = now() - timedelta(days=30)
-    # works_done_last_month = WorkAllocation.objects.filter(
-    #     technician=technician_profile,
-    #     allocated_datetime__gte=one_month_ago,
-    #     status='Completed'
-    # )
+    # 👇 Don’t re-create TechWorkList here blindly
+    # Just display existing work assignments
 
-    # # Prepare data for the chart
-    # work_dates = [work.allocated_datetime.strftime('%Y-%m-%d') for work in works_done_last_month]
-    # date_counts = {date: work_dates.count(date) for date in set(work_dates)}
-
-    # chart_data = {
-    #     'labels': list(date_counts.keys()),
-    #     'data': list(date_counts.values())
-    # }
-
-    # chart_data_json = json.dumps(chart_data)
-
-    # Update statuses and create TechWorkList entries
-
-    techworklistobj = TechWorkList.objects.all()
-    for i in techworklistobj:
-        print('tech',i.technician.first_name,'completion time',i.completion_datetime )
-
-
-    works = WorkAllocation.objects.all()
-    for work in works:
-        if work.status == 'Pending':
-            work.status = 'workdesk'
-            work.save()
-            TechWorkList.objects.create(technician=request.user, work=work)
-
-    # Get the current date or use the month and year from query parameters
+    # Get current month/year from query params or today
     query_month = request.GET.get('month')
     query_year = request.GET.get('year')
 
@@ -3159,73 +4540,74 @@ def technician_dashboard(request):
         selected_month = today.month
         selected_year = today.year
 
-    # Get the start and end dates for the selected month
+    # Make timezone-aware dates
     from django.utils.timezone import make_aware
-
-    print('selected month: ', selected_month)
-    print('selected year',selected_year)
-    # Make the start and end dates timezone-aware
     first_day_of_month = make_aware(datetime(selected_year, selected_month, 1))
-    last_day_of_month = make_aware(datetime(selected_year, selected_month, monthrange(selected_year, selected_month)[1], 23, 59, 59))
+    last_day_of_month = make_aware(datetime(
+        selected_year,
+        selected_month,
+        monthrange(selected_year, selected_month)[1],
+        23, 59, 59
+    ))
 
-    print("first day",first_day_of_month)
-    print('last day of month', last_day_of_month)
-
-
-    # Filter works for the selected month
-    print('Filter Range:', first_day_of_month, '-', last_day_of_month)
-
+    # ✅ Completed works this month
     completed_works = TechWorkList.objects.filter(
         technician=user,
         status='Completed',
         completion_datetime__range=[first_day_of_month, last_day_of_month]
     )
 
-    print('Completed Works:', completed_works)
-
-    # Group works by week
+    # ✅ Weekly counts
     weekly_work_counts = {}
     current_date = first_day_of_month
     while current_date <= last_day_of_month:
         week_start = current_date
         week_end = week_start + timedelta(days=6)
-
         week_label = f"{week_start.strftime('%d %b')} - {week_end.strftime('%d %b')}"
         count = completed_works.filter(
             completion_datetime__range=[week_start, min(week_end, last_day_of_month)]
         ).count()
-
         weekly_work_counts[week_label] = count
-        print(f"Week: {week_label}, Count: {count}")  # Debugging output
         current_date = week_end + timedelta(days=1)
 
-    # Prepare data for the chart
-    labels = list(weekly_work_counts.keys())
-    data = list(weekly_work_counts.values())
-
-
+    # ✅ Chart data
     chart_data = {
-        'labels': labels,
-        'data': data
+        'labels': list(weekly_work_counts.keys()),
+        'data': list(weekly_work_counts.values())
     }
     chart_data_json = json.dumps(chart_data)
 
-    # Determine previous and next months for navigation
-    previous_month = first_day_of_month - timedelta(days=1)
-    next_month = last_day_of_month + timedelta(days=1)
-    
+    # ✅ Notifications directly from TechWorkList
+    notifications = TechWorkList.objects.filter(
+        technician=user,
+        is_notified=True
+    )
+    notifications_count = notifications.count()
+
     context = {
         'user': user,
         'technician_profile': technician_profile,
-        'chart_data_json': chart_data_json,  # Pass chart data to the template
+        'chart_data_json': chart_data_json,
         'selected_month': selected_month,
         'selected_year': selected_year,
-        'previous_month': previous_month,
-        'next_month': next_month,
+        'previous_month': first_day_of_month - timedelta(days=1),
+        'next_month': last_day_of_month + timedelta(days=1),
+        "notifications": notifications,
+        "notifications_count": notifications_count,
     }
 
-
     return render(request, 'technician_dashboard.html', context)
+
+@csrf_exempt
+def clear_notifications(request):
+    if request.method == "POST":
+        TechWorkList.objects.filter(
+            technician=request.user,
+            is_notified=True
+        ).update(is_notified=False)
+        return JsonResponse({"status": "cleared"})
+    return JsonResponse({"status": "invalid request"}, status=400)
+
 
 def create_superadmin(request):
     # List of superadmin details
@@ -3292,7 +4674,7 @@ def allocate_work(request, service_id):
             payment_amount=payment_amount,
             gps_location=gps_location,
         )
-
+   
         # Add all technicians to the WorkAllocation
         technicians = TechnicianProfile.objects.filter(id__in=technician_ids)
         work_allocation.technician.set(technicians)
@@ -3304,7 +4686,7 @@ def allocate_work(request, service_id):
                 service=service_object,
             )
             tech_worklist.work.add(work_allocation)
-
+       
         return redirect('work_allocation_success')
 
     technicians = TechnicianProfile.objects.all()
@@ -3355,17 +4737,151 @@ def technician_work_list(request):
     if not request.user.is_staff:
         return HttpResponse("Not authorized", status=403)
 
+    search = request.GET.get("search",'').strip()
+    payment_status = request.GET.get('payment_status','')
+    branch = request.GET.get('branch','')
+    work_status = request.GET.get('work_status')
+    technician = request.GET.get('technician','')
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
     # Fetch work allocations
-    work_allocations = WorkAllocation.objects.all()
+    user_profile = request.user.userprofile
+    if user_profile.role == "admin":
+        work_allocations = WorkAllocation.objects.all()
 
+    elif user_profile.role == 'branch_manager':
+        branch_manager = BranchManager.objects.get(mobile_no = request.user.username)
+        work_allocations = WorkAllocation.objects.filter(service__branch = branch_manager.branch)
+
+    elif user_profile.role == 'operation_person':
+        operation_person = OperationPerson.objects.get(user = request.user)
+        work_allocations = WorkAllocation.objects.filter(service__branch = operation_person.branch)
+
+    # Apply search filter
+    if search:
+        work_allocations = work_allocations.filter(
+            Q(service__customer__fullname__icontains=search) |
+            Q(service__customer__primarycontact__icontains=search) 
+        )
+
+    if payment_status:
+        work_allocations = work_allocations.filter(customer_payment_status = payment_status)
+  
+    if branch:
+        work_allocations = work_allocations.filter(service__branch = branch )
+
+    if work_status:
+        work_allocations = work_allocations.filter(status = work_status)
+
+    if technician :
+        work_allocations = work_allocations.filter(technician = technician)
+
+    if from_date:
+        from_date_obj = parse_date(from_date)
+        if from_date_obj:
+            work_allocations = work_allocations.filter(created_at__gte = from_date_obj)
+    if to_date:
+        to_date_obj = parse_date(to_date)
+        if to_date_obj:
+            # Add +1 day so the filter includes the whole 'to_date'
+            work_allocations = work_allocations.filter(created_at__lt=to_date_obj + timedelta(days=1))
     # Set up pagination (10 items per page)
     paginator = Paginator(work_allocations, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    payment_status_choices  = WorkAllocation.objects.values_list('customer_payment_status', flat=True).distinct()
+    w_status = WorkAllocation.objects.values_list('status', flat=True).distinct()
+    branch = Branch.objects.all()
+    tech = TechnicianProfile.objects.all()
+    context = {'page_obj': page_obj, 
+               'search': search,
+                "payment_status": payment_status, 
+                "payment_status_choices":payment_status_choices ,
+                "branch":branch,
+                "w_status":w_status,
+                'tech':tech,
+                "querystring": request.GET.urlencode(),
+             }
+    return render(request, 'technician_work_list.html', context)
 
-    return render(request, 'technician_work_list.html', {'page_obj': page_obj})
+from openpyxl.utils import get_column_letter
+def export_technician_work_list(request):
+    if not request.user.is_staff:
+        return HttpResponse("Not authorized", status=403)
 
+    search = request.GET.get("search", '').strip()
+    payment_status = request.GET.get('payment_status', '')
+    branch = request.GET.get('branch', '')
+    work_status = request.GET.get('work_status')
+    technician = request.GET.get('technician', '')
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
 
+    work_allocations = WorkAllocation.objects.all()
+
+    # Apply same filters as list view
+    if search:
+        work_allocations = work_allocations.filter(
+            Q(service__customer__fullname__icontains=search) |
+            Q(service__customer__primarycontact__icontains=search)
+        )
+    if payment_status:
+        work_allocations = work_allocations.filter(customer_payment_status=payment_status)
+    if branch:
+        work_allocations = work_allocations.filter(service__branch=branch)
+    if work_status:
+        work_allocations = work_allocations.filter(status=work_status)
+    if technician:
+        work_allocations = work_allocations.filter(technician=technician)
+    if from_date:
+        from_date_obj = parse_date(from_date)
+        if from_date_obj:
+            work_allocations = work_allocations.filter(created_at__gte=from_date_obj)
+    if to_date:
+        to_date_obj = parse_date(to_date)
+        if to_date_obj:
+            work_allocations = work_allocations.filter(created_at__lt=to_date_obj + timedelta(days=1))
+
+    # Create Excel workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Work Allocations"
+
+    # Header row
+    headers = ["Customer", "Mobile", "Branch", "Technician", "Status", "Payment Status", "Created At"]
+    ws.append(headers)
+
+    # Data rows
+    for wa in work_allocations:
+        ws.append([
+            wa.service.customer.fullname if wa.service and wa.service.customer else "",
+            wa.service.customer.primarycontact if wa.service and wa.service.customer else "",
+            wa.service.branch.branch_name if wa.service and wa.service.branch else "",
+            ", ".join([f"{t.first_name} {t.last_name}" for t in wa.technician.all()]) if wa.technician.exists() else "",
+            wa.status,
+            wa.customer_payment_status,
+            wa.created_at.strftime("%Y-%m-%d %H:%M") if wa.created_at else "",
+        ])
+
+    # Auto-adjust column widths
+    for col in ws.columns:
+        max_length = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            try:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+        ws.column_dimensions[col_letter].width = max_length + 2
+
+    # Return response as Excel file
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response['Content-Disposition'] = 'attachment; filename="technician_work_list.xlsx"'
+    wb.save(response)
+    return response
 
 def edit_work(request, work_id):
     work_allocation = get_object_or_404(WorkAllocation, id=work_id)
@@ -3614,7 +5130,9 @@ from .models import TechWorkList, UploadedFile
 def complete_work(request, work_id):
     tech_work = get_object_or_404(TechWorkList, id=work_id, technician=request.user)
     print('techn_work',tech_work)
-    
+    for w in tech_work.work.all():
+        print(w.payment_amount)
+
     if request.method == 'POST':
         # Get related work object (WorkAllocation)
         work_allocation = tech_work.work.first()  # Assuming only 1 work per tech_work
@@ -3652,10 +5170,19 @@ def complete_work(request, work_id):
 
         # Update customer payment status on WorkAllocation
         payment_status = request.POST.get('customer_payment_status')
-        if payment_status in ['Pending', 'Online', 'Cash']:
-            work_allocation.customer_payment_status = payment_status
-            work_allocation.save()
+        work_allocation.customer_payment_status = payment_status
+        work_allocation.save()
 
+        tech_work.payment_mode = payment_status
+        print('payment_status',payment_status)
+        tech_work.payment_type = request.POST.get('payment_type')
+        print('payment type',request.POST.get('payment_type'))
+        try:
+            tech_work.remaining_amount = float(request.POST.get('remaining_balance') or 0.00)
+        except ValueError:
+            tech_work.remaining_amount = 0.00
+        tech_work.next_due_date = request.POST.get('next_due_date') or None
+        tech_work.save()
         # Update all related TechWorkList entries for this work allocation
         related_tech_works = TechWorkList.objects.filter(work=work_allocation)
         for tw in related_tech_works:
@@ -3675,6 +5202,7 @@ def complete_work(request, work_id):
 def completed_work_list(request):
     completed_works = TechWorkList.objects.filter(technician=request.user, status='Completed')
     return render(request, 'completed_work_list.html', {'completed_works': completed_works})
+
 @login_required
 def work_details(request, work_id):
     work = get_object_or_404(TechWorkList, id=work_id, technician=request.user)
@@ -3710,12 +5238,84 @@ from .models import TechWorkList
 
 class AdminCompletedWorkView(ListView):
     model = TechWorkList
-    template_name = 'admin_completed_work_list.html'  
-    context_object_name = 'completed_work_list'
-    
-    def get_queryset(self):
-        return TechWorkList.objects.filter(status='Completed').exclude(customer_signature_photo='')
+    template_name = 'admin_completed_work_list.html'
+    paginate_by = 10  # ✅ Enable pagination
 
+    def get_queryset(self):
+        request = self.request
+        user_profile = request.user.userprofile
+
+        qs = (
+            TechWorkList.objects
+            .filter(status='Completed')
+            .exclude(customer_signature_photo='')
+            .prefetch_related(
+                'work',
+                'work__technician',
+                'work__service',
+                'work__service__customer'
+            )
+        )
+
+        # ✅ Role-based access
+        if user_profile.role == 'branch_manager':
+            branch_manager = BranchManager.objects.get(mobile_no=request.user.username)
+            qs = qs.filter(work__service__branch=branch_manager.branch)
+
+        elif user_profile.role == 'operation_person':
+            operation_person = OperationPerson.objects.get(user=request.user)
+            qs = qs.filter(work__service__branch=operation_person.branch)
+
+        elif user_profile.role != 'admin':
+            return TechWorkList.objects.none()
+
+        # ✅ Filters
+        search = request.GET.get("search", "").strip()
+        technician = request.GET.get("technician", "").strip()
+        from_date = request.GET.get("from_date", "").strip()
+        to_date = request.GET.get("to_date", "").strip()
+
+        # Search filter
+        if search:
+            qs = qs.filter(
+                Q(work__service__customer__fullname__icontains=search) |
+                Q(work__service__customer__primarycontact__icontains=search)
+            )
+
+        # Technician dropdown
+        if technician:
+            qs = qs.filter(work__technician__id=technician)
+
+        # Date range filters
+        if from_date:
+            qs = qs.filter(completion_datetime__date__gte=from_date)
+
+        if to_date:
+            qs = qs.filter(completion_datetime__date__lte=to_date)
+
+        return qs.distinct()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # ✅ Technician dropdown list
+        ctx["technicians"] = TechnicianProfile.objects.all().order_by('first_name')
+
+        # ✅ Preserve filters
+        query = self.request.GET.copy()
+        if "page" in query:
+            query.pop("page")
+        ctx["querystring"] = query.urlencode()
+
+        # ✅ Return filter values to template
+        ctx["search"] = self.request.GET.get("search", "")
+        ctx["technician"] = self.request.GET.get("technician", "")
+        ctx["from_date"] = self.request.GET.get("from_date", "")
+        ctx["to_date"] = self.request.GET.get("to_date", "")
+
+        return ctx
+
+    
 class AdminWorkDetailView(DetailView):
     model = TechWorkList
     template_name = 'admin_work_detail.html'
@@ -3763,40 +5363,44 @@ def import_leads(request):
     
     return render(request, 'import_leads.html', {'form': form})
 
+import csv
+from datetime import datetime
+
 def handle_csv(file):
     decoded_file = file.read().decode('utf-8').splitlines()
     reader = csv.reader(decoded_file)
-    next(reader)  # Skip header row
+    next(reader)  
 
     for row in reader:
         try:
-
-            # dateoflead = datetime.strptime(row[6], '%Y-%m-%d').date()
-
+            # Handle empty or malformed rows
+            if len(row):
+                print(f"Skipped incomplete row: {row}")
+                continue
             lead_management.objects.create(
-                sourceoflead=row[0],
-                salesperson=row[1],
-                primarycontact=row[2],
-                customeraddress=row[3],
-                customeremail=row[4],
-                enquirydate=row[5],
-                typeoflead=row[6],
-                city=row[7],
-                contactedby=row[8],
-                customername =row[9],
-                customersegment=row[10],
-                location=row[11],
-                maincategory=row[12],
-                secondarycontact=row[13],
-                subcategory=row[14],
-                firstfollowupdate=row[15],
-                stage=row[16],
-        )
-            
-        except ValueError as e:
-            # Handle any errors with date parsing or other fields
-            messages.error(request, f'Error in row: {row}. {e}')
-        
+                sourceoflead=row[1].strip(),
+                salesperson=row[2].strip(),
+                customername=row[3].strip(),
+                customersegment=row[4].strip(),
+                enquirydate=datetime.strptime(row[5], "%Y-%m-%d").date(),
+                contactedby=row[6].strip(),
+                maincategory=row[7].strip(),
+                subcategory=row[8].strip(),
+                primarycontact=row[9].strip(),
+                secondarycontact=row[10] if row[10].strip().lower() != 'null' else None,
+                customeremail=row[11].strip(),
+                customeraddress=row[12].strip(),
+                location=row[13].strip(),
+                city=row[14].strip(),
+                typeoflead=row[15].strip(),
+                firstfollowupdate=datetime.strptime(row[16], "%Y-%m-%d").date(),
+                stage=int(row[17].strip()),
+                branch=row[18].strip(),
+                state=row[19].strip(),
+            )
+        except Exception as e:
+            print(f"❌ Error importing row {row}: {e}")
+
 
 def handle_xlsx(file):
     wb = openpyxl.load_workbook(file)
@@ -3909,38 +5513,26 @@ from .models import WorkAllocation  # Import your model here
 
 @login_required
 def work_list_view(request):
-    # Create two separate lists for Pending and Completed
+    # Get search query
     query = request.GET.get('search', '')
 
-    pending_work = TechWorkList.objects.filter(
-        technician=request.user, 
+    # Base queryset: only Pending work for this technician
+    work_allocations = TechWorkList.objects.filter(
+        technician=request.user,
         status="Pending"
     )
-    completed_work = TechWorkList.objects.filter(
-        technician=request.user, 
-        status="Completed"
-    )
 
+    # Apply search filter if query is provided
     if query:
-        pending_work = pending_work.filter(
+        work_allocations = work_allocations.filter(
             Q(work__customer_contact__icontains=query)
         )
-        completed_work = completed_work.filter(
-            Q(work__customer_contact__icontains=query)
-        )
-    
-    
-    # Append completed work to the pending work list
-    work_allocations = list(pending_work) + list(completed_work)
 
-    # Debugging output
+    # Debug (Optional)
     for work in work_allocations:
-        print("work_allocations statuses:", work, "status", work.status)
-        
+        print("work:", work, "| status:", work.status)
 
-    print("work_allocation: ", work_allocations)
     return render(request, 'work_list.html', {'work_allocations': work_allocations})
-
 
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
@@ -3951,7 +5543,7 @@ from django.templatetags.static import static
 
 def view_work_pdf(request, work_id):
     work = get_object_or_404(TechWorkList, pk=work_id, technician=request.user)
-    logo_path = request.build_absolute_uri(static('images/logo.png'))
+    logo_path = request.build_absolute_uri(static('images/Logo.png'))
 
     context = {'work': work,'logo_path': logo_path}
     html = render_to_string('work_pdf_template.html', context)
@@ -4001,6 +5593,8 @@ def generate_pdf_link(request, work_id):
 from django.shortcuts import render, redirect
 from .models import Branch
 
+from .models import Branch
+
 def create_branch(request):
     if request.method == 'POST':
         branch_name = request.POST.get('branch_name')
@@ -4010,9 +5604,13 @@ def create_branch(request):
         email_2 = request.POST.get('email_2') or None
         gst_number = request.POST.get('gst_number')
         pan_number = request.POST.get('pan_number')
+        state = request.POST.get('state')
+        code = request.POST.get('code')
+        shortcut = request.POST.get('shortcut')
         full_address = request.POST.get('full_address')
 
-        Branch.objects.create(
+        # Only pass state; model will set shortcut and code
+        branch = Branch(
             branch_name=branch_name,
             contact_1=contact_1,
             contact_2=contact_2,
@@ -4020,15 +5618,46 @@ def create_branch(request):
             email_2=email_2,
             gst_number=gst_number,
             pan_number=pan_number,
+            state=state,
+            code = code,
+            shortcut = shortcut,
             full_address=full_address
         )
-        return redirect('branch_list')  # Replace with your desired redirect view
-    return render(request, 'create_branch.html')
-from .models import Branch
+        branch.save()  
+        return redirect('branch_list')
+   
+    return render(request, 'create_branch.html' , {"state_map":state_map})
+
 
 def branch_list(request):
     branches = Branch.objects.all().order_by('-created_at')
     return render(request, 'branch_list.html', {'branches': branches})
+
+def delete_branch(request, branch_id):
+    branch = get_object_or_404(Branch, id=branch_id)
+    branch.delete()
+    return redirect('branch_list')
+
+def edit_branch(request, branch_id):
+    branch = get_object_or_404(Branch, id=branch_id)
+
+    if request.method == 'POST':
+        branch.branch_name = request.POST.get('branch_name')
+        branch.contact_1 = request.POST.get('contact_1')
+        branch.contact_2 = request.POST.get('contact_2') or None
+        branch.email_1 = request.POST.get('email_1')
+        branch.email_2 = request.POST.get('email_2') or None
+        branch.gst_number = request.POST.get('gst_number')
+        branch.pan_number = request.POST.get('pan_number')
+        branch.state = request.POST.get('state')
+        branch.code = request.POST.get('code')
+        branch.shortcut = request.POST.get('shortcut')
+        branch.full_address = request.POST.get('full_address')
+
+        branch.save()
+        return redirect('branch_list')
+
+    return render(request, 'edit_branch.html', {'branch': branch, "state_map":state_map})
 
 
 def get_branch_details(request, branch_id):
@@ -4042,6 +5671,9 @@ def get_branch_details(request, branch_id):
             'gst_number': branch.gst_number,
             'pan_number': branch.pan_number,
             'full_address': branch.full_address,
+            'state': branch.state,
+            'code': branch.code,
+            'shortcut': branch.shortcut,
         }
         return JsonResponse(data)
     except Branch.DoesNotExist:
@@ -4054,13 +5686,27 @@ def get_customer_details(request):
         try:
             customer = customer_details.objects.get(primarycontact=contact_no)
             data = {
+                'customer_id': customer.id,
                 'customer_full_name': customer.fullname,
+                'secondary_contact_no':customer.secondarycontact,
                 'customer_email': customer.primaryemail,
+                'secondary_email' : customer.secondaryemail,
+                'contactperson':customer.contactperson,
+                'shifttopartyaddress': customer.shifttopartyaddress,
+                'city': customer.shifttopartycity,
+                'state': customer.shifttopartystate,
+                'pincode':customer.shifttopartypostal,
                 'soldtopartyaddress': customer.soldtopartyaddress,
-                'city': customer.soldtopartycity,
-                'state': customer.soldtopartystate,
+                'sold_city': customer.soldtopartycity,
+                'sold_state': customer.soldtopartystate,
+                'sold_pincode':customer.soldtopartypostal,
+                'customer_type': customer.customer_type,
+                'or_name':customer.or_name,
+                'or_contact':customer.or_contact,  
             }
+           
             return JsonResponse(data)
+        
         except customer_details.DoesNotExist:
             return JsonResponse({'error': 'Customer not found'}, status=404)
     return JsonResponse({'error': 'No contact number provided'}, status=400)
@@ -4144,3 +5790,1531 @@ def delete_bank_account(request, account_id):
     bank_account = get_object_or_404(BankAccounts, id=account_id)
     bank_account.delete()
     return redirect('list_bank_accounts')
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.utils import timezone
+from .models import TaxInvoice, TaxInvoiceItem, quotation_management, customer_details, BankAccounts
+import json
+from datetime import datetime
+
+
+def create_tax_invoice(request):
+    use_quotation = request.GET.get("use_quotation") == "true"
+    if  request.method == "POST":
+        try:
+            if use_quotation:
+                # 1. Get quotation and related data
+                quotation_no = request.POST.get("quotation_no")
+                quotation = get_object_or_404(quotation_management, quotation_no=quotation_no)
+                customer = get_object_or_404(customer_details, primarycontact=quotation.customer.primarycontact)
+                branch = get_object_or_404(Branch, id = quotation.branch_id)
+                gst_enabled = quotation.apply_gst
+                if quotation.igst > 0:
+                    gst_type = "IGST"
+                else:
+                    gst_type = "CGST + SGST"
+
+                # 2. Get product data
+                product_data = request.POST.get("product_data", "[]")
+                items = json.loads(product_data)
+                shifttopartystate=request.POST.get('shifttopartystate')
+                shifttopartystatecode=request.POST.get('shifttopartystatecode')
+                print("shift", shifttopartystate, shifttopartystatecode)
+                soldtopartystate=request.POST.get('soldtopartystate')
+                soldtopartystatecode=request.POST.get('soldtopartystatecode')
+                print("sold", soldtopartystate, soldtopartystatecode)
+            else:
+                quotation = None
+                branch = get_object_or_404(Branch, id = request.POST.get('branch_id'))
+                customer = get_object_or_404(customer_details, primarycontact=request.POST.get('contact_no'))
+                # Get the raw value from POST (e.g., "Maharashtra-27")
+                shifttopartystate_raw = request.POST.get('shifttopartystate', '')
+
+                # Extract state name and code
+                if '-' in shifttopartystate_raw:
+                    shifttopartystate, shifttopartystatecode = shifttopartystate_raw.split('-', 1)
+                else:
+                    shifttopartystate = shifttopartystate_raw
+                    shifttopartystatecode = ''
+
+                # Same logic for sold_to
+                soldtopartystate_raw = request.POST.get('soldtopartystate', '')
+                if '-' in soldtopartystate_raw:
+                    soldtopartystate, soldtopartystatecode = soldtopartystate_raw.split('-', 1)
+                else:
+                    soldtopartystate = soldtopartystate_raw
+                    soldtopartystatecode = ''
+                gst_enabled = request.POST.get("gst_enabled")
+                gst_type = request.POST.get("gst_type") 
+
+                selected_products_json = request.POST.get('selected_products_json','[]')
+                # print(selected_products_json)
+                print("Selected Products JSON:", selected_products_json)
+                items = json.loads(selected_products_json)
+            bank_id = request.POST.get("bank_id")
+            bank = get_object_or_404(BankAccounts, id=bank_id)
+
+            # Update customer details
+            customer.primarycontact = request.POST.get('contact_no')
+            customer.fullname = request.POST.get('customer_full_name')
+            customer.primaryemail = request.POST.get('customer_email')
+            customer.customer_type = request.POST.get('customer_type')
+            customer.or_name = request.POST.get('or_name', '')
+            customer.or_contact = request.POST.get('or_contact') or None
+            customer.save()
+
+            # Create TaxInvoice with grand_total
+            invoice = TaxInvoice.objects.create(
+                quotation=quotation,
+                customer=customer,
+                bank=bank,
+                branch = branch,
+                referance_no_and_date=request.POST.get("referance_no_and_date"),
+                other_referance=request.POST.get("other_references"),
+                delivery_note=request.POST.get("delivery_note"),
+                modern_terms_of_payment=request.POST.get("mode_terms_of_payment"),
+                buyers_order_no=request.POST.get("buyer_order_no"),
+                dated=parse_date_or_none(request.POST.get("dated")),
+                dispatch_doc_no=request.POST.get("dispatch_doc_no"),
+                delivery_note_date=parse_date_or_none(request.POST.get("delivery_note_date")),
+                dispatched_through=request.POST.get("dispatched_through"),
+                destination=request.POST.get("destination"),
+                service_titel=request.POST.get('service_titel'),
+                shift_gstin_uin=request.POST.get('shift_gstin_uin'),
+                shift_pan_number = request.POST.get('shift_pan'),
+                shifttopartystate=shifttopartystate,
+                shifttopartystatecode=shifttopartystatecode,
+                sold_gstin_uin=request.POST.get('sold_gstin_uin'),
+                sold_pan_number = request.POST.get('sold_pan'), 
+                soldtopartystate=soldtopartystate,
+                soldtopartystatecode=soldtopartystatecode,
+                remarks = request.POST.get('remarks'),
+                terms_of_delivery = request.POST.get('terms_of_delivery'),
+                ship_to_address = request.POST.get('ship_to_address'),
+                bill_to_address = request.POST.get('bill_to_address'),
+            
+                gst_type=gst_type if gst_enabled else "No GST"
+            )
+
+            # 5. Save products       
+            grand_total = 0
+            for item in items:
+                price = float(item.get('price', 0))
+                quantity = float(item.get('quantity', 0))
+                gst_percent = float(item.get('gst', 0))
+       
+                total = price * quantity 
+                if gst_enabled:  
+                    gst_amount = round((total * gst_percent) / 100, 2)
+                else:
+                    gst_amount = 0
+
+                grand_total += total + gst_amount
+
+                TaxInvoiceItem.objects.create(
+                    tax_invoice=invoice,
+                    product_name=item.get('name'),
+                    hsn_code=item.get('hsn'),
+                    quantity=quantity,
+                    description = item.get('description'),
+                    unit=item.get('unit'),
+                    price=price,
+                    gst_percent=gst_percent,
+                    gst_amount=gst_amount,
+                    total=total
+                )
+            
+            invoice.grand_total = grand_total
+            invoice.save()
+
+
+
+            return redirect("display_tax_invoice")
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    banks = BankAccounts.objects.all()
+    branches = Branch.objects.all()
+    category_choices = Product.CATEGORY_CHOICES
+    product = Product.objects.all()
+    selected_state = request.POST.get('soldtopartystate', '')
+    context = {'banks': banks , 'use_quotation':use_quotation,
+               'branches':branches , 'state_map':state_map,
+               'selected_state':selected_state,
+               'category_choices':category_choices,
+               'product':product} 
+    return render(request, "create_tax_invoice.html", context)
+
+def parse_date_or_none(date_str):
+    """Utility to parse date from string or return None."""
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else None
+    except:
+        return None
+
+
+
+def display_tax_invoice(request):
+    query = request.GET.get('search', '')
+    sort_by = request.GET.get('sort_by', '')
+    sort_order = request.GET.get('order', 'asc')
+    
+    if request.user.userprofile.role == 'admin':
+        m = TaxInvoice.objects.all()
+    elif request.user.userprofile.role == 'branch_manager':
+        branch = BranchManager.objects.get(mobile_no=request.user.username).branch
+        m = TaxInvoice.objects.filter(branch=branch)
+    elif request.user.userprofile.role == 'sales':
+        sales = SalesPerson.objects.get(mobile_no=request.user.username)
+        if sales.co_ordinator:
+            m = TaxInvoice.objects.all()
+        else:
+            m = TaxInvoice.objects.filter(created_by_no=sales.mobile_no)
+    else:
+        m = TaxInvoice.objects.none()
+
+    if query:
+        m = m.filter(
+            Q(customer__customerid__icontains=query) |
+            Q(tax_invoice_no__icontains=query)
+        )
+   
+    
+    if sort_by == 'name':
+        sort_field = 'customer__fullname'
+    elif sort_by == 'invoice_no':
+        sort_field = 'tax_invoice_no'
+    else:
+        sort_field = 'id'  # default sorting if no valid sort_by is provided
+
+    # Apply ordering based on direction
+    if sort_order == 'desc':
+        m = m.order_by(f'-{sort_field}')
+    else:
+        m = m.order_by(sort_field)
+
+    paginator = Paginator(m, 10)  
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    start_index = (page_obj.number - 1) * paginator.per_page
+
+    context = {
+        'current_order': sort_order,
+        'current_sort_by': sort_by,
+        'query': query,
+        'page_obj': page_obj,
+        'start_index': start_index,
+    }
+    return render(request, 'display_invoice.html', context)
+
+
+def edit_tax_invoice(request, id):
+    invoice = get_object_or_404(TaxInvoice, id=id)
+    items = invoice.items.all()
+    branches = Branch.objects.all()
+    banks = BankAccounts.objects.all()
+    category_choices = Product.CATEGORY_CHOICES
+    product = Product.objects.all()
+    customer = invoice.customer
+    if request.method == "POST":
+
+        customer.fullname = request.POST.get('customer_full_name')
+        customer.primarycontact = request.POST.get('contact_no')
+        customer.primaryemail = request.POST.get('customer_email')
+        customer.customer_type = request.POST.get('customer_type')
+        customer.or_contact = request.POST.get('or_contact')
+        customer.or_name = request.POST.get('or_name')
+        customer.save()
+
+        invoice.branch_id = request.POST.get('branch_id')
+        invoice.customer = customer
+        invoice.bill_to_address = request.POST.get('bill_to_address')
+        invoice.ship_to_address = request.POST.get('ship_to_address')
+        invoice.shift_gstin_uin = request.POST.get('shift_gstin_uin')
+        invoice.shift_pan_number = request.POST.get('shift_pan')
+        invoice.sold_gstin_uin = request.POST.get('sold_gstin_uin')
+        invoice.sold_pan_number = request.POST.get('sold_pan')
+        invoice.buyers_order_no = request.POST.get('buyer_order_no')
+        invoice.dispatch_doc_no = request.POST.get('dispatch_doc_no')
+        invoice.dated = parse_date(request.POST.get('dated'))
+        invoice.referance_no_and_date = request.POST.get('referance_no_and_date')
+        invoice.dispatched_through = request.POST.get('dispatched_through')
+        invoice.destination = request.POST.get('destination')
+        invoice.other_referance =  request.POST.get('other_references')
+        invoice.modern_terms_of_payment = request.POST.get('mode_terms_of_payment')
+        invoice.delivery_note = request.POST.get('delivery_note')
+        invoice.delivery_note_date = parse_date(request.POST.get('delivery_note_date'))
+        invoice.remarks = request.POST.get('remarks')
+        invoice.terms_of_delivery = request.POST.get('terms_of_delivery')
+        invoice.bank_id = request.POST.get('bank_id')
+        shifttopartystate_raw = request.POST.get('shifttopartystate', '')
+        # Extract state name and code
+        if '-' in shifttopartystate_raw:
+            invoice.shifttopartystate, invoice.shifttopartystatecode = shifttopartystate_raw.split('-', 1)
+    
+        # Same logic for sold_to
+        soldtopartystate_raw = request.POST.get('soldtopartystate', '')
+        if '-' in soldtopartystate_raw:
+            invoice.soldtopartystate, invoice.soldtopartystatecode = soldtopartystate_raw.split('-', 1)
+        invoice.save()
+        gst_enabled = request.POST.get("gst_enabled")
+        gst_type = request.POST.get("gst_type") 
+        deleted_ids = request.POST.get("deleted_items", "")
+        if deleted_ids:
+            ids = [int(x) for x in deleted_ids.split(",") if x.isdigit()]
+            TaxInvoiceItem.objects.filter(id__in=ids, tax_invoice=invoice).delete()
+
+        total_items = int(request.POST.get("total_items", 0))
+        products = []
+        for i in range(1, total_items + 1):
+            product_data = {
+                "hsn_code": request.POST.get(f"old_hsn_code_{i}"),
+                "price": request.POST.get(f"old_price_{i}"),
+                "quantity": request.POST.get(f"old_quantity_{i}"),
+                "description": request.POST.get(f"old_description_{i}"),
+                "unit": request.POST.get(f"old_unit_{i}"),
+                "gst_percent": request.POST.get(f"old_gst_percent_{i}"),
+            }
+            products.append(product_data)
+
+        # 1. Update existing items
+        for product in products:  # products from old_* form fields
+            row_id = product.get("row_id")
+            if not row_id:
+                continue
+            
+            try:
+                item = TaxInvoiceItem.objects.get(id=row_id, tax_invoice=invoice)
+            except TaxInvoiceItem.DoesNotExist:
+                continue
+            
+            price = float(product.get("price", 0))
+            quantity = float(product.get("quantity", 0))
+            gst_percent = float(product.get("gst_percent", 0))
+            total = price * quantity
+
+            gst_amount = round((total * gst_percent) / 100, 2) if gst_enabled else 0
+
+            item.hsn_code = product.get("hsn_code")
+            item.price = price
+            item.quantity = quantity
+            item.description = product.get("description")
+            item.unit = product.get("unit")
+            item.gst_percent = gst_percent
+            item.gst_amount = gst_amount
+            item.total = total
+            item.save()
+
+
+        # 2. Add new items (from JSON)
+        selected_products_json = request.POST.get('selected_products_json','[]')
+        # print(selected_products_json)
+        print("Selected Products JSON:", selected_products_json)
+        try:
+            new_items = json.loads(selected_products_json) if selected_products_json else []
+        except json.JSONDecodeError:
+            new_items = []
+        grand_total = 0
+        for item in new_items:  # items = new products from JSON
+            price = Decimal(item.get('price', 0) or 0)
+            quantity = Decimal(item.get('quantity', 0) or 0)
+            gst_percent = Decimal(item.get('gst', 0) or 0)
+
+            total = price * quantity
+            gst_amount = round((total * gst_percent) / 100, 2) if gst_enabled else 0
+
+            grand_total += total + gst_amount
+
+            TaxInvoiceItem.objects.create(
+                tax_invoice=invoice,
+                product_name=item.get('name'),
+                hsn_code=item.get('hsn'),
+                quantity=quantity,
+                description=item.get('description'),
+                unit=item.get('unit'),
+                price=price,
+                gst_percent=gst_percent,
+                gst_amount=gst_amount,
+                total=total
+            )
+
+        # 3. Update invoice total
+        invoice.grand_total = grand_total + sum(x.total + x.gst_amount for x in invoice.items.all())
+        
+        invoice.save(update_fields=['grand_total'])
+
+        return redirect('display_tax_invoice')
+
+    data = {
+        "invoice":invoice,
+        "items":items,
+        "branches":branches,
+        'state_map':state_map,
+        'banks': banks,
+        'category_choices':category_choices,
+        'product':product,
+    }
+    return render(request, 'edit_tax_invoice.html', context= data)
+
+def tax_invoice_pdf(request, id):
+    invoice = get_object_or_404(TaxInvoice, id=id)
+    items = invoice.items.all()
+    cgst = sgst = igst = 0 
+    branch = invoice.branch
+    if invoice.quotation:
+        cgst = invoice.quotation.cgst or 0
+        sgst = invoice.quotation.sgst or 0
+        igst = invoice.quotation.igst or 0
+    else:
+        gst = items.aggregate(total_gst=Sum('gst_amount'))['total_gst'] or 0
+        if invoice.gst_type == 'CGST + SGST':
+            cgst = gst / 2
+            sgst = gst / 2
+        else:
+            igst  = gst
+
+    amount_in_words = price_in_words(invoice.grand_total)
+    # print("data" ,invoice.quotation.igst )
+    context = {
+        'invoice': invoice,
+        'items': items,
+        'cgst_total': cgst,
+        'sgst_total': sgst,
+        'igst_total':igst,
+        'amount_in_words':amount_in_words,
+        'today': datetime.now(),
+    }
+
+    
+    # Render the template
+    template_path = 'tax_invoice_pdf.html'
+    template = get_template(template_path)
+    html_string = template.render(context)
+
+    # Generate PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html_string.encode("UTF-8")), result)
+    if pdf.err:
+        return HttpResponse('Error generating PDF', status=500)
+    response = HttpResponse(result.getvalue(), content_type='application/pdf')
+    # Check if 'download=true' is passed in query params
+    if request.GET.get('download') == 'true':
+        response['Content-Disposition'] = f'attachment; filename="TaxInvoice_{invoice.id}.pdf"'
+    else:
+        response['Content-Disposition'] = f'inline; filename="TaxInvoice_{invoice.id}.pdf"'
+
+    return response
+
+
+def delete_invoice(request, invoice_id):
+    invoice = get_object_or_404(TaxInvoice, id = invoice_id)
+    invoice.delete()
+    return redirect('/display_tax_invoice')
+
+
+
+import csv
+from django.http import HttpResponse
+from .models import TaxInvoice, TaxInvoiceItem , PaymentsRecord
+from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ValidationError
+
+def export_invoice_excel(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="invoice_list.csv"'
+
+    writer = csv.writer(response)
+
+    # Header row
+    writer.writerow([
+        'Invoice No', 'Quotation No', 'Customer Name', 'Bank Name', 'Created At', 'Grand Total',
+        'Product Name', 'HSN Code', 'Quantity', 'Unit', 'Price', 'GST %', 'GST Amount', 'Total'
+    ])
+
+    # Fetch invoices and write rows with their items
+    invoices = TaxInvoice.objects.select_related('quotation', 'customer', 'bank').prefetch_related('items')
+
+    for invoice in invoices:
+        for item in invoice.items.all():
+            writer.writerow([
+                invoice.tax_invoice_no,
+                invoice.quotation.quotation_no if invoice.quotation else '',
+                invoice.customer.fullname if invoice.customer else '',
+                invoice.bank.bank_name if invoice.bank else '',
+                invoice.created_at.strftime('%Y-%m-%d %H:%M'),
+                invoice.grand_total,
+                item.product_name,
+                item.hsn_code,
+                item.quantity,
+                item.unit,
+                item.price,
+                item.gst_percent,
+                item.gst_amount,
+                item.total
+            ])
+
+    return response
+
+
+#  Payments Record Section
+
+
+def create_payment_record(request):
+    payment_choices = PaymentsRecord.PAYMENT_MODE_CHOICES
+    payment_ratings = [(i, f"{i} Star") for i in range(1, 6)]
+    
+
+    if request.method == "GET":
+        return render(request, "payment_records_create.html", {
+            'payment_choices': payment_choices,
+            'payment_ratings': payment_ratings
+        })
+
+    if request.method == "POST":
+        invoice_no = request.POST.get("main_invoice")
+        try:
+            invoice = TaxInvoice.objects.get(tax_invoice_no=invoice_no)
+
+            record = PaymentsRecord(
+                main_invoice=invoice,
+                amount_paid=request.POST.get("amount_paid"),
+                payment_date=request.POST.get("payment_date"),
+                next_due_date=request.POST.get("next_due_date") or None,
+                previous_due_date=request.POST.get("previous_due_date") or None,
+                work_type=request.POST.get("work_type"),
+                payment_details=request.POST.get("Payment_details"),
+                payment_mode=request.POST.get("payment_mode"),
+                payment_rating=request.POST.get("payment_rating") or None,
+                remarks=request.POST.get("remarks"),
+                attachment=request.FILES.get("payment_attachment")
+            )
+
+            
+            try:
+                record.full_clean()  # This triggers the clean() method
+                record.save()
+                messages.success(request, "Payment record created successfully.")
+                return redirect("payment_record_lists")
+            except ValidationError as ve:
+                for msg in ve.messages:
+                    messages.error(request, msg)
+
+        except TaxInvoice.DoesNotExist:
+            messages.error(request, "Invoice not found.")
+
+        except ValidationError as ve:
+            messages.error(request, f"Validation error: {ve}")
+
+        except Exception as e:
+            messages.error(request, f"Unexpected error: {str(e)}")
+
+
+    return render(request, "payment_records_create.html", {
+        'payment_choices': payment_choices,
+        'payment_ratings': payment_ratings
+    })
+
+
+@csrf_exempt 
+def fetch_invoice_details(request):
+    if request.method == "POST":
+        invoice_no = request.POST.get("invoice_no") 
+        try:
+            invoice = TaxInvoice.objects.get(tax_invoice_no=invoice_no)
+            customer = invoice.customer
+
+            last_payment = PaymentsRecord.objects.filter(main_invoice=invoice).order_by('-id').first()
+            amount_remaining = last_payment.amount_remaining if last_payment else invoice.grand_total 
+
+            data = {
+                "success": True,
+                "fullname": customer.fullname,
+                "mobile": customer.primarycontact,
+                "email": customer.primaryemail,
+                "total_amount": invoice.grand_total,
+                "amount_remaining":float(amount_remaining),
+            }
+        except TaxInvoice.DoesNotExist:
+            data = {"success": False, "error": "Invoice not found"}
+
+        return JsonResponse(data)
+    
+
+def fetch_tax_invoice_details(request, id):
+    invoice = TaxInvoice.objects.get(id=id)
+    return render(request, 'tax_invoice_details.html', {'invoice': invoice})
+
+    
+from django.db.models import Max, Subquery, OuterRef
+from collections import OrderedDict
+
+def payment_records_list(request):
+    search_query = request.GET.get('search', '')
+    ageing_filter = request.GET.get('ageing', '')
+    due_order = request.GET.get('due_order', '')
+    remain_amount = request.GET.get('remain_amount','')
+    print("ageing_filter", ageing_filter)
+
+    latest_ids = PaymentsRecord.objects.values('main_invoice_id') \
+        .annotate(latest_id=Max('id')) \
+        .values_list('latest_id', flat=True)
+    
+    payments = PaymentsRecord.objects.filter(id__in=latest_ids).select_related('main_invoice')
+
+    if search_query:
+        payments = payments.filter(payment_invoice_no__icontains=search_query)
+
+    if ageing_filter:
+        payments = [
+            p for p in payments 
+            if p.ageing and p.ageing.replace('–', '-').replace(' Days', '') == ageing_filter
+        ]
+
+    if due_order == "asc":
+        payments = sorted(payments, key=lambda x: x.next_due_date or x.payment_date)
+    elif due_order == "desc":
+        payments = sorted(payments, key=lambda x: x.next_due_date or x.payment_date, reverse=True)
+
+    if remain_amount == "asc":
+        payments = sorted(payments, key=lambda x: x.amount_remaining)
+    elif remain_amount == "desc":
+        payments = sorted(payments, key=lambda x: x.amount_remaining, reverse=True)
+
+    context = {
+        "payments": payments,
+        "search_query": search_query,
+        "ageing_selected": ageing_filter,
+        "due_order": due_order,
+        "remain_amount":remain_amount,
+    }
+    return render(request, "payment_records_list.html", context)
+
+
+
+def payment_records_details(request , pk):
+    search_query = request.GET.get('search', '')
+    ageing_filter = request.GET.get('ageing', '')
+    due_order = request.GET.get('due_order', '')
+    remain_amount = request.GET.get('remain_amount','')
+
+    main_invoice = get_object_or_404(TaxInvoice, id=pk)
+    payments = PaymentsRecord.objects.filter(main_invoice_id = main_invoice)
+ 
+    if search_query:
+        payments = payments.filter(payment_invoice_no__icontains=search_query)
+
+    if ageing_filter:
+        payments = [
+            p for p in payments 
+            if p.ageing and p.ageing.replace('–', '-').replace(' Days', '') == ageing_filter
+        ]
+
+    if due_order == "asc":
+        payments = sorted(payments, key=lambda x: x.next_due_date or x.payment_date)
+    elif due_order == "desc":
+        payments = sorted(payments, key=lambda x: x.next_due_date or x.payment_date, reverse=True)
+
+    if remain_amount == "asc":
+        payments = sorted(payments, key=lambda x: x.amount_remaining)
+    elif remain_amount == "desc":
+        payments = sorted(payments, key=lambda x: x.amount_remaining, reverse=True)
+
+    context = {
+        "payments": payments,
+        "main_invoice": main_invoice,
+        "search_query": search_query,
+        "ageing_selected": ageing_filter,
+        "due_order": due_order,
+        "remain_amount":remain_amount,
+    }
+    return render(request, "payment_records_details.html", context)
+
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame, Paragraph, Spacer, Table, TableStyle, KeepTogether
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
+from django.templatetags.static import static
+from django.http import HttpResponse
+import io
+from .models import quotation_management, MessageTemplates
+from .custom_filters import price_in_words  
+from reportlab.lib.colors import HexColor   
+from reportlab.lib.enums import TA_RIGHT
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.enums import TA_RIGHT, TA_CENTER
+
+def draw_footer_and_logo(canvas, doc, logo_path, footer_path, branch):
+    # --- HEADER ---
+    try:
+        logo = ImageReader(logo_path)
+        canvas.drawImage(
+            logo, 20 * mm, A4[1] - 40 * mm,
+            width=30 * mm, height=30 * mm,
+            mask='auto'
+        )
+    except Exception as e:
+        print("Logo load failed:", e)
+
+    branch_font = ("Helvetica-Bold", 10)
+    sfs_font = ("Helvetica-Bold", 15)
+
+    branch_text = 'Seva Facility Services Pvt Ltd'
+    sfs_text = "SFS PEST CONTROL"
+
+    branch_width = canvas.stringWidth(branch_text, *branch_font)
+    sfs_width = canvas.stringWidth(sfs_text, *sfs_font)
+
+    right_margin = A4[0] - 20 * mm
+
+    # --- Branch name ---
+    canvas.setFont(*branch_font)
+    canvas.drawRightString(right_margin, A4[1] - 20 * mm, branch_text)
+
+    # --- SFS centered above ---
+    branch_center_x = right_margin - (branch_width / 2)
+    sfs_x = branch_center_x - (sfs_width / 2)
+    canvas.setFont(*sfs_font)
+    canvas.drawString(sfs_x, A4[1] - 15 * mm, sfs_text)
+
+    # --- Address (dynamic height) ---
+    style = ParagraphStyle(
+        "right_address",
+        fontName="Helvetica",
+        fontSize=8.5,
+        leading=10,
+        alignment=TA_RIGHT
+    )
+
+    current_y = A4[1] - 22 * mm  # start below branch name
+
+    if branch.full_address:
+        addr_para = Paragraph(branch.full_address, style)
+        addr_w, addr_h = addr_para.wrap(branch_width, 100*mm)
+        addr_para.drawOn(canvas, right_margin - addr_w, current_y - addr_h)
+        current_y -= addr_h + 10  # move down based on actual height
+
+    # --- Email(s) ---
+    canvas.setFont("Helvetica", 8.5)
+    if branch.email_1 or branch.email_2:
+        canvas.drawRightString(right_margin, current_y, f"{branch.email_1}, {branch.email_2}")
+        current_y -= 12
+
+    # --- Contact ---
+    if branch.contact_1:
+        canvas.drawRightString(right_margin, current_y, branch.contact_1)
+        current_y -= 12
+
+    # --- GST + PAN ---
+    gst_pan_text = f"GSTIN: {branch.gst_number} | PAN No: {branch.pan_number}"
+    canvas.drawRightString(right_margin, current_y, gst_pan_text)
+    current_y -= 12
+
+    # --- Horizontal Line ---
+    canvas.setLineWidth(0.8)
+    canvas.setStrokeColorRGB(0, 0, 0)
+    canvas.line(20 * mm, current_y, A4[0] - 20 * mm, current_y)
+
+    # --- Footer Image ---
+    try:
+        footer = ImageReader(footer_path)
+        iw, ih = footer.getSize()
+        aspect = ih / float(iw)
+        new_width = A4[0]
+        new_height = new_width * aspect
+        bottom_margin = 3 * mm
+        canvas.drawImage(
+            footer,
+            0, bottom_margin,
+            width=new_width, height=new_height,
+            preserveAspectRatio=True,
+            mask='auto'
+        )
+    except Exception as e:
+        print("Footer load failed:", e)
+
+def reportlab_quotation_pdf(request, id):
+    quotation = quotation_management.objects.get(id=id)
+    branch = quotation.branch
+    logo_path = request.build_absolute_uri(static('images/Logo.png'))
+    footer_path = request.build_absolute_uri(static('images/NewFooter.png'))
+    light_blue = HexColor("#0070C0")
+    buffer = io.BytesIO()
+    doc = BaseDocTemplate(buffer, pagesize=A4,
+                          leftMargin=20 * mm, rightMargin=20 * mm,
+                          topMargin=50 * mm, bottomMargin=35 * mm)
+
+    doc.quotation_no = quotation.quotation_no
+    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
+
+    def _header_footer(canvas, doc_obj):
+        draw_footer_and_logo(canvas, doc_obj, logo_path, footer_path,branch)
+
+    doc.addPageTemplates([PageTemplate(id='quotation_template', frames=frame, onPage=_header_footer)])
+
+    styles = getSampleStyleSheet()
+    normal = styles['Normal']
+    bold = ParagraphStyle(name='bold', parent=normal, fontName='Helvetica-Bold')
+    small = ParagraphStyle(name='small', parent=normal, fontSize=9)
+    full_width = ParagraphStyle(name='full_width', parent=normal, leftIndent=0, firstLineIndent=0,
+                                rightIndent=0, spaceBefore=0, spaceAfter=0, fontSize=10, leading=9)
+
+    elements = []
+
+    # --- Customer + Quotation Details ---
+    left_style = ParagraphStyle(name='left', fontSize=10, leading=10)
+    right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=12)
+    address_style = ParagraphStyle(
+        'address',
+        parent=left_style,
+        leading=14,       # extra line gap
+    )
+
+
+    
+    customer_details = [
+        Paragraph(f"<b>Name :</b> {quotation.customer.fullname}", left_style),
+        Paragraph(f"<b>Phone :</b> {quotation.customer.primarycontact}", left_style),
+        Paragraph(f"<b>Email :</b> {quotation.customer.primaryemail}", left_style),
+        Paragraph(f"<b>Address :</b> {quotation.address}", address_style ),
+    ]
+    if quotation.or_name:
+        customer_details.append(
+            Paragraph(f"<b>Person :</b> {quotation.or_name} - {quotation.or_contact}", left_style)
+        )
+    left_table = Table([[item] for item in customer_details], colWidths=[95 * mm])
+    left_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('LINEBEFORE', (0, 0), (0, -1), 3, light_blue),
+    ]))
+
+    quotation_details = [
+        Paragraph("<b>Quotation</b>", ParagraphStyle(name='title', fontSize=12, alignment=2, leading=12)),
+        Paragraph(f"<b>{quotation.quotation_no}</b>", ParagraphStyle(name="temp_right_bold", parent=right_style, fontSize=14, fontName='Helvetica-Bold')),
+        Paragraph(f"<b>Date:</b> {quotation.quotation_date.strftime('%d %B %Y')}", right_style)
+    ]
+    right_table = Table([[item] for item in quotation_details], colWidths=[85 * mm])
+
+    combined_table = Table([[left_table, right_table]], colWidths=[95 * mm, 85 * mm])
+    combined_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 2),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 2),
+    ]))
+    elements.append(combined_table)
+    elements.append(Spacer(1, 5))
+
+    # --- Subject and Intro ---
+    thank_u_note_style = ParagraphStyle(
+        name="thank_u_note_style",
+        parent=full_width,
+        fontSize=10,
+        leading=14,        # extra line gap
+        # firstLineIndent=0, # label starts at margin
+        # leftIndent=65,     # adjust so wrapped lines start after label
+        # spaceAfter=10
+    )
+    elements.append(Paragraph(f"<b>Subject:</b> {quotation.subject}", full_width))
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        f"<b>{ quotation.thank_u_note }:</b>",
+         thank_u_note_style))
+    elements.append(Spacer(1, 10))
+
+    # --- Product Table ---
+    # 
+    # product_data = [["Sr. No.", "Product / Service", "HSN", "Rate (Rs)", "Qty", "Total (Rs)"]]
+    # for idx, item in enumerate(quotation.product_details_json, start=1):
+    #     try:
+    #         price = float(item['price'])
+    #         hsn = item.get['hsn_code','']
+    #         quantity = float(item['quantity'])
+    #         total = price * quantity
+    #     except (ValueError, KeyError, TypeError):
+    #         price = quantity = total = 0.0
+
+    #     description = item.get('description', '').replace('\n', '<br/>')
+
+    #     product_data.append([
+    #         str(idx),
+    #          Paragraph(
+    #             f"<b>{item['name']}</b><br/><font size='8'><i>{description}</i></font>",
+    #             small
+    #         ),
+    #         hsn,
+    #         Paragraph(f"{price:,.2f}",ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+    #         Paragraph(f"{quantity:.2f}<br/>{item['unit']}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+    #         f"{total:,.2f}"
+    #     ])
+    product_data = [["Sr. No.", "Product / Service", "HSN", "Rate (Rs)", "Qty", "Total (Rs)"]]
+    
+    for idx, item in enumerate(quotation.product_details_json, start=1):
+        # always initialize
+        hsn = item.get('hsn_code', '')  
+        price = 0.0
+        quantity = 0.0
+        total = 0.0
+
+        hsn_style = ParagraphStyle(
+        name="hsn_style",
+        parent=small,
+        alignment=TA_CENTER,
+        wordWrap="CJK"  # keeps text in one line
+         )
+
+        hsn_text = Paragraph(hsn, hsn_style)
+        try:
+            price = float(item.get('price', 0))
+            quantity = float(item.get('quantity', 0))
+            total = price * quantity
+        except (ValueError, TypeError):
+            pass  # keep as 0.0
+
+        description = item.get('description', '').replace('\n', '<br/>')
+
+        product_data.append([
+            str(idx),
+            Paragraph(
+                f"<b>{item.get('name', '')}</b><br/><font size='8'><i>{description}</i></font>",
+                small
+            ),
+            hsn_text,  # blank if missing
+            Paragraph(f"{price:,.2f}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+            Paragraph(f"{quantity:.2f}<br/>{item.get('unit', '')}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+            f"{total:,.2f}"
+        ])
+
+
+    # Add empty rows if needed to maintain uniform height
+   
+    col_widths = [13 * mm, 70 * mm,20 * mm, 21 * mm, 21 * mm, 25 * mm]
+    total_width = sum(col_widths)
+
+    product_table = Table(product_data, colWidths=col_widths)
+    product_table.setStyle(TableStyle([
+     ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
+     ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D9D9D9')),
+     ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+
+     # Center align only header row, except Product / Service
+     ('ALIGN', (0, 0), (0, 0), 'CENTER'),   # Sr. No.
+     ('ALIGN', (2, 0), (-1, 0), 'CENTER'),  # Rate, Qty, Total
+     ('ALIGN', (1, 0), (1, 0), 'LEFT'),     # Product / Service header
+
+     # Data rows alignment
+     ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # Sr. No.
+     ('ALIGN', (1, 1), (1, -1), 'LEFT'),    # Product / Service (all rows)
+     ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),  # Rate, Qty, Total
+
+     ('FONTSIZE', (0, 0), (-1, -1), 9),
+    ]))
+
+    elements.append(product_table)
+    # elements.append(Spacer(1, 8))
+
+    hr = Table([['']], colWidths=[total_width], rowHeights=16)
+    hr.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#D9D9D9')),
+        # ('HEIGHT', (0, 0), (-1, -1), 2),  # 4 points height (adjust if needed)
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
+
+    ]))
+    elements.append(hr)
+
+
+   
+     # -- Totals data (2 columns only) --
+    totals_data = []
+    
+    totals_data.append([Paragraph(f"<b>Total :</b>", right_style),
+                        Paragraph(f"<b>{quotation.total_price:,.2f}</b>", right_style)])
+
+    if quotation.apply_gst:
+        if quotation.igst:
+            totals_data.append([Paragraph(f"<b>IGST :</b>",right_style),
+                                Paragraph(f"<b>{quotation.igst:,.2f}</b>", right_style)])
+        else:
+
+            totals_data.append([Paragraph(f"<b>CGST :</b>", right_style), 
+                                Paragraph(f"<b>{quotation.cgst:,.2f}</b>", right_style)])
+            totals_data.append([Paragraph(f"<b>SGST :</b>",right_style),
+                                Paragraph(f"<b>{quotation.sgst:,.2f}</b>",right_style)])
+            totals_data.append([Paragraph(f"<b>Total Tax :</b>",right_style), 
+                                Paragraph(f"<b>{quotation.gst_total:,.2f}</b>", right_style)])
+
+   
+    totals_data.append([
+    Paragraph("<b>Grand Total :</b>", right_style),  
+    Paragraph(f"<b>{quotation.total_price_with_gst:,.2f}</b>", right_style)])
+
+    # --- Total in Words as last row, spanning both columns ---
+    amount_words = price_in_words(quotation.total_price_with_gst)
+    totals_data.append([Paragraph(f"<b>Total in Words : {amount_words}</b>", small), ""])
+
+    # --- Create totals table ---
+    totals_table = Table(totals_data, colWidths=[140 * mm, 30 * mm])
+    totals_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, -2), 'Helvetica'),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('SPAN', (0, -1), (1, -1)),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('GRID', (0, 0), (-1, -1), 0.3, colors.gray),
+    ]))
+
+    # --- Wrap in an outer table to right-align it ---
+    totals_wrapper = Table([[totals_table]], colWidths=[total_width])
+    totals_wrapper.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    elements.append(totals_wrapper)
+
+    # --- Terms & Footer ---
+   
+    # Title
+    elements.append(Spacer(1, 5))
+    elements.append(Paragraph("<b>Terms & Conditions</b>", bold))
+
+
+    # 1. Ordered terms from M2M field
+    ordered_terms = []
+    terms_by_id = {t.id: t for t in quotation.terms_and_conditions.all()}
+    
+    for tid in quotation.terms_order or []:
+        if tid in terms_by_id:
+            ordered_terms.append(terms_by_id[tid])
+    
+    # 2. Custom terms (from string)
+    custom_terms = []
+    if quotation.custom_terms:
+        custom_terms = [t.strip() for t in quotation.custom_terms.strip().split('\n') if t.strip()]
+    
+    # 3. Create Paragraphs (including both types)
+    terms_paragraphs = []
+    
+    idx = 1
+    for t in ordered_terms:
+        terms_paragraphs.append([Paragraph(f"{idx}. {t.description}", small)])
+        idx += 1
+    
+    for ct in custom_terms:
+        terms_paragraphs.append([Paragraph(f"{idx}. {ct}", small)])
+        idx += 1
+    
+    # Wrap inside table for styling
+    terms_table = Table(terms_paragraphs, colWidths=[doc.width])
+    terms_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LINEBEFORE', (0, 0), (0, -1), 3, light_blue),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+    ]))
+
+    elements.append(terms_table)
+
+    # GST Note (only when applicable)
+    if quotation.apply_gst:
+        elements.append(Paragraph(
+            "All above material and services will be attracted to GST extra as per product or service applicable.",
+            small
+        ))
+        elements.append(Spacer(1, 5))
+
+    # Thank You Block (always shown)
+    elements.append(Paragraph(
+        "We thank you for the opportunity given to serve you & look forward to adding you to our family of customers.",
+        small
+    ))
+    elements.append(Spacer(1,8))
+    # elements.append(Spacer(1, 6))
+
+    elements.append(Paragraph("<b>Thanking You,</b>", small))
+    elements.append(Spacer(1, 2))
+    elements.append(Paragraph("<b>Seva Facility Services Pvt Ltd</b>", small))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(f"<b>SFS Representative:</b> {quotation.contact_by} - {quotation.contact_by_no}", small))
+
+
+    doc.build(elements)
+    buffer.seek(0)
+    
+    # Check for download param
+    download = request.GET.get("download", "false").lower() == "true"
+
+    response = HttpResponse(buffer, content_type='application/pdf')
+
+    if download:
+        response['Content-Disposition'] = f'attachment; filename="Quotation_{quotation.quotation_no}.pdf"'
+    else:
+        response['Content-Disposition'] = f'inline; filename="Quotation_{quotation.quotation_no}.pdf"'
+
+    return response
+
+def get_message_templates(request):
+    templates = MessageTemplates.objects.all()
+    data = {
+        'templates': templates
+    }
+    return render(request, 'message_templates.html', context=data)
+
+
+def create_message_template(request):
+    messages_type_choices = MessageTemplates.MESSAGE_TYPE_CHOICE
+    category_choices = MessageTemplates.CATEGORY_CHOICES
+    lead_status_choices = MessageTemplates.LEAD_STATUS_CHOICES
+
+    if request.method == "POST":
+        name = request.POST.get('name')
+        message_type = request.POST.get('message_type')
+        category = request.POST.get('category')
+        lead_status = request.POST.get('lead_status')
+        subject = request.POST.get('subject') if message_type == 'email' else None
+        body = request.POST.get('body')
+        attachment = request.FILES.get('attachment',None)  
+        # Save to DB
+        MessageTemplates.objects.create(
+            name=name,
+            message_type=message_type,
+            category=category,
+            lead_status = lead_status,
+            subject=subject,
+            body=body,
+            attachment=attachment,
+            is_active=True
+        )
+
+        return redirect('message_templates')  # redirect to your templates list page
+
+    context = {
+        'messages_type_choices': messages_type_choices,
+        'category_choices': category_choices,
+        'lead_status_choices':lead_status_choices,
+    }
+    return render(request, 'create_message_template.html', context)
+
+
+def edit_message_template(request, id):
+    template = MessageTemplates.objects.get(id=id)
+
+    if request.method == "POST":
+        body = request.POST.get('body', '')
+
+        # Always update body
+        template.body = body  
+
+        # Only handle subject + attachment if Email
+        if template.message_type == "email":
+            subject = request.POST.get('subject', '')
+            template.subject = subject
+
+        attachment = request.FILES.get('attachment')
+        if attachment:
+            template.attachment = attachment
+
+        template.save()
+        return redirect('message_templates')
+
+    return render(request, 'edit_message_template.html', {"templates": template})
+
+
+from django.apps import apps
+from django.core.mail import send_mail
+from django.conf import settings
+from django.shortcuts import redirect
+from .tasks import send_email_task, send_whatsapp_task
+
+def send_lead_email(request, pk):
+    lead = get_object_or_404(lead_management, pk=pk)
+
+    if not lead.customeremail or not lead.customeremail.strip():
+        messages.error(request, f"{lead.customername} has no email address.")
+        return redirect("display_lead_management")
+    template = MessageTemplates.objects.filter(
+        message_type='email',
+        category='lead',
+        lead_status__iexact=lead.typeoflead.strip().lower()
+    ).first()
+    print("template",template)
+    print("lead",lead.typeoflead)
+    if not template:
+        messages.error(request, f"No template found for {lead.typeoflead} leads.")
+        return redirect("display_lead_management")
+
+    # Prepare placeholders
+    placeholders = {
+        "customername": lead.customername,
+        "typeoflead": lead.typeoflead,
+        "primarycontact": lead.primarycontact,
+        # Add more fields if needed
+    }
+
+    body = template.body
+    subject = template.subject
+    for key, value in placeholders.items():
+        body = body.replace(f"{{{key}}}", str(value))
+        subject = subject.replace(f"{{{key}}}", str(value))
+
+    attachment_path = None
+    attachment_name = None
+    if template.attachment:
+        attachment_path = template.attachment.path  # full file path
+        attachment_name = os.path.basename(template.attachment.name)  # file name
+
+
+    send_email_task.delay(subject, body, recipient=lead.customeremail,attachment_path=attachment_path, attachment_name=attachment_name)
+    messages.success(request, f"Email sent to {lead.customername}")
+    # return redirect("display_lead_management")
+    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+
+def send_group_lead_email(request, lead_type):
+    # Get only leads in 'lead' category with the given type
+    leads = lead_management.objects.filter(typeoflead__iexact=lead_type)
+
+    sent_count = 0
+    skipped_count = 0
+
+    for lead in leads:
+        # Get latest follow-up
+        latest_followup = main_followup.objects.filter(lead=lead).order_by('-created_at').first()
+
+        # Skip if Close Win
+        if latest_followup and latest_followup.order_status == 'Close Win':
+            skipped_count += 1
+            continue
+
+        # Skip if no email
+        if not lead.customeremail or not lead.customeremail.strip():
+            skipped_count += 1
+            continue
+
+        # Fetch template
+        template = MessageTemplates.objects.filter(
+            message_type='email',
+            category='lead',
+            lead_status__iexact=lead_type.strip()
+        ).first()
+        if not template:
+            skipped_count += 1
+            continue
+
+        # Prepare placeholders
+        placeholders = {
+            "customername": lead.customername,
+            "typeoflead": lead.typeoflead,
+            "primarycontact": lead.primarycontact,
+        }
+
+        body = template.body
+        subject = template.subject
+        for key, value in placeholders.items():
+            body = body.replace(f"{{{key}}}", str(value))
+            subject = subject.replace(f"{{{key}}}", str(value))
+
+        attachment_path = None
+        attachment_name = None
+        if template.attachment:
+            attachment_path = template.attachment.path  # full file path
+            attachment_name = os.path.basename(template.attachment.name)  # file name
+
+
+        send_email_task.delay(subject, body, recipient=lead.customeremail,attachment_path=attachment_path, attachment_name=attachment_name)
+        # Send email asynchronously
+        # send_email_task.delay(subject, body, recipient=lead.customeremail)
+        sent_count += 1
+
+    messages.success(request, f"✅ Emails sent: {sent_count}, ⏭️ Skipped: {skipped_count}")
+    # return redirect("display_lead_management")
+    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+
+
+def send_lead_whatsapp(request, pk):
+    lead = get_object_or_404(lead_management, pk=pk)
+
+    if not lead.primarycontact:
+        messages.error(request, f"{lead.customername} has no phone number.")
+        return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+    
+    # Fetch WhatsApp template for this lead type
+    template = MessageTemplates.objects.filter(
+        message_type='whatsapp',
+        category='lead',
+        lead_status__iexact=lead.typeoflead.strip().lower()
+    ).first()
+
+    if not template:
+        messages.error(request, f"No WhatsApp template found for {lead.typeoflead}.")
+        return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+    # Prepare placeholders
+    placeholders = {
+        "customername": lead.customername,
+        "typeoflead": lead.typeoflead,
+        "primarycontact": lead.primarycontact,
+        # Add more fields if needed
+    }
+
+    # Replace placeholders in template body
+    msg = template.body
+    for key, value in placeholders.items():
+        msg = msg.replace(f"{{{key}}}", str(value))
+
+    # Handle attachment if present
+    attachment_url = None
+    attachment_name = None
+    if template.attachment:
+        # Use .url (relative to MEDIA_URL)
+        relative_url = template.attachment.url  # e.g. /media/message_attachments/ape1_hbHE7TU.jpg
+
+        # Build absolute URL
+        site_url = getattr(settings, "SITE_URL", "https://www.teimcrm.com")  
+        attachment_url = f"{site_url}{relative_url}"
+        attachment_name = os.path.basename(template.attachment.name)
+    
+    print("url: ", attachment_url)
+    print("attachment_name :",attachment_name)
+    # Queue the Celery task
+    mobile = f"91{lead.primarycontact}"
+    send_whatsapp_task.delay(mobile, msg, attachment_url, attachment_name)
+
+    messages.success(request, f"WhatsApp message queued for {lead.customername}")
+    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+
+def send_group_lead_whatsapp(request, lead_type):
+    leads = lead_management.objects.filter(typeoflead__iexact=lead_type)
+    sent_count = 0
+    skipped_count = 0
+
+    site_url = getattr(settings, "SITE_URL", "https://www.teimcrm.com")
+
+    for lead in leads:
+        latest_followup = main_followup.objects.filter(lead=lead).order_by('-created_at').first()
+
+        # Skip Closed/No contact
+        if latest_followup and latest_followup.order_status == 'Close Win':
+            skipped_count += 1
+            continue
+        if not lead.primarycontact:
+            skipped_count += 1
+            continue
+
+        # Fetch template
+        template = MessageTemplates.objects.filter(
+            message_type='whatsapp',
+            category='lead',
+            lead_status__iexact=lead_type.strip()
+        ).first()
+        if not template:
+            skipped_count += 1
+            continue
+
+        # Prepare placeholders
+        placeholders = {
+            "customername": lead.customername,
+            "typeoflead": lead.typeoflead,
+            "primarycontact": lead.primarycontact,
+        }
+
+        body = template.body
+        for key, value in placeholders.items():
+            body = body.replace(f"{{{key}}}", str(value))
+
+        # Prepare attachment URL if exists
+        attachment_url = None
+        attachment_name = None
+        if template.attachment:
+            relative_url = template.attachment.url
+            attachment_url = f"{site_url}{relative_url}"
+            attachment_name = os.path.basename(template.attachment.name)
+
+        # Mobile number
+        mobile = f"91{lead.primarycontact}"
+
+        # Only send msg if no attachment
+        # msg = None if attachment_url else body
+        msg = body
+        send_whatsapp_task.delay(mobile, msg, attachment_url, attachment_name)
+
+        sent_count += 1
+
+    messages.success(request, f"✅ WhatsApp sent: {sent_count}, ⏭️ Skipped: {skipped_count}")
+    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+
+def send_quotation_pdf_on_whatsapp(request, id):
+    quotation = get_object_or_404(quotation_management, id=id)
+
+    mobile = f"91{quotation.customer.primarycontact}"  # adjust if field name is different
+
+        # Fetch WhatsApp template for this lead type
+    template = MessageTemplates.objects.filter(
+        message_type='whatsapp',
+        category='quotation',
+    ).first()
+
+    if not template:
+        messages.error(request, f"No WhatsApp template found for quotation.")
+        return redirect(request.META.get("HTTP_REFERER", "display_quotation"))
+
+    # Prepare placeholders
+    placeholders = {
+        "customername": quotation.customer.fullname,
+
+    }
+
+    # Replace placeholders in template body
+    msg = template.body
+    for key, value in placeholders.items():
+        msg = msg.replace(f"{{{key}}}", str(value))
+
+    # Handle attachment if present
+    attachment_url = f"https://www.teimcrm.com/generate_quotation/quotation/pdf/{quotation.id}/view?download=True"
+    attachment_name = f"quotation_{quotation.id}.pdf"
+
+    # Trigger Celery task
+    send_whatsapp_task.delay(
+        mobile=mobile,
+        msg=msg,
+        attachment_path=attachment_url,   # must be accessible URL
+        attachment_name=attachment_name
+    )
+
+    return redirect(request.META.get("HTTP_REFERER", "display_quotation")) 
+
+def send_quotation_email(request, id):
+    quotation = get_object_or_404(quotation_management, id=id)
+
+    recipient = quotation.customer.primaryemail
+    # subject = f"Quotation #{quotation.id}"
+    template = MessageTemplates.objects.filter(
+            message_type='email',
+            category='quotation').first()
+    
+    if not template:
+        messages.error(request, f"No template found for quotation.")
+        return redirect("display_quotation")
+    
+    placeholders = {
+        "customername": quotation.customer.fullname,
+    }
+
+    body = template.body
+    subject = template.subject
+    for key, value in placeholders.items():
+        body = body.replace(f"{{{key}}}", str(value))
+        subject = subject.replace(f"{{{key}}}", str(value))
+    
+    attachment_path = f"https://www.teimcrm.com/generate_quotation/quotation/pdf/{quotation.id}/view?download=True"
+    attachment_name = f"quotation_{quotation.id}.pdf"
+    
+    send_email_task.delay(
+        subject=subject,
+        message=body,
+        recipient=recipient,
+        attachment_path=attachment_path,
+        attachment_name=attachment_name
+    )
+
+    return redirect(request.META.get("HTTP_REFERER", "display_quotation"))
+
+
+def send_invoice_email(request, id):
+    invoice = get_object_or_404(TaxInvoice, id=id)
+
+    recipient = invoice.customer.primaryemail
+    # subject = f"Quotation #{quotation.id}"
+    template = MessageTemplates.objects.filter(
+            message_type='email',
+            category='invoice').first()
+    
+    if not template:
+        messages.error(request, f"No template found for Invoice.")
+        return redirect("display_tax_invoice")
+    
+    placeholders = {
+        "customername": invoice.customer.fullname,
+    }
+
+    body = template.body
+    subject = template.subject
+    for key, value in placeholders.items():
+        body = body.replace(f"{{{key}}}", str(value))
+        subject = subject.replace(f"{{{key}}}", str(value))
+    
+    attachment_path = f"https://www.teimcrm.com/tax-invoice/pdf/{invoice.id}/?download=true"
+    attachment_name = f"Invoice_{invoice.customer.fullname}.pdf"
+    
+    send_email_task.delay(
+        subject=subject,
+        message=body,
+        recipient=recipient,
+        attachment_path=attachment_path,
+        attachment_name=attachment_name
+    )
+
+    return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice"))
+
+def send_invoice_pdf_on_whatsapp(request, id):
+    invoice = get_object_or_404(TaxInvoice, id=id)
+
+    mobile = f"91{invoice.customer.primarycontact}"  
+
+        # Fetch WhatsApp template for this lead type
+    template = MessageTemplates.objects.filter(
+        message_type='whatsapp',
+        category='invoice',
+    ).first()
+
+    if not template:
+        messages.error(request, f"No WhatsApp template found for quotation.")
+        return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice"))
+
+    # Prepare placeholders
+    placeholders = {
+        "customername": invoice.customer.fullname,
+
+    }
+
+    # Replace placeholders in template body
+    msg = template.body
+    for key, value in placeholders.items():
+        msg = msg.replace(f"{{{key}}}", str(value))
+
+    # Handle attachment if present
+    attachment_url = f"https://www.teimcrm.com/tax-invoice/pdf/{invoice.id}/?download=true"
+    attachment_name = f"Invoice_{invoice.customer.fullname}.pdf"
+
+    # Trigger Celery task
+    send_whatsapp_task.delay(
+        mobile=mobile,
+        msg=msg,
+        attachment_path=attachment_url,   # must be accessible URL
+        attachment_name=attachment_name
+    )
+
+    return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice")) 
+

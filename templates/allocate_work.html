@@ -95,13 +95,13 @@
         .col-md-6 {
             padding: 0 15px;
         }
-
+ 
         @media (max-width: 768px) {
             .container {
 
                 margin-top: 90px !important;
             }
-        }
+    }
 
         .form-card {
             background: #fff;
@@ -163,6 +163,17 @@
                 transform: translateY(0);
             }
         }
+        /* Match dropdown width with the button */
+.custom-dropdown-button {
+  width: 100%; /* Button fills container width */
+}
+
+.custom-dropdown-menu {
+  width: 100% !important;  /* Dropdown matches button width */
+  min-width: unset !important; /* Remove Bootstrap's default min-width */
+  box-sizing: border-box;
+}
+
     </style>
 </head>
 
@@ -215,23 +226,24 @@
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <label class="form-label">Select Technicians:</label>
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false">Select Technicians</button>
-                                    <ul class="dropdown-menu p-2">
-                                        {% for tech in technicians %}
+<div class="dropdown">
+  <button class="btn btn-secondary dropdown-toggle custom-dropdown-button" type="button"
+    data-bs-toggle="dropdown" aria-expanded="false">
+    Select Technicians
+  </button>
+  <ul class="dropdown-menu custom-dropdown-menu p-2">
+    {% for tech in technicians %}
+    <li>
+      <div class="form-check select-box-adjust">
+        <input class="form-check-input mt-4" type="checkbox" name="technicians"
+          value="{{ tech.id }}" id="tech{{ forloop.counter }}" style="width: 5px;">
+        <label class="form-check-label ml-5 text-dark" for="tech{{ forloop.counter }}">{{ tech }}</label>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
 
-                                        <li>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="technicians"
-                                                    value="{{ tech.id }}" id="tech{{ forloop.counter }}">
-                                                <label class="form-check-label" for="tech{{ forloop.counter }}">
-                                                    {{ tech }}</label>
-                                            </div>
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
                             </div>
                             <div class="col-md-6 form-group">
                                 <label for="customer_name">Name</label>
@@ -266,8 +278,8 @@
                                 <label for="customer_payment_status">Payment Status<span class="star">*</span></label>
                                 <select name="customer_payment_status" id="customer_payment_status"
                                     class="form-control">
-                                    <option value="Completed">Completed</option>
                                     <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
                                 </select>
                             </div>
 

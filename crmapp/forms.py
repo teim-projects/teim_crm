@@ -34,20 +34,23 @@ class InventoryAddForm(forms.ModelForm):
 class AddProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['product_name', 'category']
+        fields = ['product_name','hsn_code' ,'category']
         labels = {
             'product_name': 'Product Name',
+            'hsn_code':'HSN Code',
             'category': 'Select Category'
         }
 
 
-class UpdateProductForm(forms.Form):
-    product = forms.ModelChoiceField(queryset=Product.objects.all(), label='Product', required=False , widget=forms.Select(attrs={'class': 'product-select'}))
-    price = forms.DecimalField(label='New Price per Unit', max_digits=10, decimal_places=2, required=False)
-    add_quantity = forms.IntegerField(label='Add Quantity', required=False)
-
-
-
+class UpdateProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['product_name','hsn_code', 'category']
+        labels = {
+            'product_name': 'Product Name',
+            'hsn_code':'HSN Code',
+            'category': 'Select Category'
+        }
 
 
 
@@ -83,7 +86,9 @@ class LeadImportForm(forms.Form):
     file = forms.FileField()
 
 
-
+class CustomerImportForm(forms.Form):
+    file = forms.FileField()
+    
 # from django import forms
 # from .models import followup
 

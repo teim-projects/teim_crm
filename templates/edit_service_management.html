@@ -360,7 +360,8 @@
   <div class="row">
     <div class="col-md-6 mb-4">
       <div class="form-outline">
-        <input type="text" id="ucustomer" class="form-control form-control-lg" placeholder="Customer Name" name="ucustomer" value="{{ x.customer }}" readonly />
+        <input type="hidden" name="ucustomer" value="{{ x.customer.id }}">
+        <input type="text" id="ucustomer" class="form-control form-control-lg" placeholder="Customer Name"  value="{{ x.customer }}" readonly />
       </div>
     </div>
   </div>
@@ -462,7 +463,7 @@
           {% for tech in technicians %}
           <li>
             <div class="form-check">
-              <input class="form-check-input mt-2" type="checkbox" name="technicians" value="{{ tech.id }}" 
+              <input class="form-check-input mt-4" type="checkbox" name="technicians" value="{{ tech.id }}" 
               id="tech{{ forloop.counter }}" {% if tech.user in selected_technicians %}checked{% endif %}>
               <label class="form-check-label text-dark" for="tech{{ forloop.counter }}">
                 {{ tech.first_name }} {{ tech.last_name }}
@@ -474,7 +475,6 @@
       </div>
     </div>
   </div>
-
   <div class="row">
     <div class="col-md-6 mb-3">
       <label for="udelivery_time">Delivery Time:</label>

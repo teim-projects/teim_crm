@@ -10,7 +10,7 @@
     <script src="{% static 'js/script.js' %}"></script>
 
    
-    <title>Customer Details</title>
+    <title>TEIM CRM</title>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -102,12 +102,10 @@
         display: block;
     }
   </style>
-    
+       
 </head>
 <body>
   {% include 'sidebar.html' %}
-
-
 <div class="main-container">
   <div class="card shadow-2-strong card-registration p-2">
     <div class="card-body p-3">
@@ -122,86 +120,111 @@
         <!-- Step 1 -->
 <div id="step1" class="step-section active">
   <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Source of Lead<span class="star">*</span></label>
       <select name="usourceoflead" class="form-control form-control-lg" required>
-        <option disabled selected>Source of Lead</option>
-        <option value="Google">Google</option>
-        <option value="Justdial">Justdial</option>
-        <option value="Indianmart">Indianmart</option>
-        <option value="Customer Reference">Customer Reference</option>
-        <option value="BNI">BNI</option>
-        <option value="Lineclub">Lineclub</option>
-        <option value="Employee Reference">Employee Reference</option>
-        <option value="Others">Others</option>
+        <option disabled {% if not x.usourceoflead %}selected{% endif %}>Source of Lead</option>
+        <option value="Google" {% if x.sourceoflead == "Google" %}selected{% endif %}>Google</option>
+        <option value="Justdial" {% if x.sourceoflead == "Justdial" %}selected{% endif %}>Justdial</option>
+        <option value="Indianmart" {% if x.sourceoflead == "Indianmart" %}selected{% endif %}>Indianmart</option>
+        <option value="Customer Reference" {% if x.sourceoflead == "Customer Reference" %}selected{% endif %}>Customer Reference<option>
+        <option value="BNI" {% if x.sourceoflead == "BNI" %}selected{% endif %}>BNI</option>
+        <option value="Lineclub" {% if x.sourceoflead == "Lineclub" %}selected{% endif %}>Lineclub</option>
+        <option value="Employee Reference" {% if x.sourceoflead == "Employee Reference" %}selected{% endif %}>Employee Reference</option>
+        <option value="Others" {% if x.sourceoflead == "Others" %}selected{% endif %}>Others</option>
       </select>
     </div>
-    <div class="col-md-6 mb-4">
-      <label>Enter Salesperson<span class="star">*</span></label>
-      <input type="text" name="usalesperson" class="form-control form-control-lg" value="{{ x.salesperson }}" required />
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Enter Customer Name<span class="star">*</span></label>
       <input type="text" name="ucustomername" class="form-control form-control-lg" value="{{ x.customername }}" />
     </div>
-    <div class="col-md-6 mb-4">
+     
+    <div class="col-md-4 mb-4">
       <label>Enter Customer Segment<span class="star">*</span></label>
       <select name="ucustomersegment" class="form-control form-control-lg" required>
-        <option disabled selected>Customer Segment</option>
-        <option value="Resedential">Resedential</option>
-        <option value="Industrial">Industrial</option>
-        <option value="Commercial">Commercial</option>
-        <option value="Institutional">Instiututional</option>
-        <option value="Irrelevant Lead">Irrelevant Lead</option>
+        <option disabled {% if not x.customersegment %}selected{% endif %}>Customer Segment</option>
+        <option value="Residential" {% if x.customersegment == "Residential" %}selected{% endif %}>Residential</option>
+        <option value="Industrial / Commercial" {% if x.customersegment == "Industrial / Commercial" %}selected{% endif %}>Industrial / Commercial</option>
+        <option value="Institutional" {% if x.customersegment == "Institutional" %}selected{% endif %}>Institutional</option>
+        <option value="Irrelevant Lead" {% if x.customersegment == "Irrelevant Lead" %}selected{% endif %}>Irrelevant Lead</option>
       </select>
     </div>
-  </div>
-
-  <div class="text-center">
-    <button type="button" class="btn btn-primary" style="width: 200px;" onclick="nextStep(1)">Next</button>
-  </div>
-</div>
-
-<!-- Step 2 -->
-<div id="step2" class="step-section">
-  <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Type of Lead<span class="star">*</span></label>
       <select name="utypeoflead" class="form-control form-control-lg">
-        <option disabled selected>Type of Lead</option>
-        <option value="Hot">Hot</option>
-        <option value="Warm">Warm</option>
-        <option value="Cold">Cold</option>
-        <option value="NotInterested">Not Interested</option>
-        <option value="LossOfOrder">Loss Of Order</option>
+        <option disabled {% if not x.typeoflead %}selected{% endif %}>Type of Lead</option>
+        <option value="Hot" {% if x.typeoflead == "Hot" %}selected{% endif %}>Hot</option>
+        <option value="Warm" {% if x.typeoflead == "Warm" %}selected{% endif %}>Warm</option>
+        <option value="Cold" {% if x.typeoflead == "Cold" %}selected{% endif %}>Cold</option>
+        <option value="NotInterested" {% if x.typeoflead == "NotInterested" %}selected{% endif %}>Not Interested</option>
+        <option value="LossOfOrder" {% if x.typeoflead == "LossOfOrder" %}selected{% endif %}>Loss Of Order</option>
       </select>
     </div>
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Enquiry Date<span class="star">*</span></label>
-      <input type="date" name="uenquirydate" class="form-control form-control-lg" value="{{ x.enquirydate }}" />
+      <input type="date" name="uenquirydate" class="form-control form-control-lg" value="{{ x.enquirydate|date:'Y-m-d' }}" />
     </div>
-  </div>
 
-  <div class="row">
-    <div class="col-md-6 mb-4">
+
+
+    <div class="col-md-4 mb-4">
       <label>Contacted By<span class="star">*</span></label>
       <input type="text" name="ucontactedby" class="form-control form-control-lg" value="{{ x.contactedby }}" />
     </div>
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Main Category<span class="star">*</span></label>
       <input type="text" name="umaincategory" class="form-control form-control-lg" value="{{ x.maincategory }}" />
     </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
       <label>Sub Category<span class="star">*</span></label>
       <input type="text" name="usubcategory" class="form-control form-control-lg" value="{{ x.subcategory }}" />
     </div>
+    <div class="col-md-4 mb-4">
+      <label>Customer Type<span class="star">*</span></label>
+      <select name="ucustomer_type" class="form-control" id="customer_type_select" onchange="toggleOrganizationFields()">
+        <option value="Individual" {% if x.customer_type == "Individual" %}selected{% endif %}>Individual</option>
+        <option value="Organization" {% if x.customer_type == "Organization" %}selected{% endif %}>Organization</option>
+      </select>
+    </div>
+    <div class="or_name col-md-4 mb-4" style="display: none;">
+      <label>Name <span class="star">*</span></label>
+      <input type="text" name="uor_name"  class="form-control" value="{{ x.or_name }}">
+  
+    </div>
+    <div class="or_contact col-md-4 mb-4" style="display: none;">
+      <label>Contact <span class="star">*</span></label>
+      <input type="number" name="uor_contact" class="form-control" value="{{ x.or_contact }}">
+    </div>
+ 
+  <!-- <div class="col-md-4 mb-4">
+    <label>Select Salesperson<span class="star">*</span></label>
+    <select name="usalesperson" class="form-control form-control-lg" required>
+        {% for sp in salespersons %}
+            <option value="{{ sp.id }}" {% if x.salesperson.id == sp.id %}selected{% endif %}>
+                {{ sp.full_name }}
+            </option>
+        {% endfor %}
+    </select>
+  </div> -->
+</div>
+<div class="text-center">
+  <button type="button" class="btn btn-primary" style="width: 200px;" onclick="nextStep(1)">Next</button>
+</div>
   </div>
+
+
+  
+</div>
+
+<!-- Step 2 -->
+<!-- <div id="step2" class="step-section">
+  <div class="row">
+    
+  </div>
+
+  <div class="row">
+    
+    
 
   <div class="row">
     <div class="col-md-3"></div>
@@ -215,28 +238,27 @@
     </div>
     <div class="col-md-3"></div>
   </div>
-</div>
+</div> -->
 
 <!-- Step 3 -->
 <div id="step3" class="step-section">
   <div class="row">
     <div class="col-md-6 mb-4">
       <label>Primary Contact No<span class="star">*</span></label>
-      <input type="text" name="uprimarycontact" class="form-control form-control-lg" value="{{ x.primarycontact }}" />
+      <input type="number" name="uprimarycontact" class="form-control form-control-lg" value="{{ x.primarycontact }}"  required/>
     </div>
     <div class="col-md-6 mb-4">
-      <label>Secondary Contact No<span class="star">*</span></label>
-      <input type="text" name="usecondarycontact" class="form-control form-control-lg" value="{{ x.secondarycontact }}" />
+      <label>Secondary Contact No</label>
+      <input type="number" name="usecondarycontact" class="form-control form-control-lg" value="{{ x.secondarycontact }}" />
     </div>
   </div>
-
   <div class="row">
     <div class="col-md-6 mb-4">
-      <label>Customer Email<span class="star">*</span></label>
-      <input type="email" name="ucustomeremail" class="form-control form-control-lg" value="{{ x.customeremail }}" />
+      <label>Customer Email</label>
+      <input type="email" name="ucustomeremail" class="form-control form-control-lg" value="{{ x.customeremail }}"/>
     </div>
     <div class="col-md-6 mb-4">
-      <label>Location<span class="star">*</span></label>
+      <label>Location</label>
       <input type="url" name="ulocation" class="form-control form-control-lg" value="{{ x.location }}" />
     </div>
   </div>
@@ -257,8 +279,7 @@
     <div class="col-md-3">    
         <button type="button" class="btn btn-secondary w-100" onclick="prevStep(1)">Previous</button>
 </div>
-    <div class="col-md-3">    <input type="submit" class="btn btn-success w-100" value="Submit" />
-</div>
+    <div class="col-md-3">    <input type="submit" class="btn btn-success w-100" value="Submit" /></div>
     <div class="col-md-3"></div>
   </div>
   <p class="mt-3 text-center text-danger">{{ msg1 }}</p>
@@ -271,7 +292,7 @@
   </div>
 </div>
 
-<script>
+<!-- <script>
 function showStep(step) {
   const steps = document.querySelectorAll('.step-section');
   steps.forEach((s, i) => {
@@ -289,6 +310,33 @@ function prevStep(prev) {
 }
 
 // Show first step on load
+document.addEventListener("DOMContentLoaded", () => showStep(0));
+</script> -->
+<script>
+let currentStep = 0;
+
+function showStep(step) {
+  const steps = document.querySelectorAll('.step-section');
+  steps.forEach((s, i) => {
+    s.classList.remove('active');
+    if (i === step) s.classList.add('active');
+  });
+  currentStep = step; // update tracker
+}
+
+function nextStep() {
+  const steps = document.querySelectorAll('.step-section');
+  if (currentStep < steps.length - 1) {
+    showStep(currentStep + 1);
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    showStep(currentStep - 1);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => showStep(0));
 </script>
 
@@ -323,6 +371,22 @@ document.addEventListener("DOMContentLoaded", () => showStep(0));
             });
         });
 </script>
+<script>
+  function toggleOrganizationFields() {
+    const selectValue = document.getElementById('customer_type_select').value;
+    const orgFields = document.querySelectorAll('.or_name, .or_contact');
+
+    orgFields.forEach(field => {
+      field.style.display = (selectValue === 'Organization') ? 'block' : 'none';
+    });
+  }
+
+  // Run on page load to set correct visibility
+  window.onload = function () {
+    toggleOrganizationFields();
+  };
+</script>
+
 <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
     <div class="row p-3">
         <div class="col-md-12 text-center"> <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">

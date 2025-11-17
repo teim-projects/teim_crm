@@ -19,7 +19,7 @@
         html {
             margin: 0;
             padding: 0;
-            height: 100%;
+            height: calc(100vh - 200px);
             font-family: Verdana, sans-serif;
             text-align: center;
             background-color: #f4f4f4;
@@ -276,7 +276,7 @@
  <!-- Navbar End -->
 
 <!-- Main Content Start -->
-    <div class="container-fluid background-image">
+    <!-- <div class="container-fluid background-image">
         <div class="row">
             <div class="col-md-3 mt-5"></div>
             <div class="col-md-6 mt-5 col-12" style="width: 100%;">
@@ -284,21 +284,71 @@
                     <div class="heading p-3">Seva Facility Services Pvt Ltd</div>
 
                     <div class="button-container">
+                        
+                        <div class="right-side">
+                            <a href="/user_login" class="btn">Login as Admin</a>
+                            <a href="/user_login" class="btn">Login as Sales</a>
+                        </div>
                         <div class="left-side">
                             <a href="/technician_login" class="btn">Login as Technician</a>
                         </div>
-                        <div class="right-side">
-                            <a href="/user_login" class="btn">Login as Admin</a>
-                            <a href="/user_login" class="btn">Login as Employee</a>
-                        </div>
                     </div>
                 </center>
-                
             </div>
             <div class="col-md-3 mt-5"></div>
 
         </div>
+    </div> -->
+
+    <div class="container-fluid background-image">
+        <div class="row">
+            <div class="col-md-3 mt-5"></div>
+            <div class="col-md-6 mt-5 col-12">
+                <center>
+                    <div class="heading p-3">Seva Facility Services Pvt Ltd</div>
+    
+                    <!-- 🔹 Login Form -->
+                    <div class="card p-4 shadow-lg" style="max-width: 400px; border-radius: 20px;">
+                        <form method="POST" action="{% url 'login_view' %}">
+                            {% csrf_token %}
+                    
+                            <!-- Contact No -->
+                            <div class="form-group text-left">
+                                <label for="username">Contact No</label>
+                                <input type="text" id="username" name="username" class="form-control"
+                                       placeholder="Enter username or contact no" required>
+                            </div>
+                    
+                            <!-- Password -->
+                            <div class="form-group mt-3 text-left">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password" class="form-control"
+                                       placeholder="Enter password" required>
+                            </div>
+                    
+                            <!-- Login Button -->
+                            <button type="submit" class="btn btn-primary mt-4 w-100">Login</button>
+                    
+                            <!-- Error Messages -->
+                            {% if messages %}
+                              <div class="mt-3">
+                                {% for msg in messages %}
+                                  <p style="color:red">{{ msg }}</p>
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                    
+                    <!-- 🔹 End Login Form -->
+    
+                </center>
+            </div>
+            <div class="col-md-3 mt-5"></div>
+        </div>
     </div>
+    
+    
 <!-- Main Content End -->
 
 <!-- Footer Start -->

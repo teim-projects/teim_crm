@@ -71,6 +71,71 @@
                 max-height: 300px;
             }
         }
+
+
+        .modal {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Fixed position ensures it remains relative to the viewport */
+            z-index: 1;
+            /* High z-index to overlay other content */
+            left: 0;
+            top: 0;
+            width: 100%;
+            /* Full width for the overlay */
+            height: 100%;
+            /* Full height for the overlay */
+            overflow: hidden;
+            /* Prevent scrolling of background content */
+            background-color: rgba(0, 0, 0, 0.6);
+            /* Dark overlay */
+        }
+
+        .modal-content {
+            position: fixed;
+            /* Fix the modal's position */
+            left: 50%;
+            /* Center horizontally */
+            top: 50%;
+            /* Center vertically */
+            transform: translate(-50%, -50%);
+            /* Adjust for modal's own dimensions */
+            background-color: #ffffff;
+            /* White background for content */
+            width: 50%;
+            /* Adjust modal size */
+            max-width: 600px;
+            /* Restrict maximum width */
+            padding: 30px;
+            /* Padding inside the modal */
+            border-radius: 10px;
+            /* Rounded corners for aesthetics */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            /* Subtle shadow for prominence */
+            text-align: center;
+            /* Center-align text */
+            animation: fadeIn 0.3s ease-in-out;
+            /* Smooth fade-in animation */
+        }
+
+        .modal-buttons {
+            display: flex;
+            /* Use flexbox for buttons */
+            justify-content: center;
+            /* Center-align buttons */
+            gap: 15px;
+            /* Spacing between buttons */
+        }
+
+        .modal-buttons button {
+            padding: 12px 25px;
+            /* Larger buttons for better UI */
+            font-size: 1rem;
+            /* Readable font size */
+            border-radius: 5px;
+            /* Rounded button edges */
+        }
     </style>
 </head>
 
@@ -78,29 +143,36 @@
     {% include 'sidebar.html' %}
 
     <div class="main">
-        <div class="container bg-light rounded p-3 mb-5">
-            <h3 class="text-center mb-4">Pending Follow-ups</h3>
+        <div class="container bg-light rounded p-3 mb-5 addnewshadow">
+            <h3 class="text-center mb-4 ">Todays Follow-ups</h3>
 
             <!-- Filter -->
-            <form method="get" class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+             
+            {% if request.user.userprofile.role == "admin" %}
+             <form method="get" class="d-flex flex-wrap gap-2 mb-4 align-items-center">
                 <label for="salesperson" class="form-label me-2 mb-0">Filter by Salesperson:</label>
                 <select name="salesperson" id="salesperson" class="form-select w-auto" style="width: 200px;">
                     <option value="">All</option>
                     {% for person in salespersons %}
-                        <option value="{{ person }}" {% if selected_salesperson == person %}selected{% endif %}>{{ person }}</option>
+                    <option value="{{ person.id }}" {% if selected_salesperson == person.full_name %} selected {% endif %}>{{ person.full_name }}
+                    </option>
                     {% endfor %}
                 </select>
                 <button type="submit" class="btn btn-primary btn-sm ms-2" style="width: 150px;">Filter</button>
             </form>
+            {% endif %}
+            <h5 class="text-primary text-end">Today's Work : {{ count }}</h5>
 
             <!-- Table -->
             <div class="table-wrapper table-responsive rounded shadow-sm border">
+                {% comment %} <h5 class="mt-4">New Leads - First Follow-up Date Today</h5> {% endcomment %}
                 <table class="table table-bordered table-hover align-middle mb-0">
                     <thead class="table-dark">
-                        <tr class="sticky-top">
+                        <tr>
                             <th>Sr.No</th>
+                            <th>Actions</th>
                             <th>Source Of Lead</th>
-                            <th>Sales Person<br>Name</th>
+                            <th>Sales Person</th>
                             <th>Customer Name</th>
                             <th>Lead Type</th>
                             <th>Branch</th>
@@ -108,20 +180,40 @@
                             <th>Contact No.</th>
                             <th>Address</th>
                             <th>Follow-up Date</th>
-                            <th>Follow Up</th>
+                            <!-- <th>Follow Up</th>
                             <th>Edit</th>
-                            <th>Delete</th>
+                            <th>Delete</th> -->
                         </tr>
                     </thead>
                     <tbody>
                         {% for x in page_obj %}
                         <tr>
+                            <td>{{ forloop.counter|add:start_index }}</td>
+
+                            {% if x.lead %}
+                            <!-- main_followup -->
                             <td>
-                                {{ forloop.counter|add:start_index }}
-                                <button class="view-btn" onclick="openModal('{{ x.lead.id }}')" title="View Details">
-                                    <i class="fas fa-magnifying-glass-plus"></i>
-                                </button>
+                                <div class="d-flex gap-1 ">
+                                    {% if x.order_status == "Close Win" %}
+                                        <span class="badge bg-success align-self-center">Close Win</span>
+                                    {% elif x.order_status == "Close Loss" %}
+                                        <span class="badge bg-danger align-self-center">Close Loss</span>
+                                    {% else %}
+                                        <a href="{% url 'main_followup_view' x.lead.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fa-solid fa-clipboard-list"></i>
+                                        </a>
+                                    {% endif %}
+                                    
+                                    <a href="/edit_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-success">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                
+                                    <a href="/delete_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-danger delete-link">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                </div>
                             </td>
+
                             <td>{{ x.lead.sourceoflead }}</td>
                             <td>{{ x.lead.salesperson }}</td>
                             <td>{{ x.lead.customername }}</td>
@@ -131,46 +223,84 @@
                             <td>{{ x.lead.primarycontact }}</td>
                             <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
                             <td>{{ x.next_followup_date }}</td>
+                            
+
+                            {% else %}
+                            <!-- lead_management -->
                             <td>
-                                {% if x.order_status == "Close Win" %}
-                                    <span class="badge bg-success">Close Win</span>
-                                {% elif x.order_status == "Close Loss" %}
-                                    <span class="badge bg-danger">Close Loss</span>
-                                {% else %}
-                                    <a href="{% url 'main_followup_view' x.lead.id %}" class="btn btn-sm btn-outline-primary">Follow Up</a>
-                                {% endif %}
+                                <div class="d-flex gap-1 ">
+                                    <a href="{% url 'main_followup_view' x.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fa-solid fa-clipboard-list"></i>
+                                    </a>
+                                
+                                    <a href="/edit_lead_management/{{ x.id }}" class="btn btn-sm btn-success">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                
+                                    <a href="/delete_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-danger delete-link">
+                                         <i class="fa-solid fa-trash"></i></a>
+                                </div>
                             </td>
-                            <td><a href="/edit_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-success">Edit</a></td>
-                            <td><a href="/delete_lead_management/{{ x.lead.id }}" class="btn btn-sm btn-danger delete-link">Delete</a></td>
+
+                            <td>{{ x.sourceoflead }}</td>
+                            <td>{{ x.salesperson }}</td>
+                            <td>{{ x.customername }}</td>
+                            <td>{{ x.typeoflead }}</td>
+                            <td>{{ x.branch }}</td>
+                            <td>{{ x.enquirydate }}</td>
+                            <td>{{ x.primarycontact }}</td>
+                            <td>{{ x.customeraddress|truncatewords:3 }}</td>
+                            <td>{{ x.firstfollowupdate }}</td>
+                            {% endif %}
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="13" class="text-center">No Data Available.</td>
+                            <td colspan="13" class="text-center">No Data Available for Today.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
+                {{lead_folloup}}
             </div>
 
             <!-- Pagination -->
-       <div class="d-flex flex-column justify-content-center align-items-center mt-3">
-    <div class="text-info mb-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
-    <div>
-        {% if page_obj.has_previous %}
-            <a class="btn btn-outline-secondary btn-sm text-info me-2"
-               href="?page={{ page_obj.previous_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Previous</a>
-        {% endif %}
-        {% if page_obj.has_next %}
-            <a class="btn btn-outline-secondary btn-sm text-info"
-               href="?page={{ page_obj.next_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Next</a>
-        {% endif %}
-    </div>
-</div>
+            <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                <div class="text-info mb-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+                <div>
+                    {% if page_obj.has_previous %}
+                    <a class="btn btn-outline-secondary btn-sm text-info me-2"
+                        href="?page={{ page_obj.previous_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Previous</a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                    <a class="btn btn-outline-secondary btn-sm text-info"
+                        href="?page={{ page_obj.next_page_number }}{% if selected_salesperson %}&salesperson={{ selected_salesperson }}{% endif %}">Next</a>
+                    {% endif %}
+                </div>
+            </div>
 
-                                    {% include 'buttons.html' %}
+            {% include 'buttons.html' %}
 
         </div>
     </div>
+
+    <div id="confirmationModal" class="modal">
+                <div class="modal-content">
+                    <form id="deleteForm" method="POST">
+                        {% csrf_token %}
+                        <p class="hh text-primary">Are you sure you want to delete this record?</p>
+                        <div>
+                            <input type="password" id="password" name="password" placeholder="Enter Password"
+                                class="form-control" required>
+                        </div>
+                        <div class="modal-buttons">
+                            <button type="submit" id="confirmDeleteButton" class="btn btn-danger mt-5">Yes</button>
+                            <button type="button" id="cancelDeleteButton" class="btn btn-secondary mt-5">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
 
     <!-- Footer -->
     <div class="container-fluid footer bg-light text-center p-3 mt-3">
@@ -180,7 +310,8 @@
             <a href="http://www.chronoanalytics.in/" style="text-decoration: none;
                 background: linear-gradient(to right, #2575fc, #6a11cb);
                 -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics Solution</a> All Rights Reserved.
+                -webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics Solution</a> All Rights
+            Reserved.
         </p>
         <p style="font-weight: 600; color:#000;">
             Marketed by

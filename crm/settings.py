@@ -26,9 +26,10 @@ SECRET_KEY = 'django-insecure-ej=s3v#7gjmn*elic2@c0i63%(q5jxd-1v=n=^2%_ymil%vtdi
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['49.12.8.126','www.teimcrm.com','teimcrm.com']
 
 
+CSRF_TRUSTED_ORIGINS = ['https://www.teimcrm.com']
 # Application definition
 
 INSTALLED_APPS = [
@@ -91,16 +92,13 @@ DATABASES = {
         'USER' : 'root',
         'PASSWORD' : '',
         'PORT' : 3306,
-    }
-}
-#the email settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True 
-DEFAULT_FROM_EMAIL = "MY APP"
-EMAIL_HOST_USER = "connectteim@gmail.com"
-EMAIL_HOST_PASSWORD = "rmmx ylvp kihj goxo"
+        'OPTIONS': {
+        'charset': 'utf8mb4',
+        'init_command': "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
+            }
+        }
+} 
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -135,11 +133,13 @@ USE_I18N = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = ' static/'
+STATIC_URL = 'static/'
 STATICFILES_DIRS=[
     os.path.join(BASE_DIR, 'static')
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+SITE_URL = "https://www.teimcrm.com"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -271,3 +271,18 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1GB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1GB
+
+
+#the email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True 
+DEFAULT_FROM_EMAIL = "SFS"
+EMAIL_HOST_USER = "sfspl.sales@gmail.com"
+EMAIL_HOST_PASSWORD = "wsgc mnza ovvh cggw" 
+
+
+# Whatsapp Api
+WHATSAPP_API  = "https://app.rapbooster.com/api/send/msg?authKey=6538c8eff027d41e9151"
+WHATSAPP_CHANNEL_ID = "22035"

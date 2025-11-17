@@ -47,13 +47,38 @@
       margin-top: 80px;
     }
 
-    h3 {
-      text-align: center;
-      font-family: 'Playfair Display', serif;
-      font-weight: 900;
-      color: #03AED2;
-      margin-bottom: 30px;
+    label {
+      margin-top: 0px !important;
+      color: #027994; /* Darker version of your #03AED2 theme */
+      font-weight: 500;
     }
+
+      h3 {
+        text-align: center;
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        color: #03AED2;
+        margin-bottom: 30px;
+        padding: 0 40px; /* Add padding to prevent overlap with icons */
+        word-wrap: break-word;
+      }
+
+      /* Responsive title adjustments */
+      @media (max-width: 768px) {
+        h3 {
+          font-size: 1.5rem;
+          margin-bottom: 20px;
+          padding: 0 50px; /* More padding on mobile */
+          margin-top: 10px;
+        }
+      }
+
+@media (max-width: 576px) {
+  h3 {
+    font-size: 1.3rem;
+    padding: 0 45px;
+  }
+}
 
     h6 {
       font-family: 'Playfair Display', serif;
@@ -91,6 +116,29 @@
       background-color: #027994;
       box-shadow: 0 4px 15px rgba(3, 174, 210, 0.4);
     }
+    /* Button container improvements */
+.btn {
+  transition: all 0.3s ease;
+}
+
+    @media (max-width: 576px) {
+      .d-flex.flex-column.flex-sm-row > .btn {
+        width: 100% !important;
+        max-width: 250px;
+        margin: 5px auto !important;
+      }
+    }
+
+    @media (min-width: 577px) and (max-width: 768px) {
+      .d-flex.flex-column.flex-sm-row {
+        flex-wrap: wrap;
+      }
+      
+      .d-flex.flex-column.flex-sm-row > .btn {
+        width: 45% !important;
+        min-width: 140px;
+      }
+    }
 
     .container {
       margin-top: 30px;
@@ -127,25 +175,31 @@
   {% include 'sidebar.html' %}
 
   <div class="main-container">
-    <div class="card shadow-2-strong card-registration">
+    <div class="card    card-registration ">
       <div class="card-body">
-        <span onclick="window.location.href='/index'"
-          style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i
-            class="fas fa-house-chimney"></i></span>
-        <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;"
-          class="mb-4">X</span>
-
-        <h3 class="mt-4 mb-3" style=" margin-top: 5px;font-weight: 600;">Lead Management</h3>
-        <form method="POST" id="leadForm">
+          <div class="d-flex justify-content-between align-items-center mb-4" style="position: relative;">
+            <span onclick="window.location.href='/index'"
+              style="cursor: pointer; color:rgb(75, 162, 255); font-size:20px; position: absolute; left: 0; top: 0;">
+              <i class="fas fa-house-chimney"></i>
+            </span>
+            
+            <h3 class="flex-grow-1 text-center mb-0" style="font-weight: 600; margin: 0; padding-bottom: 15px; border-bottom: 2px solid #e0e0e0;">Lead Management</h3>
+            
+            <span onclick="goBackAndRefresh()" 
+              style="cursor: pointer; color:red; font-size:20px; position: absolute; right: 0; top: 0;">
+              X
+             </span>
+</div>
+        <form method="POST" id="multiStepForm">
           {% csrf_token %}
 
 
           <!-- Step 1: Lead Source Info -->
-          <div class="form-step active">
+          <div class="form-step active step">
             <div class="row">
               <div class="col-md-6 mb-4">
-                <label>Phone Number<span class="star">*</span></label>
-                <input type="text" name="primarycontact" class="form-control" pattern="\d{10}" required />
+                <label>Phone Number <span class="star">*</span></label>
+                <input type="text" name="primarycontact" class="form-control" pattern="[0-9]{10}" maxlength="10" minlength="10" title="Please enter exactly 10 digits"  required oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
               </div>
               <div class="col-md-6 mb-4">
 
@@ -158,9 +212,27 @@
                 <input type="text" name="secondarycontact" class="form-control" pattern="\d{10}" />
               </div>
               <div class="col-md-6 mb-4">
-                <label>Customer Email<span class="star">*</span></label>
-                <input type="email" name="customeremail" class="form-control" required />
+                <label>Customer Email</label>
+                <input type="email" name="customeremail" class="form-control"  />
               </div>
+              <div class="col-md-6 mb-4">
+                <label>Customer Type<span class="star">*</span></label>
+                <select name="customer_type" class="form-control" id="customer_type_select" onchange="toggleOrganizationFields()">
+                  <option value="Individual" selected>Individual</option>
+                  <option value="Organization">Organization</option>
+                </select>
+              </div>
+
+              <div class="or_name col-md-6 mb-4" style="display: none;">
+                <label>Name <span class="star">*</span></label>
+                <input type="text" name="or_name"  class="form-control">
+              
+                <label>Contact <span class="star">*</span></label>
+                <input type="number" name="or_contact" class="form-control">
+              </div>
+
+
+
               <div class="col-md-6 mb-4">
                 <label>Select State <span class="star">*</span></label>
                 <select id="state" name="state" class="form-control" required>
@@ -220,22 +292,16 @@
             </div>
           </div>
 
-          <!-- Step 2: Customer Details -->
-          <div class="form-step">
+          <!-- Step 2:  -->
+          <div class="form-step step">
             <div class="row">
               <div class="col-md-6 mb-4">
                 <label for="branch">Select Branch<span class="star">*</span></label>
                 <select class="form-control" name="branch" required>
                   <option value="">Select Branch</option>
-                  <option value="Bhiwandi">Bhiwandi</option>
-                  <option value="Indore">Indore</option>
-                  <option value="Hyderabad">Hyderabad</option>
-                  <option value="Nagpur">Nagpur</option>
-                  <option value="Amravti">Amravti</option>
-                  <option value="Aurangabad">Aurangabad</option>
-                  <option value="Baramati">Baramati</option>
-                  <option value="Pune">Pune</option>
-                  <option value="Hyderabad">Hyderabad</option>
+                  {% for branch in branches %}
+                  <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+                  {% endfor %}
                 </select>
               </div>
               <div class="col-md-6 mb-4">
@@ -269,23 +335,23 @@
                 <label>Customer Segment<span class="star">*</span></label>
                 <select name="customersegment" class="form-control" required>
                   <option value="">Customer Segment</option>
-                  <option value="Resedential">Resedential</option>
-                  <option value="Industrial">Industrial</option>
-                  <option value="Commercial">Commercial</option>
+                  <option value="Residential">Residential</option>
+                  <option value="Industrial / Commercial">Industrial / Commercial</option>
+                  <!-- <option value="Commercial">Commercial</option> -->
                   <option value="Institutional">Institutional</option>
                   <option value="Irrelevant Lead">Irrelevant Lead</option>
                 </select>
               </div>
 
-              <div class="col-md-6 mb-4">
+              <!-- <div class="col-md-6 mb-4">
                 <label>Salesperson<span class="star">*</span></label>
-                <select name="salesperson" class="form-control" required>
+                <select name="salesperson" class="form-control" >
                   <option value="">-- Select Sales Person --</option>
                   {% for person in salespersons %}
-                  <option value="{{ person.full_name }}">{{ person.full_name }}</option>
+                  <option value="{{ person.id }}">{{ person.full_name }}</option>
                   {% endfor %}
                 </select>
-              </div>
+              </div> -->
 
               <div class="col-md-6 mb-4">
                 <label>Contacted By<span class="star">*</span></label>
@@ -312,20 +378,36 @@
 
           <!-- Navigation Buttons -->
           <div class="text-center mt-4 mb-3">
-            <a href="/display_lead_management" class="btn btn-info mt-2 vwb" style="width: 150px;">View
-              Records</a>
-            <button type="button" class="btn btn-secondary mt-2" id="prevBtn" style="width: 150px;">Previous</button>
-            <button type="button" class="btn btn-primary ml-2 mt-2" id="nextBtn" style="width: 150px;">Next</button>
-            <input type="submit" class="btn btn-success ml-2 mt-2" id="submitBtn" style="width: 150px;"
-              value="Submit" />
-
+            <div class="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-2" style="gap: 10px;">
+              <a href="/display_lead_management" class="btn btn-info" style="width: 150px; margin: 5px;">View Records</a>
+              <button type="button" class="btn btn-secondary" id="prevBtn" style="width: 150px; margin: 5px;">Previous</button>
+              <button type="button" class="btn btn-primary" id="nextBtn" style="width: 150px; margin: 5px;">Next</button>
+              <input type="submit" class="btn btn-success" id="submitBtn" style="width: 150px; margin: 5px;" value="Submit" />
+            </div>
           </div>
         </form>
       </div>
     </div>
   </div>
 
+  <!-- organiization dropdown -->
+<script>
+    function toggleOrganizationFields() {
+      const selectValue = document.getElementById('customer_type_select').value;
+      const orgFields = document.querySelector('.or_name');
+      if (selectValue === 'Organization') {
+        orgFields.style.display = 'block';
+      } else {
+        orgFields.style.display = 'none';
+      }
+    }
 
+    // Optional: Run on page load if editing form
+    window.onload = function () {
+      toggleOrganizationFields();
+    }
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     const stateCityMap = {
       "Andhra Pradesh": [
@@ -1106,70 +1188,144 @@
         "Uttar Dinajpur"
       ],
     };
+    
+// Function to populate cities
+function populateCities(selectedState, selectedCity = null) {
+    const citySelect = document.getElementById('city');
+    citySelect.innerHTML = ""; // clear previous options
 
-    document.getElementById('state').addEventListener('change', function () {
-      const selectedState = this.value;
-      const citySelect = document.getElementById('city');
-
-      citySelect.innerHTML = ""; // Clear old options
-
-      if (selectedState && stateCityMap[selectedState]) {
-        const cities = stateCityMap[selectedState];
-        cities.forEach(city => {
-          const option = document.createElement("option");
-          option.value = city;
-          option.textContent = city;
-          citySelect.appendChild(option);
+    if (selectedState && stateCityMap[selectedState]) {
+        stateCityMap[selectedState].forEach(city => {
+            const option = document.createElement("option");
+            option.value = city;
+            option.textContent = city;
+            citySelect.appendChild(option);
         });
-      } else {
+
+        // Select stored city if present
+        if (selectedCity && stateCityMap[selectedState].includes(selectedCity)) {
+            citySelect.value = selectedCity;
+        }
+    } else {
         const option = document.createElement("option");
         option.value = "";
         option.textContent = "Please select a state first";
         citySelect.appendChild(option);
-      }
+    }
+}
+
+// When user changes state manually
+document.getElementById('state').addEventListener('change', function () {
+    populateCities(this.value);
+});
+
+// AJAX call to fetch existing data
+$(document).ready(function () {
+    $("input[name='primarycontact']").on("blur", function () {
+        var primarycontact = $(this).val();
+        if (primarycontact.length === 10) {
+            $.ajax({
+                url: "{% url 'lead_management_create' %}",
+                data: { 'primarycontact': primarycontact },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status === 'exists') {
+                        const data = response.data;
+
+                        $("input[name='customername']").val(data.customername || '');
+                        $("input[name='secondarycontact']").val(data.secondarycontact || '');
+                        $("input[name='customeremail']").val(data.customeremail || '');
+                        $("textarea[name='customeraddress']").val(data.customeraddress || '');
+                        $("input[name='location']").val(data.location || '');
+                        // $("input[name='enquirydate']").val(data.enquirydate || '');
+
+                        // Populate state & city if present
+                        if(data.state) {
+                            populateCities(data.state, data.city);
+                            $('#state').val(data.state);
+                        }
+
+                        // Step 2 fields
+                        // $("select[name='branch']").val(data.branch || '');
+                        $("select[name='sourceoflead']").val(data.sourceoflead || '');
+                        // $("select[name='typeoflead']").val(data.typeoflead || '');
+                        $("select[name='customersegment']").val(data.customersegment || '');
+                        // $("select[name='salesperson']").val(data.salesperson || '');
+                        // $("input[name='contactedby']").val(data.contactedby || '');
+                        // $("input[name='maincategory']").val(data.maincategory || '');
+                        // $("input[name='subcategory']").val(data.subcategory || '');
+                        // $("input[name='firstfollowupdate']").val(data.firstfollowupdate || '');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                }
+            });
+        }
     });
-  </script>
+});
+    </script>
+  
 
 
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script>
+  <!-- <script>
     $(document).ready(function () {
       $("input[name='primarycontact']").on("blur", function () {
         var primarycontact = $(this).val();
         if (primarycontact.length === 10) {
           $.ajax({
-            url: "",  // same URL, so keep it blank
+            url: "{% url 'lead_management_create' %}",  // same URL, so keep it blank
             data: {
               'primarycontact': primarycontact
             },
             dataType: 'json',
             success: function (response) {
               if (response.status === 'exists') {
+                console.log('Data found:', response.data);
                 const data = response.data;
-                $("select[name='sourceoflead']").val(data.sourceoflead);
-                $("input[name='salesperson']").val(data.salesperson);
-                $("input[name='customername']").val(data.customername);
-                $("select[name='customersegment']").val(data.customersegment);
-                $("input[name='enquirydate']").val(data.enquirydate);
-                $("input[name='contactedby']").val(data.contactedby);
-                $("input[name='maincategory']").val(data.maincategory);
-                $("input[name='subcategory']").val(data.subcategory);
-                $("input[name='secondarycontact']").val(data.secondarycontact);
-                $("input[name='customeremail']").val(data.customeremail);
-                $("input[name='customeraddress']").val(data.customeraddress);
-                $("input[name='location']").val(data.location);
-                $("input[name='city']").val(data.city);
-                $("select[name='typeoflead']").val(data.typeoflead);
-                $("input[name='firstfollowupdate']").val(data.firstfollowupdate);
-                $("select[name='branch']").val(data.branch);
+
+                // Fill Step 1 fields
+                $("input[name='customername']").val(data.customername || '');
+                $("input[name='secondarycontact']").val(data.secondarycontact || '');
+                $("input[name='customeremail']").val(data.customeremail || '');
+                $("select[name='state']").val(data.state || '');
+
+                $('#state').val(data.state).trigger('change');
+
+                  // ✅ Then once cities are loaded, select the correct one (delay slightly)
+                
+                $('#state').val(data.state).trigger('change');
+
+                $("textarea[name='customeraddress']").val(data.customeraddress || '');
+                $("input[name='location']").val(data.location || '');
+                $("input[name='enquirydate']").val(data.enquirydate || '');
+
+                // Fill Step 2 fields
+                $("select[name='branch']").val(data.branch || '');
+                $("select[name='sourceoflead']").val(data.sourceoflead || '');
+                $("select[name='typeoflead']").val(data.typeoflead || '');
+                $("select[name='customersegment']").val(data.customersegment || '');
+                $("select[name='salesperson']").val(data.salesperson || '');
+                $("input[name='contactedby']").val(data.contactedby || '');
+                $("input[name='maincategory']").val(data.maincategory || '');
+                $("input[name='subcategory']").val(data.subcategory || '');
+                $("input[name='firstfollowupdate']").val(data.firstfollowupdate || '');
+
+              } else {
+                console.log('No existing data found for this phone number');
+                // Optionally clear all fields if no data found
+                // clearFormFields();
               }
+            },
+            error: function(xhr, status, error) {
+              console.error('AJAX Error:', error);
             }
           });
         }
       });
     });
-  </script>
+  </script> -->
 
 
   <script>
@@ -1191,12 +1347,20 @@
       submitBtn.classList.toggle("d-none", index !== steps.length - 1);
     }
 
+    // nextBtn.addEventListener("click", () => {
+    //   if (currentStep < steps.length - 1) {
+    //     currentStep++;
+    //     showStep(currentStep);
+    //   }
+    // });
+
     nextBtn.addEventListener("click", () => {
-      if (currentStep < steps.length - 1) {
+    if (validateStep(currentStep)) {  // <-- validate before moving
         currentStep++;
         showStep(currentStep);
-      }
-    });
+    }
+});
+
 
     prevBtn.addEventListener("click", () => {
       if (currentStep > 0) {
@@ -1205,10 +1369,45 @@
       }
     });
 
+    submitBtn.addEventListener("click", (e) => {
+  if (!validateStep(currentStep)) {
+    e.preventDefault(); // stop form submission
+  }
+});
     // Show first step
     document.addEventListener("DOMContentLoaded", () => {
       showStep(currentStep);
     });
+
+    // Step validation function
+function validateStep(stepIndex) {
+  let valid = true;
+  const inputs = steps[stepIndex].querySelectorAll("input, select, textarea");
+
+  inputs.forEach(input => {
+    input.classList.remove("input-error"); // remove previous error
+    if (input.hasAttribute("required") && !input.value.trim()) {
+      input.classList.add("input-error");
+      valid = false;
+    }
+
+    // Custom pattern check (e.g., phone number)
+    if (input.getAttribute("pattern")) {
+      const pattern = new RegExp(input.getAttribute("pattern"));
+      if (input.value && !pattern.test(input.value)) {
+        input.classList.add("input-error");
+        valid = false;
+      }
+    }
+  });
+
+  if (!valid) {
+    alert("Please fill all required fields correctly before proceeding.");
+  }
+
+  return valid;
+}
+    
   </script>
 
 
@@ -1264,6 +1463,8 @@
       });
     });
   </script>
+
+
 
   <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:100px;">
     <div class="row p-3">

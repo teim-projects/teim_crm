@@ -204,7 +204,7 @@
             </div>
             <h5 class="mt-5 text-center fblow">Follow-up {{ followup_count }} for <span class="">{{ lead.customername }}</span></h5>
 
-            <form method="post" class="mt-2 mb-3" style="padding: 0 30px;">
+            <form method="post" class="mt-2 mb-3" style="padding: 0 30px;" >
                 {% csrf_token %}
                 <div class="card mb-4 border-0" style="background-color: #f8f9fa; border-radius: 10px;">
                     <div class="row">
@@ -459,6 +459,22 @@
         }
 
     </script>
+
+    <script>
+        window.addEventListener('load', function () {
+            const form = document.querySelector('form'); // your form element
+            form.addEventListener('submit', function () {
+                // Delay reload to allow form submission to complete
+                setTimeout(() => {
+                    if (window.opener) {
+                        window.opener.location.reload();
+                        window.close();
+                    }
+                }, 1000);
+            });
+        });
+    </script>
+
     <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:400px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">

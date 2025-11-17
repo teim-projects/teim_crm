@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}"> <!-- Optional custom styles -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
     <title>Technician Dashboard</title>
     <style>
         body {
@@ -228,49 +230,97 @@
 
 <body>
      {% include 'techsidebar.html' %}
-     <div style="min-height:100vh;">
-    <div class="content container bg-light text-dark" style="margin-top: 100px; ">
-        <div class="row">
-            
-            <!-- first -->
-            <div class="col-md-4 col-12">
-                <h1 style="font-family: 'Playfair Display', serif;font-size: 50px;font-weight: 900;" class="my-4 text-center">Hello, {{ technician_profile.first_name }}</h1>
-         
-         {% if technician_profile %}
-         <div class="profile-card">
-             <div class="card-header">
-                 <h2>{{ technician_profile.first_name }} {{ technician_profile.last_name }}</h2>
-             </div>
-             <p><strong>Email:</strong> {{ technician_profile.email }}</p>
-             <p><strong>Contact Number:</strong> {{ technician_profile.contact_number }}</p>
-             <p><strong>Address:</strong> {{ technician_profile.address }}</p>
-             <p><strong>City:</strong> {{ technician_profile.city }}</p>
-             <p><strong>State:</strong> {{ technician_profile.state }}</p>
-             <p><strong>Postal Code:</strong> {{ technician_profile.postal_code }}</p>
-             <p><strong>Date of Joining:</strong> {{ technician_profile.date_of_joining }}</p>
-         </div>
-         {% else %}
-         <p>No profile information available.</p>
-         {% endif %}</div>
-
-
-
-
-            <div class="col-md-8 col-12">
-            <div class="chartcontainer " style="margin-top: 110px;">
-            <div class="buttoncontainer">
-                <button class="btn btn-outline-primary my-2 my-sm-0" onclick="changeMonth('{{ previous_month.month }}', '{{ previous_month.year }}')">Previous Month</button>
-                <span>{{ selected_month }}/{{ selected_year }}</span>
-                <button class="btn btn-outline-primary my-2 my-sm-0" onclick="changeMonth('{{ next_month.month }}', '{{ next_month.year }}')">Next Month</button>
-            </div>
-            <canvas id="weeklyChart"></canvas>
-        </div></div>
-            <!-- second -->
-         
-        </div>
-
+    <div style="min-height:100vh;">
+  <div class="content container bg-light text-dark" style="margin-top: 100px;">
+    <!-- 🔔 Notification Bell -->
+    <div class="d-flex justify-content-end mt-4 mb-3">
+     <button type="button" class="btn btn-light position-relative"
+        data-bs-toggle="modal" data-bs-target="#notificationModal"
+        onclick="markNotificationsRead()">
+  <i class="bi bi-bell" style="font-size: 1.5rem;"></i>
+  {% if notifications_count > 0 %}
+    <span id="notif-count"
+          style="position: absolute; top: 1px; right: 6px; font-size: 0.8rem; color: rgb(249, 244, 244); z-index: 1; background: red; border-radius: 50%; padding: 1px 5px;">
+      {{ notifications_count }}
+    </span>
+  {% endif %}
+</button>
     </div>
-     </div>
+
+    <div class="row">
+      <!-- first -->
+      <div class="col-md-4 col-12">
+        <h1 style="font-family: 'Playfair Display', serif;font-size: 50px;font-weight: 900;" class="my-4 text-center">
+          Hello, {{ technician_profile.first_name }}
+        </h1>
+
+        {% if technician_profile %}
+        <div class="profile-card">
+          <div class="card-header">
+            <h2>{{ technician_profile.first_name }} {{ technician_profile.last_name }}</h2>
+          </div>
+          <p><strong>Email:</strong> {{ technician_profile.email }}</p>
+          <p><strong>Contact Number:</strong> {{ technician_profile.contact_number }}</p>
+          <p><strong>Address:</strong> {{ technician_profile.address }}</p>
+          <p><strong>City:</strong> {{ technician_profile.city }}</p>
+          <p><strong>State:</strong> {{ technician_profile.state }}</p>
+          <p><strong>Postal Code:</strong> {{ technician_profile.postal_code }}</p>
+          <p><strong>Date of Joining:</strong> {{ technician_profile.date_of_joining }}</p>
+        </div>
+        {% else %}
+        <p>No profile information available.</p>
+        {% endif %}
+      </div>
+
+      <!-- second -->
+      <div class="col-md-8 col-12">
+        <div class="chartcontainer" style="margin-top: 110px;">
+          <div class="buttoncontainer">
+            <button class="btn btn-outline-primary my-2 my-sm-0" onclick="changeMonth('{{ previous_month.month }}', '{{ previous_month.year }}')">Previous Month</button>
+            <span>{{ selected_month }}/{{ selected_year }}</span>
+            <button class="btn btn-outline-primary my-2 my-sm-0" onclick="changeMonth('{{ next_month.month }}', '{{ next_month.year }}')">Next Month</button>
+          </div>
+          <canvas id="weeklyChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🔔 Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>Notifications</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% if notifications %}
+          <ul>
+            {% for note in notifications %}
+              <li>
+                <a href="{% url 'work_list' %}" class="text-decoration-none text-dark">New Work Assigned → {{ note.service.customer.fullname }} ({{ note.service.customer.primarycontact }})</a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No new notifications.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function markNotificationsRead() {
+    fetch("{% url 'clear_notifications' %}", {
+        method: "POST",
+        headers: {"X-CSRFToken": "{{ csrf_token }}"}
+    }).then(r => r.json()).then(data => {
+        document.getElementById("notif-count")?.remove();
+    });
+}
+</script>
 
         <script>
             function changeMonth(month, year) {
@@ -335,6 +385,9 @@
             </p></div>
         </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+
 
 </body>
 

@@ -15,14 +15,17 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"> -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="icon" href="{% static 'images/crono.png' %}" type="image/png">
 
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <!-- <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"> -->
+    <!-- <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script> -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"> -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -421,144 +424,206 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="col-12">
-                    <div class="table-wrapper">
+                    <div class="table-wrapper addnewshadow">
                         <h1> Quotation Information</h1>
 
-                        <div class="navbar">
-                            <form class="form-inline" method="get">
-                                <input class="form-control mr-sm-2" type="search" name="search"
-                                    placeholder="Search by Cust.ID" aria-label="Search"
+                        <div class="container-fluid">
+                            <form method="get" class="row align-items-center mb-3 g-2">
+                          
+                              <!-- Search Bar -->
+                              <div class="col-md-3">
+                                <div class="d-flex">
+                                  <input class="form-control me-2" type="search" name="search"
+                                    placeholder="Search by Cust.ID / Mobile / Company Name"
                                     value="{{ request.GET.search }}">
-                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
-                                    style="width: 150px;">Search</button>
+                                  <button class="btn btn-outline-success" type="submit" style="min-width: 100px;">Search</button>
+                                </div>
+                              </div>
+                          
+                              <!-- Customer Type Dropdown -->
+                              <div class="col-md-1">
+                                <select class="form-select" name="customer_type" onchange="this.form.submit()">
+                                  <option value="">All Type</option>
+                                  <option value="Individual" {% if request.GET.customer_type == 'Individual' %}selected{% endif %}>Individual</option>
+                                  <option value="Organization" {% if request.GET.customer_type == 'Organization' %}selected{% endif %}>Organization</option>
+                                </select>
+                              </div>
+                          
+                              <!-- Branch Dropdown -->
 
+                               {% if request.user.userprofile.role == 'admin' or is_sales_coordinator %}
+                               <div class="col-md-2">
+                                   <select class="form-select" name="branch" onchange="this.form.submit()">
+                                       <option value="">All Branches</option>
+                                       {% for branch in branches %}
+                                       <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
+                                       {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- SFS Representative -->
+                                <div class="col-md-2">
+                                    <select class="form-select" name="sfs_representatives" onchange="this.form.submit()">
+                                        <option value="">SFS Representative</option>
+                                        {% for rep in sfs_representatives %}
+                                        <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                {% endif %}
+
+                                
+                                {% if request.user.userprofile.role == 'branch_manager' %}
+                                <!-- SFS Representative -->
+                                <div class="col-md-2">
+                                    <select class="form-select" name="sfs_representatives" onchange="this.form.submit()">
+                                        <option value="">SFS Representative</option>
+                                        {% for rep in sfs_representatives %}
+                                        <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                {% endif %}
+                                    
+                          
+                              <!-- Date Filter Button -->
+                              <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
+                                  <i class="fa fa-calendar"></i> <span id="selectedRange">Select Date Range</span>
+                                </button>
+                              </div>
+
+
+                              {% if request.user.userprofile.role == 'branch_manager' %}
+                                <div class="col-md-2"></div>
+                              {% endif %}
+                                
+                          
+                              <!-- Export Button -->
+                              <div class="col-md-2">
+                                <a href="{% url 'export_quotation' %}?{{ request.GET.urlencode }}">
+                                  <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
+                                </a>
+                              </div>
+                          
                             </form>
-                        </div>
+                          </div>
+                          
+
                         <div class="p mb-3">
-                            <p class="scroll-instruction">Scroll to view more content ➡️ </p>
+                            <p class="text-primary text-end">Total Quotation's : <strong> {{ filter_count }}</strong></p>
                         </div>
-                        <div class="container-table">
-                            <table class="table table-bordered">
-                                <thead>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle text-nowrap">
+                                <thead class="table-light">
                                     <tr>
                                         <th>Sr.No</th>
+                                        <th  class="text-center">Actions</th>
                                         <th>
-                                            <a style="text-decoration: none;color: #000000;"
-                                                href="?sort_by=customer_full_name&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
+                                            <a href="?sort_by=quotation_no&order={% if current_sort_by == 'quotation_no' and current_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                            class="text-decoration-none text-dark">
+                                                Quotation No
+                                                {% if current_sort_by == 'quotation_no' %}
+                                                    {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th>Quotation Date</th>
+                                        <th>
+                                            <a href="?sort_by=customer_full_name&order={% if current_sort_by == 'customer_full_name' and current_order == 'asc' %}desc{% else %}asc{% endif %}"
+                                            class="text-decoration-none text-dark">
                                                 Customer Name
-                                                {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                                                {% if current_sort_by == 'customer_full_name' %}
+                                                    {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                                                {% endif %}
                                             </a>
                                         </th>
                                         <th>Contact No</th>
-                                        <th>Secondary Contact</th>
                                         <th>Email</th>
-                                        <th>Secondary Email</th>
                                         <th>Address</th>
-                                        <th>City</th>
-                                        <th>State</th>
-                                        <th>Pincode</th>
-                                        <th>GPS Location</th>
                                         <th>Shipping Branch</th>
                                         <th>Selected Services</th>
-                                        <th>Apply GST</th>
-                                        <th>GST Status</th>
-                                        <th>CGST</th>
-                                        <th>SGST</th>
-                                        <th>IGST</th> <!-- Added IGST column -->
+                                        <th>Quantity</th>
+                                        <th>Apply <br> GST</th>
+                                        <th>GST <br> Status</th>
                                         <th>GST Total</th>
-                                        <!-- Removed Total Charges column -->
-                                        <th>Total Price (without GST)</th>
-                                        <th>Total Price (with GST)</th>
+                                        <th>Total Price <br> (without GST)</th>
+                                        <th>Total Price <br> (with GST)</th>
                                         <th>Subject</th>
-                                        <th>Quotation Date</th>
-                                        <th>Terms & Conditions</th>
-                                        <th>Download</th>
-                                        <th>View</th>
-                                        <th>Edit</th>
-                                        <th>Delete</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for x in page_obj %}
                                     <tr>
                                         <td>{{ forloop.counter|add:start_index }}</td>
-                                        <td>{{ x.customer_full_name }}</td>
-                                        <td>{{ x.contact_no }}</td>
-                                        <td>{{ x.secondary_contact_no }}</td>
-                                        <td>{{ x.customer_email }}</td>
-                                        <td>{{ x.secondary_email }}</td>
-                                        <td>{{ x.address }}</td>
-                                        <td>{{ x.city }}</td>
-                                        <td>{{ x.state }}</td>
-                                        <td>{{ x.pincode }}</td>
                                         <td>
-                                            {% if x.gps_location %}
-                                            <a href="{{ x.gps_location }}" target="_blank">Location</a>
-                                            {% else %}-{% endif %}
+                                            <a href="{% url 'view_quotation_pdf' x.id %}?download=true"
+                                            class="btn btn-sm btn-primary"><i class="fa-solid fa-download"></i></a>
+                                        
+                                            <a href="{% url 'view_quotation_pdf' x.id %}"
+                                            class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
+                                    
+                                            <a href="{% url 'edit_quotation' x.id %}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        
+                                            <a href="/delete_quotation/{{ x.id }}" class="btn btn-sm btn-danger delete-link"><i class="fa-solid fa-trash"></i></a>
+
+                                            <a href="{% url 'send_quotation_email' x.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fa-solid fa-envelope"></i>
+                                            </a> 
+                                            <a href="{% url 'send_quotation_pdf_on_whatsapp' x.id %}" class="btn btn-sm btn-success">
+                                                <i class="fa-brands fa-whatsapp"></i>
+                                            </a> 
                                         </td>
-                                        <td>{{ x.branch.branch_name }}</td>
+                                        <td>{{ x.quotation_no }}</td>
+                                        <td>{{ x.quotation_date }}</td>
+                                        <td>{{ x.customer.fullname }}</td>
+                                        <td>{{ x.customer.primarycontact }}</td>
+                                        <td>{{ x.customer.primaryemail }}</td>
+                                        <td>{{ x.address|truncatechars:20 }}</td>
+                                        <td>{{ x.branch.branch_name|truncatechars:20 }}</td>
                                         <td>
                                             {% for service in x.selected_services.all %}
-                                            {{ service.product_name }}{% if not forloop.last %}, {% endif %}
+                                                {{ service.product_name|truncatechars:25 }}{% if not forloop.last %}, {% endif %}
                                             {% empty %}
-                                            No services selected
+                                                No services
                                             {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% if x.product_details_json %}
+                                                {% for item in x.product_details_json %}
+                                                    {{ item.quantity }}{% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                No Quantity
+                                            {% endif %}
                                         </td>
                                         <td>{{ x.apply_gst|yesno:"Yes,No" }}</td>
                                         <td>{{ x.gst_status }}</td>
-                                        <td>{% if x.cgst %}{{ x.cgst|floatformat:2 }}{% else %}-{% endif %}</td>
-                                        <td>{% if x.sgst %}{{ x.sgst|floatformat:2 }}{% else %}-{% endif %}</td>
-                                        <td>{% if x.igst %}{{ x.igst|floatformat:2 }}{% else %}-{% endif %}</td>
-                                        <!-- Added IGST cell -->
-                                        <td>{% if x.gst_total %}{{ x.gst_total|floatformat:2 }}{% else %}-{% endif %}
-                                        </td>
-                                        <!-- Removed Total Charges cell -->
+                                        <td>{% if x.gst_total %}{{ x.gst_total|floatformat:2 }}{% else %}-{% endif %}</td>
                                         <td>{{ x.total_price|floatformat:2 }}</td>
                                         <td>{{ x.total_price_with_gst|floatformat:2 }}</td>
-                                        <td>{{ x.subject }}</td>
-                                        <td>{{ x.quotation_date }}</td>
-                                        <td>
-                                            {% for term in x.terms_and_conditions.all %}
-                                            {{ term.description }}{% if not forloop.last %}, {% endif %}
-                                            {% empty %}-{% endfor %}
-                                        </td>
-                                        <td>
-                                            <a href="/generate_quotation/quotation/pdf/{{ x.id }}/download"
-                                                class="btn linarbtn"
-                                                style="background: linear-gradient(to right, #2575fc, #6a11cb); color:white; border-radius:20px;">
-                                                Download PDF
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a href="/generate_quotation/quotation/pdf/{{ x.id }}/view"
-                                                class="btn btn-secondary">
-                                                View PDF
-                                            </a>
-                                        </td>
-                                        <td><a href="/edit_quotation/{{ x.id }}"
-                                                class="btn btn-outline-success">Edit</a></td>
-                                        <td><a href="/delete_quotation/{{ x.id }}"
-                                                class="btn btn-outline-danger delete-link">Delete</a></td>
+                                        <td>{{ x.subject|truncatechars:25 }}</td>
+                                        
+                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
-
-
                         </div>
+
 
                         <div class="pagination">
 
                             {% if page_obj.has_previous %}
-                            <li><a href="?page=1">&laquo; First</a></li>
-                            <li><a href="?page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
+                            <li><a href="?{{ querystring }}&page=1">&laquo; First</a></li>
+                            <li><a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
                             {% endif %}
 
                             <span class="current">{{ page_obj.number }}</span>
 
                             {% if page_obj.has_next %}
-                            <li><a href="?page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
-                            <li><a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+                            <li><a href="?{{ querystring }}&page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
+                            <li><a href="?{{ querystring }}&page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
                             {% endif %}
 
                         </div>
@@ -593,6 +658,50 @@
         <h3 style="font-family: 'Playfair Display', serif;font-weight: 900;text-align: center;">Quotation Details</h3>
         <div id="modal-content"></div>
     </div>
+
+    <!-- Date Filter Modal -->
+    <!-- Date Filter Modal -->
+    <div class="modal fade " id="dateFilterModal" tabindex="-1" aria-labelledby="dateFilterModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content " style="margin-top: 50%;">
+    
+          <div class="modal-header">
+            <h5 class="modal-title" id="dateFilterModalLabel">Select Date Range</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+    
+          <div class="modal-body ">
+            <div class="row row-cols-2 g-2 mb-3">
+                <div class="col-4"><button class="btn btn-outline-primary w-100" onclick="setRange('today')">Today</button></div>
+                <div class="col-4"><button class="btn btn-outline-primary w-100" onclick="setRange('yesterday')">Yesterday</button></div>
+                <div class="col-4"><button class="btn btn-outline-primary w-100" onclick="setRange('this_month')">This Month</button></div>
+                <div class="col-6"><button class="btn btn-outline-primary w-100" onclick="setRange('last_month')">Past Month</button></div>
+                <div class="col-6"><button class="btn btn-outline-primary w-100" onclick="setRange('last_3')">Past 3 Months</button></div>
+              </div>
+              
+    
+            <!-- Custom From / To -->
+            <div class="row">
+              <div class="col">
+                <label for="fromDate" class="form-label">From</label>
+                <input type="date" id="fromDate" name="from_date" class="form-control">
+              </div>
+              <div class="col">
+                <label for="toDate" class="form-label">To</label>
+                <input type="date" id="toDate" name="to_date" class="form-control">
+              </div>
+            </div>
+          </div>
+    
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="applyDateFilter()" data-bs-dismiss="modal">Apply</button>
+          </div>
+    
+        </div>
+      </div>
+    </div>
+    
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -660,6 +769,57 @@
         function closeModal() {
             document.getElementById('modal').classList.remove('active');
         }
+
+
+        // Date Filter Functions
+        function formatDate(date) {
+  return date.toISOString().split('T')[0];
+}
+
+function setRange(range) {
+  const today = new Date();
+  let start, end;
+
+  if (range === 'today') {
+    start = end = today;
+    selectedRange.innerText = "Today";
+  } else if (range === 'yesterday') {
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    start = end = yesterday;
+    selectedRange.innerText = "Yesterday";
+  } else if (range === 'this_month') {
+    start = new Date(today.getFullYear(), today.getMonth(), 1);
+    end = today;
+    selectedRange.innerText = "This Month";
+  } else if (range === 'last_month') {
+    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    end = new Date(today.getFullYear(), today.getMonth(), 0);
+    selectedRange.innerText = "Past Month";
+  } else if (range === 'last_3') {
+    start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+    end = today;
+    selectedRange.innerText = "Past 3 Months";
+  }
+
+  document.getElementById("fromDate").value = formatDate(start);
+  document.getElementById("toDate").value = formatDate(end);
+}
+
+function applyDateFilter() {
+  const from = document.getElementById("fromDate").value;
+  const to = document.getElementById("toDate").value;
+
+  if (from && to) {
+    document.getElementById("selectedRange").innerText = from + " → " + to;
+
+    // Reload page with query params
+    const url = new URL(window.location.href);
+    url.searchParams.set('from_date', from);
+    url.searchParams.set('to_date', to);
+    window.location.href = url.toString();
+  }
+}
 
 
     </script>

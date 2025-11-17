@@ -28,16 +28,16 @@
                                             <h3 style="text-align: center;">Edit Technician</h3>
 
                         <div class="row">
-                            <div class="col-md-6 mb-2">
+                            <div class="col-md-4 mb-2">
                                   <label>First Name <span class="star">*</span></label>
                         <input type="text" name="first_name" value="{{ technician.first_name }}" class="form-control" required>
                             </div>
-                            <div class="col-md-6 mb-2">
+                            <div class="col-md-4 mb-2">
                                         <label>Last Name <span class="star">*</span></label>
                         <input type="text" name="last_name" value="{{ technician.last_name }}" class="form-control" required>
                 
                             </div>
-                            <div class="col-md-6 mb-2">
+                            <div class="col-md-4 mb-2">
                                         <label>Email <span class="star">*</span></label>
                         <input type="email" name="email" value="{{ technician.email }}" class="form-control" required>
                 
@@ -67,22 +67,30 @@
                         <input type="text" name="postal_code" value="{{ technician.postal_code }}" class="form-control" required>
                 
                             </div>
-                            <div class="col-md-6 mb-2">
+                          <div class="col-md-6 mb-2">
                                 
-                        <label>Date of Joining <span class="star">*</span></label>
-                        <input type="date" name="date_of_joining" value="{{ technician.date_of_joining|date:'Y-m-d' }}" class="form-control" required>
+                            <label>Date of Joining <span class="star">*</span></label>
+                            <input type="date" name="date_of_joining" value="{{ technician.date_of_joining|date:'Y-m-d' }}" class="form-control" required>
                 
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                                <label>Change Password (Optional) </label>
-                        <input type="password" name="password" placeholder="Leave blank to keep current password" class="form-control">
+                          </div>
+                          <div class="col-md-6 mb-2">
+                            <label>Change Password (Optional) </label>
+                            <input type="password" name="password" placeholder="Leave blank to keep current password" class="form-control">
                 
-                            </div>
-                         </div>
-                      
-                
-                
-                
+                          </div>
+                          <div class="col-md-6 mb-4">
+                            <label>Branch <span class="star">*</span></label>
+                            <select class="form-control form-control-md" name="branch">
+                                <option value="">Select Branch</option>
+                                {% for branch in branches %}
+                                <option value="{{ branch.id }}" {% if branch.id == technician.branch.id %}selected{% endif %}>
+                                  {{ branch.branch_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                       </div>
+
+
       
 
 <div class="row mt-3 mb-3">

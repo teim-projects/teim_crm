@@ -60,22 +60,42 @@
             <input type="email" class="form-control" name="email" required>
           </div>
           <div class="col-md-6 mb-3">
+            <label>Password <span class="star">*</span></label>
+            <input type="password" class="form-control" name="password" placeholder="Password" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Branch <span class="star">*</span></label>
+            <select name="branch" id="" class="form-control" required>
+              <option value="" disabled selected>Select Branch</option>
+              {% for branch in branches %}
+              <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
             <label>Date of Birth <span class="star">*</span></label>
             <input type="date" class="form-control" name="date_of_birth" required>
           </div>
-          <div class="col-md-6"></div>
+          <div class="col-md-6">
+            <label>Co-ordinator</label><br>
+            <label><input type="radio" name="co_ordinator" value="True"> Yes</label>
+            <label class="ms-3"><input type="radio" name="co_ordinator" value="False" checked> No</label>
+          </div>
+          
+          <div class="row">
 
-          <div class="col-md-6 mt-3 mb-3  ">
-  <a href="{% url 'sales_person_list' %}" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">
-    <i class="bi bi-arrow-left-circle me-2"></i> Back to List
-  </a>
-</div>
-
-<div class="col-md-6 mt-3 mb-3">
-  <button type="submit" class="btn btn-success w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">
-    <i class="bi bi-check-circle me-2 "></i> Submit
-  </button>
-</div>
+            <div class="col-md-6 mt-3 mb-3  ">
+              <a href="{% url 'sales_person_list' %}" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">
+                <i class="bi bi-arrow-left-circle me-2"></i> Back to List
+              </a>
+            </div>
+            
+            <div class="col-md-6 mt-3 mb-3">
+              <button type="submit" class="btn btn-success w-100 d-flex align-items-center justify-content-center" style="transition: all 0.3s;">
+                <i class="bi bi-check-circle me-2 "></i> Submit
+              </button>
+            </div>
+          </div>
 
         </div>
       </form>

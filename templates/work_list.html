@@ -549,7 +549,7 @@
         <div class="row">
             <div class="col-md-12 ">
                 <div class="col-12 ">
-                    <div class="table-wrapper">
+                    <div class="table-wrapper addnewshadow">
                         <span onclick="window.location.href='/technician_dashboard'"
                             style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;"
                             class="mb-4"><i class="fas fa-house-chimney"></i></span>
@@ -558,15 +558,24 @@
 
                         <h1>Technician Work List</h1>
 
-                        <div class="navbar">
-                            <form class="form-inline" method="get">
-                                <input class="form-control mr-sm-2" type="search" name="search"
-                                    placeholder="Search by Phone no." aria-label="Search"
-                                    value="{{ request.GET.search }}">
-                                <button class="btn btn-outline-success my-2 my-sm-0 ml-2" type="submit"
-                                    style="width: 269px;">Search</button>
-                            </form>
-                        </div>
+                        <div class="navbar p-2">
+  <form class="d-flex w-100" method="get">
+    <input 
+      class="form-control form-control-sm me-2" 
+      type="search" 
+      name="search"
+      placeholder="📞 Phone number"
+      aria-label="Search"
+      value="{{ request.GET.search }}">
+    
+    <button 
+      class="btn btn-sm btn-success" 
+      type="submit">
+      Search
+    </button>
+  </form>
+</div>
+
                         <div class="container-table">
 
                             <table class="table table-bordered">
@@ -590,7 +599,7 @@
                                     {% for tech_work in work_allocations %}
                                     {% for work in tech_work.work.all %}
                                     <tr>
-                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ forloop.parentloop.counter }}</td>
                                         <td>{{ work.id }}</td>
                                         <td style="text-align: center;">
                                             {{ tech_work.status }}
@@ -633,7 +642,7 @@
 
 
 
-    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:400px;">
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:100px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">
                 <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
