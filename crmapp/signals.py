@@ -1,10 +1,18 @@
 # signals.py
 import requests
+<<<<<<< HEAD
+from django.db.models.signals import post_save, m2m_changed,  pre_delete
+from django.dispatch import receiver, Signal
+from django.db import transaction
+from django.contrib.auth.models import User
+from .models import UserProfile, TechWorkList, TechnicianProfile, service_management,WorkAllocation,MessageTemplates, SalesPerson,lead_management
+=======
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver, Signal
 from django.db import transaction
 from django.contrib.auth.models import User
 from .models import UserProfile, TechWorkList, TechnicianProfile, service_management,WorkAllocation,MessageTemplates
+>>>>>>> new_inventory
 from crmapp.tasks import send_email_task,send_whatsapp_task
 
 
@@ -14,6 +22,17 @@ def create_user_profile(sender, instance, created, **kwargs):
         UserProfile.objects.create(user=instance)
 
 
+<<<<<<< HEAD
+@receiver(pre_delete, sender=SalesPerson)
+def preserve_salesperson_leads(sender, instance, **kwargs):
+    user = User.objects.filter(username=instance.mobile_no).first()
+    user_id = user.id if user else None
+    lead_management.objects.filter(salesperson=instance).update(
+        old_salesperson_id=user_id,
+        salesperson=None
+    )
+=======
+>>>>>>> new_inventory
 
 
 @receiver(post_save, sender=TechWorkList)
@@ -26,6 +45,9 @@ def mark_new_work_as_notification(sender, instance, created, **kwargs):
 
 
 
+<<<<<<< HEAD
+
+=======
 # @receiver(post_save, sender=service_management)
 # def notify_customer_on_service_save(sender, instance, created, **kwargs):
 #     """
@@ -175,6 +197,7 @@ def mark_new_work_as_notification(sender, instance, created, **kwargs):
 
 
 # Custom signal triggered when customer should be notified
+>>>>>>> new_inventory
 service_scheduled = Signal()
 
 # ------------------- Post-save signal -------------------

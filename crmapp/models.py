@@ -55,8 +55,14 @@ class SalesPerson(models.Model):
     mobile_no = models.CharField(max_length=15)
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField()
+<<<<<<< HEAD
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True,related_name="sales_person")
+    co_ordinator = models.BooleanField(blank=True, null=True, default=False)
+    
+=======
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="sales_person")
     co_ordinator = models.BooleanField(blank=True, null=True, default=False)
+>>>>>>> new_inventory
 
     def __str__(self):
         return self.full_name
@@ -70,19 +76,31 @@ class BranchManager(models.Model):
     mobile_no = models.CharField(max_length=15)
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField()
+<<<<<<< HEAD
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True, null=True, related_name='branch_manager')
+=======
     branch = models.ForeignKey(Branch,on_delete=models.CASCADE, related_name='branch_manager')
+>>>>>>> new_inventory
 
     def __str__(self):
         return self.full_name
     
 class OperationPerson(models.Model):
+<<<<<<< HEAD
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True ,related_name="operation_person")
+=======
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="operation_person")
+>>>>>>> new_inventory
     full_name = models.CharField(max_length=100)
     date_of_joining = models.DateField()
     mobile_no = models.CharField(max_length=15)
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField()
+<<<<<<< HEAD
+    branch = models.ForeignKey(Branch,on_delete=models.SET_NULL, blank=True, null=True, related_name='operation_person')
+=======
     branch = models.ForeignKey(Branch,on_delete=models.CASCADE, related_name='operation_person')
+>>>>>>> new_inventory
 
 from django.db import models
 class QuotationTerm(models.Model):
@@ -98,13 +116,21 @@ class InvoiceTerm(models.Model):
 
 
 class customer_details(models.Model):
+<<<<<<< HEAD
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL,blank=True, null=True, related_name="customer_details")
+=======
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="customer_details")
+>>>>>>> new_inventory
     fullname = models.CharField(max_length=100)
     primaryemail=models.EmailField(null=True, blank=True)
     secondaryemail=models.EmailField(null=True , blank=True)
     primarycontact=models.BigIntegerField( unique=True)
     secondarycontact=models.BigIntegerField(null=True , blank=True)
+<<<<<<< HEAD
+    contactperson=models.CharField(max_length=100, blank=True, null=True)
+=======
     contactperson=models.CharField(max_length=100)
+>>>>>>> new_inventory
     designation=models.CharField(max_length=100)
     shifttopartyaddress=models.CharField(max_length=1000)
     shifttopartycity=models.CharField(max_length=100)
@@ -347,8 +373,13 @@ class lead_management(models.Model):
     ]
 
     state = models.CharField(max_length=100, choices=STATE_CHOICES, default="Maharashtra")
+<<<<<<< HEAD
+    # old_branch = models.CharField(max_length=200, choices=BRANCH_CHOICES, default='NA')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)
+=======
     old_branch = models.CharField(max_length=200, choices=BRANCH_CHOICES, default='NA')
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, null=True, blank=True)
+>>>>>>> new_inventory
     sourceoflead = models.CharField(max_length=200, choices=[
         ('Google', 'Google'),
         ('Justdial', 'Justdial'),
@@ -359,7 +390,14 @@ class lead_management(models.Model):
         ('Employee Reference', 'Employee Reference'),
         ('Others', 'Others')
     ], default="NOT SELECTED")
+<<<<<<< HEAD
+    admin = models.ForeignKey(User, on_delete=models.SET_NULL,blank=True, null=True, related_name='admin_leads')
+    salesperson = models.ForeignKey(SalesPerson, on_delete=models.SET_NULL, blank=True, null=True, related_name="sales_leads")
+    branch_manager = models.ForeignKey(BranchManager, on_delete=models.SET_NULL, blank=True, null=True, related_name='manager_lead')
+    old_salesperson_id = models.BigIntegerField(null=True, blank=True)
+=======
     salesperson = models.ForeignKey(SalesPerson, on_delete=models.CASCADE, related_name="leads")
+>>>>>>> new_inventory
     customername = models.CharField(max_length=100, null=True, blank=True)
     customer_type = models.CharField(max_length=100, null=True, blank=True)
     customersegment = models.CharField(max_length=100, choices=SEGMENTS_CHOICES)
@@ -621,7 +659,10 @@ class quotation_management(models.Model):
     sgst = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)  
     igst = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)  
     gst_total = models.DecimalField(max_digits=30, decimal_places=2, null=True, blank=True)  
+<<<<<<< HEAD
+=======
 
+>>>>>>> new_inventory
 
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

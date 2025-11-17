@@ -659,8 +659,13 @@
                                             <select name="salesperson" class="form-control custom-select">
                                                 <option value="">All Salespersons</option>
                                                 {% for sp in salespersons %}
+<<<<<<< HEAD
+                                                    <option value="{{ sp.full_name }}" 
+                                                        {% if request.GET.salesperson|stringformat:"s" == sp.full_name|stringformat:"s" %}selected{% endif %}>
+=======
                                                     <option value="{{ sp.id }}" 
                                                         {% if request.GET.salesperson|stringformat:"s" == sp.id|stringformat:"s" %}selected{% endif %}>
+>>>>>>> new_inventory
                                                         {{ sp.full_name }}
                                                     </option>
                                                 {% endfor %}
@@ -806,7 +811,7 @@
                                         <th>Sr.No</th>
                                         <th>Actions</th>
                                         <th>Source Of Lead </th>
-                                        <th style="text-align: center;">Sales Person<br>Name</th>
+                                        <th style="text-align: center;">Person Name</th>
                                         <th>
                                             <a style="text-decoration: none; color: #000000;"
                                                 href="?sort=customername&order={% if current_sort == 'customername' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
@@ -896,7 +901,16 @@
 
 
                                         <td>{{x.sourceoflead}}</td>
-                                        <td>{{x.salesperson}}</td>
+                                        <td>
+                                            {% if x.salesperson %}
+                                              {{ x.salesperson }}
+                                            {% elif x.branch_manager %}
+                                              {{ x.branch_manager }}
+                                            {% else %}
+                                            {{ x.admin }}
+                                            {% endif %}
+                                          </td>
+
 
                                         <td>{{x.customername}}</td>
                                         <td>{{x.typeoflead}}</td>

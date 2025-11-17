@@ -204,7 +204,11 @@
                              <select name="salesperson" class="form-control custom-select">
                                  <option value="">All Salespersons</option>
                                  {% for sp in salespersons %}
+<<<<<<< HEAD
+                                <option value="{{ sp.full_name }}" {% if request.GET.salesperson|stringformat:"s" == sp.id|stringformat:"s" %}selected{% endif %}>
+=======
                                 <option value="{{ sp.id }}" {% if request.GET.salesperson|stringformat:"s" == sp.id|stringformat:"s" %}selected{% endif %}>
+>>>>>>> new_inventory
                                     {{ sp }}</option>
                                 {% endfor %}
                             </select>
@@ -382,7 +386,20 @@
                                     </td>
 
                                     <td>{{ x.lead.sourceoflead }}</td>
+<<<<<<< HEAD
+                                    <td>
+                                        {% if x.lead.salesperson %}
+                                            {{ x.lead.salesperson.full_name }}
+                                        {% elif x.lead.branch_manager %}
+                                            {{ x.lead.branch_manager.full_name }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    
+=======
                                     <td>{{ x.lead.salesperson }}</td>
+>>>>>>> new_inventory
                                     <td>{{ x.lead.customername }}</td>
                                     <td>{{ x.lead.primarycontact }}</td>
                                     <td>{{ x.lead.customersegment }}</td>
