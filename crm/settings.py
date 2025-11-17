@@ -92,11 +92,15 @@ DATABASES = {
         'USER' : 'root',
         'PASSWORD' : '',
         'PORT' : 3306,
+<<<<<<< HEAD
         'OPTIONS': {
         'charset': 'utf8mb4',
         'init_command': "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
             }
         }
+=======
+    }
+>>>>>>> new_inventory
 } 
 
 
@@ -280,8 +284,12 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True 
 DEFAULT_FROM_EMAIL = "SFS"
 EMAIL_HOST_USER = "sfspl.sales@gmail.com"
+<<<<<<< HEAD
 EMAIL_HOST_PASSWORD = "wsgc mnza ovvh cggw" 
 
+=======
+EMAIL_HOST_PASSWORD = "wsgc mnza ovvh cggw"
+>>>>>>> new_inventory
 
 # Whatsapp Api
 WHATSAPP_API  = "https://app.rapbooster.com/api/send/msg?authKey=6538c8eff027d41e9151"

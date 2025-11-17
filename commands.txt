@@ -1,0 +1,26 @@
+python manage.py runserver
+
+celery -A crm worker -l info --pool=solo    ## only for development 
+
+celery -A crm beat -l info
+
+redis-server -: sudo service redis-server start
+                redis-cli
+
+
+
+
+## Use this code to update lead_management for branch FK
+
+from crmapp.models import lead_management, Branch
+>>>for lead in lead_management.objects.all():
+...     if hasattr(lead, 'old_branch') and lead.old_branch:
+...             old_branch_name = lead.old_branch.strip()
+...             branch_obj = Branch.objects.filter(branch_name__icontains=old_branch_name).first()
+...             if branch_obj:
+...                     lead.branch_id = branch_obj.id
+...                     lead.save(update_fields=['branch'])
+...                     print(f"✅ Assigned '{old_branch_name}' → Branch ID {branch_obj.id} ({branch_obj.branch_name})")
+...             else:
+...                     print(f"❌ No Branch found for '{old_branch_name}'")
+... 

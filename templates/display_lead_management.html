@@ -659,8 +659,13 @@
                                             <select name="salesperson" class="form-control custom-select">
                                                 <option value="">All Salespersons</option>
                                                 {% for sp in salespersons %}
+<<<<<<< HEAD
                                                     <option value="{{ sp.full_name }}" 
                                                         {% if request.GET.salesperson|stringformat:"s" == sp.full_name|stringformat:"s" %}selected{% endif %}>
+=======
+                                                    <option value="{{ sp.id }}" 
+                                                        {% if request.GET.salesperson|stringformat:"s" == sp.id|stringformat:"s" %}selected{% endif %}>
+>>>>>>> new_inventory
                                                         {{ sp.full_name }}
                                                     </option>
                                                 {% endfor %}

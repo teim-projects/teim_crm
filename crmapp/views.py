@@ -999,11 +999,15 @@ def customer_details_create(request):
                     'fullname': lead.customername or '',
                     'primaryemail': lead.customeremail or '',
                     'secondarycontact': lead.secondarycontact or '',
+<<<<<<< HEAD
                     'contactperson': (
                         lead.salesperson.full_name if lead.salesperson 
                         else lead.branch_manager.full_name if getattr(lead, 'branch_manager', None)
                         else ''
                     ),
+=======
+                    'contactperson': lead.salesperson.full_name or '',
+>>>>>>> new_inventory
                     'contactedby': lead.contactedby or '',
                     'shifttopartyaddress': lead.customeraddress or '',
                     'shifttopartycity': lead.city or '',
@@ -1173,7 +1177,11 @@ def service_management_create(request):
     customers = customer_details.objects.all()
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
+<<<<<<< HEAD
     sales_persons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+=======
+    sales_persons = SalesPerson.objects.all()
+>>>>>>> new_inventory
     branch = Branch.objects.all()
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
     segments = service_management._meta.get_field('segment').choices
@@ -1308,7 +1316,11 @@ def quotation_management_create(request):
     terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
     products = Product.objects.all()
+<<<<<<< HEAD
     sales_person_list =  list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+=======
+    sales_person_list = SalesPerson.objects.all()
+>>>>>>> new_inventory
     thank_notes_qs = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     thank_notes = [note for note in thank_notes_qs if note]  
     
@@ -2013,7 +2025,11 @@ from datetime import datetime
 # change
 
 @login_required
+<<<<<<< HEAD
 @role_required(['admin','sales','branch_manager'])
+=======
+@role_required(['admin','sales'])
+>>>>>>> new_inventory
 def lead_management_create(request):
     salespersons = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
     
@@ -2056,8 +2072,15 @@ def lead_management_create(request):
             role = request.user.userprofile.role
             # Get all form data
             sourceoflead = request.POST.get('sourceoflead')
+<<<<<<< HEAD
             # salesperson_id = request.POST.get("salesperson")
           
+=======
+            salesperson_id = request.POST.get("salesperson")
+            # salesperson_mobile = request.user.username
+            # print(salesperson_mobile)
+            sp = SalesPerson.objects.get(id = salesperson_id)
+>>>>>>> new_inventory
             customername = request.POST.get('customername')
             customersegment = request.POST.get('customersegment')
             
@@ -2089,6 +2112,12 @@ def lead_management_create(request):
             
             firstfollowupdate_str = request.POST.get('firstfollowupdate')
             firstfollowupdate = datetime.strptime(firstfollowupdate_str, '%Y-%m-%d').date() if firstfollowupdate_str else None
+<<<<<<< HEAD
+=======
+
+            branch_id = request.POST.get('branch')
+            branch = branches.get(id = int(branch_id))
+>>>>>>> new_inventory
 
             branch_id = request.POST.get('branch')
             branch = branches.get(id = int(branch_id))
@@ -2105,8 +2134,11 @@ def lead_management_create(request):
             lead = lead_management.objects.create(
                 sourceoflead=sourceoflead,
                 salesperson=sp,
+<<<<<<< HEAD
                 branch_manager = bm,
                 admin = ad,
+=======
+>>>>>>> new_inventory
                 customername=customername,
                 customersegment=customersegment,
                 enquirydate=enquirydate,
@@ -2321,7 +2353,11 @@ def pending_followups(request):
     # Base queryset filtered by role
     if request.user.userprofile.role == 'admin':
         lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today)
+<<<<<<< HEAD
         salespersons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+=======
+        salespersons = SalesPerson.objects.all()
+>>>>>>> new_inventory
     elif request.user.userprofile.role == 'sales':
         lead_folloup = lead_management.objects.filter(
             firstfollowupdate__lt=today,
@@ -2353,6 +2389,7 @@ def pending_followups(request):
         lead_folloup = lead_folloup.filter(enquirydate__range=[enquiry_from, enquiry_to])
     if followup_from and followup_to:
         lead_folloup = lead_folloup.filter(firstfollowupdate__range=[followup_from, followup_to])
+<<<<<<< HEAD
 
     # Overdue leads with followup
     # followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
@@ -2361,8 +2398,15 @@ def pending_followups(request):
     # if salesperson_filter:
     #     lead_folloup = lead_folloup.filter(salesperson__full_name = salesperson_filter)
     #     followups = followups.filter(lead__salesperson__full_name = salesperson_filter)
+=======
+>>>>>>> new_inventory
 
+    # Overdue leads with followup
+    # followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
+    if request.user.userprofile.role != 'admin':
+        followups = followups.filter(lead__salesperson__mobile_no=request.user.username)
     if salesperson_filter:
+<<<<<<< HEAD
         lead_folloup = lead_folloup.filter(
             Q(salesperson__full_name=salesperson_filter) |
             Q(branch_manager__full_name=salesperson_filter)
@@ -2373,6 +2417,11 @@ def pending_followups(request):
             Q(lead__branch_manager__full_name=salesperson_filter)
         )
     
+=======
+        lead_folloup = lead_folloup.filter(salesperson = salesperson_filter)
+        followups = followups.filter(lead__salesperson = salesperson_filter)
+
+>>>>>>> new_inventory
     # Combine leads: followups + leads without any followup
     combined_leads = list(chain(
         followups,
@@ -2983,6 +3032,7 @@ from django.contrib.auth import get_user_model
 def display_lead_management(request):
     # 1. Start with all leads
     salespersons = []
+<<<<<<< HEAD
     User = get_user_model()
     if request.user.userprofile.role =='admin':
         filtered_leads = lead_management.objects.all()
@@ -2996,6 +3046,15 @@ def display_lead_management(request):
         salesperson = SalesPerson.objects.get(mobile_no =request.user.username)
         filtered_leads = lead_management.objects.filter(salesperson=salesperson)
 
+=======
+    if request.user.userprofile.role =='admin':
+        filtered_leads = lead_management.objects.all()
+        salespersons = SalesPerson.objects.all()
+    elif request.user.userprofile.role == 'sales':
+        salesperson = SalesPerson.objects.get(mobile_no =request.user.username)
+        filtered_leads = lead_management.objects.filter(salesperson=salesperson)
+
+>>>>>>> new_inventory
     elif request.user.userprofile.role == 'branch_manager':
         branch_manager = BranchManager.objects.get(mobile_no =request.user.username)
         filtered_leads = lead_management.objects.filter(branch=branch_manager.branch)
@@ -3029,11 +3088,15 @@ def display_lead_management(request):
     if source_filter:
         filtered_leads = filtered_leads.filter(sourceoflead=source_filter)
     if salesperson_filter:
+<<<<<<< HEAD
         filtered_leads = filtered_leads.filter(
         Q(salesperson__full_name=salesperson_filter) |
         Q(branch_manager__full_name=salesperson_filter) |
         Q(admin__first_name=salesperson_filter)
     )
+=======
+        filtered_leads = filtered_leads.filter(salesperson = salesperson_filter)
+>>>>>>> new_inventory
     if branch_filter:
         filtered_leads = filtered_leads.filter(branch=branch_filter)
     if enquiry_from and enquiry_to:
@@ -3341,7 +3404,11 @@ def edit_service_records(request, rid):
     customer = get_object_or_404(customer_details, id=service.customer_id)
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
+<<<<<<< HEAD
     sales_persons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+=======
+    sales_persons = SalesPerson.objects.all()
+>>>>>>> new_inventory
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
 
     if request.method == "POST":
@@ -3590,7 +3657,11 @@ from .models import quotation_management, QuotationTerm, Product  # adjust as ne
 
 def edit_quotation(request, rid):
     quotation = quotation_management.objects.get(id=rid)
+<<<<<<< HEAD
     sales_person_list = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+=======
+    sales_person_list = SalesPerson.objects.all()
+>>>>>>> new_inventory
     thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     products = Product.objects.all()
     customer = quotation.customer
@@ -3869,7 +3940,11 @@ def edit_lead_management(request, rid):
     elif request.method == 'POST':
         role = request.user.userprofile.role
         usourceoflead = request.POST.get('usourceoflead', '')
+<<<<<<< HEAD
         # usalesperson = request.POST.get('usalesperson')
+=======
+        usalesperson = request.POST.get('usalesperson')
+>>>>>>> new_inventory
         ucustomername = request.POST.get('ucustomername', '')
         ucustomersegment = request.POST.get('ucustomersegment', '')
         utypeoflead = request.POST.get('utypeoflead', '')
@@ -3902,6 +3977,7 @@ def edit_lead_management(request, rid):
             ufirstfollowupdate = None  # Handle invalid date format
 
         m=lead_management.objects.filter(id=rid)
+<<<<<<< HEAD
         sp = None
         bm = None
         ad = None
@@ -3911,6 +3987,9 @@ def edit_lead_management(request, rid):
             bm = BranchManager.objects.get(mobile_no = request.user.username)
         else: 
             ad = request.user
+=======
+        usalesperson = SalesPerson.objects.get(id  = usalesperson)
+>>>>>>> new_inventory
 
         m.update(
             sourceoflead = usourceoflead,
