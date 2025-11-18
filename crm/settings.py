@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ej=s3v#7gjmn*elic2@c0i63%(q5jxd-1v=n=^2%_ymil%vtdi
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['49.12.8.126','www.teimcrm.com','teimcrm.com']
+ALLOWED_HOSTS = ['49.12.8.126','www.teimcrm.com','teimcrm.com','*']
 
 
 CSRF_TRUSTED_ORIGINS = ['https://www.teimcrm.com']
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 	'django_celery_beat',
+    'widget_tweaks',
 	'django_celery_results',
     'crmapp',
     'ocrapp',
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'generate_invoice',
 	'chat_app',
     'dashboard',
+    'new_inventory',
 ]
 
 MIDDLEWARE = [
@@ -92,15 +94,11 @@ DATABASES = {
         'USER' : 'root',
         'PASSWORD' : '',
         'PORT' : 3306,
-<<<<<<< HEAD
         'OPTIONS': {
         'charset': 'utf8mb4',
         'init_command': "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
             }
         }
-=======
-    }
->>>>>>> new_inventory
 } 
 
 
@@ -284,12 +282,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True 
 DEFAULT_FROM_EMAIL = "SFS"
 EMAIL_HOST_USER = "sfspl.sales@gmail.com"
-<<<<<<< HEAD
 EMAIL_HOST_PASSWORD = "wsgc mnza ovvh cggw" 
 
-=======
-EMAIL_HOST_PASSWORD = "wsgc mnza ovvh cggw"
->>>>>>> new_inventory
 
 # Whatsapp Api
 WHATSAPP_API  = "https://app.rapbooster.com/api/send/msg?authKey=6538c8eff027d41e9151"

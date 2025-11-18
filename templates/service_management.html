@@ -412,10 +412,18 @@
                         <!-- Product Selection -->
                         <div class="row" style="margin-top:30px">
                             <label>Select Products</label>
-                            <div id="products-container" style="max-height: 300px; overflow: auto;">
-                                <!-- Dynamically loaded via AJAX -->
+
+                            <!-- ✅ Added Search Bar -->
+                            <div class="search mb-2">
+                                <input type="search" id="product-search" class="form-control" 
+                                    placeholder="Search products..." oninput="filterProducts()">
+                            </div>
+
+                            <div id="products-container" style="max-height: 300px; overflow-y: auto;">
+                                <!-- Dynamically loaded -->
                             </div>
                         </div>
+
 
                         <!-- Selected Services List -->
 
@@ -750,9 +758,11 @@
                 .then(res => res.json())
                 .then(data => {
                     data.products.forEach(product => {
-                        const productDiv = document.createElement('div');
+                        productDiv = document.createElement('div');
                         productDiv.className = 'product-item mb-3 p-2 border rounded';
                         productDiv.setAttribute('data-product-id', product.product_id);
+                        productDiv.setAttribute('data-name', product.product_name.toLowerCase());  // ✅ Added for search
+
 
                         productDiv.innerHTML = `
                         <div class="d-flex align-items-center mb-2">
@@ -909,6 +919,20 @@
         const nextBtns = document.querySelectorAll(".next-step");
         const prevBtns = document.querySelectorAll(".prev-step");
         const indicators = document.querySelectorAll(".step-indicator"); // If you added step indicators
+
+
+            function filterProducts() {
+                const searchValue = document.getElementById('product-search').value.toLowerCase();
+                const productItems = document.querySelectorAll('#products-container .product-item');
+
+                productItems.forEach(item => {
+                    const name = item.getAttribute('data-name') || '';
+                    item.style.display = name.includes(searchValue) ? '' : 'none';
+                });
+            }
+
+
+
 
         let currentStep = 0;
 

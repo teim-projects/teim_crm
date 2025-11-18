@@ -34,10 +34,7 @@ app.conf.timezone = 'Asia/Kolkata'
 #     },
 # }
 
-<<<<<<< HEAD
-=======
 
->>>>>>> new_inventory
 app.conf.beat_schedule = {
     "send-due-payment-alerts-everyday": {
         "task": "crmapp.tasks.send_due_payment_alerts",
@@ -45,10 +42,7 @@ app.conf.beat_schedule = {
     },
 }
 
-<<<<<<< HEAD
 
-=======
->>>>>>> new_inventory
 @app.task(bind=True)
 def debug_task(self):
     print(f"Request: {self.request!r}")

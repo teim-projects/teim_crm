@@ -954,9 +954,7 @@
                     </a>
 
                     {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
-                        <a href="{% url 'add_operation_person' %}" style="text-decoration: none;">
-                            <li data-link="/add-operation-person"><i class="fas fa-plus-circle"></i> Add Operation Person</li>
-                        </a>
+                       
                         
                         <a href="{% url 'today_work' %}" style="text-decoration: none;">
                             <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Today Work</li>

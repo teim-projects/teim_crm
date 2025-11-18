@@ -659,19 +659,27 @@
                                             <select name="salesperson" class="form-control custom-select">
                                                 <option value="">All Salespersons</option>
                                                 {% for sp in salespersons %}
-<<<<<<< HEAD
                                                     <option value="{{ sp.full_name }}" 
                                                         {% if request.GET.salesperson|stringformat:"s" == sp.full_name|stringformat:"s" %}selected{% endif %}>
-=======
-                                                    <option value="{{ sp.id }}" 
-                                                        {% if request.GET.salesperson|stringformat:"s" == sp.id|stringformat:"s" %}selected{% endif %}>
->>>>>>> new_inventory
                                                         {{ sp.full_name }}
                                                     </option>
                                                 {% endfor %}
                                             </select>
                                         </div>
                                         {% endif %}
+
+
+                                        <!-- Follow-up Status Filter -->
+                                        <div class="col-md-3">
+                                            <label>Follow-up Status</label>
+                                            <select name="followup_status" class="form-control custom-select">
+                                                <option value="">All Status</option>
+                                                <option value="Close Win" {% if request.GET.followup_status == "Close Win" %}selected{% endif %}>Close Win</option>
+                                                <option value="Close Loss" {% if request.GET.followup_status == "Close Loss" %}selected{% endif %}>Close Loss</option>
+                                                <option value="Not Closed" {% if request.GET.followup_status == "Not Closed" or request.GET.followup_status == "" and request.GET.followup_status is not None and request.GET.followup_status == None %}selected{% endif %}>Not Closed</option>
+                                            </select>
+                                        </div>
+
                                         
 
                                         <!-- Branch -->
