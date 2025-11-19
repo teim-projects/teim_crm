@@ -4,40 +4,60 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Sales Person List</title>
-  <!-- Bootstrap 5 CSS -->
+  <title>Vendor List</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
   <style>
     .sales-table th,
     .sales-table td {
       vertical-align: middle;
       text-align: center;
+      white-space: nowrap;
     }
 
     .sales-table tbody tr:hover {
       background-color: #f8f9fa;
-      transition: background-color 0.3s ease;
-    }
-
-    .add-btn {
-      float: right;
     }
 
     @media (max-width: 768px) {
-      .table-responsive {
-        font-size: 14px;
-      }
-
       td {
         min-width: 170px !important;
       }
-
     }
 
     .salesrecordcon {
       min-height: 40vh !important;
+    }
+
+    /* BIG TOOLTIP FOR WEBSITE */
+    .website-btn {
+      position: relative;
+      display: inline-block;
+    }
+
+    .website-btn:hover .website-tooltip {
+      display: block;
+    }
+
+    .website-tooltip {
+      display: none;
+      position: absolute;
+      top: 35px;
+      left: 0;
+      background: #333;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      white-space: normal;
+      max-width: 250px;
+      z-index: 999;
+    }
+
+    .pagination li {
+      list-style: none;
     }
   </style>
 </head>
@@ -47,167 +67,164 @@
 
   <div class="main">
     <div class="container salesrecordcon bg-white p-4 rounded addnewshadow" style="margin-top: 100px;">
-      <!-- Header and Add Button -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <!-- Left: Heading -->
-        <h3 class="text-primary mb-0 ">Vendor List</h3>
 
-        <!-- Right: Buttons -->
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-primary mb-0">Vendor List</h3>
+
         <div class="d-flex gap-2">
           <a href="{% url 'vendor_add' %}" class="btn btn-success d-flex align-items-center">
             <i class="bi bi-plus-lg me-1"></i> Add
           </a>
-
-          <a href="{% url 'export_sales_person_csv' %}" class="btn btn-primary d-flex align-items-center">
-            <i class="bi bi-box-arrow-up me-1"></i> Export
-          </a>
         </div>
       </div>
 
+      <!-- SEARCH + FILTERS -->
+      <form method="get" class="row g-2 mb-4">
 
-      <!-- Table -->
+        <div class="col-md-4">
+          <input type="text" name="search" class="form-control"
+            placeholder="Search by Name / Mobile / POC Name / POC Phone"
+            value="{{ request.GET.search }}">
+        </div>
+
+        <div class="col-md-3">
+          <select name="company_type" class="form-select" onchange="this.form.submit()">
+            <option value="">Company Type</option>
+            {% for c in company_types %}
+            <option value="{{ c }}" {% if request.GET.company_type == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <select name="supplier_category" class="form-select" onchange="this.form.submit()">
+            <option value="">Supplier Category</option>
+            {% for s in supplier_categories %}
+            <option value="{{ s }}" {% if request.GET.supplier_category == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+
+      </form>
+
+      <!-- TABLE -->
       <div class="table-responsive">
         <table class="table table-bordered table-striped sales-table">
           <thead class="table-dark">
             <tr>
-              <th>Name</th>
-              <th>Mobile</th>
-              <th>Email</th>
-              <th>Joining</th>
-              <th>DOB</th>
+              <th>Sr</th>
               <th>Actions</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Mobile</th>
+              <th>Website</th>
+              <th>Bank Details</th>
+              <th>Company Type</th>
+              <th>Supplier Category</th>
+              <th>GST Details</th>
+              <th>Office POC Name</th>
+              <th>Office POC Phone</th>
+              <th>Store POC Name</th>
+              <th>Store POC Phone</th>
+              <th>Office Address</th>
+              <th>Store Address</th>
             </tr>
           </thead>
+
           <tbody>
-            {% for person in vendor %}
+            {% for v in vendor %}
             <tr>
-              <td>{{ person.name }}</td>
-              <td>{{ person.mobile }}</td>
-              <td>{{ person.email }}</td>
-              <td>{{ person.date_of_joining }}</td>
-              <td>{{ person.date_of_birth }}</td>
+              <td>{{ forloop.counter|add:page_obj.start_index|add:-1 }}</td>
+
+
               <td>
-                <a href="{% url 'vendor_edit' person.id %}" class="btn btn-sm btn-warning me-1">
+                <a href="{% url 'vendor_edit' v.id %}" class="btn btn-sm btn-warning mb-1">
                   <i class="bi bi-pencil-square"></i>
                 </a>
-                <a href="{% url 'vendor_delete' person.id %}" class="btn btn-sm btn-danger">
+
+                <a href="{% url 'vendor_delete' v.id %}" class="btn btn-sm btn-danger">
                   <i class="bi bi-trash"></i>
                 </a>
               </td>
+
+              <td>{{ v.name }}</td>
+              <td>{{ v.email }}</td>
+              <td>{{ v.mobile }}</td>
+
+              <td>
+                {% if v.website %}
+                <div class="website-btn">
+                  <a href="{{ v.website }}" target="_blank" class="btn btn-sm btn-primary">
+                    Visit
+                  </a>
+                  <div class="website-tooltip">{{ v.website }}</div>
+                </div>
+                {% else %}
+                -
+                {% endif %}
+              </td>
+
+              <td>{{ v.bank_details|truncatechars:20 }}</td>
+              <td>{{ v.compony_type }}</td>
+              <td>{{ v.supplier_category }}</td>
+              <td>{{ v.gst_details }}</td>
+              <td>{{ v.office_poc_name }}</td>
+              <td>{{ v.office_poc_phone }}</td>
+              <td>{{ v.store_poc_name }}</td>
+              <td>{{ v.store_poc_phone }}</td>
+
+              <td title="{{ v.office_address }}">{{ v.office_address|truncatechars:20 }}</td>
+              <td title="{{ v.store_address }}">{{ v.store_address|truncatechars:20 }}</td>
+
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" class="text-center text-muted">No salespersons found.</td>
+              <td colspan="16" class="text-center text-muted">No vendors found.</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
-      {% include 'buttons.html' %}
 
+      <!-- PAGINATION -->
+      <div class="pagination mt-3">
+        {% if page_obj.has_previous %}
+        <li><a href="?{{ querystring }}&page=1">&laquo; First</a></li>
+        <li><a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
+        {% endif %}
+
+        <span class="current">{{ page_obj.number }}</span>
+
+        {% if page_obj.has_next %}
+        <li><a href="?{{ querystring }}&page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
+        <li><a href="?{{ querystring }}&page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+        {% endif %}
+      </div>
+
+      {% include 'buttons.html' %}
     </div>
   </div>
-  <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%;  ">
+
+  <!-- FOOTER -->
+  <div class="container-fluid footer" style="background-color: #f7f7f7;">
     <div class="row p-3">
       <div class="col-md-12 text-center">
-        <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
-          © 2025. Powered by
-          <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
-            style="height: 20px; vertical-align: middle;">
+        <p style="font-weight: 600;">© 2025. Powered by
+          <img src="{% static 'images/crono.png' %}" style="height: 20px;">
           <a href="http://www.chronoanalytics.in/"
-            style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
-            Solution</a>
-          All Rights Reserved.
-        </p>
-      </div>
-      <div class="col-md-12 text-center">
-        <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
-          © 2025. Marketed by
-          <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
-          <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+            style="background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Chronoanalytics Solution</a>
           All Rights Reserved.
         </p>
       </div>
     </div>
   </div>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
-      menuItems.forEach(item => {
-        item.addEventListener('click', function () {
-          const submenu = this.querySelector('.submenu');
-          const arrow = this.querySelector('.arrow-down');
 
-          // Hide all other submenus
-          menuItems.forEach(otherItem => {
-            if (otherItem !== this) {
-              const otherSubmenu = otherItem.querySelector('.submenu');
-              const otherArrow = otherItem.querySelector('.arrow-down');
-              if (otherSubmenu) {
-                otherSubmenu.style.display = 'none';
-                if (otherArrow.classList.contains('arrow-up')) {
-                  otherArrow.classList.remove('arrow-up');
-                }
-              }
-            }
-          });
-
-          // Toggle current submenu
-          if (submenu) {
-            submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
-            arrow.classList.toggle('arrow-up');
-          }
-        });
-      });
-    });
-    const deleteLinks = document.querySelectorAll('.delete-link');
-    const confirmationModal = document.getElementById('confirmationModal');
-    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
-    let deleteUrl = '';
-
-    deleteLinks.forEach(link => {
-      link.addEventListener('click', function (event) {
-        event.preventDefault();
-        deleteUrl = this.getAttribute('href');
-        confirmationModal.style.display = 'block';
-      });
-    });
-
-    confirmDeleteButton.addEventListener('click', function () {
-      if (deleteUrl) {
-        window.location.href = deleteUrl;
-      }
-    });
-
-    cancelDeleteButton.addEventListener('click', function () {
-      confirmationModal.style.display = 'none';
-    });
-
-    window.addEventListener('click', function (event) {
-      if (event.target == confirmationModal) {
-        confirmationModal.style.display = 'none';
-      }
-    });
-
-    function openModal(service_id) {
-      fetch(`/get_service_details/${service_id}/`)
-        .then(response => response.text())
-        .then(html => {
-          document.getElementById('modal-content').innerHTML = html;
-          document.getElementById('modal').classList.add('active');
-        });
-
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
-    }
-  </script>
-  <!-- Bootstrap 5 JS Bundle (Optional) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

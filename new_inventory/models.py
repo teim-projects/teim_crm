@@ -16,5 +16,9 @@ class Vendor(models.Model):
   office_poc_phone = models.CharField(max_length=15, blank=True, null=True)
   store_poc_name = models.CharField(max_length=100, blank=True, null=True)
   store_poc_phone = models.CharField(max_length=15, blank=True, null=True) 
+  
+  def __str__(self):
+    return f"{self.name } - {self.mobile}"
+   
 
   
