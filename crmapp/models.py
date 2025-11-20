@@ -39,6 +39,7 @@ class UserProfile(models.Model):
         ('technician', 'Technician'),
         ('branch_manager', 'Branch Manager'),
         ('operation_person', 'Operation Person'),
+        
         ('customer', 'Customer'),
     ]
 
