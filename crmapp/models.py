@@ -25,6 +25,7 @@ class Branch(models.Model):
     code = models.IntegerField()
     shortcut = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_head_office = models.BooleanField(default=False)
 
     def __str__(self):
         return self.branch_name

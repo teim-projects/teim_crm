@@ -1,12 +1,23 @@
 from django.shortcuts import render, HttpResponse
+from django.http import JsonResponse
 from .models import Vendor
 from crmapp.models import UserProfile
 from .forms import *
+from .utils import get_destination_queryset
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
-# Create your views here.
+from django.contrib.auth.decorators import login_required
+
+# ------- load destination --------
+def load_destinations(request):
+    dest_type = request.GET.get("destination_type")
+    qs = get_destination_queryset(dest_type)
+
+    data = [{"id": obj.id, "name": str(obj)} for obj in qs]
+    return JsonResponse({"results": data})
+
 
 # ------------ Vendor Section start here ----------
 # Add vendor
@@ -219,13 +230,96 @@ def ho_delete(request, pk):
 # ----------------- Site section start ---------------
 # ---- add site -----
 def add_site(request):
-  if request.method == "POST":
-    form = SiteForm(request.POST)
-    
+    if request.method == "POST":
+        form = SiteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("site_list")
+    else:
+        form = SiteForm()
+
+    return render(request, "inventory/add_site.html", {"form": form})
+
+
+def site_list(request):
+    search = request.GET.get("search", "")
+
+    sites = Site.objects.all()
+
+    if search:
+        sites = sites.filter(
+            Q(name__icontains=search) |
+            Q(phone__icontains=search) |
+            Q(contact_person__icontains=search)
+        )
+
+    paginator = Paginator(sites, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "site": page_obj,
+        "page_obj": page_obj,
+        "querystring": request.GET.urlencode(),
+    }
+
+    return render(request, "inventory/site_list.html", context)
+
+
+def site_edit(request, id):
+    site = get_object_or_404(Site, id=id)
+    form = SiteForm(request.POST or None, instance=site)
+
     if form.is_valid():
-      form.save()
-      return redirect("site_list")
-    
-  else:
-    form = SiteForm()
-  return render(request,'inventory/add_site.html',{'form':form})
+        form.save()
+        return redirect("site_list")
+
+    return render(request, "inventory/add_site.html", {"form": form, "site": site})
+
+
+def site_delete(request, id):
+    site = get_object_or_404(Site, id=id)
+    site.delete()
+    return redirect("site_list")
+
+
+
+# ------------------ Purchase order section --------------- 
+
+@login_required
+def purchase_order_create(request):
+    if request.method == "POST":
+        form = PurchaseOrderForm(request.POST, request.FILES)
+        formset = PurchaseOrderItemFormSet(
+            request.POST,
+            queryset=PurchaseOrderItem.objects.none(),
+            prefix="items"
+        )
+        if form.is_valid() and formset.is_valid():
+            po = form.save(commit=False)
+            po.created_by_user = request.user
+            po.save()
+
+            items = formset.save(commit=False)
+            for item in items:
+                item.purchase_order = po
+                item.save()
+
+            return redirect("purchase_order_list")
+    else:
+        form = PurchaseOrderForm()
+        formset = PurchaseOrderItemFormSet(
+            queryset=PurchaseOrderItem.objects.none(),
+            prefix="items"
+        )
+
+    return render(request, "inventory/purchase_order_form.html", {
+        "form": form,
+        "formset": formset,
+    })
+
+
+
+@login_required
+def purchase_order_list(request):
+   pass

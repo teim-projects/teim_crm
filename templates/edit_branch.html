@@ -78,6 +78,19 @@
                 <input type="text" name="pan_number" class="form-control" value="{{ branch.pan_number }}" required>
               </div>
 
+              <div class="mb-3  col-md-6 d-flex align-items-top">
+                <label class="form-check-label me-2 mb-0" for="id_is_head_office">
+                  Is HO Branch?
+                </label>
+                <input 
+                  type="checkbox" 
+                  name="is_head_office" 
+                  id="id_is_head_office" 
+                  class="form-check-input"
+                  {% if branch.is_head_office %}checked{% endif %}
+                >
+              </div>
+
 
               <div class="container mt-2">
                 <!-- Row 1: State Dropdown, Shortcut, Code -->

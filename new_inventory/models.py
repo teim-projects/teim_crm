@@ -1,6 +1,8 @@
 from django.db import models
 from crmapp.models import Product
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 import datetime
 import random
 
@@ -105,3 +107,51 @@ class Site(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+
+def generate_po_no():
+    current_year = datetime.date.today().year
+    prefix = f"PO_{current_year}"
+
+    # Find last PO of this year
+    last_po = PurchaseOrder.objects.filter(po_no__startswith=prefix).order_by("-po_no").first()
+
+    if last_po:
+        # Extract last 3 digits
+        last_number = int(last_po.po_no[-3:])
+        new_number = last_number + 1
+    else:
+        new_number = 1
+
+    return f"{prefix}{new_number:03d}"
+
+
+
+STATUS_CHOICES = (
+        ("DRAFT", "Draft"),
+        ("APPROVED", "Approved"),
+        ("PARTIALLY_RECEIVED", "Partially Received"),
+        ("CLOSED", "Closed"),
+    )
+
+class PurchaseOrder(models.Model): 
+    po_no = models.CharField(max_length=255, unique=True,default=generate_po_no,editable=False) 
+    created_by_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True) 
+    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True) 
+    destination_type = models.CharField(max_length=20, choices=DESTINATION_TYPES)
+    destination_id = models.BigIntegerField()
+    status = models.CharField(max_length=50,choices=STATUS_CHOICES, default="DRAFT") 
+    material_supply = models.TextField(null=True, blank=True) 
+    quotation_attachment = models.FileField(max_length=500, null=True, blank=True) 
+    created_at = models.DateTimeField(auto_now_add=True) 
+    updated_at = models.DateTimeField(auto_now=True) 
+    def __str__(self): 
+        return self.po_no
+    
+
+class PurchaseOrderItem(models.Model): 
+    purchase_order = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE, related_name="items") 
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True) 
+    quantity = models.DecimalField(max_digits=12, decimal_places=2)  
+    remarks = models.TextField(null=True, blank=True)

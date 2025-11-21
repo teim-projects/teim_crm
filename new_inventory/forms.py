@@ -1,4 +1,6 @@
-from .models import Vendor ,HO , Site
+from .models import Vendor ,HO , Site ,PurchaseOrder,DESTINATION_TYPES, PurchaseOrderItem
+from .utils import get_destination_queryset
+from crmapp.models import Branch  
 from django import forms
 
 class VendorForm(forms.ModelForm):
@@ -95,3 +97,66 @@ class SiteForm(forms.ModelForm):
         model = Site
         fields = '__all__'
         label_suffix = ""
+
+
+class PurchaseOrderForm(forms.ModelForm):
+    class Meta:
+        model = PurchaseOrder
+        fields = [
+            "vendor",
+            "destination_type",
+            "destination_id",
+            "status",
+            "material_supply",
+            "quotation_attachment",
+        ]
+        widgets = {
+            "destination_type": forms.Select(attrs={"class": "form-control destination-type"}),
+            "destination_id": forms.Select(attrs={"class": "form-control destination-id"}),
+            "material_supply": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
+            "quotation_attachment": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "status": forms.Select(attrs={"class": "form-control"}),
+            "vendor": forms.Select(attrs={"class": "form-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Default empty; JS will load options
+        self.fields["destination_id"].choices = [("", "---------")]
+
+        if self.instance.pk:  # editing
+            qs = get_destination_queryset(self.instance.destination_type)
+            self.fields["destination_id"].choices = [("", "---------")] + [
+                (obj.id, str(obj)) for obj in qs
+            ]
+            self.initial["destination_id"] = self.instance.destination_id
+
+    def clean(self):
+        cleaned = super().clean()
+        dest_type = cleaned.get("destination_type")
+
+        # force HO
+        if dest_type == "HO":
+            ho = get_destination_queryset("HO").first()
+            if ho:
+                cleaned["destination_id"] = ho.id
+        return cleaned
+
+
+class PurchaseOrderItemForm(forms.ModelForm):
+    class Meta:
+        model = PurchaseOrderItem
+        fields = ["product", "quantity", "remarks"]
+        widgets = {
+            "product": forms.Select(attrs={"class": "form-control"}),
+            "quantity": forms.NumberInput(attrs={"class": "form-control"}),
+            "remarks": forms.TextInput(attrs={"class": "form-control"}),
+        }
+
+PurchaseOrderItemFormSet = forms.modelformset_factory(
+    PurchaseOrderItem,
+    form=PurchaseOrderItemForm,
+    extra=1,
+    can_delete=True
+)
+

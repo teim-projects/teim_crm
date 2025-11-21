@@ -5649,7 +5649,8 @@ def create_branch(request):
         code = request.POST.get('code')
         shortcut = request.POST.get('shortcut')
         full_address = request.POST.get('full_address')
-
+        is_head_office = request.POST.get("is_head_office") == "on"
+        print(is_head_office)
         # Only pass state; model will set shortcut and code
         branch = Branch(
             branch_name=branch_name,
@@ -5662,7 +5663,9 @@ def create_branch(request):
             state=state,
             code = code,
             shortcut = shortcut,
-            full_address=full_address
+            full_address=full_address,
+            is_head_office = is_head_office
+
         )
         branch.save()  
         return redirect('branch_list')
@@ -5694,6 +5697,7 @@ def edit_branch(request, branch_id):
         branch.code = request.POST.get('code')
         branch.shortcut = request.POST.get('shortcut')
         branch.full_address = request.POST.get('full_address')
+        branch.is_head_office = request.POST.get("is_head_office") == "on"
 
         branch.save()
         return redirect('branch_list')
