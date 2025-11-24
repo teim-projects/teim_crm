@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
-from .models import Vendor
+from .models import Vendor, PurchaseOrder, PurchaseOrderItem, Site, HO
 from crmapp.models import UserProfile
 from .forms import *
 from .utils import get_destination_queryset
@@ -20,20 +20,17 @@ def load_destinations(request):
 
 
 # ------------ Vendor Section start here ----------
-# Add vendor
 def vendor_add(request):
-  if request.method == "POST":
-    form = VendorForm(request.POST)
-    
-    if form.is_valid():
-      form.save()
-      return redirect("vendor_list")
-    
-  else:
-    form = VendorForm()
-  return render(request,'inventory/add_vendor.html',{'form':form})
+    if request.method == "POST":
+        form = VendorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("vendor_list")
+    else:
+        form = VendorForm()
+    return render(request, 'inventory/add_vendor.html', {'form': form})
 
-# vendor list
+
 def vendor_list(request):
     search = request.GET.get("search", "")
     company_type = request.GET.get("company_type", "")
@@ -41,7 +38,6 @@ def vendor_list(request):
 
     vendors = Vendor.objects.all()
 
-    # SEARCH
     if search:
         vendors = vendors.filter(
             Q(name__icontains=search) |
@@ -52,19 +48,16 @@ def vendor_list(request):
             Q(store_poc_phone__icontains=search)
         )
 
-    # FILTERS
     if company_type:
         vendors = vendors.filter(compony_type=company_type)
 
     if supplier_category:
         vendors = vendors.filter(supplier_category=supplier_category)
 
-    # UNIQUE DROPDOWN VALUES
     company_types = Vendor.objects.values_list("compony_type", flat=True).distinct()
     supplier_categories = Vendor.objects.values_list("supplier_category", flat=True).distinct()
 
-    # PAGINATION (same as quotation)
-    paginator = Paginator(vendors, 10)  # 10 vendors per page
+    paginator = Paginator(vendors, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -79,46 +72,39 @@ def vendor_list(request):
     return render(request, "inventory/vendor_list.html", context)
 
 
-# Edit vendor 
 def vendor_edit(request, id):
-  vendor = get_object_or_404(Vendor, id=id)
-  form = VendorForm(request.POST or None, instance=vendor)
+    vendor = get_object_or_404(Vendor, id=id)
+    form = VendorForm(request.POST or None, instance=vendor)
 
-  if form.is_valid():
-    form.save()
-    return redirect("vendor_list")
+    if form.is_valid():
+        form.save()
+        return redirect("vendor_list")
 
-  return render(request, 'inventory/vendor_edit.html', {'form': form})
+    return render(request, 'inventory/vendor_edit.html', {'form': form})
 
-# Delete Vendor
+
 def vendor_delete(request, id):
-  vendor = get_object_or_404(Vendor, id=id)
-  vendor.delete()
-  return redirect('vendor_list')
+    vendor = get_object_or_404(Vendor, id=id)
+    vendor.delete()
+    return redirect('vendor_list')
 
-#------------------------ Vendor section end -------------------------------
 
 # ----------------------- Head Office staff section ------------------------
 UserModel = get_user_model()
-# ------ add ho staff ------
+
 def add_ho_staff(request):
     if request.method == "POST":
         form = HoForm(request.POST)
         if form.is_valid():
-            ho = form.save(commit=False)  # role is already set in the form's save()
+            ho = form.save(commit=False)
 
-            # Create a User for this HO
             email = form.cleaned_data.get("email")
             name = form.cleaned_data.get("name")
             contact = form.cleaned_data.get("contact")
             password = form.cleaned_data.get("password")
 
-            # Use contact as username (or fallback to email)
-            username = contact or email
-            if not username:
-                username = (name or "ho_user").replace(" ", "").lower()
+            username = contact or email or (name.replace(" ", "").lower())
 
-            # Ensure username is unique
             base_username = username
             counter = 1
             while UserModel.objects.filter(username=username).exists():
@@ -132,7 +118,6 @@ def add_ho_staff(request):
                 password=password,
             )
 
-            # ✅ Get or create UserProfile, avoid duplicate user_id
             user_profile, created = UserProfile.objects.get_or_create(
                 user=user,
                 defaults={
@@ -140,6 +125,7 @@ def add_ho_staff(request):
                     "phone": contact,
                 },
             )
+
             if not created:
                 user_profile.role = ho.role
                 user_profile.phone = contact
@@ -149,38 +135,30 @@ def add_ho_staff(request):
             ho.save()
 
             return redirect('ho_list')
-
     else:
         form = HoForm()
 
     return render(request, "inventory/add_ho.html", {"form": form})
 
-# ------ ho staff list -------
+
 def ho_list(request):
     search = request.GET.get("search", "")
     role = request.GET.get("role", "")
-    
 
     ho_staff = HO.objects.all()
 
-    # SEARCH
     if search:
         ho_staff = ho_staff.filter(
             Q(name__icontains=search) |
-            Q(contact__icontains=search) 
+            Q(contact__icontains=search)
         )
 
-    # FILTERS
     if role:
         ho_staff = ho_staff.filter(role=role)
 
-
-    # UNIQUE DROPDOWN VALUES
     role = HO.objects.values_list("role", flat=True).distinct()
 
-
-    # PAGINATION (same as quotation)
-    paginator = Paginator(ho_staff, 10)  # 10 vendors per page
+    paginator = Paginator(ho_staff, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -193,7 +171,7 @@ def ho_list(request):
 
     return render(request, "inventory/list_ho.html", context)
 
-#  ------- edit staff list -----
+
 def ho_edit(request, pk):
     ho = get_object_or_404(HO, id=pk)
 
@@ -202,14 +180,13 @@ def ho_edit(request, pk):
         if form.is_valid():
             ho_obj = form.save(commit=False)
 
-            # update linked user if exists
             user = ho_obj.user
             password = form.cleaned_data.get("password")
 
             if user:
                 user.first_name = ho_obj.name
                 user.email = ho_obj.email
-                if password:  # only if user entered new password
+                if password:
                     user.set_password(password)
                 user.save()
 
@@ -220,15 +197,14 @@ def ho_edit(request, pk):
 
     return render(request, "inventory/add_ho.html", {"form": form, "ho": ho})
 
-# ------ delete staff ------
-def ho_delete(request, pk):
-  ho = get_object_or_404(HO, id=pk)
-  ho.delete()
-  return redirect('ho_list')
 
-# ----------------- Vendor section end ---------------
-# ----------------- Site section start ---------------
-# ---- add site -----
+def ho_delete(request, pk):
+    ho = get_object_or_404(HO, id=pk)
+    ho.delete()
+    return redirect('ho_list')
+
+
+# ----------------- Site section -----------------------
 def add_site(request):
     if request.method == "POST":
         form = SiteForm(request.POST)
@@ -243,7 +219,6 @@ def add_site(request):
 
 def site_list(request):
     search = request.GET.get("search", "")
-
     sites = Site.objects.all()
 
     if search:
@@ -283,9 +258,7 @@ def site_delete(request, id):
     return redirect("site_list")
 
 
-
 # ------------------ Purchase order section --------------- 
-
 @login_required
 def purchase_order_create(request):
     if request.method == "POST":
@@ -295,6 +268,7 @@ def purchase_order_create(request):
             queryset=PurchaseOrderItem.objects.none(),
             prefix="items"
         )
+
         if form.is_valid() and formset.is_valid():
             po = form.save(commit=False)
             po.created_by_user = request.user
@@ -306,6 +280,7 @@ def purchase_order_create(request):
                 item.save()
 
             return redirect("purchase_order_list")
+
     else:
         form = PurchaseOrderForm()
         formset = PurchaseOrderItemFormSet(
@@ -319,7 +294,118 @@ def purchase_order_create(request):
     })
 
 
+# ------------------ Purchase order list ---------------------
 
 @login_required
 def purchase_order_list(request):
-   pass
+    search = request.GET.get("search", "")
+    destination_type = request.GET.get("destination_type", "")
+    status = request.GET.get("status", "")
+    from_date = request.GET.get("from_date", "")
+    to_date = request.GET.get("to_date", "")
+
+    po_list = PurchaseOrder.objects.all().order_by("-created_at")
+
+    if search:
+        po_list = po_list.filter(
+            Q(po_no__icontains=search) |
+            Q(vendor__name__icontains=search) |
+            Q(vendor__mobile__icontains=search)
+        )
+
+    if destination_type:
+        po_list = po_list.filter(destination_type=destination_type)
+
+    if status:
+        po_list = po_list.filter(status=status)
+
+    if from_date and to_date:
+        po_list = po_list.filter(
+            created_at__date__gte=from_date,
+            created_at__date__lte=to_date
+        )
+
+    filter_count = po_list.count()
+
+    paginator = Paginator(po_list, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    start_index = page_obj.start_index() - 1
+
+    context = {
+        "page_obj": page_obj,
+        "querystring": request.GET.urlencode(),
+        "filter_count": filter_count,
+        "start_index": start_index,
+    }
+
+    return render(request, "inventory/purchase_order_list.html", context)
+
+
+# ------------------ Purchase Order Edit ---------------------
+
+@login_required
+def purchase_order_edit(request, id):
+    po = get_object_or_404(PurchaseOrder, id=id)
+
+    if request.method == "POST":
+        form = PurchaseOrderForm(request.POST, request.FILES, instance=po)
+        formset = PurchaseOrderItemFormSet(request.POST, instance=po)
+
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect("purchase_order_list")
+
+    else:
+        form = PurchaseOrderForm(instance=po)
+        formset = PurchaseOrderItemFormSet(instance=po)
+
+    return render(request, "inventory/purchase_order_edit.html", {
+        "form": form,
+        "formset": formset,
+        "po": po,
+    })
+
+# ------------------ Purchase Order Delete ---------------------
+
+@login_required
+def purchase_order_delete(request, id):
+    po = get_object_or_404(PurchaseOrder, id=id)
+    po.delete()
+    return redirect("purchase_order_list")
+
+
+
+#---------------------PDF------------------------
+
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.http import HttpResponse
+
+@login_required
+def purchase_order_pdf(request, id):
+    po = get_object_or_404(PurchaseOrder, id=id)
+    items = PurchaseOrderItem.objects.filter(purchase_order=po)
+
+    # Pass PO + items to your template
+    context = {
+        'po': po,
+        'items': items,
+    }
+
+    template = get_template('inventory/purchase_order_pdf.html')
+
+    html = template.render(context)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="PO_{po.po_no}.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Error generating PDF")
+
+    return response
+

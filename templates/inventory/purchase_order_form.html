@@ -63,15 +63,7 @@
                   {{ form.status }}
                 </div>
 
-                <div class="col-md-6 mb-3">
-                  <label>Destination Type</label>
-                  {{ form.destination_type }}
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label>Destination</label>
-                  {{ form.destination_id }}
-                </div>
+                {% include "includes/destination_fields.html" %}
 
                 <div class="col-md-6 mb-3">
                   <label>Material Supply</label>

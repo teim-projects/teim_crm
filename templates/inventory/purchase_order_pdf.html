@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Purchase Order</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.2;
+            background-color: #fff;
+        }
+
+        h4 {
+            text-align: center;
+            font-weight: bold;
+            margin: 4px 0;
+            font-size: 12pt;
+        }
+
+        .invoice-container {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 3px 4px;
+            vertical-align: top;
+            font-size: 9pt;
+            word-wrap: break-word;
+        }
+
+        .no-border th,
+        .no-border td {
+            border: none;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        .srno {
+            text-align: center;
+        }
+
+        p {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="invoice-container">
+
+        <table>
+            <tr>
+                <td colspan="3">
+                    <h4>PURCHASE ORDER</h4>
+                </td>
+            </tr>
+            <tr>
+                <td rowspan="3" style="width: 50%;">
+                    <strong>Invoice To</strong><br>
+                    <strong>Seva Facility Services Pvt. Ltd.-Pune</strong><br>
+                    Sr.No-203, Office No -406, 4th Floor, BIZ Building,<br>
+                    Above Axis Bank, Bhondve Chowk,<br>
+                    Ravet, Pune 412101.<br>
+                    Udyam Reg. No. MH260030203<br>
+                    GSTIN/UIN: 27AAWCS8490D1ZM<br>
+                    State Name: Maharashtra, Code: 27<br>
+                    CIN: U74999PN2016PTC158673<br>
+                    E-Mail : info@sevafacility.com<br><br>
+
+                    <strong>Consignee (Ship to)</strong><br>
+                    <strong>Seva Facility Services Pvt Ltd (Pune)</strong><br>
+                    Sr.No-203, Office No -406, 4th Floor, BIZ Building,<br>
+                    Above Axis Bank, Bhondve Chowk,<br>
+                    GSTIN/UIN : 27AAWCS8490D1ZM<br>
+                    State Name : Maharashtra, Code : 27
+                </td>
+
+                <td><strong>Voucher No.</strong><br>{{ po.po_no }}</td>
+                <td><strong>Dated</strong><br>{{ po.created_at|date:"d-M-y" }}</td>
+            </tr>
+
+            <tr>
+                <td colspan="2"><strong>Reference No. & Date</strong><br>{{ po.po_no }}</td>
+            </tr>
+            <tr>
+                <td><strong>Mode/Terms of Payment</strong><br></td>
+                <td><strong>Other References</strong><br></td>
+            </tr>
+        </table>
+
+        <table style="margin-top: 10px;">
+            <tr>
+                <td style="width: 50%;">
+                    <strong>Supplier (Bill from)</strong><br>
+                    <strong>{{ po.vendor.name }}</strong><br>
+                    {% if po.vendor.office_address %}
+                    {{ po.vendor.office_address }}<br>
+                    {% endif %}
+                    {% if po.vendor.gst_details %}
+                    GSTIN/UIN: {{ po.vendor.gst_details }}<br>
+                    {% endif %}
+                    {% if po.vendor.mobile %}
+                    Contact: {{ po.vendor.mobile }}<br>
+                    {% endif %}
+                </td>
+                <td style="width: 25%;"><strong>Dispatched through</strong><br></td>
+                <td style="width: 25%;"><strong>Destination</strong><br>{{ po.destination_name }}</td>
+            </tr>
+            <tr>
+                <td colspan="3"><strong>Terms of Delivery</strong><br></td>
+            </tr>
+        </table>
+
+        <table style="margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">Sl No.</th>
+                    <th style="width: 42%;">Description of Goods and Services</th>
+                    <th style="width: 10%;">Quantity</th>
+                    <th style="width: 8%;">per</th>
+                    <th style="width: 12%;">Rate</th>
+                    <th style="width: 8%;">Disc. %</th>
+                    <th style="width: 12%;">Amount</th>
+                    <th style="width: 10%;">Due on</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                {% for item in po.items.all %}
+                <tr>
+                    <td class="srno">{{ forloop.counter }}</td>
+                    <td>
+                        <strong>{{ item.product.product_name }}</strong>
+                        {% if item.remarks %}
+                        <br><small>{{ item.remarks }}</small>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td class="text-center">Nos</td>
+                    <td class="text-right">-</td>
+                    <td class="text-center">-</td>
+                    <td class="text-right">-</td>
+                    <td class="text-center">{{ po.created_at|date:"d-M-y" }}</td>
+                </tr>
+                {% endfor %}
+
+                {% for i in "123" %}
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                {% endfor %}
+
+                <tr>
+                    <td colspan="2" rowspan="4" style="vertical-align: top;">
+                        <strong>Amount Chargeable (in words)</strong><br>
+                        <em>Amount to be filled upon receipt</em>
+                    </td>
+                    <td colspan="5" class="text-right fw-bold">IGST</td>
+                    <td class="text-right">-</td>
+                </tr>
+                <tr>
+                    <td colspan="5" class="text-right fw-bold">Freight Charges</td>
+                    <td class="text-right">-</td>
+                </tr>
+                <tr>
+                    <td colspan="5" class="text-right fw-bold">Total</td>
+                    <td class="text-right fw-bold">-</td>
+                </tr>
+                <tr>
+                    <td colspan="6" class="text-right">
+                        <strong>Total Items: {{ po.items.count }} Nos</strong>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <table style="margin-top: 10px;">
+            <tr>
+                <td style="width: 60%;">
+                    <strong>Company's PAN:</strong> {{ po.destination_pan|default:"N/A" }}
+                </td>
+                <td rowspan="2" style="width: 40%; vertical-align: bottom; text-align: right;">
+                    <strong>for {{ po.destination_name }}</strong><br><br><br>
+                    Authorised Signatory
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Material Supply:</strong><br>
+                    {{ po.material_supply|default:"As per items listed above" }}
+                </td>
+            </tr>
+        </table>
+
+        <p style="text-align: center; font-style: italic; margin-top: 10px;">
+            This is a Computer Generated Document
+        </p>
+
+    </div>
+
+</body>
+</html>
