@@ -155,3 +155,45 @@ class PurchaseOrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True) 
     quantity = models.DecimalField(max_digits=12, decimal_places=2)  
     remarks = models.TextField(null=True, blank=True)
+
+
+
+
+#--------------------------------------------- GRN -------------------------------------------------
+
+class GoodsReceiveNote(models.Model):
+    purchase_order = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
+
+    received_location_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
+    received_location_id = models.BigIntegerField()
+
+    received_date = models.DateField()
+    invoice_no = models.CharField(max_length=255, null=True, blank=True)
+    invoice_date = models.DateField(null=True, blank=True)
+    remarks = models.TextField(null=True, blank=True)
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"GRN-{self.id}"
+
+
+
+
+class GoodsReceiveNoteItem(models.Model):
+    grn = models.ForeignKey(GoodsReceiveNote, on_delete=models.CASCADE, related_name="items")
+    po_item = models.ForeignKey(PurchaseOrderItem, on_delete=models.CASCADE)
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    batch = models.ForeignKey(Batch, on_delete=models.SET_NULL, null=True, blank=True)
+
+    ordered_qty = models.DecimalField(max_digits=12, decimal_places=2)
+    received_qty = models.DecimalField(max_digits=12, decimal_places=2)
+
+    remarks = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"GRN Item - {self.product.product_name}"
+

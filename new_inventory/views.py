@@ -409,3 +409,77 @@ def purchase_order_pdf(request, id):
 
     return response
 
+
+
+
+
+#----------------------------------GRN------------------------------------
+
+
+from .models import GoodsReceiveNote, GoodsReceiveNoteItem
+
+
+@login_required
+def grn_create(request, po_id):
+    po = get_object_or_404(PurchaseOrder, id=po_id)
+    po_items = po.items.all()
+
+    if request.method == "POST":
+        form = GRNForm(request.POST)
+
+        if form.is_valid():
+            grn = form.save(commit=False)
+            grn.purchase_order = po
+            grn.vendor = po.vendor
+            grn.created_by = request.user
+            grn.save()
+
+            # Save GRN items
+            for item in po_items:
+                received_qty = request.POST.get(f"received_qty_{item.id}", 0)
+
+                GoodsReceiveNoteItem.objects.create(
+                    grn=grn,
+                    po_item=item,
+                    product=item.product,
+                    ordered_qty=item.quantity,
+                    received_qty=received_qty,
+                    remarks=request.POST.get(f"remarks_{item.id}", "")
+                )
+
+            # Update PO Status
+            total_received = sum(float(i.received_qty) for i in grn.items.all())
+            total_ordered = sum(float(i.ordered_qty) for i in grn.items.all())
+
+            if total_received >= total_ordered:
+                po.status = "CLOSED"
+            else:
+                po.status = "PARTIALLY_RECEIVED"
+
+            po.save()
+
+            return redirect("grn_list")
+
+    else:
+        form = GRNForm()
+
+    return render(request, "inventory/grn_create.html", {
+        "form": form,
+        "po": po,
+        "po_items": po_items
+    })
+
+
+
+@login_required
+def grn_list(request):
+    grns = GoodsReceiveNote.objects.all().order_by("-created_at")
+    return render(request, "inventory/grn_list.html", {"grns": grns})
+
+
+
+@login_required
+def grn_detail(request, grn_id):
+    grn = get_object_or_404(GoodsReceiveNote, id=grn_id)
+    items = grn.items.all()
+    return render(request, "inventory/grn_detail.html", {"grn": grn, "items": items})

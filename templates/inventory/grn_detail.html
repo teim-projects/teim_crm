@@ -1,0 +1,24 @@
+<h3>GRN Details</h3>
+
+<p><strong>GRN ID:</strong> {{ grn.id }}</p>
+<p><strong>PO No:</strong> {{ grn.purchase_order.po_no }}</p>
+<p><strong>Vendor:</strong> {{ grn.vendor.name }}</p>
+<p><strong>Received Date:</strong> {{ grn.received_date }}</p>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Product</th>
+        <th>Ordered Qty</th>
+        <th>Received Qty</th>
+        <th>Remarks</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>{{ item.product.product_name }}</td>
+        <td>{{ item.ordered_qty }}</td>
+        <td>{{ item.received_qty }}</td>
+        <td>{{ item.remarks }}</td>
+    </tr>
+    {% endfor %}
+</table>

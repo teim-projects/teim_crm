@@ -150,3 +150,29 @@ PurchaseOrderItemFormSet = inlineformset_factory(
     extra=1,
     can_delete=True
 )
+
+
+
+
+from django import forms
+from .models import GoodsReceiveNote
+
+class GRNForm(forms.ModelForm):
+    class Meta:
+        model = GoodsReceiveNote
+        fields = [
+            "received_location_type",
+            "received_location_id",
+            "received_date",
+            "invoice_no",
+            "invoice_date",
+            "remarks"
+        ]
+        widgets = {
+            "received_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "invoice_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "received_location_type": forms.Select(attrs={"class": "form-control"}),
+            "received_location_id": forms.NumberInput(attrs={"class": "form-control"}),
+            "invoice_no": forms.TextInput(attrs={"class": "form-control"}),
+            "remarks": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+        }
