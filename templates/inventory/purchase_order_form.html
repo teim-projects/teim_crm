@@ -74,32 +74,51 @@
                   <label>Quotation Attachment</label>
                   {{ form.quotation_attachment }}
                 </div>
+
+                <!-- NEW: Freight Charges -->
+                <div class="col-md-6 mb-3">
+                  <label>Freight Charges</label>
+                  {{ form.freight_charges }}
+                </div>
+
               </div>
 
               <h4 class="text-center text-primary">PO Items</h4>
               <table class="table table-bordered">
                 <thead>
                   <tr>
-                    <th>Product</th>
-                    <th>Qty</th>
-                    <th>Remarks</th>
+                   <th>Product</th>
+                      <th>Qty</th>
+                      <th>Rate</th>          <!-- NEW -->
+                      <th>Discount (%)</th>  <!-- NEW -->
+                      <th>Remarks</th>
                     <th></th>
+
                   </tr>
                 </thead>
                 <tbody id="po-items-body">
-                  {{ formset.management_form }}
-                  {% for f in formset %}
-                  <tr class="po-item-row">
-                    <td>{{ f.product }}</td>
-                    <td>{{ f.quantity }}</td>
-                    <td>{{ f.remarks }}</td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
-                      {{ f.DELETE }} {# this will be a hidden checkbox for existing rows #}
-                    </td>
-                  </tr>
-                  {% endfor %}
+                    {{ formset.management_form }}
+                    {% for f in formset %}
+                    <tr class="po-item-row">
+
+                        <td>{{ f.product }}</td>
+                        <td>{{ f.quantity }}</td>
+
+                        <!-- NEW FIELDS -->
+                        <td>{{ f.rate }}</td>
+                        <td>{{ f.discount }}</td>
+
+                        <td>{{ f.remarks }}</td>
+
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
+                            {{ f.DELETE }} {# this will be a hidden checkbox for existing rows #}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
                 </tbody>
+
               </table>
 
               <div class="mb-3">
@@ -111,15 +130,24 @@
               {# Hidden template row for new items #}
               <table class="d-none">
                 <tbody>
-                  <tr id="empty-form-row">
-                    <td>{{ formset.empty_form.product }}</td>
-                    <td>{{ formset.empty_form.quantity }}</td>
-                    <td>{{ formset.empty_form.remarks }}</td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
-                    </td>
-                  </tr>
+                    <tr id="empty-form-row">
+
+                        <td>{{ formset.empty_form.product }}</td>
+                        <td>{{ formset.empty_form.quantity }}</td>
+
+                        <!-- NEW FIELDS -->
+                        <td>{{ formset.empty_form.rate }}</td>
+                        <td>{{ formset.empty_form.discount }}</td>
+
+                        <td>{{ formset.empty_form.remarks }}</td>
+
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
+                        </td>
+
+                    </tr>
                 </tbody>
+
               </table>
 
               <button class="btn btn-primary">Save PO</button>

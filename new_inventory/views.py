@@ -294,6 +294,7 @@ def purchase_order_create(request):
     })
 
 
+
 # ------------------ Purchase order list ---------------------
 
 @login_required
@@ -351,7 +352,7 @@ def purchase_order_edit(request, id):
 
     if request.method == "POST":
         form = PurchaseOrderForm(request.POST, request.FILES, instance=po)
-        formset = PurchaseOrderItemFormSet(request.POST, instance=po)
+        formset = PurchaseOrderItemFormSet(request.POST, instance=po, prefix="items")
 
         if form.is_valid() and formset.is_valid():
             form.save()
@@ -360,13 +361,14 @@ def purchase_order_edit(request, id):
 
     else:
         form = PurchaseOrderForm(instance=po)
-        formset = PurchaseOrderItemFormSet(instance=po)
+        formset = PurchaseOrderItemFormSet(instance=po, prefix="items")
 
     return render(request, "inventory/purchase_order_edit.html", {
         "form": form,
         "formset": formset,
         "po": po,
     })
+
 
 # ------------------ Purchase Order Delete ---------------------
 
@@ -386,17 +388,66 @@ from django.http import HttpResponse
 
 @login_required
 def purchase_order_pdf(request, id):
+    from num2words import num2words   # convert amount into words
+
     po = get_object_or_404(PurchaseOrder, id=id)
     items = PurchaseOrderItem.objects.filter(purchase_order=po)
 
-    # Pass PO + items to your template
+    # -------------------------
+    # CALCULATE ITEM AMOUNTS
+    # -------------------------
+    total_amount = 0
+    item_data = []
+
+    for item in items:
+        qty = float(item.quantity or 0)
+        rate = float(item.rate or 0)
+        discount = float(item.discount or 0)
+
+        # Calculate amount
+        amount = qty * rate
+
+        if discount > 0:
+            amount = amount - (amount * discount / 100)
+
+        total_amount += amount
+
+        item_data.append({
+            "product": item.product,
+            "quantity": item.quantity,
+            "rate": item.rate,
+            "discount": item.discount,
+            "remarks": item.remarks,
+            "amount": round(amount, 2),
+        })
+
+    # -------------------------
+    # GRAND TOTAL
+    # -------------------------
+    freight = float(po.freight_charges or 0)
+    grand_total = total_amount + freight
+
+    # -------------------------
+    # TOTAL IN WORDS
+    # -------------------------
+    amount_words = num2words(grand_total, to='currency', lang='en_IN').title()
+
+    # -------------------------
+    # CONTEXT TO TEMPLATE
+    # -------------------------
     context = {
-        'po': po,
-        'items': items,
+        "po": po,
+        "items": item_data,
+        "total_amount": round(total_amount, 2),
+        "freight_charges": freight,
+        "grand_total": round(grand_total, 2),
+        "total_amount_in_words": amount_words,
     }
 
+    # -------------------------
+    # RENDER PDF
+    # -------------------------
     template = get_template('inventory/purchase_order_pdf.html')
-
     html = template.render(context)
 
     response = HttpResponse(content_type='application/pdf')
@@ -408,8 +459,6 @@ def purchase_order_pdf(request, id):
         return HttpResponse("Error generating PDF")
 
     return response
-
-
 
 
 

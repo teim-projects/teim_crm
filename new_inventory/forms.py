@@ -1,9 +1,12 @@
-from .models import Vendor, HO, Site, PurchaseOrder, DESTINATION_TYPES, PurchaseOrderItem
+from .models import Vendor, HO, Site, PurchaseOrder, DESTINATION_TYPES, PurchaseOrderItem, GoodsReceiveNote
+
 from .utils import get_destination_queryset
-from crmapp.models import Branch
 from django import forms
 from django.forms import inlineformset_factory
+from crmapp.models import Branch
 
+
+# ---------------- VENDOR FORM ----------------
 
 class VendorForm(forms.ModelForm):
     class Meta:
@@ -11,6 +14,8 @@ class VendorForm(forms.ModelForm):
         fields = '__all__'
         label_suffix = ""
 
+
+# ---------------- HO STAFF FORM ----------------
 
 class HoForm(forms.ModelForm):
     is_manager = forms.BooleanField(
@@ -81,12 +86,16 @@ class HoForm(forms.ModelForm):
         return instance
 
 
+# ---------------- SITE FORM ----------------
+
 class SiteForm(forms.ModelForm):
     class Meta:
         model = Site
         fields = '__all__'
         label_suffix = ""
 
+
+# ---------------- PURCHASE ORDER FORM ----------------
 
 class PurchaseOrderForm(forms.ModelForm):
     class Meta:
@@ -97,6 +106,7 @@ class PurchaseOrderForm(forms.ModelForm):
             "destination_id",
             "status",
             "material_supply",
+            "freight_charges",           # NEW FIELD
             "quotation_attachment",
         ]
         widgets = {
@@ -106,12 +116,14 @@ class PurchaseOrderForm(forms.ModelForm):
             "quotation_attachment": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "status": forms.Select(attrs={"class": "form-control"}),
             "vendor": forms.Select(attrs={"class": "form-control"}),
+            "freight_charges": forms.NumberInput(attrs={"class": "form-control"}),   # NEW
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["destination_id"].choices = [("", "---------")]
 
+        # Load destination choices when editing
         if self.instance.pk:
             qs = get_destination_queryset(self.instance.destination_type)
             self.fields["destination_id"].choices = [("", "---------")] + [
@@ -123,6 +135,7 @@ class PurchaseOrderForm(forms.ModelForm):
         cleaned = super().clean()
         dest_type = cleaned.get("destination_type")
 
+        # Auto-set HO id
         if dest_type == "HO":
             ho = get_destination_queryset("HO").first()
             if ho:
@@ -131,18 +144,23 @@ class PurchaseOrderForm(forms.ModelForm):
         return cleaned
 
 
+# ---------------- PURCHASE ORDER ITEM FORM ----------------
+
 class PurchaseOrderItemForm(forms.ModelForm):
     class Meta:
         model = PurchaseOrderItem
-        fields = ["product", "quantity", "remarks"]
+        fields = ["product", "quantity", "rate", "discount", "remarks"]   # NEW FIELDS
         widgets = {
             "product": forms.Select(attrs={"class": "form-control"}),
             "quantity": forms.NumberInput(attrs={"class": "form-control"}),
+            "rate": forms.NumberInput(attrs={"class": "form-control"}),         # NEW
+            "discount": forms.NumberInput(attrs={"class": "form-control"}),     # NEW
             "remarks": forms.TextInput(attrs={"class": "form-control"}),
         }
 
 
-# ✅ FIX — Correct FormSet (inlineformset_factory)
+# ---------------- FORMSET FOR ITEMS ----------------
+
 PurchaseOrderItemFormSet = inlineformset_factory(
     PurchaseOrder,
     PurchaseOrderItem,
@@ -152,10 +170,7 @@ PurchaseOrderItemFormSet = inlineformset_factory(
 )
 
 
-
-
-from django import forms
-from .models import GoodsReceiveNote
+# ---------------- GRN FORM ----------------
 
 class GRNForm(forms.ModelForm):
     class Meta:
