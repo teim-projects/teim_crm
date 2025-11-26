@@ -196,8 +196,8 @@ class PurchaseOrderItem(models.Model):
 
     quantity = models.DecimalField(max_digits=12, decimal_places=2)
 
-    rate = models.DecimalField(max_digits=12, decimal_places=2, default=0)      # NEW
-    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)   # NEW (%)
+    rate = models.DecimalField(max_digits=12, decimal_places=2, default=0 ,  blank=True, null=True)      # NEW
+    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True, null=True)   # NEW (%)
 
     remarks = models.TextField(null=True, blank=True)
 

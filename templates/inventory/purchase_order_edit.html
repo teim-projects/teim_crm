@@ -6,20 +6,23 @@
   <title>TEIMCRM</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="css/style.css" rel="stylesheet">
-  <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-  <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  
+  <!-- CSS (single copies) -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
   <style>
-    .form-rowsales {
-      margin: 110px 10px 10px 10px !important;
-    }
-    .form-group label {
-      margin-bottom: 5px !important;
-    }
+    .form-rowsales { margin: 110px 10px 10px 10px !important; }
+    .form-group label { margin-bottom: 5px !important; }
+
+    /* Select2 styling */
+    .select2-container .select2-selection--single { height: 38px !important; padding: 5px; }
+    .select2-selection__rendered { line-height: 28px !important; }
+    .select2-container--open { z-index: 9999999 !important; }
   </style>
 </head>
 
@@ -68,7 +71,13 @@
 
                 <div class="col-md-6 mb-3">
                   <label>Destination</label>
-                  {{ form.destination_id }}
+                  <select id="id_destination_id" name="destination_id" class="form-control destination-id">
+                    <option value="">---------</option>
+                    {% if destination_initial.id %}
+                      <option value="{{ destination_initial.id }}" selected>{{ destination_initial.label }}</option>
+                    {% endif %}
+                  </select>
+                  
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -132,32 +141,32 @@
               <button class="btn btn-primary">Update PO</button>
             </form>
           </div>
-
         </div>
       </div>
     </div>
   </div>
 
-  <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+  <!-- footer -->
+  <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
     <div class="row p-3">
       <div class="col-md-12 text-center">
-        <p style="margin: 0; font-weight: 600;">
+        <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
           © 2025. Powered by
-          <img src="{% static 'images/crono.png' %}" style="height:20px;">
+          <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+            style="height: 20px; vertical-align: middle;">
           <a href="http://www.chronoanalytics.in/"
-            style="text-decoration:none;background:linear-gradient(to right,#2575fc,#6a11cb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:1.1rem;">
-            Chronoanalytics Solution</a>
+            style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+            Solution</a>
           All Rights Reserved.
         </p>
       </div>
-
       <div class="col-md-12 text-center">
-        <p style="font-weight: 600;">
+        <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
           © 2025. Marketed by
-          <img src="{% static 'images/TeimLogo.png' %}" style="height:20px;">
-          <a href="http://teim.in/"
-            style="text-decoration:none;background:linear-gradient(to right,#2575fc,#6a11cb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:1.1rem;">
-            TEIM</a>
+          <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
+          <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
           All Rights Reserved.
         </p>
       </div>
@@ -167,49 +176,192 @@
   <!-- Destination JS -->
   <script src="{% static 'js/destination_loader.js' %}"></script>
 
-  <!-- PO JS -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const addBtn = document.getElementById("add-item-row");
-      const tableBody = document.getElementById("po-items-body");
-      const emptyRow = document.getElementById("empty-form-row");
-      const totalFormsInput = document.getElementById("id_items-TOTAL_FORMS");
+  <!-- JS libs (single copies, correct order) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
-      function updateRemoveButtons() {
-        tableBody.querySelectorAll(".remove-row").forEach(btn => {
-          btn.onclick = function () {
-            const row = this.closest("tr");
-            const deleteField = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
-            if (deleteField) {
-              deleteField.checked = true;
-              row.style.display = "none";
-            } else {
-              row.remove();
-            }
-          };
-        });
+<!-- PO items JS: clean template, init visible selects, init+open new row select -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const addBtn = document.getElementById('add-item-row');
+    const tableBody = document.getElementById('po-items-body');
+    const emptyRow = document.getElementById('empty-form-row');
+    const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS'); // ensure your formset prefix is 'items'
+
+    // CLEAN: ensure the hidden template isn't already select2-wrapped
+    (function cleanHiddenTemplate() {
+      if (!emptyRow) return;
+      $(emptyRow).find('select').each(function() {
+        const $s = $(this);
+        if ($s.hasClass('select2-hidden-accessible')) {
+          try { $s.select2('destroy'); } catch(e) {}
+        }
+        $s.next('.select2').remove();
+        $s.removeClass('select2-hidden-accessible');
+        $s.show();
+      });
+    })();
+
+    // Initialize select2 on a jQuery container (only uninitialized selects)
+    function activateSelect2($container) {
+      $container.find('select').each(function () {
+        const $s = $(this);
+        if (!$s.hasClass('select2-hidden-accessible')) {
+          $s.select2({
+            width: '100%',
+            placeholder: 'Search product...',
+            allowClear: true,
+            dropdownParent: $(document.body)
+          });
+        }
+      });
+    }
+
+    function bindRemoveButtons() {
+      // unbind first to avoid duplicates
+      $(document).off('click', '.remove-row').on('click', '.remove-row', function () {
+        const $row = $(this).closest('tr');
+        const $del = $row.find('input[type="checkbox"][name$="-DELETE"]');
+        if ($del.length) {
+          $del.prop('checked', true);
+          $row.hide();
+        } else {
+          $row.remove();
+        }
+      });
+    }
+
+    // open helper with retries (timing races)
+    function tryOpen($select, attemptsLeft = 6) {
+      if (! $select || !$select.length) return;
+      if (attemptsLeft <= 0) {
+        console.warn('[Select2] could not open after retries for', $select);
+        return;
+      }
+      try {
+        $select.select2('open');
+        const s2 = $select.data('select2');
+        if (s2 && s2.$selection) s2.$selection.focus();
+        console.log('[Select2] opened for', $select.attr('id'));
+      } catch (err) {
+        setTimeout(() => tryOpen($select, attemptsLeft - 1), 80);
+      }
+    }
+
+    // Initialize visible selects on page load (do NOT initialize hidden template)
+    activateSelect2($('#po-items-body'));
+    bindRemoveButtons();
+
+    // Add new formset row
+    addBtn.addEventListener('click', function () {
+      const index = totalFormsInput ? parseInt(totalFormsInput.value, 10) : tableBody.querySelectorAll('tr').length;
+      // clone template HTML and replace prefix
+      let newRowHtml = emptyRow.outerHTML.replace(/__prefix__/g, index);
+
+      // create element and append
+      const temp = document.createElement('tbody');
+      temp.innerHTML = newRowHtml.trim();
+      const newRow = temp.firstChild;
+      newRow.id = '';
+      newRow.classList.remove('d-none');
+      tableBody.appendChild(newRow);
+
+      // update total forms (if present)
+      if (totalFormsInput) totalFormsInput.value = index + 1;
+
+      // init select2 for this new row
+      const $newRow = $(newRow);
+      activateSelect2($newRow);
+      bindRemoveButtons();
+
+      // attempt to open the product select in new row
+      const $sel = $newRow.find('select').first();
+      if ($sel.length) {
+        // small delay then try open (retries handled inside tryOpen)
+        setTimeout(() => tryOpen($sel), 50);
       }
 
-      addBtn.addEventListener("click", function () {
-        const formIndex = parseInt(totalFormsInput.value, 10);
-        let newRowHtml = emptyRow.outerHTML.replace(/__prefix__/g, formIndex);
-
-        const temp = document.createElement("tbody");
-        temp.innerHTML = newRowHtml.trim();
-        const newRow = temp.firstChild;
-
-        newRow.id = "";
-        newRow.classList.remove("d-none");
-
-        tableBody.appendChild(newRow);
-        totalFormsInput.value = formIndex + 1;
-
-        updateRemoveButtons();
-      });
-
-      updateRemoveButtons();
+      // scroll into view
+      newRow.scrollIntoView({behavior: 'smooth', block: 'center'});
     });
+  });
   </script>
 
+<!-- sidebar js -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+    menuItems.forEach(item => {
+      item.addEventListener('click', function () {
+        const submenu = this.querySelector('.submenu');
+        const arrow = this.querySelector('.arrow-down');
+
+        // Hide all other submenus
+        menuItems.forEach(otherItem => {
+          if (otherItem !== this) {
+            const otherSubmenu = otherItem.querySelector('.submenu');
+            const otherArrow = otherItem.querySelector('.arrow-down');
+            if (otherSubmenu) {
+              otherSubmenu.style.display = 'none';
+              if (otherArrow.classList.contains('arrow-up')) {
+                otherArrow.classList.remove('arrow-up');
+              }
+            }
+          }
+        });
+
+        // Toggle current submenu
+        if (submenu) {
+          submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+          arrow.classList.toggle('arrow-up');
+        }
+      });
+    });
+  });
+  const deleteLinks = document.querySelectorAll('.delete-link');
+  const confirmationModal = document.getElementById('confirmationModal');
+  const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+  const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+  let deleteUrl = '';
+
+  deleteLinks.forEach(link => {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      deleteUrl = this.getAttribute('href');
+      confirmationModal.style.display = 'block';
+    });
+  });
+
+  confirmDeleteButton.addEventListener('click', function () {
+    if (deleteUrl) {
+      window.location.href = deleteUrl;
+    }
+  });
+
+  cancelDeleteButton.addEventListener('click', function () {
+    confirmationModal.style.display = 'none';
+  });
+
+  window.addEventListener('click', function (event) {
+    if (event.target == confirmationModal) {
+      confirmationModal.style.display = 'none';
+    }
+  });
+
+  function openModal(service_id) {
+    fetch(`/get_service_details/${service_id}/`)
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('modal-content').innerHTML = html;
+        document.getElementById('modal').classList.add('active');
+      });
+
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+  }
+</script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 from .models import Vendor, HO, Site, PurchaseOrder, DESTINATION_TYPES, PurchaseOrderItem, GoodsReceiveNote
 
-from .utils import get_destination_queryset
+from .utils import get_destination_queryset,  get_destination_object
 from django import forms
 from django.forms import inlineformset_factory
 from crmapp.models import Branch
@@ -120,17 +120,29 @@ class PurchaseOrderForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["destination_id"].choices = [("", "---------")]
-
-        # Load destination choices when editing
-        if self.instance.pk:
-            qs = get_destination_queryset(self.instance.destination_type)
-            self.fields["destination_id"].choices = [("", "---------")] + [
-                (obj.id, str(obj)) for obj in qs
-            ]
-            self.initial["destination_id"] = self.instance.destination_id
-
+          super().__init__(*args, **kwargs)
+    
+          # safe default
+          self.fields["destination_id"].choices = [("", "---------")]
+    
+          # determine destination_type (prefers posted data, then initial, then instance)
+          dest_type = None
+          if self.data.get("destination_type"):
+              dest_type = self.data.get("destination_type")
+          elif self.initial.get("destination_type"):
+              dest_type = self.initial.get("destination_type")
+          elif getattr(self, "instance", None) and getattr(self.instance, "destination_type", None):
+              dest_type = self.instance.destination_type
+    
+          if dest_type:
+              qs = get_destination_queryset(dest_type)
+              self.fields["destination_id"].choices = [("", "---------")] + [
+                  (obj.id, str(obj)) for obj in qs
+              ]
+    
+              # set initial to the instance integer id (so the select shows selected option)
+              if getattr(self, "instance", None) and getattr(self.instance, "destination_id", None) is not None:
+                  self.initial["destination_id"] = self.instance.destination_id
     def clean(self):
         cleaned = super().clean()
         dest_type = cleaned.get("destination_type")
@@ -151,7 +163,7 @@ class PurchaseOrderItemForm(forms.ModelForm):
         model = PurchaseOrderItem
         fields = ["product", "quantity", "rate", "discount", "remarks"]   # NEW FIELDS
         widgets = {
-            "product": forms.Select(attrs={"class": "form-control"}),
+            "product": forms.Select(attrs={"class": "form-control product-select"}),
             "quantity": forms.NumberInput(attrs={"class": "form-control"}),
             "rate": forms.NumberInput(attrs={"class": "form-control"}),         # NEW
             "discount": forms.NumberInput(attrs={"class": "form-control"}),     # NEW

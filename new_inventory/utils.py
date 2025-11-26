@@ -9,3 +9,12 @@ def get_destination_queryset(dest_type: str):
     elif dest_type == "SITE":
         return Site.objects.all()
     return Branch.objects.none()
+
+
+def get_destination_object(dest_type, dest_id):
+    """Return the destination object (or None) given a type and an id."""
+    qs = get_destination_queryset(dest_type)
+    try:
+        return qs.get(pk=dest_id)
+    except Exception:
+        return None

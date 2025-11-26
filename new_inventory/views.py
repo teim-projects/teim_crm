@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from .models import Vendor, PurchaseOrder, PurchaseOrderItem, Site, HO
 from crmapp.models import UserProfile
 from .forms import *
-from .utils import get_destination_queryset
+from .utils import get_destination_queryset,  get_destination_object
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -349,7 +349,8 @@ def purchase_order_list(request):
 @login_required
 def purchase_order_edit(request, id):
     po = get_object_or_404(PurchaseOrder, id=id)
-
+    dest_obj = get_destination_object(po.destination_type, po.destination_id)
+    dest_label = str(dest_obj) if dest_obj else ""
     if request.method == "POST":
         form = PurchaseOrderForm(request.POST, request.FILES, instance=po)
         formset = PurchaseOrderItemFormSet(request.POST, instance=po, prefix="items")
@@ -367,6 +368,7 @@ def purchase_order_edit(request, id):
         "form": form,
         "formset": formset,
         "po": po,
+        "destination_initial": {"id": po.destination_id, "label": dest_label}
     })
 
 
