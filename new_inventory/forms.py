@@ -106,8 +106,11 @@ class PurchaseOrderForm(forms.ModelForm):
             "destination_id",
             "status",
             "material_supply",
-            "freight_charges",           # NEW FIELD
+            "freight_charges",           
             "quotation_attachment",
+            "mode_terms_of_payments",
+            "terms_of_delivery",
+            "gst_type"
         ]
         widgets = {
             "destination_type": forms.Select(attrs={"class": "form-control destination-type"}),
@@ -116,7 +119,10 @@ class PurchaseOrderForm(forms.ModelForm):
             "quotation_attachment": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "status": forms.Select(attrs={"class": "form-control"}),
             "vendor": forms.Select(attrs={"class": "form-control"}),
-            "freight_charges": forms.NumberInput(attrs={"class": "form-control"}),   # NEW
+            "gst_type": forms.Select(attrs={"class": "form-control"}),
+            "freight_charges": forms.NumberInput(attrs={"class": "form-control"}),  
+            "terms_of_delivery": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
+            "mode_terms_of_payments": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -161,13 +167,15 @@ class PurchaseOrderForm(forms.ModelForm):
 class PurchaseOrderItemForm(forms.ModelForm):
     class Meta:
         model = PurchaseOrderItem
-        fields = ["product", "quantity", "rate", "discount", "remarks"]   # NEW FIELDS
+        fields = ["product", "quantity", "rate", "discount", "remarks","gst_rate"]   
         widgets = {
             "product": forms.Select(attrs={"class": "form-control product-select"}),
             "quantity": forms.NumberInput(attrs={"class": "form-control"}),
-            "rate": forms.NumberInput(attrs={"class": "form-control"}),         # NEW
-            "discount": forms.NumberInput(attrs={"class": "form-control"}),     # NEW
+            "rate": forms.NumberInput(attrs={"class": "form-control"}),         
+            "discount": forms.NumberInput(attrs={"class": "form-control"}),     
             "remarks": forms.TextInput(attrs={"class": "form-control"}),
+            "gst_rate": forms.NumberInput(attrs={"class": "form-control"}),
+
         }
 
 
@@ -184,22 +192,67 @@ PurchaseOrderItemFormSet = inlineformset_factory(
 
 # ---------------- GRN FORM ----------------
 
+# forms.py (no change required, but included for context)
+# class GRNForm(forms.ModelForm):
+#     class Meta:
+#         model = GoodsReceiveNote
+#         fields = ["destination_type", "destination_id", "received_date", "remarks", "status"]
+#         widgets = {
+#             "received_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+#             "destination_type": forms.Select(attrs={"class": "form-control", "id": "id_destination_type"}),
+#             "destination_id": forms.NumberInput(attrs={"class": "form-control", "id": "id_destination_id"}),
+#             "remarks": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+#             "status": forms.Select(attrs={"class": "form-control"}),
+#         }
+
+#     def clean_destination_id(self):
+#         # your validation remains; it will validate the hidden-submitted value
+#         dest_type = self.cleaned_data.get("destination_type")
+#         dest_id = self.cleaned_data.get("destination_id")
+#         if dest_id in (None, ""):
+#             raise forms.ValidationError("Please enter destination ID.")
+#         try:
+#             pk = int(dest_id)
+#         except:
+#             raise forms.ValidationError("Invalid destination ID.")
+#         qs = get_destination_queryset(dest_type)
+#         if not qs.filter(pk=pk).exists():
+#             raise forms.ValidationError("No destination exists with this ID for selected type.")
+#         return pk
+
 class GRNForm(forms.ModelForm):
+    # optional GRN-level batch identifier (not a model field)
+    batch_no = forms.CharField(
+        required=False,
+        label="Batch No (optional, for whole GRN)",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. nov-25"})
+    )
+
     class Meta:
         model = GoodsReceiveNote
-        fields = [
-            "received_location_type",
-            "received_location_id",
-            "received_date",
-            "invoice_no",
-            "invoice_date",
-            "remarks"
-        ]
+        fields = ["destination_type", "destination_id", "received_date", "remarks", "status"]
         widgets = {
             "received_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-            "invoice_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-            "received_location_type": forms.Select(attrs={"class": "form-control"}),
-            "received_location_id": forms.NumberInput(attrs={"class": "form-control"}),
-            "invoice_no": forms.TextInput(attrs={"class": "form-control"}),
+            "destination_type": forms.Select(attrs={"class": "form-control", "id": "id_destination_type"}),
+            "destination_id": forms.NumberInput(attrs={"class": "form-control", "id": "id_destination_id"}),
             "remarks": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+            "status": forms.Select(attrs={"class": "form-control"}),
         }
+
+    def clean_destination_id(self):
+        dest_type = self.cleaned_data.get("destination_type")
+        dest_id = self.cleaned_data.get("destination_id")
+        if dest_id in (None, ""):
+            raise forms.ValidationError("Please enter destination ID.")
+        try:
+            pk = int(dest_id)
+        except Exception:
+            raise forms.ValidationError("Invalid destination ID.")
+        qs = get_destination_queryset(dest_type)  # keep your helper in scope
+        if not qs.filter(pk=pk).exists():
+            raise forms.ValidationError("No destination exists with this ID for selected type.")
+        return pk
+    
+
+
+

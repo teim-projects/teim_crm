@@ -70,7 +70,24 @@
                 {{ form.destination_id }}
               </div>
 
-              <div class="col-md-12 mb-3">
+             
+
+              <div class="col-md-4 mb-3">
+                <label>Gst Type</label>
+                {{ form.gst_type }}
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label>Terms of Delivery</label>
+                {{ form.terms_of_delivery }}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label>Mode Terms of Payments</label>
+                {{ form.mode_terms_of_payments }}
+              </div>
+
+              <div class="col-md-6 mb-3">
                 <label>Material Supply</label>
                 {{ form.material_supply }}
               </div>
@@ -96,6 +113,7 @@
                     <th style="min-width:220px">Product</th>
                     <th style="width:100px">Qty</th>
                     <th style="width:120px">Rate</th>
+                    <th style="width:120px">GST Rate</th>
                     <th style="width:130px">Discount (%)</th>
                     <th style="min-width:220px">Remarks</th>
                     <th style="width:60px"></th>
@@ -110,6 +128,7 @@
                       <td>{{ f.product }}</td>
                       <td>{{ f.quantity }}</td>
                       <td>{{ f.rate }}</td>
+                      <td>{{ f.gst_rate }}</td>
                       <td>{{ f.discount }}</td>
                       <td>{{ f.remarks }}</td>
                       <td class="text-center align-middle">

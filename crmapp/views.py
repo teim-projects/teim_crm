@@ -2295,13 +2295,18 @@ from django.shortcuts import render
 from django.db.models import Q
 from .models import lead_management, main_followup, SalesPerson
 
+from itertools import chain
+from django.db.models import Q
+from django.core.paginator import Paginator
+from datetime import date
+
 @login_required
 @role_required(['admin','sales', 'branch_manager'])
 def pending_followups(request):
     today = date.today()
     branches = Branch.objects.all()
     salespersons = []
-    
+
     # Get filters from request
     search_query = request.GET.get('search', '').strip()
     typeoflead_filter = request.GET.get('typeoflead')
@@ -2316,8 +2321,6 @@ def pending_followups(request):
     order = request.GET.get('order', 'asc')
     segment_filter = request.GET.get('segments')
 
-    order_prefix = '-' if order == 'desc' else ''
-
     # Base queryset filtered by role
     if request.user.userprofile.role == 'admin':
         lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today)
@@ -2327,25 +2330,51 @@ def pending_followups(request):
             firstfollowupdate__lt=today,
             salesperson__mobile_no=request.user.username
         )
-    elif request.user.userprofile.role == 'branch_manager':
-        branch_manager = BranchManager.objects.get(mobile_no =request.user.username)
+    else:  # branch_manager
+        branch_manager = BranchManager.objects.get(mobile_no=request.user.username)
         lead_folloup = lead_management.objects.filter(
             firstfollowupdate__lt=today,
-            branch = branch_manager.branch
+            branch=branch_manager.branch
         )
-
         salespersons = SalesPerson.objects.filter(branch=branch_manager.branch)
 
+    # Overdue followups (main_followup instances referencing leads)
     followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
-    # Apply additional filters
+
+    # Role-based restriction for followups (only once)
+    if request.user.userprofile.role != 'admin':
+        followups = followups.filter(lead__salesperson__mobile_no=request.user.username)
+
+    # --- Simple search via DB icontains (applies before combining) ---
+    if search_query:
+        lead_search_q = (
+            Q(primarycontact__icontains=search_query) |
+            Q(customername__icontains=search_query) |
+            Q(typeoflead__icontains=search_query)
+        )
+        lead_folloup = lead_folloup.filter(lead_search_q)
+
+        followup_search_q = (
+            Q(lead__primarycontact__icontains=search_query) |
+            Q(lead__customername__icontains=search_query) |
+            Q(lead__typeoflead__icontains=search_query)
+        )
+        followups = followups.filter(followup_search_q)
+
+    # Apply other filters to both querysets where relevant
     if typeoflead_filter:
         lead_folloup = lead_folloup.filter(typeoflead=typeoflead_filter)
-        followups = followups.filter(lead__typeoflead=typeoflead_filter) 
+        followups = followups.filter(lead__typeoflead=typeoflead_filter)
     if source_filter:
         lead_folloup = lead_folloup.filter(sourceoflead=source_filter)
+        followups = followups.filter(lead__sourceoflead=source_filter)
     if branch_filter:
-        lead_folloup = lead_folloup.filter(branch_id=branch_filter)
-        followups = followups.filter(lead__branch_id=branch_filter)
+        try:
+            bf_id = int(branch_filter)
+            lead_folloup = lead_folloup.filter(branch_id=bf_id)
+            followups = followups.filter(lead__branch_id=bf_id)
+        except (ValueError, TypeError):
+            pass
     if segment_filter:
         lead_folloup = lead_folloup.filter(customersegment=segment_filter)
         followups = followups.filter(lead__customersegment=segment_filter)
@@ -2354,73 +2383,31 @@ def pending_followups(request):
     if followup_from and followup_to:
         lead_folloup = lead_folloup.filter(firstfollowupdate__range=[followup_from, followup_to])
 
-    # Overdue leads with followup
-    # followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
-    if request.user.userprofile.role != 'admin':
-        followups = followups.filter(lead__salesperson__mobile_no=request.user.username)
-    # if salesperson_filter:
-    #     lead_folloup = lead_folloup.filter(salesperson__full_name = salesperson_filter)
-    #     followups = followups.filter(lead__salesperson__full_name = salesperson_filter)
-
-    # Overdue leads with followup
-    # followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
-    if request.user.userprofile.role != 'admin':
-        followups = followups.filter(lead__salesperson__mobile_no=request.user.username)
     if salesperson_filter:
         lead_folloup = lead_folloup.filter(
             Q(salesperson__full_name=salesperson_filter) |
             Q(branch_manager__full_name=salesperson_filter)
         )
-    
         followups = followups.filter(
             Q(lead__salesperson__full_name=salesperson_filter) |
             Q(lead__branch_manager__full_name=salesperson_filter)
         )
-    
-    # Combine leads: followups + leads without any followup
-    combined_leads = list(chain(
-        followups,
-        [lead for lead in lead_folloup if not main_followup.objects.filter(lead=lead).exists()]
-    ))
 
-    # Apply search and filters manually
-    filtered = []
-    count_data = 0
-    for item in combined_leads:
-        lead = item.lead if hasattr(item, 'lead') else item
+    # Combine leads:
+    # - include followup objects (they reference lead via .lead)
+    # - include leads from lead_folloup that do NOT have any main_followup
+    leads_without_followup = lead_folloup.exclude(id__in=main_followup.objects.values_list('lead_id', flat=True))
+    combined = list(chain(followups, leads_without_followup))
 
-        if search_query and not (
-            search_query.lower() in str(lead.primarycontact).lower() or
-            search_query.lower() in str(lead.customername).lower() or
-            search_query.lower() in str(lead.typeoflead).lower()
-        ):
-            continue
-        if typeoflead_filter and lead.typeoflead != typeoflead_filter:
-            continue
-        if source_filter and lead.sourceoflead != source_filter:
-            continue
-        if branch_filter and lead.branch != branch_filter:
-            continue
-        if enquiry_from and enquiry_to and not (enquiry_from <= str(lead.enquirydate) <= enquiry_to):
-            continue
-        if followup_from and followup_to and not (followup_from <= str(lead.firstfollowupdate) <= followup_to):
-            continue
-        if segment_filter and lead.customersegment != segment_filter:
-            continue
-
-        filtered.append(item)
-
-        count_data = len(filtered)
-
-    # Sort
+    # Sorting: get attribute from underlying lead (for followup items)
     def get_sort_value(obj):
         lead = obj.lead if hasattr(obj, 'lead') else obj
-        return getattr(lead, sort_by, '')
+        return getattr(lead, sort_by, '') or ''
 
-    combined_leads.sort(key=get_sort_value, reverse=(order == 'desc'))
+    combined.sort(key=get_sort_value, reverse=(order == 'desc'))
 
-    # Pagination
-    paginator = Paginator(combined_leads, 10)
+    # Pagination on combined list
+    paginator = Paginator(combined, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
@@ -2428,8 +2415,6 @@ def pending_followups(request):
     # Dropdown options
     typeoflead_choices = [c[0] for c in lead_management._meta.get_field('typeoflead').choices if c[0]]
     source_choices = [c[0] for c in lead_management._meta.get_field('sourceoflead').choices if c[0]]
-    # branch_choices = [c[0] for c in lead_management._meta.get_field('branch').choices if c[0]]
-    # salespersons = SalesPerson.objects.values_list('full_name', flat=True).distinct()
     segments = [c[0] for c in lead_management._meta.get_field('customersegment').choices if c[0] != "NOT SELECTED"]
 
     return render(request, 'pending_followups.html', {

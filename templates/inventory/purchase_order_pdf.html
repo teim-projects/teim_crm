@@ -149,7 +149,7 @@
         </colgroup>
         <thead>
             <tr>
-                <th>Sl<br/>No.</th>
+                <th>Sr<br/>No.</th>
                 <th>Description of Goods<br/>and Services</th>
                 <th>Quantity</th>
                 <th>Per</th>
@@ -177,7 +177,7 @@
             <td class="text-center">Nos</td>
             <td class="text-right">{{ item.rate|floatformat:2 }}</td>
             <td class="text-center">{{ item.discount|floatformat:2 }}</td>
-            <td class="text-right">{{ item.amount|floatformat:2 }}</td>
+            <td class="text-right">{{ item.total }}</td>
             <td class="text-center" style="font-size: 7pt;">{{ po.created_at|date:"d-M-y" }}</td>
         </tr>
         {% endfor %}
