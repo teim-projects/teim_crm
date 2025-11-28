@@ -167,12 +167,14 @@ class PurchaseOrderForm(forms.ModelForm):
 class PurchaseOrderItemForm(forms.ModelForm):
     class Meta:
         model = PurchaseOrderItem
-        fields = ["product", "quantity", "rate", "discount", "remarks","gst_rate"]   
+        fields = ["product", "quantity", "rate", "discount","unit" ,"remarks","gst_rate"]   
         widgets = {
-            "product": forms.Select(attrs={"class": "form-control product-select"}),
+            "product": forms.Select(attrs={"class": "form-control product-select",
+                                           "style": "color: black;"}),
             "quantity": forms.NumberInput(attrs={"class": "form-control"}),
             "rate": forms.NumberInput(attrs={"class": "form-control"}),         
-            "discount": forms.NumberInput(attrs={"class": "form-control"}),     
+            "discount": forms.NumberInput(attrs={"class": "form-control"}),  
+            "unit": forms.TextInput(attrs={"class": "form-control"}),   
             "remarks": forms.TextInput(attrs={"class": "form-control"}),
             "gst_rate": forms.NumberInput(attrs={"class": "form-control"}),
 

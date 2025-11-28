@@ -23,6 +23,10 @@
     .select2-container .select2-selection--single { height: 38px !important; padding: 5px; }
     .select2-selection__rendered { line-height: 28px !important; }
     .select2-container--open { z-index: 9999999 !important; }
+
+    input[type="checkbox"][id$="-DELETE"] {
+      display: none;
+    }
   </style>
 </head>
 
@@ -54,22 +58,22 @@
               {% csrf_token %}
 
               <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                   <label>Vendor</label>
                   {{ form.vendor }}
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                   <label>Status</label>
                   {{ form.status }}
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                   <label>Destination Type</label>
                   {{ form.destination_type }}
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                   <label>Destination</label>
                   <select id="id_destination_id" name="destination_id" class="form-control destination-id">
                     <option value="">---------</option>
@@ -78,6 +82,21 @@
                     {% endif %}
                   </select>
                   
+                </div>
+
+                <div class="col-md-4 mb-3">
+                  <label>Gst Type</label>
+                  {{ form.gst_type }}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                  <label>Terms of Delivery</label>
+                  {{ form.terms_of_delivery }}
+                </div>
+  
+                <div class="col-md-6 mb-3">
+                  <label>Mode Terms of Payments</label>
+                  {{ form.mode_terms_of_payments }}
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -89,16 +108,26 @@
                   <label>Quotation Attachment</label>
                   {{ form.quotation_attachment }}
                 </div>
+
+                <div class="col-md-6 mb-3">
+                  <label>Freight Charges</label>
+                  {{ form.freight_charges }}
+                </div>
+
               </div>
 
               <h4 class="text-center text-primary">PO Items</h4>
               <table class="table table-bordered">
                 <thead>
                   <tr>
-                    <th>Product</th>
-                    <th>Qty</th>
-                    <th>Remarks</th>
-                    <th></th>
+                      <th style="min-width:150px">Product</th>
+                      <th style="width:130px">Qty</th>
+                      <th style="width:120px">Rate</th>
+                      <th style="width:100px">GST Rate</th>
+                      <th style="width:80px">Discount (%)</th>
+                      <th style="min-width:80px;">Unit</th>
+                      <th style="min-width:100px">Remarks</th>
+                      <th style="width:60px"></th>
                   </tr>
                 </thead>
                 <tbody id="po-items-body">
@@ -106,10 +135,15 @@
 
                   {% for f in formset %}
                   <tr class="po-item-row">
+                    {{ f.id }}  
                     <td>{{ f.product }}</td>
                     <td>{{ f.quantity }}</td>
+                    <td>{{ f.rate }}</td>
+                    <td>{{ f.gst_rate }}</td>
+                    <td>{{ f.discount }}</td>
+                    <td>{{ f.unit }}</td>
                     <td>{{ f.remarks }}</td>
-                    <td>
+                    <td class="text-center align-middle">
                       <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
                       {{ f.DELETE }}
                     </td>
@@ -126,19 +160,24 @@
 
               <!-- Template Row -->
               <table class="d-none">
-                <tbody>
-                  <tr id="empty-form-row">
-                    <td>{{ formset.empty_form.product }}</td>
-                    <td>{{ formset.empty_form.quantity }}</td>
-                    <td>{{ formset.empty_form.remarks }}</td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <tbody>
+                <tr id="empty-form-row">
+                  {{ formset.empty_form.id }}
+                  <td>{{ formset.empty_form.product }}</td>
+                  <td>{{ formset.empty_form.quantity }}</td>
+                  <td>{{ formset.empty_form.rate }}</td>
+                  <td>{{ formset.empty_form.gst_rate }}</td>
+                  <td>{{ formset.empty_form.discount }}</td>
+                  <td>{{ formset.empty_form.unit }}</td>
+                  <td>{{ formset.empty_form.remarks }}</td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+              <button type="submit" class="btn btn-primary">Update PO</button>
 
-              <button class="btn btn-primary">Update PO</button>
             </form>
           </div>
         </div>
@@ -223,14 +262,24 @@
       $(document).off('click', '.remove-row').on('click', '.remove-row', function () {
         const $row = $(this).closest('tr');
         const $del = $row.find('input[type="checkbox"][name$="-DELETE"]');
+        const $total = $('#id_items-TOTAL_FORMS'); // formset prefix 'items'
+      
         if ($del.length) {
+          // existing initial form: mark delete and hide
           $del.prop('checked', true);
           $row.hide();
         } else {
+          // newly added form: remove and decrement TOTAL_FORMS
           $row.remove();
+          if ($total.length) {
+            const cur = parseInt($total.val(), 10) || 0;
+            $total.val(Math.max(0, cur - 1));
+            // also re-index remaining new rows if needed (optional)
+          }
         }
       });
     }
+
 
     // open helper with retries (timing races)
     function tryOpen($select, attemptsLeft = 6) {
@@ -291,12 +340,13 @@
 <!-- sidebar js -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // Sidebar submenu wiring (keep as-is)
     const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
     menuItems.forEach(item => {
       item.addEventListener('click', function () {
         const submenu = this.querySelector('.submenu');
         const arrow = this.querySelector('.arrow-down');
-
+  
         // Hide all other submenus
         menuItems.forEach(otherItem => {
           if (otherItem !== this) {
@@ -304,64 +354,78 @@
             const otherArrow = otherItem.querySelector('.arrow-down');
             if (otherSubmenu) {
               otherSubmenu.style.display = 'none';
-              if (otherArrow.classList.contains('arrow-up')) {
+              if (otherArrow && otherArrow.classList.contains('arrow-up')) {
                 otherArrow.classList.remove('arrow-up');
               }
             }
           }
         });
-
+  
         // Toggle current submenu
         if (submenu) {
           submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
-          arrow.classList.toggle('arrow-up');
+          if (arrow) arrow.classList.toggle('arrow-up');
         }
       });
     });
-  });
-  const deleteLinks = document.querySelectorAll('.delete-link');
-  const confirmationModal = document.getElementById('confirmationModal');
-  const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-  const cancelDeleteButton = document.getElementById('cancelDeleteButton');
-  let deleteUrl = '';
-
-  deleteLinks.forEach(link => {
-    link.addEventListener('click', function (event) {
-      event.preventDefault();
-      deleteUrl = this.getAttribute('href');
-      confirmationModal.style.display = 'block';
-    });
-  });
-
-  confirmDeleteButton.addEventListener('click', function () {
-    if (deleteUrl) {
-      window.location.href = deleteUrl;
-    }
-  });
-
-  cancelDeleteButton.addEventListener('click', function () {
-    confirmationModal.style.display = 'none';
-  });
-
-  window.addEventListener('click', function (event) {
-    if (event.target == confirmationModal) {
-      confirmationModal.style.display = 'none';
-    }
-  });
-
-  function openModal(service_id) {
-    fetch(`/get_service_details/${service_id}/`)
-      .then(response => response.text())
-      .then(html => {
-        document.getElementById('modal-content').innerHTML = html;
-        document.getElementById('modal').classList.add('active');
+  
+    // ----- Safe modal / delete wiring (guarded) -----
+    const deleteLinks = document.querySelectorAll('.delete-link') || [];
+    const confirmationModal = document.getElementById('confirmationModal');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    let deleteUrl = '';
+  
+    if (deleteLinks.length && confirmationModal) {
+      deleteLinks.forEach(link => {
+        link.addEventListener('click', function (event) {
+          event.preventDefault();
+          deleteUrl = this.getAttribute('href') || '';
+          confirmationModal.style.display = 'block';
+        });
       });
-
-  }
-
-  function closeModal() {
-    document.getElementById('modal').classList.remove('active');
-  }
-</script>
+    }
+  
+    if (confirmDeleteButton) {
+      confirmDeleteButton.addEventListener('click', function () {
+        if (deleteUrl) {
+          window.location.href = deleteUrl;
+        }
+      });
+    }
+  
+    if (cancelDeleteButton && confirmationModal) {
+      cancelDeleteButton.addEventListener('click', function () {
+        confirmationModal.style.display = 'none';
+      });
+    }
+  
+    if (confirmationModal) {
+      window.addEventListener('click', function (event) {
+        if (event.target === confirmationModal) {
+          confirmationModal.style.display = 'none';
+        }
+      });
+    }
+  
+    // ----- Modal open/close helpers (guarded) -----
+    window.openModal = function (service_id) {
+      fetch(`/get_service_details/${service_id}/`)
+        .then(response => response.text())
+        .then(html => {
+          const mc = document.getElementById('modal-content');
+          const modal = document.getElementById('modal');
+          if (mc) mc.innerHTML = html;
+          if (modal) modal.classList.add('active');
+        });
+    };
+  
+    window.closeModal = function () {
+      const modal = document.getElementById('modal');
+      if (modal) modal.classList.remove('active');
+    };
+  });
+  </script>
+  
 </body>
 </html>

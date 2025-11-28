@@ -193,17 +193,51 @@ class PurchaseOrder(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     @property
-    def total_amount(self):
+    def total_gst(self) -> Decimal:
+        """Sum of gst_amount across all items (Decimal)"""
         total = Decimal("0.00")
         for item in self.items.all():
-            total += item.total
+            total += (item.gst_amount or Decimal("0.00"))
+        return total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    @property
+    def cgst_total(self) -> Decimal:
+        """Half of total_gst when gst_type is cgst_sgst, else 0"""
+        if (self.gst_type or "").lower() == "cgst_sgst":
+            half = (self.total_gst / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            return half
+        return Decimal("0.00")
+
+    @property
+    def sgst_total(self) -> Decimal:
+        if (self.gst_type or "").lower() == "cgst_sgst":
+            half = (self.total_gst / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            return half
+        return Decimal("0.00")
+
+    @property
+    def igst_total(self) -> Decimal:
+        """All GST as IGST when gst_type isn't cgst_sgst"""
+        if (self.gst_type or "").lower() != "cgst_sgst":
+            return self.total_gst
+        return Decimal("0.00")
+
+    @property
+    def grand_total(self) -> Decimal:
+        """
+        Grand total = sum(item.amount_excl_gst) + total_gst + freight
+        (keeps numbers consistent with separate gst fields)
+        """
+        subtotal = Decimal("0.00")
+        for item in self.items.all():
+            subtotal += (item.amount_excl_gst or Decimal("0.00"))
 
         freight = self.freight_charges or Decimal("0.00")
-        return total + freight
-    
+        total = subtotal + self.total_gst + freight
+        return total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
     def __str__(self):
         return self.po_no
-
 
 # ----------------------------- PURCHASE ORDER ITEMS ------------------------------
 
@@ -215,7 +249,7 @@ class PurchaseOrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
 
     quantity = models.DecimalField(max_digits=12, decimal_places=2)
-
+    unit = models.CharField(max_length=200, blank=True, null=True)
     rate = models.DecimalField(max_digits=12, decimal_places=2, default=0 ,  blank=True, null=True)      # NEW
     gst_rate = models.DecimalField(max_digits=12, decimal_places=2, default=0 ,  blank=True, null=True) 
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True, null=True)   # NEW (%)
@@ -223,21 +257,39 @@ class PurchaseOrderItem(models.Model):
     remarks = models.TextField(null=True, blank=True)
 
     @property
-    def total(self) -> Decimal:
+    def amount_excl_gst(self) -> Decimal:
         """
-        Final item total = (qty * rate - discount%) + GST%.
+        Base amount after discount, BEFORE GST.
+        (This mirrors the logic used inside your current total calculation.)
         """
         qty = self.quantity or Decimal("0")
         rate = self.rate or Decimal("0")
         disc = self.discount or Decimal("0")
-        gst = self.gst_rate or Decimal("0")
 
         base = qty * rate
-        discount_amount = base * (disc / Decimal("100"))
+        discount_amount = (base * (disc / Decimal("100")))
         after_discount = base - discount_amount
-        gst_amount = after_discount * (gst / Decimal("100"))
 
-        return (after_discount + gst_amount).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        return after_discount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    @property
+    def gst_amount(self) -> Decimal:
+        """
+        GST amount for this item (computed on after-discount amount).
+        """
+        after_discount = self.amount_excl_gst
+        gst = self.gst_rate or Decimal("0")
+        gst_amt = (after_discount * (gst / Decimal("100"))).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        return gst_amt
+
+    @property
+    def total(self) -> Decimal:
+        """
+        If you want total to include GST, return after_discount + gst_amount.
+        If you prefer total to remain amount BEFORE GST, keep original behaviour.
+        Below I return amount BEFORE GST to match your current code.
+        """
+        return self.amount_excl_gst
 
     def __str__(self):
         return f"{self.product} ({self.quantity})"

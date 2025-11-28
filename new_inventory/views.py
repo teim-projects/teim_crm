@@ -22,6 +22,7 @@ from django.contrib import messages
 import datetime
 from num2words import num2words
 import re
+from crmapp.custom_filters import price_in_words
 
 
 # ------- load destination --------
@@ -373,6 +374,15 @@ def purchase_order_edit(request, id):
             form.save()
             formset.save()
             return redirect("purchase_order_list")
+        
+        else:
+            # TEMP: surface errors to console/log so you can see what's wrong
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error("PO form errors: %s", form.errors.as_json())
+            for i, f in enumerate(formset.forms):
+                logger.error("Formset form %d errors: %s", i, f.errors.as_json())
+            logger.error("Formset non_form_errors: %s", formset.non_form_errors())
 
     else:
         form = PurchaseOrderForm(instance=po)
@@ -398,82 +408,6 @@ def purchase_order_delete(request, id):
 
 #---------------------PDF------------------------
 
-
-
-# @login_required
-# def purchase_order_pdf(request, id):
-#     from num2words import num2words   # convert amount into words
-
-#     po = get_object_or_404(PurchaseOrder, id=id)
-#     items = PurchaseOrderItem.objects.filter(purchase_order=po)
-
-#     # -------------------------
-#     # CALCULATE ITEM AMOUNTS
-#     # -------------------------
-#     total_amount = 0
-#     item_data = []
-
-#     for item in items:
-#         qty = float(item.quantity or 0)
-#         rate = float(item.rate or 0)
-#         discount = float(item.discount or 0)
-
-#         # Calculate amount
-#         amount = qty * rate
-
-#         if discount > 0:
-#             amount = amount - (amount * discount / 100)
-
-#         total_amount += amount
-
-#         item_data.append({
-#             "product": item.product,
-#             "quantity": item.quantity,
-#             "rate": item.rate,
-#             "discount": item.discount,
-#             "remarks": item.remarks,
-#             "amount": round(amount, 2),
-#         })
-
-#     # -------------------------
-#     # GRAND TOTAL
-#     # -------------------------
-#     freight = float(po.freight_charges or 0)
-#     grand_total = total_amount + freight
-
-#     # -------------------------
-#     # TOTAL IN WORDS
-#     # -------------------------
-#     amount_words = num2words(grand_total, to='currency', lang='en_IN').title()
-
-#     # -------------------------
-#     # CONTEXT TO TEMPLATE
-#     # -------------------------
-#     context = {
-#         "po": po,
-#         "items": item_data,
-#         "total_amount": round(total_amount, 2),
-#         "freight_charges": freight,
-#         "grand_total": round(grand_total, 2),
-#         "total_amount_in_words": amount_words,
-#     }
-
-#     # -------------------------
-#     # RENDER PDF
-#     # -------------------------
-#     template = get_template('inventory/purchase_order_pdf.html')
-#     html = template.render(context)
-
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = f'attachment; filename="PO_{po.po_no}.pdf"'
-
-#     pisa_status = pisa.CreatePDF(html, dest=response)
-
-#     if pisa_status.err:
-#         return HttpResponse("Error generating PDF")
-
-#     return response
-
 @login_required
 def purchase_order_pdf(request, id):
     """
@@ -481,60 +415,16 @@ def purchase_order_pdf(request, id):
     Without ?download=1 the PDF will be served inline so the browser can open it.
     """
     po = get_object_or_404(PurchaseOrder, id=id)
-    items = PurchaseOrderItem.objects.filter(purchase_order=po)
+    total_amount_in_words = price_in_words(po.grand_total)
 
-    # -------------------------
-    # CALCULATE ITEM AMOUNTS
-    # -------------------------
-    total_amount = 0
-    item_data = []
-
-    for item in items:
-        qty = float(item.quantity or 0)
-        rate = float(item.rate or 0)
-        discount = float(item.discount or 0)
-
-        amount = qty * rate
-        if discount > 0:
-            amount = amount - (amount * discount / 100)
-
-        total_amount += amount
-
-        item_data.append({
-            "product": item.product,
-            "quantity": item.quantity,
-            "rate": item.rate,
-            "discount": item.discount,
-            "remarks": item.remarks,
-            "amount": round(amount, 2),
-        })
-
-    # -------------------------
-    # GRAND TOTAL
-    # -------------------------
-    freight = float(po.freight_charges or 0)
-    grand_total = total_amount + freight
-
-    # -------------------------
-    # TOTAL IN WORDS
-    # -------------------------
-    # num2words sometimes expects ints; but it supports floats for currency mode.
-    try:
-        amount_words = num2words(grand_total, to='currency', lang='en_IN').title()
-    except Exception:
-        # fallback to simple words for whole rupees
-        amount_words = num2words(int(round(grand_total)), lang='en_IN').title()
-
-    # -------------------------
-    # CONTEXT TO TEMPLATE
-    # -------------------------
+    details = get_destination_details(po.destination_type, po.destination_id)
+    destination_display = format_destination_display(details) if details else "Not specified"
+  
     context = {
         "po": po,
-        "items": item_data,
-        "total_amount": round(total_amount, 2),
-        "freight_charges": freight,
-        "grand_total": round(grand_total, 2),
-        "total_amount_in_words": amount_words,
+        "total_amount_in_words": total_amount_in_words,
+        "destination_details": details,
+        "destination_display": destination_display
     }
 
     # -------------------------
@@ -562,120 +452,6 @@ def purchase_order_pdf(request, id):
     return response
 
 #----------------------------------GRN------------------------------------
-
-# @login_required
-# def grn_create(request, po_id):
-#     po = get_object_or_404(PurchaseOrder, id=po_id)
-#     po_items = po.items.all()  # adjust relation name
-
-#     # --- compute remaining for each PO item (already-received across previous GRNs) ---
-#     remaining_by_item = {}
-#     for pi in po_items:
-#         s = GoodsReceiveNoteItem.objects.filter(po_item=pi).aggregate(total=Sum("received_qty"))["total"]
-#         already = Decimal(s or 0)
-#         remaining = Decimal(pi.quantity or 0) - already
-#         if remaining < 0:
-#             remaining = Decimal("0.00")
-#         remaining_by_item[pi.id] = remaining
-
-#     for pi in po_items:
-#         pi.remaining = remaining_by_item.get(pi.id, Decimal("0.00"))
-#     # existing destination handling...
-#     po_dest_type = getattr(po, "destination_type", None)
-#     po_dest_id   = getattr(po, "destination_id", None)
-#     dest_obj = get_destination_object(po_dest_type, po_dest_id)
-#     dest_label = str(dest_obj) if dest_obj else ""
-
-#     if request.method == "POST":
-#         form = GRNForm(request.POST)
-#         if form.is_valid():
-#             # SERVER-SIDE: re-check remaining before creating (important)
-#             any_created = False
-#             errors = []
-#             for pi in po_items:
-#                 raw = request.POST.get(f"received_qty_{pi.id}", "").strip()
-#                 if raw in ("", None, ""):
-#                     continue
-#                 try:
-#                     received_qty = Decimal(raw)
-#                 except Exception:
-#                     errors.append(f"Invalid quantity for {pi.product.product_name}.")
-#                     continue
-
-#                 if received_qty <= 0:
-#                     continue
-
-#                 # re-check remaining from DB (safer than trusting the earlier variable)
-#                 s = GoodsReceiveNoteItem.objects.filter(po_item=pi).aggregate(total=Sum("received_qty"))["total"]
-#                 already_db = Decimal(s or 0)
-#                 remaining_db = Decimal(pi.quantity or 0) - already_db
-#                 if remaining_db <= 0:
-#                     errors.append(f"{pi.product.product_name} is already fully received.")
-#                     continue
-#                 if received_qty > remaining_db:
-#                     errors.append(
-#                         f"Received qty for {pi.product.product_name} exceeds remaining ({remaining_db})."
-#                     )
-#                     continue
-
-#                 # if passes, create below after saving grn
-#             if errors:
-#                 from django.contrib import messages
-#                 for e in errors:
-#                     messages.error(request, e)
-#             else:
-#                 # proceed to create GRN and items (your existing logic)
-#                 grn = form.save(commit=False)
-#                 grn.purchase_order = po
-#                 grn.vendor = po.vendor
-#                 grn.created_by = request.user
-#                 grn.destination_type = form.cleaned_data["destination_type"]
-#                 grn.destination_id = form.cleaned_data["destination_id"]
-#                 grn.save()
-
-#                 items_created = 0
-#                 for pi in po_items:
-#                     raw = request.POST.get(f"received_qty_{pi.id}", "").strip()
-#                     if raw in ("", None, ""):
-#                         continue
-#                     received_qty = Decimal(raw)
-#                     if received_qty <= 0:
-#                         continue
-
-#                     remarks = request.POST.get(f"remarks_{pi.id}", "")[:255]
-
-#                     GoodsReceiveNoteItem.objects.create(
-#                         grn=grn,
-#                         po_item=pi,
-#                         product=pi.product,
-#                         ordered_qty=pi.quantity,
-#                         received_qty=received_qty,
-#                         remarks=remarks
-#                     )
-#                     items_created += 1
-
-#                 # update PO status (your logic)
-#                 all_received = sum(i.received_qty for i in grn.items.all())
-#                 all_ordered  = sum(i.ordered_qty  for i in grn.items.all())
-#                 po.status = "CLOSED" if all_received >= all_ordered else "PARTIALLY_RECEIVED"
-#                 po.save()
-#                 return redirect("grn_list")
-#     else:
-#         form = GRNForm(initial={
-#             "destination_type": po_dest_type,
-#             "destination_id": po_dest_id
-#         })
-
-#     return render(request, "inventory/grn_create.html", {
-#         "form": form,
-#         "po": po,
-#         "po_items": po_items,
-#         "destination_initial": {"id": po_dest_id, "label": dest_label},
-#         "remaining_by_item": remaining_by_item,
-#     })
-
-
-
 @login_required
 def grn_create(request, po_id):
     po = get_object_or_404(PurchaseOrder, id=po_id)
@@ -839,12 +615,6 @@ def grn_create(request, po_id):
     })
 
 
-# def grn_list(request):
-#     grns = GoodsReceiveNote.objects.all().order_by("-created_at")
-#     return render(request, "inventory/grn_list.html", {"grns": grns})
-
-
-
 def grn_list(request):
     """
     List GRNs with:
@@ -909,5 +679,13 @@ def grn_list(request):
 @login_required
 def grn_detail(request, grn_id):
     grn = get_object_or_404(GoodsReceiveNote, id=grn_id)
-    items = grn.items.all()
-    return render(request, "inventory/grn_detail.html", {"grn": grn, "items": items})
+    items = grn.items.select_related(
+        "product",
+        "batch",
+        "batch__batch"
+    ).all()
+
+    return render(request, "inventory/grn_detail.html", {
+        "grn": grn,
+        "items": items
+    })

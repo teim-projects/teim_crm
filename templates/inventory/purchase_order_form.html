@@ -21,6 +21,15 @@
     .select2-container .select2-selection--single { height: 38px !important; padding: 5px; }
     .select2-selection__rendered { line-height: 28px !important; }
     .select2-container--open { z-index: 9999999 !important; }
+    /* result rows in dropdown */
+.select2-container .select2-results__option {
+  color: #000000 !important; /* set to any color you want */
+}
+
+/* currently selected value shown in the select box */
+.select2-container .select2-selection__rendered {
+  color: #686868 !important;
+}
 
     input[type="checkbox"][id$="-DELETE"] {
       display: none;
@@ -115,7 +124,8 @@
                     <th style="width:120px">Rate</th>
                     <th style="width:120px">GST Rate</th>
                     <th style="width:130px">Discount (%)</th>
-                    <th style="min-width:220px">Remarks</th>
+                    <th style="min-width:150px;">Unit</th>
+                    <th style="min-width:150px">Remarks</th>
                     <th style="width:60px"></th>
                   </tr>
                 </thead>
@@ -130,6 +140,7 @@
                       <td>{{ f.rate }}</td>
                       <td>{{ f.gst_rate }}</td>
                       <td>{{ f.discount }}</td>
+                      <td>{{ f.unit }}</td>
                       <td>{{ f.remarks }}</td>
                       <td class="text-center align-middle">
                         <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
@@ -152,7 +163,9 @@
                 <td>{{ formset.empty_form.product }}</td>
                 <td>{{ formset.empty_form.quantity }}</td>
                 <td>{{ formset.empty_form.rate }}</td>
+                <td>{{ formset.empty_form.gst_rate }}</td>
                 <td>{{ formset.empty_form.discount }}</td>
+                <td>{{ formset.empty_form.unit }}</td>
                 <td>{{ formset.empty_form.remarks }}</td>
                 <td class="text-center align-middle">
                   <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
