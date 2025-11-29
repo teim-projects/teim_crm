@@ -39,4 +39,6 @@ urlpatterns = [
 
     # Optional placeholder (when you create GRN list page)
     path("grn/list/", grn_list, name="grn_list"),  
+    path('stock/products/', products_stock_list_view, name='products_stock_list'),
+    # path('stock/product/<int:product_id>/', product_stock_view, name='product_stock_view'),
 ]

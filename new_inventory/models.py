@@ -1,3 +1,4 @@
+from venv import logger
 from django.db import models
 from crmapp.models import Product
 from django.contrib.auth.models import User
@@ -6,7 +7,8 @@ import datetime
 import random
 from .utils import get_or_create_product_batch, get_destination_object
 from django.db import transaction
-
+from django.utils import timezone
+import logging
 
 # ----------------------------- CONSTANTS ------------------------------
 
@@ -362,6 +364,8 @@ class GoodsReceiveNote(models.Model):
     def __str__(self):
         return f"GRN-{self.grn_no}"
 
+logger = logging.getLogger(__name__)
+
 class GoodsReceiveNoteItem(models.Model):
     grn = models.ForeignKey(GoodsReceiveNote, on_delete=models.CASCADE, related_name="items")
     po_item = models.ForeignKey(PurchaseOrderItem, on_delete=models.SET_NULL, null=True, blank=True)
@@ -372,20 +376,19 @@ class GoodsReceiveNoteItem(models.Model):
     remaining_qty = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
 
+    
+
     def save(self, *args, **kwargs):
         try:
             with transaction.atomic():
+                # --- existing batch auto-creation logic (unchanged) ---
                 if self.batch is None and self.product_id:
-                    # Prefer to use GRN's batch (one batch for whole GRN)
                     grn_batch = None
                     if self.grn_id:
-                        # If the parent GRN exists and has a batch, use it
                         grn = GoodsReceiveNote.objects.select_for_update().filter(id=self.grn_id).first()
                         if grn and grn.batch:
                             grn_batch = grn.batch
 
-                    # Allow overriding: if caller set _batch_no_str we use utils to find/create with that batch_no,
-                    # otherwise use the GRN-created Batch
                     batch_no_str = getattr(self, "_batch_no_str", None)
 
                     product_batch = get_or_create_product_batch(
@@ -397,17 +400,164 @@ class GoodsReceiveNoteItem(models.Model):
                     )
                     self.batch = product_batch
 
-                if self.ordered_qty is not None and self.received_qty is not None:
-                    rem = Decimal(self.ordered_qty) - Decimal(self.received_qty)
-                    self.remaining_qty = rem if rem >= 0 else Decimal("0.00")
+                # --- compute remaining correctly when po_item is set ---
+                if self.po_item_id:
+                    # Lock the PO item row to reduce race conditions
+                    poi = PurchaseOrderItem.objects.select_for_update().get(id=self.po_item_id)
 
+                    # Try to find the ordered quantity field on the PO item (robust fallback)
+                    possible_names = ("ordered_qty", "order_qty", "qty", "quantity", "po_qty")
+                    ordered_qty_value = None
+                    for name in possible_names:
+                        if hasattr(poi, name):
+                            val = getattr(poi, name)
+                            # accept numeric-like values (Decimal, int, str that can be Decimal)
+                            try:
+                                ordered_qty_value = Decimal(val)
+                            except Exception:
+                                ordered_qty_value = None
+                            break
+
+                    # fallback to this GRN item's ordered_qty if present
+                    if ordered_qty_value is None and getattr(self, "ordered_qty", None) is not None:
+                        try:
+                            ordered_qty_value = Decimal(self.ordered_qty)
+                        except Exception:
+                            ordered_qty_value = None
+
+                    if ordered_qty_value is None:
+                        # We couldn't find an ordered quantity to compute against.
+                        # Log and fall back to per-line calculation (so we don't crash).
+                        logger.warning(
+                            "Could not determine ordered quantity for PO item id %s; "
+                            "falling back to line-level ordered_qty if available.",
+                            self.po_item_id
+                        )
+                        if self.ordered_qty is not None and self.received_qty is not None:
+                            rem = Decimal(self.ordered_qty) - Decimal(self.received_qty)
+                            self.remaining_qty = rem if rem >= 0 else Decimal("0.00")
+                        else:
+                            # leave as is (or set zero)
+                            self.remaining_qty = Decimal("0.00")
+                    else:
+                        # Sum of other GRN items' received_qty for this PO item (exclude this if updating)
+                        qs = GoodsReceiveNoteItem.objects.filter(po_item_id=self.po_item_id)
+                        if self.pk:
+                            qs = qs.exclude(pk=self.pk)
+                        other_total = qs.aggregate(total=models.Sum('received_qty'))['total'] or Decimal('0.00')
+
+                        this_received = Decimal(self.received_qty or 0)
+                        cumulative = Decimal(other_total) + this_received
+
+                        rem = ordered_qty_value - cumulative
+                        self.remaining_qty = rem if rem >= 0 else Decimal('0.00')
+                else:
+                    # fallback: use the line's ordered/received fields
+                    if self.ordered_qty is not None and self.received_qty is not None:
+                        rem = Decimal(self.ordered_qty) - Decimal(self.received_qty)
+                        self.remaining_qty = rem if rem >= 0 else Decimal("0.00")
+
+                # finally persist
                 super().save(*args, **kwargs)
 
         except Exception:
-            import logging
-            logger = logging.getLogger(__name__)
             logger.exception("Error saving GoodsReceiveNoteItem (auto-batch creation)")
             raise
+    def __str__(self):
+        return f"GRN Item - {getattr(self.product, 'product_name', str(self.product))}"
 
-        def __str__(self):
-            return f"GRN Item - {getattr(self.product, 'product_name', str(self.product))}"
+
+
+class CurrentStock(models.Model):
+    product = models.ForeignKey('crmapp.Product', on_delete=models.CASCADE)
+    batch = models.ForeignKey('ProductBatch', on_delete=models.PROTECT, null=True, blank=True)
+    location_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
+    location_id = models.BigIntegerField()
+    opening_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+    in_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))   # cumulative in
+    out_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))  # cumulative out
+    reserved_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+    closing_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('product', 'batch', 'location_type', 'location_id')
+        indexes = [
+            models.Index(fields=['product']),
+            models.Index(fields=['batch']),
+            models.Index(fields=['location_type', 'location_id']),
+        ]
+    
+    @property
+    def available_qty(self):
+        """Quantity actually available for use (closing - reserved)."""
+        return (self.closing_qty or Decimal('0')) - (self.reserved_qty or Decimal('0'))
+
+    def recompute_closing(self):
+        """Recompute and save closing based on opening/in/out/reserved."""
+        self.closing_qty = (self.opening_qty or Decimal('0')) + (self.in_qty or Decimal('0')) - (self.out_qty or Decimal('0')) - (self.reserved_qty or Decimal('0'))
+        self.save(update_fields=['closing_qty', 'last_updated'])
+
+    def __str__(self):
+        return f"{self.product} / {self.batch or 'NO-BATCH'} @ {self.location_type}:{self.location_id} -> {self.closing_qty}"
+
+
+class StockLedger(models.Model):
+    product = models.ForeignKey('crmapp.Product', on_delete=models.CASCADE)
+    batch = models.ForeignKey('ProductBatch', on_delete=models.PROTECT, null=True, blank=True)
+    location_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
+    location_id = models.BigIntegerField()
+    transaction_type = models.CharField(max_length=30, choices=TRANSACTION_TYPES)
+    transaction_ref = models.CharField(max_length=255, null=True, blank=True)  # used to link to GRN item e.g. GRN_ITEM_12
+    document_id = models.BigIntegerField(null=True, blank=True)  # e.g. GRN id
+    in_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+    out_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+    balance_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+    transaction_date = models.DateField(default=timezone.now)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    remarks = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['product']),
+            models.Index(fields=['transaction_date'])
+        ]
+
+    def __str__(self):
+        return f"{self.transaction_type} {self.product} +{self.in_qty} -{self.out_qty} -> bal {self.balance_qty} ({self.transaction_ref})"
+    
+
+class ProductStock(models.Model):
+    """
+    Denormalized table for product-level stock per location.
+    Updated by signals when GRN/MTN/DC events occur.
+    """
+    product = models.ForeignKey('crmapp.Product', on_delete=models.CASCADE)
+    location_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
+    location_id = models.BigIntegerField()
+
+    # aggregated totals
+    total_in_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+    total_out_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+    total_reserved_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('product', 'location_type', 'location_id')
+        indexes = [
+            models.Index(fields=['product']),
+            models.Index(fields=['location_type', 'location_id']),
+        ]
+
+    def __str__(self):
+        return f"{self.product} @ {self.location_type}:{self.location_id} -> {self.closing_qty}"
+
+    @property
+    def closing_qty(self):
+        return (self.total_in_qty or Decimal('0')) - (self.total_out_qty or Decimal('0')) - (self.total_reserved_qty or Decimal('0'))
+    
+
+    

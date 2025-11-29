@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
-from crmapp.models import UserProfile
+from crmapp.models import UserProfile, Product
 from .models import *
 from .forms import *
 from .utils import *
@@ -19,10 +19,11 @@ from django.db.models import Sum
 
 from django.db import transaction
 from django.contrib import messages
-import datetime
+import datetime  
 from num2words import num2words
 import re
 from crmapp.custom_filters import price_in_words
+from django.utils.dateparse import parse_date
 
 
 # ------- load destination --------
@@ -689,3 +690,104 @@ def grn_detail(request, grn_id):
         "grn": grn,
         "items": items
     })
+
+
+
+def _parse_int_or_none(val):
+    if val is None or str(val).strip() == "":
+        return None
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return None
+
+def products_stock_list_view(request):
+    """
+    Products stock list — searchable by product name (q).
+    New optional filters: batch_no, expiry_from (YYYY-MM-DD), expiry_to (YYYY-MM-DD).
+    """
+    search = request.GET.get('q') or None
+    location_type = request.GET.get('location_type') or None
+    location_id = _parse_int_or_none(request.GET.get('location_id'))
+
+     # get destination queryset for selected type (empty qs if no type)
+    destination_qs = None
+    if location_type:
+        destination_qs = get_destination_queryset(location_type)
+    else:
+        destination_qs = []  # or Branch.objects.none()
+
+    # new filters
+    batch_no = request.GET.get('batch_no') or None
+    expiry_from = request.GET.get('expiry_from') or None  # expect 'YYYY-MM-DD' or None
+    expiry_to = request.GET.get('expiry_to') or None
+
+    page = request.GET.get('page', 1)
+
+    qs = annotated_product_stock_qs(
+        Product,
+        location_type=location_type,
+        location_id=location_id,
+        search=search,
+        batch_no=batch_no,
+        expiry_from=expiry_from,
+        expiry_to=expiry_to
+    ).order_by('product_name')
+
+
+
+    paginator = Paginator(qs, 25)
+    try:
+        products_page = paginator.page(page)
+    except PageNotAnInteger:
+        products_page = paginator.page(1)
+    except EmptyPage:
+        products_page = paginator.page(paginator.num_pages)
+
+    rows = []
+    # inside products_stock_list_view, after you fetch the page:
+    for p in products_page:
+        # if batch/expiry filters were provided use batch_in_qty (subquery result), else use denormalized in_qty
+        if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
+            in_qty = getattr(p, 'batch_in_qty', Decimal('0'))
+            # If you also annotated batch_reserved_qty etc, pick those similarly
+            reserved = Decimal('0')  # adjust if you added a batch_reserved annotation
+            out_qty = Decimal('0')   # per-batch out may not exist; use productstock out if needed
+        else:
+            in_qty = getattr(p, 'in_qty', Decimal('0'))
+            out_qty = getattr(p, 'out_qty', Decimal('0'))
+            reserved = getattr(p, 'reserved_qty', Decimal('0'))
+
+        closing = (in_qty or Decimal('0')) - (out_qty or Decimal('0')) - (reserved or Decimal('0'))
+        rows.append({
+            "id": p.pk,
+            "name": getattr(p, 'product_name', str(p)),
+            "in_qty": str(in_qty),
+            "out_qty": str(out_qty),
+            "reserved_qty": str(reserved),
+            "closing_qty": str(closing),
+        })
+
+
+    params = request.GET.copy()
+    if 'page' in params:
+        params.pop('page')
+    base_qs = params.urlencode()
+
+    context = {
+        "rows": rows,
+        "page_obj": products_page,
+        "paginator": paginator,
+        "base_qs": base_qs,
+        "filters": {
+            "location_type": location_type,
+            "location_id": location_id,
+            "q": search,
+            "batch_no": batch_no,
+            "expiry_from": expiry_from,
+            "expiry_to": expiry_to,
+        },
+        "destination_qs": destination_qs,
+    }
+    return render(request, "inventory/products_stock_list.html", context)
+
