@@ -1,192 +1,194 @@
 {% load static %}
 <!doctype html>
 <html>
+
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="utf-8" />
   <title>Products stock</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="icon" href="{% static 'images/crono.png' %}" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="icon" href="{% static 'images/crono.png' %}" type="image/png">
 
-    <!-- <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"> -->
-    <!-- <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script> -->
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Cardo:ital@0;1&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Outfit:wght@100..900&display=swap"
-        rel="stylesheet">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Cardo:ital@0;1&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Outfit:wght@100..900&display=swap"
+    rel="stylesheet">
   <style>
-    .small-muted { color:#666; font-size:.9rem; }
-    .table-fixed { table-layout: fixed; word-wrap: break-word; }
+    .small-muted {
+      color: #666;
+      font-size: .9rem;
+    }
+
+    .table-fixed {
+      table-layout: fixed;
+      word-wrap: break-word;
+    }
   </style>
   <style>
     /* Body Styling */
     body {
-        font-family: 'Roboto', sans-serif;
-        background-color: #dedede;
-        color: #333;
-        margin: 0;
-        padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #dedede;
+      color: #333;
+      margin: 0;
+      padding: 0;
     }
 
     /* Title Styling */
 
     h1,
     .hh {
-        font-family: 'Playfair Display', serif;
-        padding: 20px;
-        text-align: center;
-        background: linear-gradient(to right, #2575fc, #6a11cb);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        border-bottom: 3px solid rgb(80, 16, 177);
+      font-family: 'Playfair Display', serif;
+      padding: 20px;
+      text-align: center;
+      background: linear-gradient(to right, #2575fc, #6a11cb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border-bottom: 3px solid rgb(80, 16, 177);
     }
 
 
     /* Content Layout */
 
     .table-wrapper {
-        background-color: white;
-        border: 1px solid black;
-        padding: 20px;
-        margin-top: 90px !important;
-        border-radius: 15px;
-        box-shadow: 0px 0px 10px rgb(125, 93, 93);
-        box-shadow: inset 0px 0px 3px rgb(28, 17, 239);
+      background-color: white;
+      border: 1px solid black;
+      padding: 20px;
+      margin-top: 90px !important;
+      border-radius: 15px;
+      box-shadow: 0px 0px 10px rgb(125, 93, 93);
+      box-shadow: inset 0px 0px 3px rgb(28, 17, 239);
     }
-    
+
 
     .container-table {
-        overflow-x: auto;
-        width: calc(100%);
-        margin: auto;
-        max-width: 100%;
-        padding: 0 20px;
+      overflow-x: auto;
+      width: calc(100%);
+      margin: auto;
+      max-width: 100%;
+      padding: 0 20px;
 
     }
 
     /* Table Styling */
     table {
-        width: 100%;
-        border-collapse: collapse;
-        border-radius: 8px;
-        overflow: hidden;
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     th,
     td {
-        padding: 12px 15px;
-        text-align: left;
-        border: 1px solid #7c7c7c;
-        white-space: nowrap;
-        /* Prevent wrapping */
+      padding: 12px 15px;
+      text-align: left;
+      border: 1px solid #7c7c7c;
+      white-space: nowrap;
+      /* Prevent wrapping */
     }
 
     th {
-        font-family: "Cardo", serif;
-        font-weight: 500;
-        font-size: 17px;
-        font-style: normal;
-        color: #ffffff;
-        font-weight: bold;
+      font-family: "Cardo", serif;
+      font-weight: 500;
+      font-size: 17px;
+      font-style: normal;
+      color: #ffffff;
+      font-weight: bold;
     }
 
     td {
-        font-family: "Outfit", sans-serif;
-        font-optical-sizing: auto;
-        font-weight: 400;
-        font-style: normal;
-        background-color: #f9f9f9;
+      font-family: "Outfit", sans-serif;
+      font-optical-sizing: auto;
+      font-weight: 400;
+      font-style: normal;
+      background-color: #f9f9f9;
     }
 
     tr:nth-child(even) td {
-        background-color: #cbcaca;
+      background-color: #cbcaca;
     }
 
     /* Button Styling */
     .btn-like {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-        color: #fff;
-        background-color: #343434;
-        border: none;
-        border-radius: 0.25rem;
-        text-decoration: none;
-        margin-right: 5px;
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      color: #fff;
+      background-color: #343434;
+      border: none;
+      border-radius: 0.25rem;
+      text-decoration: none;
+      margin-right: 5px;
     }
 
     .btn-like:hover {
-        background-color: #343434;
+      background-color: #343434;
     }
 
     /* Search Bar Styling */
     .navbar {
-        padding: 10px;
-        background-color: #ffffff;
-        border-radius: 8px;
-        margin-bottom: 20px;
+      padding: 10px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      margin-bottom: 20px;
     }
 
 
 
     .pagination {
-        margin-top: 20px;
-        display: flex;
-        justify-content: center;
-        list-style-type: none;
-        padding: 0;
-        margin: 20px 0;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      list-style-type: none;
+      padding: 0;
+      margin: 20px 0;
     }
 
     .pagination li {
-        margin: 10px 5px;
+      margin: 10px 5px;
     }
 
     .pagination a,
     .pagination span {
-        padding: 10px 12px;
-        text-decoration: none;
-        color: #007bff;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+      padding: 10px 12px;
+      text-decoration: none;
+      color: #007bff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
     }
 
     .pagination .current {
-        background-color: #007bff;
-        color: white;
-        border-color: #007bff;
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
     }
 
     .pagination a:hover {
-        background-color: #007bff;
-        color: white;
+      background-color: #007bff;
+      color: white;
     }
 
 
     /* .form-inline .form-control {
         border: 1px solid #000000;
         color: #000000;
-    } */
+    } 
     
-    /* .form-inline .btn-outline-success {
+     .form-inline .btn-outline-success {
         color: #000000;
         border: 1px solid #000000;
-    }
+    } */
 
 
 
-
+    /*
     .btn-like.delete-link {
         background-color: #dc3545;
     }
@@ -199,363 +201,373 @@
 
     /* Smooth fade-in animation */
     @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
+      from {
+        opacity: 0;
+      }
 
-        to {
-            opacity: 1;
-        }
+      to {
+        opacity: 1;
+      }
     }
 
     /* On small screens, set margin to 0 when sidebar is hidden */
     @media (max-width: 768px) {
-        .table-wrapper {
-            margin-left: 0;
-            margin-top: 10px;
-            max-width: 100%;
-            padding: 20px;
-            /* Add some padding for better appearance */
-        }
+      .table-wrapper {
+        margin-left: 0;
+        margin-top: 10px;
+        max-width: 100%;
+        padding: 20px;
+        /* Add some padding for better appearance */
+      }
 
-        .open-sidebar .table-wrapper {
-            margin-left: 300px;
-            /* Adjust content when sidebar is open */
-        }
+      .open-sidebar .table-wrapper {
+        margin-left: 300px;
+        /* Adjust content when sidebar is open */
+      }
 
-        #modal {
-            width: 80%;
-        }
+      #modal {
+        width: 80%;
+      }
 
     }
 
     a.linarbtn:hover {
-        box-shadow: 0px 0px 10px #6a11cb;
+      box-shadow: 0px 0px 10px #6a11cb;
     }
-</style>
-  
+  </style>
+
 </head>
-<body >
+
+<body>
   {% include 'sidebar.html' %}
-  <div class="container " style="min-height: 100vh; margin-top: 130px;">
-    <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
-      <h3>Products — Stock Summary</h3>
-      <small class="small-muted">Showing product totals (all batches aggregated)</small>
-    </div>
+  <div class="container " style="min-height: 100vh; margin-top: 130px; ">
+    <div class="table-wrapper addnewshadow">
 
-    <form method="get" class="form-inline mb-3" id="filterForm">
-      <input type="text" name="q" value="{{ filters.q|default_if_none:'' }}" placeholder="Search product" class="form-control form-control-sm mr-2">
-    
-      <select name="location_type" id="location_type" class="form-control form-control-sm mr-2">
-        <option value="">All locations</option>
-        <option value="BRANCH" {% if filters.location_type == 'BRANCH' %}selected{% endif %}>Branch</option>
-        <option value="HO" {% if filters.location_type == 'HO' %}selected{% endif %}>HO</option>
-        <option value="SITE" {% if filters.location_type == 'SITE' %}selected{% endif %}>Site</option>
-      </select>
-    
-      <select name="location_id" id="location_id" class="form-control form-control-sm mr-2">
-        <option value="">All locations</option>
-    </select>
-    
-      
-    
-      <!-- NEW: batch number filter -->
-      <input type="text" name="batch_no" value="{{ filters.batch_no|default_if_none:'' }}" placeholder="Batch no" class="form-control form-control-sm mr-2">
-    
-      <label class="mr-1 small-muted">Expiry from</label>
-      <input type="date" name="expiry_from" value="{{ filters.expiry_from|default_if_none:'' }}" class="form-control form-control-sm mr-2">
-    
-      <label class="mr-1 small-muted">to</label>
-      <input type="date" name="expiry_to" value="{{ filters.expiry_to|default_if_none:'' }}" class="form-control form-control-sm mr-2">
-    
-      <button class="btn btn-primary btn-sm mr-2" type="submit">Filter</button>
-      <!-- <a href="{% url 'products_stock_list' %}"><button class="btn btn-link btn-sm " >Reset</button></a> -->
-      <button type="button"
-        class="btn btn-link btn-sm"
-        onclick="window.location='{% url 'products_stock_list' %}'">
+
+      <div class="d-flex justify-content-between align-items-center mb-3 mt-5 ">
+        <h3>Products — Stock Summary</h3>
+        <small class="small-muted">Showing product totals (all batches aggregated)</small>
+      </div>
+
+      <form method="get" class="d-flex flex-wrap align-items-center gap-2 mb-3" id="filterForm">
+
+        <input type="text" name="q" value="{{ filters.q|default_if_none:'' }}" placeholder="Search product"
+          class="form-control form-control-sm" style="max-width: 200px;">
+
+        <select name="location_type" id="location_type" class="form-select form-select-sm" style="max-width: 150px;">
+          <option value="">All locations</option>
+          <option value="BRANCH" {% if filters.location_type == 'BRANCH' %}selected{% endif %}>Branch</option>
+          <option value="HO" {% if filters.location_type == 'HO' %}selected{% endif %}>HO</option>
+          <option value="SITE" {% if filters.location_type == 'SITE' %}selected{% endif %}>Site</option>
+        </select>
+
+        <select name="location_id" id="location_id" class="form-select form-select-sm" style="max-width: 150px;">
+          <option value="">All locations</option>
+        </select>
+
+        <input type="text" name="batch_no" value="{{ filters.batch_no|default_if_none:'' }}" placeholder="Batch no"
+          class="form-control form-control-sm" style="max-width: 150px;">
+
+        <div class="d-flex align-items-center gap-1">
+          <label class="small-muted mb-0">Expiry:</label>
+          <input type="date" name="expiry_from" value="{{ filters.expiry_from|default_if_none:'' }}"
+            class="form-control form-control-sm">
+          <span class="small-muted">to</span>
+          <input type="date" name="expiry_to" value="{{ filters.expiry_to|default_if_none:'' }}"
+            class="form-control form-control-sm">
+        </div>
+
+        <button class="btn btn-primary btn-sm" type="submit">Filter</button>
+        <button type="button" class="btn btn-secondary btn-sm"
+          onclick="window.location='{% url 'products_stock_list' %}'">
           Reset
-      </button>
+        </button>
 
-    </form>
-    
-    
-    <div class="table-responsive">
-      <table class="table table-sm table-bordered table-fixed">
-        <thead class="thead-light">
-          <tr>
-            <th style="width:40px">Sr</th>
-            <th>Product</th>
-            <th style="width:120px">In Qty</th>
-            <th style="width:120px">Out Qty</th>
-            <th style="width:120px">Reserved</th>
-            <th style="width:120px">Available</th>
-          
-          </tr>
-        </thead>
-        <tbody>
-        {% for r in rows %}
-          <tr>
-            {# Compute serial = page_obj.start_index + forloop.counter0 - start_index is 1-based so this works #}
-            <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
-            <td>{{ r.name }}</td>
-            <td>{{ r.in_qty }}</td>
-            <td>{{ r.out_qty }}</td>
-            <td>{{ r.reserved_qty }}</td>
-            <td class="text-success">{{ r.closing_qty }}</td>
-          </tr>
-        {% empty %}
-          <tr><td colspan="7" class="text-center small-muted">No products found</td></tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    </div>
+      </form>
 
-    <!-- pagination -->
-    {% if paginator.num_pages > 1 %}
+
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered table-fixed">
+          <thead class="thead-light">
+            <tr>
+              <th style="width:40px">Sr</th>
+              <th>Product</th>
+              <th style="width:120px">In Qty</th>
+              <th style="width:120px">Out Qty</th>
+              <th style="width:120px">Reserved</th>
+              <th style="width:120px">Available</th>
+
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+            <tr>
+              {# Compute serial = page_obj.start_index + forloop.counter0 - start_index is 1-based so this works #}
+              <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+              <td>{{ r.name }}</td>
+              <td>{{ r.in_qty }}</td>
+              <td>{{ r.out_qty }}</td>
+              <td>{{ r.reserved_qty }}</td>
+              <td class="text-success">{{ r.closing_qty }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center small-muted">No products found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- pagination -->
+      {% if paginator.num_pages > 1 %}
       <nav aria-label="Page navigation">
         <ul class="pagination pagination-sm">
           {% if page_obj.has_previous %}
-            <li class="page-item">
-              <a class="page-link" href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous">&laquo;</a>
-            </li>
+          <li class="page-item">
+            <a class="page-link"
+              href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}"
+              aria-label="Previous">&laquo;</a>
+          </li>
           {% else %}
-            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+          <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
           {% endif %}
 
           {% for num in paginator.page_range %}
-            {% if num == page_obj.number %}
-              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% else %}
-              <li class="page-item"><a class="page-link" href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ num }}">{{ num }}</a></li>
-            {% endif %}
+          {% if num == page_obj.number %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% else %}
+          <li class="page-item"><a class="page-link" href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ num }}">{{
+              num }}</a></li>
+          {% endif %}
           {% endfor %}
 
           {% if page_obj.has_next %}
-            <li class="page-item">
-              <a class="page-link" href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next">&raquo;</a>
-            </li>
+          <li class="page-item">
+            <a class="page-link" href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}"
+              aria-label="Next">&raquo;</a>
+          </li>
           {% else %}
-            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+          <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
           {% endif %}
         </ul>
       </nav>
-    {% endif %}
+      {% endif %}
 
+    </div>
   </div>
 
-  <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:200px;">
-    <div class="row p-3">
+    <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+      <div class="row p-3">
         <div class="col-md-12 text-center">
-            <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
-                © 2025. Powered by
-                <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
-                    style="height: 20px; vertical-align: middle;">
-                <a href="http://www.chronoanalytics.in/"
-                    style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb);
+          <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+            © 2025. Powered by
+            <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+              style="height: 20px; vertical-align: middle;">
+            <a href="http://www.chronoanalytics.in/" style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb);
                     -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">
-                    Chronoanalytics Solution
-                </a>
-                All Rights Reserved.
-            </p>
+              Chronoanalytics Solution
+            </a>
+            All Rights Reserved.
+          </p>
         </div>
 
         <div class="col-md-12 text-center">
-            <p style="font-weight: 600; word-wrap: break-word;color:#000000">
-                © 2025. Marketed by
-                <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
-                    style="height: 20px; vertical-align: middle;">
-                <a href="http://teim.in/" 
-                    style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb);
+          <p style="font-weight: 600; word-wrap: break-word;color:#000000">
+            © 2025. Marketed by
+            <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
+            <a href="http://teim.in/" style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb);
                     -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">
-                    TEIM
-                </a>
-                All Rights Reserved.
-            </p>
+              TEIM
+            </a>
+            All Rights Reserved.
+          </p>
         </div>
+      </div>
     </div>
-</div>
 
 
-<!-- destination js -->
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-      const locationType = document.getElementById("location_type");
-      const locationId = document.getElementById("location_id");
-  
-      function resetLocationOptions() {
+    <!-- destination js -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const locationType = document.getElementById("location_type");
+        const locationId = document.getElementById("location_id");
+
+        function resetLocationOptions() {
           locationId.innerHTML = "";
           const opt = document.createElement("option");
           opt.value = "";
           opt.textContent = "All locations";
           locationId.appendChild(opt);
-      }
-  
-      async function loadLocations(type) {
+        }
+
+        async function loadLocations(type) {
           resetLocationOptions();
           if (!type) return;  // no type selected
-  
+
           try {
-              const url = "{% url 'load_destinations' %}?destination_type=" + encodeURIComponent(type);
-              const resp = await fetch(url, {
-                  method: "GET",
-                  headers: {
-                      "X-Requested-With": "XMLHttpRequest"
-                  }
-              });
-  
-              if (!resp.ok) throw new Error("Network response was not ok");
-  
-              const data = await resp.json();
-              data.results.forEach(item => {
-                  const opt = document.createElement("option");
-                  opt.value = item.id;
-                  opt.textContent = item.name;
-                  locationId.appendChild(opt);
-              });
-  
-              // re-select the previously chosen location_id if present
-              const preselected = "{{ filters.location_id|default_if_none:'' }}";
-              if (preselected) {
-                  locationId.value = preselected;
+            const url = "{% url 'load_destinations' %}?destination_type=" + encodeURIComponent(type);
+            const resp = await fetch(url, {
+              method: "GET",
+              headers: {
+                "X-Requested-With": "XMLHttpRequest"
               }
-  
+            });
+
+            if (!resp.ok) throw new Error("Network response was not ok");
+
+            const data = await resp.json();
+            data.results.forEach(item => {
+              const opt = document.createElement("option");
+              opt.value = item.id;
+              opt.textContent = item.name;
+              locationId.appendChild(opt);
+            });
+
+            // re-select the previously chosen location_id if present
+            const preselected = "{{ filters.location_id|default_if_none:'' }}";
+            if (preselected) {
+              locationId.value = preselected;
+            }
+
           } catch (error) {
-              console.error("Error loading destinations:", error);
+            console.error("Error loading destinations:", error);
           }
-      }
-  
-      // initial populate (useful when page is loaded with filters applied)
-      if (locationType.value) {
+        }
+
+        // initial populate (useful when page is loaded with filters applied)
+        if (locationType.value) {
           loadLocations(locationType.value);
-      }
-  
-      // on change
-      locationType.addEventListener("change", function () {
+        }
+
+        // on change
+        locationType.addEventListener("change", function () {
           loadLocations(this.value);
+        });
       });
-  });
-  </script>
-  
+    </script>
+
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
-            menuItems.forEach(item => {
-                item.addEventListener('click', function () {
-                    const submenu = this.querySelector('.submenu');
-                    const arrow = this.querySelector('.arrow-down');
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+        menuItems.forEach(item => {
+          item.addEventListener('click', function () {
+            const submenu = this.querySelector('.submenu');
+            const arrow = this.querySelector('.arrow-down');
 
-                    // Hide all other submenus
-                    menuItems.forEach(otherItem => {
-                        if (otherItem !== this) {
-                            const otherSubmenu = otherItem.querySelector('.submenu');
-                            const otherArrow = otherItem.querySelector('.arrow-down');
-                            if (otherSubmenu) {
-                                otherSubmenu.style.display = 'none';
-                                if (otherArrow.classList.contains('arrow-up')) {
-                                    otherArrow.classList.remove('arrow-up');
-                                }
-                            }
-                        }
-                    });
-
-                    // Toggle current submenu
-                    if (submenu) {
-                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
-                        arrow.classList.toggle('arrow-up');
-                    }
-                });
+            // Hide all other submenus
+            menuItems.forEach(otherItem => {
+              if (otherItem !== this) {
+                const otherSubmenu = otherItem.querySelector('.submenu');
+                const otherArrow = otherItem.querySelector('.arrow-down');
+                if (otherSubmenu) {
+                  otherSubmenu.style.display = 'none';
+                  if (otherArrow.classList.contains('arrow-up')) {
+                    otherArrow.classList.remove('arrow-up');
+                  }
+                }
+              }
             });
+
+            // Toggle current submenu
+            if (submenu) {
+              submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+              arrow.classList.toggle('arrow-up');
+            }
+          });
+        });
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const deleteLinks = document.querySelectorAll('.delete-link');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+        const deleteForm = document.getElementById('deleteForm');
+        let deleteUrl = '';
+
+        deleteLinks.forEach(link => {
+          link.addEventListener('click', function (event) {
+            event.preventDefault();
+            deleteUrl = this.getAttribute('href');
+            deleteForm.setAttribute('action', deleteUrl);
+            confirmationModal.style.display = 'block';
+          });
         });
 
-        document.addEventListener("DOMContentLoaded", function () {
-            const deleteLinks = document.querySelectorAll('.delete-link');
-            const confirmationModal = document.getElementById('confirmationModal');
-            const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-            const cancelDeleteButton = document.getElementById('cancelDeleteButton');
-            const deleteForm = document.getElementById('deleteForm');
-            let deleteUrl = '';
-
-            deleteLinks.forEach(link => {
-                link.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    deleteUrl = this.getAttribute('href');
-                    deleteForm.setAttribute('action', deleteUrl);
-                    confirmationModal.style.display = 'block';
-                });
-            });
-
-            cancelDeleteButton.addEventListener('click', function () {
-                confirmationModal.style.display = 'none';
-            });
+        cancelDeleteButton.addEventListener('click', function () {
+          confirmationModal.style.display = 'none';
         });
+      });
 
-        function openModal(quotation_id) {
-            fetch(`/get_quotation_details/${quotation_id}/`)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('modal-content').innerHTML = html;
-                    document.getElementById('modal').classList.add('active');
-                });
+      function openModal(quotation_id) {
+        fetch(`/get_quotation_details/${quotation_id}/`)
+          .then(response => response.text())
+          .then(html => {
+            document.getElementById('modal-content').innerHTML = html;
+            document.getElementById('modal').classList.add('active');
+          });
 
+      }
+
+      function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+      }
+
+
+      // Date Filter Functions
+      function formatDate(date) {
+        return date.toISOString().split('T')[0];
+      }
+
+      function setRange(range) {
+        const today = new Date();
+        let start, end;
+
+        if (range === 'today') {
+          start = end = today;
+          selectedRange.innerText = "Today";
+        } else if (range === 'yesterday') {
+          const yesterday = new Date();
+          yesterday.setDate(today.getDate() - 1);
+          start = end = yesterday;
+          selectedRange.innerText = "Yesterday";
+        } else if (range === 'this_month') {
+          start = new Date(today.getFullYear(), today.getMonth(), 1);
+          end = today;
+          selectedRange.innerText = "This Month";
+        } else if (range === 'last_month') {
+          start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          end = new Date(today.getFullYear(), today.getMonth(), 0);
+          selectedRange.innerText = "Past Month";
+        } else if (range === 'last_3') {
+          start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+          end = today;
+          selectedRange.innerText = "Past 3 Months";
         }
 
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
+        document.getElementById("fromDate").value = formatDate(start);
+        document.getElementById("toDate").value = formatDate(end);
+      }
+
+      function applyDateFilter() {
+        const from = document.getElementById("fromDate").value;
+        const to = document.getElementById("toDate").value;
+
+        if (from && to) {
+          document.getElementById("selectedRange").innerText = from + " → " + to;
+
+          // Reload page with query params
+          const url = new URL(window.location.href);
+          url.searchParams.set('from_date', from);
+          url.searchParams.set('to_date', to);
+          window.location.href = url.toString();
         }
-
-
-        // Date Filter Functions
-        function formatDate(date) {
-  return date.toISOString().split('T')[0];
-}
-
-function setRange(range) {
-  const today = new Date();
-  let start, end;
-
-  if (range === 'today') {
-    start = end = today;
-    selectedRange.innerText = "Today";
-  } else if (range === 'yesterday') {
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
-    start = end = yesterday;
-    selectedRange.innerText = "Yesterday";
-  } else if (range === 'this_month') {
-    start = new Date(today.getFullYear(), today.getMonth(), 1);
-    end = today;
-    selectedRange.innerText = "This Month";
-  } else if (range === 'last_month') {
-    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    end = new Date(today.getFullYear(), today.getMonth(), 0);
-    selectedRange.innerText = "Past Month";
-  } else if (range === 'last_3') {
-    start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-    end = today;
-    selectedRange.innerText = "Past 3 Months";
-  }
-
-  document.getElementById("fromDate").value = formatDate(start);
-  document.getElementById("toDate").value = formatDate(end);
-}
-
-function applyDateFilter() {
-  const from = document.getElementById("fromDate").value;
-  const to = document.getElementById("toDate").value;
-
-  if (from && to) {
-    document.getElementById("selectedRange").innerText = from + " → " + to;
-
-    // Reload page with query params
-    const url = new URL(window.location.href);
-    url.searchParams.set('from_date', from);
-    url.searchParams.set('to_date', to);
-    window.location.href = url.toString();
-  }
-}
+      }
 
 
     </script>
 </body>
+
 </html>

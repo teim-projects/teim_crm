@@ -18,5 +18,3 @@ class ProductBatchAdmin(admin.ModelAdmin):
 @admin.register(CurrentStock)
 class CurrentStockAdmin(admin.ModelAdmin):
     list_display = ('id','product','batch','location_type','location_id','opening_qty','in_qty','out_qty','reserved_qty','closing_qty','available_qty','last_updated')
-    list_filter = ('location_type','product')
-    search_fields = ('product__product_name','batch__batch_no','location_id')

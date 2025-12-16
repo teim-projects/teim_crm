@@ -418,6 +418,7 @@
                                     <tr>
                                         <th>Sr.No</th>
                                         <th class="text-center">Actions</th>
+                                        <th>Add GRN</th>
                                         <th>PO Number</th>
                                         <th>PO Date</th>
                                         <th>Vendor Name</th>
@@ -458,6 +459,11 @@
                                             <a href="#" class="btn btn-sm btn-success">
                                                 <i class="fa-brands fa-whatsapp"></i>
                                             </a> 
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{% url 'grn_create' po.id %}" title="Create GRN">
+                                                <i class="fa-solid fa-clipboard-check"></i>
+                                            </a>
                                         </td>
                                         <td>{{ po.po_no }}</td>
                                         <td>{{ po.created_at|date:"d-m-Y" }}</td>

@@ -21,24 +21,25 @@
         rel="stylesheet">
     <title>CRM</title>
     <style>
-         body {
+        body {
             overflow-x: hidden;
-            background-color: #f5fffa  !important;
+            background-color: #f5fffa !important;
             /* dark for contrast */
             color: #F4F4F5 !important;
 
         }
 
-.addnewshadow{
-      box-shadow: 0px 0px 10px rgb(125, 93, 93);
+        .addnewshadow {
+            box-shadow: 0px 0px 10px rgb(125, 93, 93);
             background-color: rgba(255, 255, 255, 0.945);
 
-}
+        }
 
-.formshdow{
-     background-color: #ffffff;
+        .formshdow {
+            background-color: #ffffff;
             box-shadow: 0 4px 20px rgba(3, 174, 210, 0.2);
-}
+        }
+
         /* Scrollbar */
         body::-webkit-scrollbar {
             width: 0px;
@@ -98,7 +99,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-                         background: linear-gradient(to right, #2575fc, #6a11cb,0.5);
+            background: linear-gradient(to right, #2575fc, #6a11cb, 0.5);
 
             /* Adjust opacity */
             backdrop-filter: blur(5px);
@@ -142,7 +143,7 @@
             transition: background 0.3s;
         }
 
-            .sidebar ul li:hover {
+        .sidebar ul li:hover {
             background-color: #007DBE;
             /* Slightly lighter shade for hover */
             color: white;
@@ -164,13 +165,12 @@
             position: relative;
         }
 
+        /* --- SUBMENU DEFAULT STYLES --- */
         .submenu {
             display: none;
             background-color: #ffffff;
             /* Submenu background adjusted */
-            position: absolute;
-            top: 100%;
-            left: 0;
+            /* Removed absolute positioning here to allow accordion flow */
             width: 100%;
             z-index: 1;
             margin-top: 10px;
@@ -212,6 +212,7 @@
             border-right: 6px solid transparent;
             border-top: 10px solid #acabab;
             /* Adjusted arrow color */
+            transition: transform 0.3s ease;
         }
 
         .arrow-down:hover {
@@ -576,7 +577,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 0px 5px rgb(107, 108, 108);
- 
+
 
         }
 
@@ -900,372 +901,517 @@
         .form-step.active {
             display: block;
         }
-        
+
+
+        /* =========================================
+           FIXED NESTED SUBMENU CSS - ACCORDION STYLE
+           ========================================= */
+
+        /* 1. Base Logic: Hide submenus by default */
+        .submenu {
+            display: none;
+        }
+
+        /* 2. Toggle Logic: Show submenu when parent has 'open' class */
+        /* using !important to ensure it overrides any specific hiding rules */
+        .has-submenu.open>.submenu {
+            display: block !important;
+        }
+
+        /* 3. Arrow Rotation for open menus */
+        .has-submenu.open>.arrow-down {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        /* 4. LAYOUT: Ensure Menus act like an Accordion (Push items down) 
+              instead of floating on top (Absolute) */
+
+        /* Level 1 Submenus (Inventory, Transaction, etc) */
+        .sidebar>ul>.has-submenu>.submenu {
+            position: relative !important;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f1f1f1;
+            /* Light contrast for submenu area */
+            box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.05);
+            /* Inner shadow for depth */
+        }
+
+        /* Level 2 Submenus (Vendors, POs inside Inventory) */
+        .sidebar .submenu .has-submenu>.submenu {
+            position: relative !important;
+            top: 0;
+            left: 0;
+            width: 100%;
+            /* Indent Level 2 items for visual hierarchy */
+            margin-left: 20px;
+            border-left: 2px solid #ccc;
+            padding-left: 10px;
+            background-color: #e9ecef;
+            /* Slightly darker to show nesting */
+        }
+
+        /* Fix for spacing inside nested lists */
+        .sidebar .submenu ul li {
+            margin: 5px 0;
+            /* Tighter spacing for sub-items */
+            font-size: 16px;
+            /* Slightly smaller font for sub-items */
+        }
     </style>
 </head>
 
 <body>
     {% if request.user.is_authenticated %}
-        {% with request.user.userprofile.role as role %}
-        <div class="header d-flex justify-content-between align-items-center p-2">
+    {% with request.user.userprofile.role as role %}
+    <div class="header d-flex justify-content-between align-items-center p-2">
 
-            <!-- Left: Hamburger + Logo -->
-            <div class="d-flex align-items-center">
-                <div class="hamburger me-3" id="hamburger">
-                    <i class="fas fa-bars fa-lg"></i>
-                </div>
-        
-                <a class="navbar-brand me-3" href="https://sevafacility.com/" target="_blank">
-                    <img src="{% static 'images/Logo2.webp' %}" alt="Logo" style="height: 70px; margin-bottom: 5px;">
-                </a>
+        <div class="d-flex align-items-center">
+            <div class="hamburger me-3" id="hamburger">
+                <i class="fas fa-bars fa-lg"></i>
             </div>
-        
-            <!-- Right side: Welcome + Chrono logo -->
-            <div class="d-flex align-items-center">
-                <h4 class="m-0 me-3 text-dark font-size[10px]">
-                    Welcome, <span class="fw-bold">{{ request.user.first_name }}</span>
-                </h4>
-                
-        
-                <a class="navbar-brand" href="https://chronoanalytics.in/" target="_blank">
-                    <img src="{% static 'images/crono.png' %}" alt="Logo" style="height: 50px; margin-bottom: 8px;">
-                </a>
-            </div>
-        
+
+            <a class="navbar-brand me-3" href="https://sevafacility.com/" target="_blank">
+                <img src="{% static 'images/Logo2.webp' %}" alt="Logo" style="height: 70px; margin-bottom: 5px;">
+            </a>
         </div>
-        
 
-            <div class="sidebar">
+        <div class="d-flex align-items-center">
+            <h4 class="m-0 me-3 text-dark font-size[10px]">
+                Welcome, <span class="fw-bold">{{ request.user.first_name }}</span>
+            </h4>
 
-                <div class="close-button" id="closeButton">
-                    <i class="fas fa-times"></i>
-                </div>
 
-                <div class="logo">
-                    <a href="https://sevafacility.com/">
-                        <img src="{% static 'images/Logo.webp' %}" alt="Logo">
+            <a class="navbar-brand" href="https://chronoanalytics.in/" target="_blank">
+                <img src="{% static 'images/crono.png' %}" alt="Logo" style="height: 50px; margin-bottom: 8px;">
+            </a>
+        </div>
 
-                    </a>
-                </div>
+    </div>
 
-                <ul>
-                    <a href="/index" style="text-decoration: none;">
-                        <li data-link="/index"><i class="fas fa-home"></i> Dashboard</li>
-                    </a>
 
-                    {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
-                       
-                        
-                        <a href="{% url 'today_work' %}" style="text-decoration: none;">
-                            <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Today Work</li>
+    <div class="sidebar">
+
+        <div class="close-button" id="closeButton">
+            <i class="fas fa-times"></i>
+        </div>
+
+        <div class="logo">
+            <a href="https://sevafacility.com/">
+                <img src="{% static 'images/Logo.webp' %}" alt="Logo">
+
+            </a>
+        </div>
+
+        <ul>
+            <a href="/index" style="text-decoration: none;">
+                <li data-link="/index"><i class="fas fa-home"></i> Dashboard</li>
+            </a>
+
+            {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
+
+
+            <a href="{% url 'today_work' %}" style="text-decoration: none;">
+                <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Today Work</li>
+            </a>
+
+            <a href="{% url 'pending_followups' %}" style="text-decoration: none;">
+                <li><i class="fas fa-clock"></i> Pending Follow-ups</li>
+            </a>
+
+
+            <li class="has-submenu"><i class="fas fa-info-circle"></i> View Records <span class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="/display_lead_management">
+                            <li data-link="/display_lead_management">1.Lead Management Records</li>
                         </a>
-                        
-                        <a href="{% url 'pending_followups' %}" style="text-decoration: none;">
-                            <li><i class="fas fa-clock"></i> Pending Follow-ups</li>
+                        <a href="/display_customer">
+                            <li data-link="/display_customer">2. Customer Details</li>
                         </a>
-                        
-                        
-                        <li class="has-submenu"><i class="fas fa-info-circle"></i> View Records <span class="arrow-down"></span>
-                            <div class="submenu">
-                                <ul>
-                                    <a href="/display_lead_management">
-                                        <li data-link="/display_lead_management">1.Lead Management Records</li>
-                                    </a>
-                                    <a href="/display_customer">
-                                        <li data-link="/display_customer">2. Customer Details</li>
-                                    </a>
-                                    <a href="/display_service_management">
-                                        <li data-link="/display_service_management">3. Service Management</li>
-                                    </a>
-                                    <a href="/display_quotation">
-                                        <li data-link="/display_quotation">4. Quotation</li>
-                                    </a>
-                                    <a href="/display_tax_invoice">
-                                        <li data-link="/display_tax_invoice">5. Invoice</li>
-                                    </a> 
-                                    
-                                    <a href="/payment-records/list/">
-                                        <li data-link="/payment-record/list/">6. Payment Records</li>
-                                    </a>
-                                    <a href="/display_reschedule">
-                                        <li data-link="/display_reschedule">7. Reschedule log</li>
-                                    </a>
-                                    <a href="/schedule_meetings/display_meeting">
-                                        <li data-link="/schedule_meetings/display_meeting">8. Meeting Records Log</li>
-                                    </a>
-                                </ul>
-                            </div>
-                        </li>
-                        
-                        <li class="has-submenu"><i class="fas fa-folder-open"></i> Transaction <span class="arrow-down"></span>
-                            <div class="submenu">
-                                <ul>
-                                    <a href="/lead_management_create">
-                                        <li data-link="/lead_management_create">1. Lead Management</li>
-                                    </a>
-                                    <a href="/customer_details_create">
-                                        <li data-link="/customer_details_create">2. Customer Details</li>
-                                    </a>
-                                    <a href="/service_management_create">
-                                        <li data-link="/service_management_create">3. Service Management</li>
-                                    </a>
-                                    <a href="/create_quotation">
-                                        <li data-link="/quotation_create">4. Quotation</li>
-                                    </a>
-                                    <!-- <li onclick="openInvoicePopup()" style="cursor: pointer;">5. Invoice</li> -->
-                                    <a href="/tax-invoice/create">
-                                        <li data-link="/tax-invoice/create">5. Invoice</li>
-                                    </a>
-                                    <a href="/payment-records/create">
-                                        <li data-link="/tax-invoice/create">6. Payment Records</li>
-                                    </a>
-                                </ul>
-                            </div>
-                        </li>
-                        
-                        <li class="has-submenu"><i class="fas fa-box"></i> Products <span class="arrow-down"></span>
-                            <div class="submenu">
-                                <ul>
-                                    <a href="/add_product">
-                                        <li data-link="/add_product">1. Add Products</li>
-                                    </a>
-                                    <a href="/products">
-                                        <li data-link="/products">2. All Products</li>
-                                    </a>
-                                </ul>
-                            </div>
-                        </li>
-                        
-                        
-                        
-                    {% endif %}
-                    {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
-                    <li class="has-submenu">
-                        <i class="fas fa-users-cog"></i> Staff <span class="arrow-down"></span>
-                        
-                        
-                        
-                        <div class="submenu">
-                            <ul>
-                                {% if role == 'admin' %}
-                                <!-- Branch Managers Section -->
-                                <li class="submenu-header fw-bold">Branch Managers</li>
-                                <a href="/add-branch-manager/">
-                                    <li data-link="/add-branch-manager/">Add Branch Manager</li>
-                                </a>
-                                <a href="/branch-manager-list/">
-                                    <li data-link="/branch-manager-list/">View Branch Managers</li>
-                                </a>
-                                
-                                {% endif %}
-                                {% if role == 'admin' or role == 'branch_manager' %}
-                                <!-- Sales Person Section -->
-                                <li class="submenu-header mt-2 fw-bold">Sales Person</li>
-                                <a href="/add-sales-person/">
-                                    <li data-link="/add-sales-person/">Add Sales Person</li>
-                                </a>
-                                <a href="/sales-persons/">
-                                    <li data-link="/sales-persons/">View Sales Persons</li>
-                                </a>
-                                <!-- Operation Person Section -->
-                                <li class="submenu-header mt-2 fw-bold">Operation Person</li>
-                                <a href="/add-operation-person/">
-                                    <li data-link="/add-operation-person/">Add Operation Person</li>
-                                </a>
-                                <a href="/operation-person-list/">
-                                    <li data-link="/operation-person-list/">View Operation Persons</li>
-                                </a>
-                                {% endif %}
-                                
-                                {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
-                                <!-- Technicians Section -->
-                                <li class="submenu-header mt-2 fw-bold">Technicians</li>
-                                <a href="/create">
-                                    <li data-link="/create">Create Technician</li>
-                                </a>
-                                <a href="/technicians">
-                                    <li data-link="/technicians">Show Technician</li>
-                                </a>
-                                <a href="/technician_work_list">
-                                    <li data-link="/technician_work_list">Work History</li>
-                                </a>
-                                <a href="/completed_work">
-                                    <li data-link="/completed_work">Completed Work List</li>
-                                </a>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </li>
-                    {% endif %}
-                    
+                        <a href="/display_service_management">
+                            <li data-link="/display_service_management">3. Service Management</li>
+                        </a>
+                        <a href="/display_quotation">
+                            <li data-link="/display_quotation">4. Quotation</li>
+                        </a>
+                        <a href="/display_tax_invoice">
+                            <li data-link="/display_tax_invoice">5. Invoice</li>
+                        </a>
 
-                    {% if role == 'admin' %}
-                    <li class="has-submenu">
-                        <i class="fas fa-file-invoice"></i> Branches <span class="arrow-down"></span>
-                        <div class="submenu">
-                            <ul>
-                                <a href="/branches/create/">
-                                    <li data-link="/add_invoice_term/">
-                                        <i class="fas fa-plus-circle"></i> Create Branch
-                                    </li>
-                                </a>
-
-                                <a href="/branches/">
-                                    <li data-link="/view_invoice_terms/">
-                                        <i class="fas fa-eye"></i> View Branch
-                                    </li>
-                                </a>
-
-                            </ul>
-                        </div>
-                    </li>
-
-                    <li class="has-submenu"><i class="fa-solid fa-building-columns"></i> Bank Accounts <span
-                            class="arrow-down"></span>
-                        <div class="submenu">
-                            <ul>
-                                <a href="/bank/create/">
-                                    <li data-link="bank/create/">1. Create Bank Account</li>
-                                </a>
-                                <a href="/bank/list/">
-                                    <li data-link="/bank/list/">2. Show Bank Accounts </li>
-                                </a>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <li class="has-submenu"><i class="fa-solid fa-message"></i> Message Templates <span class="arrow-down"></span>
-                        <div class="submenu">
-                            <ul>
-                                <a href="/create_message_template">
-                                    <li data-link="/create_message_template">1. Create Template</li>
-                                </a>
-                                <a href="/message_templates">
-                                    <li data-link="/message_templates">2. Show Template</li>
-                                </a>
-                            </ul>
-                        </div>
-                    </li>
-                    {% endif %}
-                    {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
-                    <a href="/display_allocation" style="text-decoration: none;">
-                        <li class="has-submenu" data-link="/display_allocation"><i class="fas fa-tasks"></i> Allocate Work</li>
-                    </a>
-                    {% endif %}
-
-                    {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
-                    <!-- QUOTATION TERMS -->
-                    <li class="has-submenu">
-                        <i class="fas fa-file-alt"></i> Quotation Terms <span class="arrow-down"></span>
-                        <div class="submenu">
-                            <ul>
-                                <a href="/add_quotation_term/">
-                                    <li data-link="/add_quotation_term/">1. Add Quotation Term</li>
-                                </a>
-                                <a href="/view_quotation_terms/">
-                                    <li data-link="/view_quotation_terms/">2. View Quotation Terms</li>
-                                </a>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <!-- INVOICE TERMS -->
-                    <li class="has-submenu">
-                        <i class="fas fa-file-invoice"></i> Invoice Terms <span class="arrow-down"></span>
-                        <div class="submenu">
-                            <ul>
-                                <a href="/add_invoice_term/">
-                                    <li data-link="/add_invoice_term/">1. Add Invoice Term</li>
-                                </a>
-                                <a href="/view_invoice_terms/">
-                                    <li data-link="/view_invoice_terms/">2. View Invoice Terms</li>
-                                </a>
-                            </ul>
-                        </div>
-                    </li>
-
-
-                    <a href="/ocrapp/scan/" style="text-decoration: none;">
-                        <li class="has-submenu" data-link="/ocrapp/scan/"><i class="fas fa-id-card"></i> Scan Card</li>
-                    </a>
-
-                    <a href="/schedule_meetings/schedule/" style="text-decoration: none;">
-                        <li class="has-submenu" data-link="/schedule_meetings/schedule/"><i class="fas fa-calendar-plus"></i>
-                            Schedule Meet</li>
-                    </a>
-
-                    <a href="/schedule_meetings/meeting_list/" style="text-decoration: none;">
-                        <li class="has-submenu" data-link="/schedule_meetings/meeting_list/"><i class="fas fa-book"></i> Meet
-                            Notes</li>
-                    </a>
-
-                    <a href="/open_ai/chatbot/" style="text-decoration: none;">
-                        <li class="has-submenu" data-link="/open_ai/chatbot/"><i class="fa-solid fa-comments"></i> Chat Bot</li>
-                    </a>
-                    {% endif %}
-                </ul>
-
-                <div class="notification" id="notification">
-                    Meeting successfully scheduled!
+                        <a href="/payment-records/list/">
+                            <li data-link="/payment-record/list/">6. Payment Records</li>
+                        </a>
+                        <a href="/display_reschedule">
+                            <li data-link="/display_reschedule">7. Reschedule log</li>
+                        </a>
+                        <a href="/schedule_meetings/display_meeting">
+                            <li data-link="/schedule_meetings/display_meeting">8. Meeting Records Log</li>
+                        </a>
+                    </ul>
                 </div>
+            </li>
 
-                <!-- Invoice Popup Modal -->
-                <center>
-                    <div id="invoicePopup" class="modal" style="display: none;">
-                        <div class="modal-content shadow p-4 rounded" style="width: 400px; margin: 10% auto; background: white; border: 1px solid #ccc;">
-                            <span class="close" onclick="closeInvoicePopup()" style="float:right; font-size: 20px; cursor: pointer;">&times;</span>
-                            <h5 class="text-center mb-4">Choose Invoice Type</h5>
-                            <div class="d-grid gap-2">
-                                <button onclick="location.href='/tax-invoice/create?use_quotation=true'" class="btn btn-primary mb-2">Invoice with Quotation</button>
-                                <button onclick="location.href='/tax-invoice/create'" class="btn btn-secondary">New Invoice</button>
-                                </div>
+            <li class="has-submenu"><i class="fas fa-folder-open"></i> Transaction <span class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="/lead_management_create">
+                            <li data-link="/lead_management_create">1. Lead Management</li>
+                        </a>
+                        <a href="/customer_details_create">
+                            <li data-link="/customer_details_create">2. Customer Details</li>
+                        </a>
+                        <a href="/service_management_create">
+                            <li data-link="/service_management_create">3. Service Management</li>
+                        </a>
+                        <a href="/create_quotation">
+                            <li data-link="/quotation_create">4. Quotation</li>
+                        </a>
+                        <a href="/tax-invoice/create">
+                            <li data-link="/tax-invoice/create">5. Invoice</li>
+                        </a>
+                        <a href="/payment-records/create">
+                            <li data-link="/tax-invoice/create">6. Payment Records</li>
+                        </a>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="has-submenu"><i class="fas fa-box"></i> Products <span class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="/add_product">
+                            <li data-link="/add_product">1. Add Products</li>
+                        </a>
+                        <a href="/products">
+                            <li data-link="/products">2. All Products</li>
+                        </a>
+                    </ul>
+                </div>
+            </li>
+
+
+
+            {% endif %}
+            {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
+            <li class="has-submenu">
+                <i class="fas fa-users-cog"></i> Staff <span class="arrow-down"></span>
+
+
+
+                <div class="submenu">
+                    <ul>
+                        {% if role == 'admin' %}
+                        <li class="submenu-header fw-bold">Branch Managers</li>
+                        <a href="/add-branch-manager/">
+                            <li data-link="/add-branch-manager/">Add Branch Manager</li>
+                        </a>
+                        <a href="/branch-manager-list/">
+                            <li data-link="/branch-manager-list/">View Branch Managers</li>
+                        </a>
+
+                        <li class="submenu-header fw-bold">Head Office</li>
+                        <a href="{% url 'add_ho_staff' %}">
+                            <li data-link="">Add HO Staff</li>
+                        </a>
+                        <a href="{% url 'ho_list' %}">
+                            <li data-link="">View HO</li>
+                        </a>
+
+                        {% endif %}
+                        {% if role == 'admin' or role == 'branch_manager' %}
+                        <li class="submenu-header mt-2 fw-bold">Sales Person</li>
+                        <a href="/add-sales-person/">
+                            <li data-link="/add-sales-person/">Add Sales Person</li>
+                        </a>
+                        <a href="/sales-persons/">
+                            <li data-link="/sales-persons/">View Sales Persons</li>
+                        </a>
+                        <li class="submenu-header mt-2 fw-bold">Operation Person</li>
+                        <a href="/add-operation-person/">
+                            <li data-link="/add-operation-person/">Add Operation Person</li>
+                        </a>
+                        <a href="/operation-person-list/">
+                            <li data-link="/operation-person-list/">View Operation Persons</li>
+                        </a>
+                        {% endif %}
+
+                        {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
+                        <li class="submenu-header mt-2 fw-bold">Technicians</li>
+                        <a href="/create">
+                            <li data-link="/create">Create Technician</li>
+                        </a>
+                        <a href="/technicians">
+                            <li data-link="/technicians">Show Technician</li>
+                        </a>
+                        <a href="/technician_work_list">
+                            <li data-link="/technician_work_list">Work History</li>
+                        </a>
+                        <a href="/completed_work">
+                            <li data-link="/completed_work">Completed Work List</li>
+                        </a>
+                        {% endif %}
+                    </ul>
+                </div>
+            </li>
+            {% endif %}
+
+
+            {% if role == 'admin' %}
+            <li class="has-submenu">
+                <i class="fas fa-file-invoice"></i> Branches <span class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="/branches/create/">
+                            <li data-link="/add_invoice_term/">
+                                <i class="fas fa-plus-circle"></i> Create Branch
+                            </li>
+                        </a>
+
+                        <a href="/branches/">
+                            <li data-link="/view_invoice_terms/">
+                                <i class="fas fa-eye"></i> View Branch
+                            </li>
+                        </a>
+
+                    </ul>
+                </div>
+            </li>
+
+            <li class="has-submenu"><i class="fa-solid fa-building-columns"></i> Bank Accounts <span
+                    class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="/bank/create/">
+                            <li data-link="bank/create/">1. Create Bank Account</li>
+                        </a>
+                        <a href="/bank/list/">
+                            <li data-link="/bank/list/">2. Show Bank Accounts </li>
+                        </a>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="has-submenu"><i class="fa-solid fa-message"></i> Message Templates <span
+                    class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="/create_message_template">
+                            <li data-link="/create_message_template">1. Create Template</li>
+                        </a>
+                        <a href="/message_templates">
+                            <li data-link="/message_templates">2. Show Template</li>
+                        </a>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="has-submenu">
+                <i class="fas fa-warehouse"></i> Inventory
+                <span class="arrow-down"></span>
+
+                <div class="submenu">
+                    <ul>
+
+                        <li class="has-submenu">
+                            <i class="fas fa-users"></i> Vendors
+                            <span class="arrow-down"></span>
+
+                            <div class="submenu">
+                                <ul>
+                                    <a href="{% url 'vendor_add' %}">
+                                        <li>Add Vendor</li>
+                                    </a>
+                                    <a href="{% url 'vendor_list' %}">
+                                        <li>Vendor List</li>
+                                    </a>
+                                </ul>
                             </div>
-                        </div>        
-                </center>
-                <center>
-                    <button class="mb-5 mt-3 logoutbtn">
-                        <a href="/logout">Logout</a>
-                        <div class="arrow-wrapper">
-                            <div class="arrow"></div>
-                        </div>
-                    </button>
-                </center>
+                        </li>
 
-                
+                        <li class="has-submenu">
+                            <i class="fas fa-shopping-cart"></i> Purchase Orders
+                            <span class="arrow-down"></span>
 
-                <script>
-                    // Highlight current page link
-                    const path = window.location.pathname;
-                    const allLinks = document.querySelectorAll('li[data-link]');
-                    allLinks.forEach(link => {
-                        if (link.getAttribute('data-link') === path) {
-                            link.classList.add('active');
-                        }
-                    });
+                            <div class="submenu">
+                                <ul>
+                                    <a href="{% url 'purchase_order_create' %}">
+                                        <li>Create PO</li>
+                                    </a>
+                                    <a href="{% url 'purchase_order_list' %}">
+                                        <li>PO List</li>
+                                    </a>
+                                </ul>
+                            </div>
+                        </li>
 
-                    // Show notification if scheduled
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.get('schedule_success') === '1') {
-                        const notification = document.getElementById('notification');
-                        notification.style.display = 'block';
-                        setTimeout(() => {
-                            notification.style.display = 'none';
-                        }, 3000);
-                    }
-                </script>
+                        <li class="has-submenu">
+                            <i class="fa-solid fa-file"></i> GRN  
+                            <span class="arrow-down"></span>
+
+                            <div class="submenu">
+                                <ul>
+                                    <a href="{% url 'grn_list' %}">
+                                        <li>GRN List</li>
+                                    </a>
+                                   
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="has-submenu">
+                            <i class="fa-solid fa-boxes-stacked"></i> Stock  
+                            <span class="arrow-down"></span>
+
+                            <div class="submenu">
+                                <ul>
+                                    <a href="{% url 'products_stock_list' %}">
+                                        <li>Stock</li>
+                                    </a>
+                                   
+                                </ul>
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+            </li>
+            {% endif %}
+
+            {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
+            <li class="has-submenu">
+                <i class="fas fa-file-alt"></i> Sites <span class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="{% url 'add_site' %}">
+                            <li data-link="">1. Add Sites</li>
+                        </a>
+                        <a href="">
+                            <li data-link="{% url 'site_list' %}">2. View Sites</li>
+                        </a>
+                    </ul>
+                </div>
+            </li>
+
+            <a href="/display_allocation" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/display_allocation"><i class="fas fa-tasks"></i> Allocate Work</li>
+            </a>
+            {% endif %}
+
+            {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
+            <li class="has-submenu">
+                <i class="fas fa-file-alt"></i> Quotation Terms <span class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="/add_quotation_term/">
+                            <li data-link="/add_quotation_term/">1. Add Quotation Term</li>
+                        </a>
+                        <a href="/view_quotation_terms/">
+                            <li data-link="/view_quotation_terms/">2. View Quotation Terms</li>
+                        </a>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="has-submenu">
+                <i class="fas fa-file-invoice"></i> Invoice Terms <span class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="/add_invoice_term/">
+                            <li data-link="/add_invoice_term/">1. Add Invoice Term</li>
+                        </a>
+                        <a href="/view_invoice_terms/">
+                            <li data-link="/view_invoice_terms/">2. View Invoice Terms</li>
+                        </a>
+                    </ul>
+                </div>
+            </li>
+
+            
+
+
+            <a href="/ocrapp/scan/" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/ocrapp/scan/"><i class="fas fa-id-card"></i> Scan Card</li>
+            </a>
+
+            <a href="/schedule_meetings/schedule/" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/schedule_meetings/schedule/"><i class="fas fa-calendar-plus"></i>
+                    Schedule Meet</li>
+            </a>
+
+            <a href="/schedule_meetings/meeting_list/" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/schedule_meetings/meeting_list/"><i class="fas fa-book"></i> Meet
+                    Notes</li>
+            </a>
+
+            <a href="/open_ai/chatbot/" style="text-decoration: none;">
+                <li class="has-submenu" data-link="/open_ai/chatbot/"><i class="fa-solid fa-comments"></i> Chat Bot</li>
+            </a>
+            {% endif %}
+        </ul>
+
+        <div class="notification" id="notification">
+            Meeting successfully scheduled!
+        </div>
+
+        <center>
+            <div id="invoicePopup" class="modal" style="display: none;">
+                <div class="modal-content shadow p-4 rounded"
+                    style="width: 400px; margin: 10% auto; background: white; border: 1px solid #ccc;">
+                    <span class="close" onclick="closeInvoicePopup()"
+                        style="float:right; font-size: 20px; cursor: pointer;">&times;</span>
+                    <h5 class="text-center mb-4">Choose Invoice Type</h5>
+                    <div class="d-grid gap-2">
+                        <button onclick="location.href='/tax-invoice/create?use_quotation=true'"
+                            class="btn btn-primary mb-2">Invoice with Quotation</button>
+                        <button onclick="location.href='/tax-invoice/create'" class="btn btn-secondary">New
+                            Invoice</button>
+                    </div>
+                </div>
             </div>
+        </center>
+        <center>
+            <button class="mb-5 mt-3 logoutbtn">
+                <a href="/logout">Logout</a>
+                <div class="arrow-wrapper">
+                    <div class="arrow"></div>
+                </div>
+            </button>
+        </center>
 
-        {% endwith %}
+
+
+        <script>
+            // Highlight current page link
+            const path = window.location.pathname;
+            const allLinks = document.querySelectorAll('li[data-link]');
+            allLinks.forEach(link => {
+                if (link.getAttribute('data-link') === path) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Show notification if scheduled
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('schedule_success') === '1') {
+                const notification = document.getElementById('notification');
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+        </script>
+    </div>
+
+    {% endwith %}
     {% endif %}
     <div class="overlay" id="overlay"></div>
-    <!-- Particles JS Container -->
     <div id="particles-js" style="position: fixed; width: 100%; height: 100%; top: 20; left: 0; z-index: -5;"></div>
 
-    <!-- Load the Particles.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
-   
-    <!-- Sidebar popup -->
+
     <script>
         function openInvoicePopup() {
             document.getElementById("invoicePopup").style.display = "block";
@@ -1276,7 +1422,7 @@
         }
 
         // Close modal when clicking outside the modal content
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const modal = document.getElementById("invoicePopup");
             if (event.target == modal) {
                 modal.style.display = "none";
@@ -1326,8 +1472,22 @@
         }
     </script>
 
+    <script>
+        document.querySelectorAll('.has-submenu').forEach(menu => {
+            menu.addEventListener('click', function (e) {
 
-    
+                // allow links to work (if the user clicks a specific <a> inside)
+                if (e.target.closest('a')) return;
+
+                // Stop propagation so clicking 'Vendors' doesn't close 'Inventory'
+                e.stopPropagation();
+
+                // toggle only THIS menu
+                this.classList.toggle('open');
+            });
+        });
+    </script>
+
 
 </body>
 
