@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ej=s3v#7gjmn*elic2@c0i63%(q5jxd-1v=n=^2%_ymil%vtdi
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['49.12.8.126','www.teimcrm.com','teimcrm.com','127.0.0.1:8000','localhost']
+ALLOWED_HOSTS = ['49.12.8.126','www.teimcrm.com','teimcrm.com','127.0.0.1','localhost']
 
 
 CSRF_TRUSTED_ORIGINS = ['https://www.teimcrm.com']

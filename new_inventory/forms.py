@@ -1,4 +1,4 @@
-from .models import Vendor, HO, Site, PurchaseOrder, DESTINATION_TYPES, PurchaseOrderItem, GoodsReceiveNote
+from .models import Vendor, HO, Site, PurchaseOrder, DESTINATION_TYPES, PurchaseOrderItem, GoodsReceiveNote 
 
 from .utils import get_destination_queryset,  get_destination_object
 from django import forms

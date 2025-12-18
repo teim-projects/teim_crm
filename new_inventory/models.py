@@ -9,6 +9,7 @@ from .utils import get_or_create_product_batch, get_destination_object
 from django.db import transaction
 from django.utils import timezone
 import logging
+from django.core.exceptions import ValidationError
 
 # ----------------------------- CONSTANTS ------------------------------
 
@@ -298,7 +299,7 @@ class PurchaseOrderItem(models.Model):
 
 
 # ----------------------------- GRN ------------------------------
-# ----------------------------- GRN ------------------------------
+
 def generate_grn_no_per_po(purchase_order):
     """
     purchase_order: instance of PurchaseOrder
@@ -468,6 +469,122 @@ class GoodsReceiveNoteItem(models.Model):
 
 
 
+# ------------------ MTN ---------------
+def generate_mtn_no():
+    current_year = datetime.date.today().year
+    prefix = f"MTN/{current_year}/"
+
+    # Find the last MTN created in the current year
+    last_mtn = MaterialTransferNote.objects.filter(
+        mtn_no__startswith=prefix
+    ).order_by("-mtn_no").first()
+
+    if last_mtn:
+        # Extracts the last 3 digits, e.g., '005' -> 5
+        try:
+            last_number = int(last_mtn.mtn_no.split('/')[-1])
+            new_number = last_number + 1
+        except (ValueError, IndexError):
+            new_number = 1
+    else:
+        new_number = 1
+
+    return f"{prefix}{new_number:03d}"
+
+
+# ----------------------------- MATERIAL TRANSFER ------------------------------
+
+class MaterialTransferNote(models.Model):
+    mtn_no = models.CharField(
+        max_length=100, 
+        unique=True, 
+        default=generate_mtn_no, 
+        editable=False           
+    )
+    
+    # Source Location
+    source_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
+    source_id = models.BigIntegerField()
+    
+    # Destination Location
+    destination_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
+    destination_id = models.BigIntegerField()
+    
+    transfer_date = models.DateField(default=timezone.now)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="DRAFT")
+    
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    remark = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.mtn_no:
+            # Simple auto-gen logic; can be customized like your PO/GRN logic
+            date_str = timezone.now().strftime('%Y%m%d')
+            last_mtn = MaterialTransferNote.objects.filter(mtn_no__contains=date_str).count()
+            self.mtn_no = f"MTN-{date_str}-{last_mtn + 1:03d}"
+        super().save(*args, **kwargs)
+
+
+    @property
+    def source_name(self):
+        obj = get_destination_object(self.source_type, self.source_id)
+        return str(obj) if obj else "N/A"
+
+    @property
+    def destination_name(self):
+        obj = get_destination_object(self.destination_type, self.destination_id)
+        return str(obj) if obj else "N/A"
+    def __str__(self):
+        return self.mtn_no
+
+class MTNItem(models.Model):
+    mtn = models.ForeignKey(MaterialTransferNote, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    batch = models.ForeignKey(ProductBatch, on_delete=models.PROTECT)
+    transfer_qty = models.DecimalField(max_digits=12, decimal_places=3)
+    remarks = models.CharField(max_length=255, null=True, blank=True)
+
+
+    def clean(self):
+        # Only validate during creation or if it's still a draft
+        if self.mtn.status == 'DRAFT':
+            stock = CurrentStock.objects.filter(
+                product=self.product,
+                batch=self.batch,
+                location_type=self.mtn.source_type,
+                location_id=self.mtn.source_id
+            ).first()
+
+            # available_qty = closing_qty - reserved_qty
+            available = stock.available_qty if stock else Decimal('0')
+
+            # If updating, we need to ignore the current item's already reserved amount
+            if self.pk:
+                old_item = MTNItem.objects.get(pk=self.pk)
+                available += old_item.transfer_qty
+
+            if self.transfer_qty > available:
+                raise ValidationError(
+                    f"Insufficient stock at source. Available: {available}."
+                )
+    
+    def save(self, *args, **kwargs):
+        # 🔑 Force Decimal conversion (safe)
+        if self.transfer_qty is not None:
+            self.transfer_qty = Decimal(self.transfer_qty)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.product.product_name} - {self.transfer_qty}"
+
+
+
+
+
+
+# ------------ current stock -----------------------
 class CurrentStock(models.Model):
     product = models.ForeignKey('crmapp.Product', on_delete=models.CASCADE)
     batch = models.ForeignKey('ProductBatch', on_delete=models.PROTECT, null=True, blank=True)
@@ -501,7 +618,7 @@ class CurrentStock(models.Model):
     def __str__(self):
         return f"{self.product} / {self.batch or 'NO-BATCH'} @ {self.location_type}:{self.location_id} -> {self.closing_qty}"
 
-
+# -------------- stock ledger ----------------------
 class StockLedger(models.Model):
     product = models.ForeignKey('crmapp.Product', on_delete=models.CASCADE)
     batch = models.ForeignKey('ProductBatch', on_delete=models.PROTECT, null=True, blank=True)
@@ -528,7 +645,7 @@ class StockLedger(models.Model):
     def __str__(self):
         return f"{self.transaction_type} {self.product} +{self.in_qty} -{self.out_qty} -> bal {self.balance_qty} ({self.transaction_ref})"
     
-
+#  ------------- product stock --------------------
 class ProductStock(models.Model):
     """
     Denormalized table for product-level stock per location.
@@ -557,7 +674,5 @@ class ProductStock(models.Model):
 
     @property
     def closing_qty(self):
-        return (self.total_in_qty or Decimal('0')) - (self.total_out_qty or Decimal('0')) - (self.total_reserved_qty or Decimal('0'))
-    
-
+        return (self.total_in_qty or Decimal('0')) - (self.total_out_qty or Decimal('0')) - (self.total_reserved_qty or Decimal('0')) 
     

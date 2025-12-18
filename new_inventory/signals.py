@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from .models import (
     GoodsReceiveNoteItem, GoodsReceiveNote,
-    CurrentStock, StockLedger, ProductStock
+    CurrentStock, StockLedger, ProductStock ,MaterialTransferNote, MTNItem
 )
 
 def _effective_qty(item):
@@ -225,3 +225,184 @@ def grn_item_post_delete(sender, instance, **kwargs):
 
         # delete ledger entries for this GRN item
         StockLedger.objects.filter(transaction_ref=f"GRN_ITEM_{instance.pk}").delete()
+
+
+
+
+
+# @receiver(post_save, sender=MaterialTransferNote)
+# def handle_mtn_stock_movement(sender, instance, **kwargs):
+#     """
+#     Triggers stock movement only when status is changed to 'APPROVED'.
+#     Prevents duplicate processing by checking a local flag or specific status flow.
+#     """
+#     if instance.status == "APPROVED":
+#         with transaction.atomic():
+#             items = instance.items.all()
+#             for item in items:
+#                 # 1. DEDUCT FROM SOURCE
+#                 _update_stock_logic(
+#                     product=item.product,
+#                     batch=item.batch,
+#                     loc_type=instance.source_type,
+#                     loc_id=instance.source_id,
+#                     qty=-item.transfer_qty, # Negative for OUT
+#                     trans_type="MTN_OUT",
+#                     ref=f"MTN_ITEM_{item.id}",
+#                     doc_id=instance.id
+#                 )
+                
+#                 # 2. ADD TO DESTINATION
+#                 _update_stock_logic(
+#                     product=item.product,
+#                     batch=item.batch,
+#                     loc_type=instance.destination_type,
+#                     loc_id=instance.destination_id,
+#                     qty=item.transfer_qty, # Positive for IN
+#                     trans_type="MTN_IN",
+#                     ref=f"MTN_ITEM_{item.id}",
+#                     doc_id=instance.id
+#                 )
+
+def _update_stock_logic(product, batch, loc_type, loc_id, qty, trans_type, ref, doc_id):
+    """
+    Helper function to update CurrentStock, ProductStock, and Ledger.
+    """
+    # Update CurrentStock (Batch level)
+    cs, _ = CurrentStock.objects.get_or_create(
+        product=product, batch=batch, 
+        location_type=loc_type, location_id=loc_id
+    )
+    
+    if qty > 0:
+        cs.in_qty += Decimal(qty)
+    else:
+        cs.out_qty += abs(Decimal(qty))
+    
+    cs.recompute_closing()
+
+    # Update ProductStock (Aggregate level)
+    ps, _ = ProductStock.objects.get_or_create(
+        product=product, location_type=loc_type, location_id=loc_id
+    )
+    if qty > 0:
+        ps.total_in_qty += Decimal(qty)
+    else:
+        ps.total_out_qty += abs(Decimal(qty))
+    ps.save()
+  
+    # Create Ledger Entry
+    StockLedger.objects.create(
+        product=product,
+        batch=batch,
+        location_type=loc_type,
+        location_id=loc_id,
+        transaction_type=trans_type,
+        transaction_ref=ref,
+        document_id=doc_id,
+        in_qty=qty if qty > 0 else 0,
+        out_qty=abs(qty) if qty < 0 else 0,
+        balance_qty=cs.closing_qty
+    )
+
+
+@receiver(post_save, sender=MTNItem)
+def handle_mtn_item_reservation(sender, instance, created, **kwargs):
+    """
+    When an item is added to a DRAFT MTN, we reserve it at the source.
+    """
+    mtn = instance.mtn
+    if mtn.status == 'DRAFT':
+        with transaction.atomic():
+            # 1. Update CurrentStock (Batch Level)
+            cs, _ = CurrentStock.objects.select_for_update().get_or_create(
+                product=instance.product,
+                batch=instance.batch,
+                location_type=mtn.source_type,
+                location_id=mtn.source_id
+            )
+            
+            # Logic to handle new items vs updates to existing draft items
+            qty = Decimal(instance.transfer_qty)
+            if created:
+                cs.reserved_qty += qty
+            else:
+                # If updating a draft item, you'd need pre_save old_qty logic 
+                # similar to your GRN implementation.
+                pass
+            
+            cs.recompute_closing()
+            
+            # 2. Update ProductStock (Aggregate Level)
+            ps, _ = ProductStock.objects.select_for_update().get_or_create(
+                product=instance.product,
+                location_type=mtn.source_type,
+                location_id=mtn.source_id
+            )
+            ps.total_reserved_qty += instance.transfer_qty
+            ps.save()
+
+@receiver(pre_save, sender=MaterialTransferNote)
+def handle_mtn_status_change(sender, instance, **kwargs):
+    """
+    Handles the transition from DRAFT -> APPROVED.
+    Converts 'Reserved' stock into 'Out/In' movement.
+    """
+    if not instance.pk:
+        return
+
+    try:
+        old_instance = MaterialTransferNote.objects.get(pk=instance.pk)
+    except MaterialTransferNote.DoesNotExist:
+        return
+
+    # Transition: DRAFT -> APPROVED
+    if old_instance.status == 'DRAFT' and instance.status == 'APPROVED':
+        with transaction.atomic():
+            for item in instance.items.all():
+                # --- SOURCE SIDE: MOVE FROM RESERVED TO OUT ---
+                cs_source = CurrentStock.objects.select_for_update().get(
+                    product=item.product, batch=item.batch,
+                    location_type=instance.source_type, location_id=instance.source_id
+                )
+                cs_source.reserved_qty -= item.transfer_qty
+                cs_source.out_qty += item.transfer_qty
+                cs_source.recompute_closing()
+
+                ps_source = ProductStock.objects.select_for_update().get(
+                    product=item.product, location_type=instance.source_type, location_id=instance.source_id
+                )
+                ps_source.total_reserved_qty -= item.transfer_qty
+                ps_source.total_out_qty += item.transfer_qty
+                ps_source.save()
+
+                # --- DESTINATION SIDE: ADD TO IN ---
+                cs_dest, _ = CurrentStock.objects.select_for_update().get_or_create(
+                    product=item.product, batch=item.batch,
+                    location_type=instance.destination_type, location_id=instance.destination_id
+                )
+                cs_dest.in_qty += item.transfer_qty
+                cs_dest.recompute_closing()
+
+                ps_dest, _ = ProductStock.objects.select_for_update().get_or_create(
+                    product=item.product, location_type=instance.destination_type, location_id=instance.destination_id
+                )
+                ps_dest.total_in_qty += item.transfer_qty
+                ps_dest.save()
+                # --- LEDGER ENTRIES ---
+                # Ledger for Source (OUT)
+                StockLedger.objects.create(
+                    product=item.product, batch=item.batch,
+                    location_type=instance.source_type, location_id=instance.source_id,
+                    transaction_type='MTN_OUT', transaction_ref=f"MTN_ITEM_{item.id}",
+                    document_id=instance.id, out_qty=item.transfer_qty,
+                    balance_qty=cs_source.closing_qty, remarks=f"Transferred to {instance.destination_type}:{instance.destination_id}"
+                )
+                # Ledger for Destination (IN)
+                StockLedger.objects.create(
+                    product=item.product, batch=item.batch,
+                    location_type=instance.destination_type, location_id=instance.destination_id,
+                    transaction_type='MTN_IN', transaction_ref=f"MTN_ITEM_{item.id}",
+                    document_id=instance.id, in_qty=item.transfer_qty,
+                    balance_qty=cs_dest.closing_qty, remarks=f"Received from {instance.source_type}:{instance.source_id}"
+                )

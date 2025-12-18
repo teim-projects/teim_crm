@@ -6,6 +6,9 @@ urlpatterns = [
     # ---------------- Destination Loader ----------------
     path("ajax/load-destinations/", load_destinations, name="load_destinations"),
 
+    # ---------- batch loadr --------
+    path("ajax/load-batches/", load_batches, name="load_batches"),
+
     # ---------------- Vendor ----------------
     path('vendor_add/', vendor_add, name="vendor_add"),
     path('vendor_list/', vendor_list, name="vendor_list"),
@@ -41,4 +44,10 @@ urlpatterns = [
     path("grn/list/", grn_list, name="grn_list"),  
     path('stock/products/', products_stock_list_view, name='products_stock_list'),
     # path('stock/product/<int:product_id>/', product_stock_view, name='product_stock_view'),
+
+    # -------MTN----
+    path("mtn/", mtn_list_view, name="mtn_list_view"),
+    path('mtn/create/',create_mtn,name="mtn_create"),
+    path("mtn/<int:pk>/", mtn_detail_view, name="mtn_detail_view"),
+    path("mtn/<int:pk>/edit/", mtn_edit_view, name="mtn_edit_view"),
 ]

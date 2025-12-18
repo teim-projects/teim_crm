@@ -791,3 +791,169 @@ def products_stock_list_view(request):
     }
     return render(request, "inventory/products_stock_list.html", context)
 
+
+# ---- batch api ------
+def load_batches(request):
+    product_id = request.GET.get("product_id")
+    print("p id:",product_id)
+    batches = ProductBatch.objects.filter(product_id=product_id)
+
+    return JsonResponse({
+        "results": [
+            {"id": b.id, "name": str(b.batch)}
+            for b in batches
+        ]
+    })
+
+# -------------------- MTN ----------------
+def create_mtn(request):
+    if request.method == "POST":
+        source_type = request.POST.get("source_type")
+        source_id = request.POST.get("source")
+        destination_type = request.POST.get("destination_type")
+        destination_id = request.POST.get("destination")
+        status = request.POST.get("status")
+        remarks = request.POST.get("remarks")
+        transfer_date = request.POST.get("date") or timezone.now().date()
+
+        products = request.POST.getlist("product[]")
+        batches = request.POST.getlist("batch[]")
+        qtys = request.POST.getlist("qty[]")
+        item_remarks = request.POST.getlist("item_remarks[]")
+
+        try:
+            with transaction.atomic():
+
+                # 1️⃣ Create MTN HEADER (always DRAFT first)
+                mtn = MaterialTransferNote.objects.create(
+                    source_type=source_type,
+                    source_id=source_id,
+                    destination_type=destination_type,
+                    destination_id=destination_id,
+                    transfer_date=transfer_date,
+                    status="DRAFT",
+                    remark=remarks,
+                    created_by=request.user
+                )
+
+                # 2️⃣ Create MTN ITEMS (this triggers reservation)
+                for i in range(len(products)):
+                    if not products[i] or not qtys[i]:
+                        continue
+
+                    MTNItem.objects.create(
+                        mtn=mtn,
+                        product_id=products[i],
+                        batch_id=batches[i],
+                        transfer_qty=qtys[i],
+                        remarks=item_remarks[i]
+                    )
+
+                # 3️⃣ If user selected APPROVED → update status
+                if status == "APPROVED":
+                    mtn.status = "APPROVED"
+                    mtn.save()   # 🔥 triggers pre_save logic
+
+                return redirect("mtn_list_view")
+
+        except Exception as e:
+            print("MTN ERROR:", e)
+
+    products = Product.objects.all()
+    return render(request, "inventory/mtn_form.html", {
+        "products": products
+    })
+
+
+def mtn_list_view(request):
+    mtns = MaterialTransferNote.objects.all().order_by("-created_at")
+    return render(request, "inventory/mtn_list.html", {"mtns": mtns})
+
+def mtn_detail_view(request, pk):
+    mtn = get_object_or_404(
+        MaterialTransferNote.objects.prefetch_related(
+            "items",
+            "items__product",
+            "items__batch",
+            "items__batch__batch",
+        ),
+        pk=pk
+    )
+
+    context = {
+        "mtn": mtn,
+        "items": mtn.items.all(),
+    }
+    return render(request, "inventory/mtn_detail.html", context)
+
+
+def mtn_edit_view(request, pk):
+    mtn = get_object_or_404(MaterialTransferNote, pk=pk)
+
+    # 🔒 Do not allow editing after approval
+    if mtn.status != "DRAFT":
+        return redirect("mtn_detail_view", pk=mtn.pk)
+
+    if request.method == "POST":
+        source_type = request.POST.get("source_type")
+        source_id = request.POST.get("source")
+        destination_type = request.POST.get("destination_type")
+        destination_id = request.POST.get("destination")
+        date = request.POST.get("date")
+        status = request.POST.get("status")
+        remarks = request.POST.get("remarks")
+
+        products = request.POST.getlist("product[]")
+        batches = request.POST.getlist("batch[]")
+        qtys = request.POST.getlist("qty[]")
+        item_remarks = request.POST.getlist("item_remarks[]")
+
+        try:
+            with transaction.atomic():
+
+                # 1️⃣ Update MTN header
+                mtn.source_type = source_type
+                mtn.source_id = source_id
+                mtn.destination_type = destination_type
+                mtn.destination_id = destination_id
+                mtn.transfer_date = date or timezone.now().date()
+                mtn.remark = remarks
+                mtn.save()
+
+                # 2️⃣ Remove old items (IMPORTANT)
+                # This will also release reserved stock
+                mtn.items.all().delete()
+
+                # 3️⃣ Re-create items (re-reserve stock)
+                for i in range(len(products)):
+                    if not products[i] or not qtys[i]:
+                        continue
+
+                    MTNItem.objects.create(
+                        mtn=mtn,
+                        product_id=products[i],
+                        batch_id=batches[i],
+                        transfer_qty=Decimal(qtys[i]),
+                        remarks=item_remarks[i]
+                    )
+
+                # 4️⃣ Approve if selected
+                if status == "APPROVED":
+                    mtn.status = "APPROVED"
+                    mtn.save()  # 🔥 triggers pre_save approval logic
+
+                return redirect("mtn_list_view")
+
+        except Exception as e:
+            print("MTN EDIT ERROR:", e)
+
+    # GET request → load form with existing data
+    products = Product.objects.all()
+
+    context = {
+        "products": products,
+        "mtn": mtn,
+        "items": mtn.items.all(),
+        "is_edit": True,
+    }
+    return render(request, "inventory/mtn_form.html", context)
