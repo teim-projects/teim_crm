@@ -16,9 +16,13 @@
   {% include 'sidebar.html' %}
   <div class="container " style="margin-top: 130px;">
 
-    <form method="post" data-destination-url="{% url 'load_destinations' %}"  data-batch-url="{% url 'load_batches' %}"
+    <form method="post"
+    data-destination-url="{% url 'load_destinations' %}"
+    data-batch-url="{% url 'load_batches' %}"
+    data-qty-url="{% url 'fetch_mtn_available_qty' %}"
     data-source-id="{{ mtn.source_id|default:'' }}"
-      data-destination-id="{{ mtn.destination_id|default:'' }}">
+    data-destination-id="{{ mtn.destination_id|default:'' }}">
+
       {% csrf_token %}
 
       <!-- ================= MTN HEADER ================= -->
@@ -107,6 +111,7 @@
               <tr>
                 <th style="width:25%">Product</th>
                 <th style="width:20%">Batch</th>
+                <th style="width:10%">Available</th>
                 <th style="width:10%">Qty</th>
                 <th style="width:35%">Remarks</th>
                 <th style="width:10%">Action</th>
@@ -138,7 +143,10 @@
           {% endif %}
         </select>
       </td>
-
+          
+      <td>
+        <span class="available-qty text-success fw-bold">0.000</span>
+      </td>
       <td>
         <input type="number" class="form-control" name="qty[]"
                value="{{ item.transfer_qty }}" required>
@@ -171,6 +179,9 @@
         <select class="form-select batch-select" name="batch[]">
           <option value="">Select Batch</option>
         </select>
+      </td>
+      <td>
+        <span class="available-qty text-success fw-bold">0.000</span>
       </td>
 
       <td>
@@ -316,6 +327,62 @@
   </script>
   
   
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    
+      const form = document.querySelector("form");
+      const qtyUrl = form.dataset.qtyUrl;
+    
+      function fetchAvailableQty(row) {
+        const product = row.querySelector('[name="product[]"]').value;
+        const batch = row.querySelector('[name="batch[]"]').value;
+        const sourceType = document.querySelector('[name="source_type"]').value;
+        const sourceId = document.querySelector('[name="source"]').value;
+        const qtyInput = row.querySelector('[name="qty[]"]');
+        const availableSpan = row.querySelector(".available-qty");
+    
+        if (!product || !batch || !sourceType || !sourceId) {
+          availableSpan.innerText = "0.000";
+          qtyInput.max = "";
+          return;
+        }
+    
+        fetch(
+          `${qtyUrl}?product_id=${product}&batch_id=${batch}&source_type=${sourceType}&source_id=${sourceId}`
+        )
+          .then(res => res.json())
+          .then(data => {
+            const available = parseFloat(data.available_qty || 0).toFixed(3);
+            availableSpan.innerText = available;
+    
+            // 🔒 Enforce limit
+            qtyInput.max = available;
+    
+            // Auto-correct qty if exceeded
+            if (qtyInput.value && parseFloat(qtyInput.value) > available) {
+              qtyInput.value = available;
+            }
+          });
+      }
+    
+      // 🔹 Trigger on batch change
+      document.getElementById("mtnItemsBody").addEventListener("change", function (e) {
+        if (e.target.classList.contains("batch-select")) {
+          fetchAvailableQty(e.target.closest(".mtn-item-row"));
+        }
+      });
+    
+      // 🔹 Trigger when source changes (recalculate all rows)
+      document.querySelector('[name="source"]').addEventListener("change", function () {
+        document.querySelectorAll(".mtn-item-row").forEach(fetchAvailableQty);
+      });
+    
+      document.querySelector('[name="source_type"]').addEventListener("change", function () {
+        document.querySelectorAll(".mtn-item-row").forEach(fetchAvailableQty);
+      });
+    
+    });
+    </script>
     
 </body>
 

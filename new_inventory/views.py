@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
+from django.core.exceptions import PermissionDenied
 from crmapp.models import UserProfile, Product
 from .models import *
 from .forms import *
@@ -323,6 +324,18 @@ def purchase_order_list(request):
 
     po_list = PurchaseOrder.objects.all().order_by("-created_at")
 
+    user = request.user.username
+
+    # 🔐 ROLE BASED FILTER
+    if request.user.userprofile.role == "branch_manager":
+        branch_id = BranchManager.objects.get(mobile_no = user).branch.id
+        po_list = po_list.filter(
+            destination_type ="BRANCH",
+            destination_id = branch_id
+        )
+    
+    elif request.user.userprofile.role == "admin":
+        po_list = PurchaseOrder.objects.all().order_by("-created_at")
     if search:
         po_list = po_list.filter(
             Q(po_no__icontains=search) |
@@ -617,17 +630,20 @@ def grn_create(request, po_id):
 
 
 def grn_list(request):
-    """
-    List GRNs with:
-      - search: request.GET['search'] (matches PO no, PO id, vendor name, vendor mobile)
-      - date filter: from_date / to_date (YYYY-MM-DD)
-      - pagination: ?page=...
-    Returns:
-      - grns: the page's object list (used by your template loop)
-      - page_obj: the Paginator page object (used by your pagination UI)
-      - querystring: serialized GET params except 'page' (so pagination links preserve filters)
-    """
     qs = GoodsReceiveNote.objects.select_related("purchase_order", "purchase_order__vendor").all().order_by("-created_at")
+
+    user = request.user.username
+
+    # 🔐 ROLE BASED FILTER
+    if request.user.userprofile.role == "branch_manager":
+        branch_id = BranchManager.objects.get(mobile_no = user).branch.id
+        qs = qs.filter(
+            destination_type ="BRANCH",
+            destination_id = branch_id
+        )
+    
+    elif request.user.userprofile.role == "admin":
+        qs = GoodsReceiveNote.objects.select_related("purchase_order", "purchase_order__vendor").all().order_by("-created_at")
 
     # --- Search ---
     search = (request.GET.get("search") or "").strip()
@@ -702,27 +718,32 @@ def _parse_int_or_none(val):
         return None
 
 def products_stock_list_view(request):
-    """
-    Products stock list — searchable by product name (q).
-    New optional filters: batch_no, expiry_from (YYYY-MM-DD), expiry_to (YYYY-MM-DD).
-    """
     search = request.GET.get('q') or None
     location_type = request.GET.get('location_type') or None
     location_id = _parse_int_or_none(request.GET.get('location_id'))
 
-     # get destination queryset for selected type (empty qs if no type)
-    destination_qs = None
+    batch_no = request.GET.get('batch_no') or None
+    expiry_from = request.GET.get('expiry_from') or None
+    expiry_to = request.GET.get('expiry_to') or None
+    page = request.GET.get('page', 1)
+
+    user = request.user
+    role = getattr(user.userprofile, "role", None)
+
+    # 🔐 ROLE BASED LOCATION FILTER
+    if role == "branch_manager":
+        branch_id = BranchManager.objects.get(
+            mobile_no=user.username
+        ).branch.id
+
+        location_type = "BRANCH"
+        location_id = branch_id
+
+    # destination dropdown
     if location_type:
         destination_qs = get_destination_queryset(location_type)
     else:
-        destination_qs = []  # or Branch.objects.none()
-
-    # new filters
-    batch_no = request.GET.get('batch_no') or None
-    expiry_from = request.GET.get('expiry_from') or None  # expect 'YYYY-MM-DD' or None
-    expiry_to = request.GET.get('expiry_to') or None
-
-    page = request.GET.get('page', 1)
+        destination_qs = []
 
     qs = annotated_product_stock_qs(
         Product,
@@ -734,8 +755,6 @@ def products_stock_list_view(request):
         expiry_to=expiry_to
     ).order_by('product_name')
 
-
-
     paginator = Paginator(qs, 25)
     try:
         products_page = paginator.page(page)
@@ -745,20 +764,18 @@ def products_stock_list_view(request):
         products_page = paginator.page(paginator.num_pages)
 
     rows = []
-    # inside products_stock_list_view, after you fetch the page:
     for p in products_page:
-        # if batch/expiry filters were provided use batch_in_qty (subquery result), else use denormalized in_qty
         if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
             in_qty = getattr(p, 'batch_in_qty', Decimal('0'))
-            # If you also annotated batch_reserved_qty etc, pick those similarly
-            reserved = Decimal('0')  # adjust if you added a batch_reserved annotation
-            out_qty = Decimal('0')   # per-batch out may not exist; use productstock out if needed
+            out_qty = Decimal('0')
+            reserved = Decimal('0')
         else:
             in_qty = getattr(p, 'in_qty', Decimal('0'))
             out_qty = getattr(p, 'out_qty', Decimal('0'))
             reserved = getattr(p, 'reserved_qty', Decimal('0'))
 
-        closing = (in_qty or Decimal('0')) - (out_qty or Decimal('0')) - (reserved or Decimal('0'))
+        closing = in_qty - out_qty - reserved
+
         rows.append({
             "id": p.pk,
             "name": getattr(p, 'product_name', str(p)),
@@ -768,17 +785,14 @@ def products_stock_list_view(request):
             "closing_qty": str(closing),
         })
 
-
     params = request.GET.copy()
-    if 'page' in params:
-        params.pop('page')
-    base_qs = params.urlencode()
+    params.pop('page', None)
 
     context = {
         "rows": rows,
         "page_obj": products_page,
         "paginator": paginator,
-        "base_qs": base_qs,
+        "base_qs": params.urlencode(),
         "filters": {
             "location_type": location_type,
             "location_id": location_id,
@@ -789,8 +803,8 @@ def products_stock_list_view(request):
         },
         "destination_qs": destination_qs,
     }
-    return render(request, "inventory/products_stock_list.html", context)
 
+    return render(request, "inventory/products_stock_list.html", context)
 
 # ---- batch api ------
 def load_batches(request):
@@ -806,6 +820,29 @@ def load_batches(request):
     })
 
 # -------------------- MTN ----------------
+def fetch_mtn_available_qty(request):
+    product_id = request.GET.get("product_id")
+    batch_id = request.GET.get("batch_id")
+    source_type = request.GET.get("source_type")
+    source_id = request.GET.get("source_id")
+
+    if not all([product_id, batch_id, source_type, source_id]):
+        return JsonResponse({"available_qty": "0.000"})
+
+    stock = CurrentStock.objects.filter(
+        product_id=product_id,
+        batch_id=batch_id,
+        location_type=source_type,
+        location_id=source_id
+    ).first()
+
+    available = stock.available_qty if stock else Decimal("0.000")
+
+    return JsonResponse({
+        "available_qty": str(available)
+    })
+
+
 def create_mtn(request):
     if request.method == "POST":
         source_type = request.POST.get("source_type")
@@ -865,9 +902,53 @@ def create_mtn(request):
     })
 
 
+from crmapp.models import BranchManager
+
 def mtn_list_view(request):
-    mtns = MaterialTransferNote.objects.all().order_by("-created_at")
-    return render(request, "inventory/mtn_list.html", {"mtns": mtns})
+    mtns = MaterialTransferNote.objects.all().order_by('-transfer_date')
+
+    user = request.user.username
+
+    # 🔐 ROLE BASED FILTER
+    if request.user.userprofile.role == "branch_manager":
+        branch_id = BranchManager.objects.get(mobile_no = user).branch.id
+        mtns = mtns.filter(
+            source_type="BRANCH",
+            source_id=branch_id
+        )
+    
+    elif request.user.userprofile.role == "admin":
+        mtns = MaterialTransferNote.objects.all().order_by('-transfer_date')
+
+    q = request.GET.get('q')
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+
+    # 🔍 Search
+    if q:
+        mtns = mtns.filter(
+            Q(mtn_no__icontains=q)
+        )
+
+    # 📅 Date filter
+    if from_date:
+        mtns = mtns.filter(transfer_date__gte=from_date)
+
+    if to_date:
+        mtns = mtns.filter(transfer_date__lte=to_date)
+
+    # 📄 Pagination (10 per page)
+    paginator = Paginator(mtns, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "mtns": page_obj,
+        "page_obj": page_obj,
+    }
+
+    return render(request, "inventory/mtn_list.html", context)
+
 
 def mtn_detail_view(request, pk):
     mtn = get_object_or_404(
@@ -957,3 +1038,158 @@ def mtn_edit_view(request, pk):
         "is_edit": True,
     }
     return render(request, "inventory/mtn_form.html", context)
+
+
+
+# Material request note
+def generate_request_no():
+    today = timezone.now().strftime("%Y%m%d")
+    prefix = f"REQ/{today}/"
+    last = MaterialRequest.objects.filter(
+        request_no__startswith=prefix
+    ).order_by("-request_no").first()
+
+    if last:
+        last_no = int(last.request_no.split("/")[-1])
+        new_no = last_no + 1
+    else:
+        new_no = 1
+
+    return f"{prefix}{new_no:03d}"
+
+
+@login_required
+@transaction.atomic
+def create_material_request(request):
+    role = request.user.userprofile.role
+    if role not in ["branch_manager", "admin"]:
+          raise PermissionDenied("Only branch manager and admin can raise request")
+
+    branch = BranchManager.objects.get(
+        mobile_no=request.user.username
+    ).branch
+
+    if request.method == "POST":
+        mr = MaterialRequest.objects.create(
+            request_no=generate_request_no(),
+            source_type="BRANCH",
+            source_id=branch.id,
+            requested_by=request.user,
+            status="SUBMITTED",
+            remarks=request.POST.get("remarks")
+        )
+
+        products = request.POST.getlist("product_id[]")
+        print("Products...", products)
+        qtys = request.POST.getlist("qty[]")
+
+        for p, q in zip(products, qtys):
+            MaterialRequestItem.objects.create(
+                material_request=mr,
+                product_id=p,
+                requested_qty=Decimal(q)
+            )
+
+        return redirect("material_request_list")
+    products = Product.objects.all().order_by("product_name")
+    return render(request, "inventory/material_request_create.html",  {
+    "products": products,
+})
+
+
+
+@login_required
+def material_request_list(request):
+    role = request.user.userprofile.role
+
+    if role == "branch_manager":
+        branch = BranchManager.objects.get(
+            mobile_no=request.user.username
+        ).branch
+        qs = MaterialRequest.objects.filter(
+            source_type="BRANCH",
+            source_id=branch.id
+        )
+    else:
+        qs = MaterialRequest.objects.all()
+
+    return render(
+        request,
+        "inventory/material_request_list.html",
+        {"requests": qs.order_by("-created_at")}
+    )
+
+
+
+@login_required
+@transaction.atomic
+def material_request_detail(request, pk):
+    mr = get_object_or_404(MaterialRequest, pk=pk)
+    role = request.user.userprofile.role
+
+    # 🔐 Branch can only view their own requests
+    if role == "branch_manager":
+        branch = BranchManager.objects.get(
+            mobile_no=request.user.username
+        ).branch
+        if mr.source_type != "BRANCH" or mr.source_id != branch.id:
+            raise PermissionDenied()
+
+    # 🔒 Prevent approving again
+    is_editable = (
+        role in ["admin", "HO_manager"]
+        and mr.status == "SUBMITTED"
+    )
+
+    if request.method == "POST":
+        if not is_editable:
+            raise PermissionDenied()
+
+        for item in mr.items.all():
+            raw_val = request.POST.get(f"approved_qty_{item.id}")
+
+            if raw_val in [None, ""]:
+                item.approved_qty = item.requested_qty
+            else:
+                item.approved_qty = Decimal(raw_val)
+
+            item.save()
+
+        mr.status = "APPROVED"
+        mr.save()
+
+        return redirect("material_request_list")
+    branch = Branch.objects.get(id = mr.source_id)
+    req_user = User.objects.get(username = mr.requested_by).first_name
+    return render(request, "inventory/material_request_detail.html", {
+        "mr": mr,
+        "branch":branch,
+        "req_user":req_user,
+        "items": mr.items.all(),
+        "is_editable": is_editable,
+    })
+
+@transaction.atomic
+def approve_material_request(request, pk):
+    if request.user.userprofile.role not in ["admin", "HO_manager"]:
+        raise PermissionDenied()
+
+    mr = get_object_or_404(MaterialRequest, pk=pk)
+
+    for item in mr.items.all():
+        approved = request.POST.get(f"approved_qty_{item.id}")
+        print('approved',approved)
+        item.approved_qty = Decimal(approved)
+        item.save()
+
+    mr.status = "APPROVED"
+    mr.save()
+
+    return redirect("material_request_list")
+
+
+def reject_material_request(request, pk):
+    mr = get_object_or_404(MaterialRequest, pk=pk)
+    mr.status = "REJECTED"
+    mr.save()
+    return redirect("material_request_list")

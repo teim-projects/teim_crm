@@ -676,3 +676,67 @@ class ProductStock(models.Model):
     def closing_qty(self):
         return (self.total_in_qty or Decimal('0')) - (self.total_out_qty or Decimal('0')) - (self.total_reserved_qty or Decimal('0')) 
     
+
+
+# Material Request Ho to Branch
+class MaterialRequest(models.Model):
+    STATUS_CHOICES = (
+        ("DRAFT", "Draft"),
+        ("SUBMITTED", "Submitted"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
+    )
+
+    request_no = models.CharField(max_length=50, unique=True)
+    
+    # branch raising request
+    source_type = models.CharField(
+        max_length=20,
+        choices=LOCATION_TYPES,
+        default="BRANCH"
+    )
+    source_id = models.BigIntegerField()  # branch.id
+
+    requested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    request_date = models.DateField(default=timezone.now)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="DRAFT"
+    )
+    remarks = models.TextField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    @property
+    def source_name(self):
+        from crmapp.models import Branch
+        if self.source_type == "BRANCH":
+            branch = Branch.objects.filter(id=self.source_id).first()
+            return str(branch) if branch else "N/A"
+        return "N/A"
+
+    def __str__(self):
+        return self.request_no
+
+
+class MaterialRequestItem(models.Model):
+    material_request = models.ForeignKey(
+        MaterialRequest,
+        on_delete=models.CASCADE,
+        related_name="items"
+    )
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+
+    requested_qty = models.DecimalField(max_digits=12, decimal_places=3)
+    approved_qty = models.DecimalField(
+        max_digits=12, decimal_places=3,
+        null=True, blank=True
+    )
+
+    remarks = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.product.product_name} - {self.requested_qty}"

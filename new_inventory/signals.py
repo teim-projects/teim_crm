@@ -264,6 +264,20 @@ def grn_item_post_delete(sender, instance, **kwargs):
 #                     doc_id=instance.id
 #                 )
 
+
+@receiver(pre_save, sender=MTNItem)
+def mtn_item_pre_save(sender, instance, **kwargs):
+    if instance.pk:
+        try:
+            old = MTNItem.objects.get(pk=instance.pk)
+            instance._old_transfer_qty = Decimal(old.transfer_qty or 0)
+        except MTNItem.DoesNotExist:
+            instance._old_transfer_qty = Decimal('0')
+    else:
+        instance._old_transfer_qty = Decimal('0')
+
+
+
 def _update_stock_logic(product, batch, loc_type, loc_id, qty, trans_type, ref, doc_id):
     """
     Helper function to update CurrentStock, ProductStock, and Ledger.
@@ -308,39 +322,39 @@ def _update_stock_logic(product, batch, loc_type, loc_id, qty, trans_type, ref, 
 
 @receiver(post_save, sender=MTNItem)
 def handle_mtn_item_reservation(sender, instance, created, **kwargs):
-    """
-    When an item is added to a DRAFT MTN, we reserve it at the source.
-    """
     mtn = instance.mtn
-    if mtn.status == 'DRAFT':
-        with transaction.atomic():
-            # 1. Update CurrentStock (Batch Level)
-            cs, _ = CurrentStock.objects.select_for_update().get_or_create(
-                product=instance.product,
-                batch=instance.batch,
-                location_type=mtn.source_type,
-                location_id=mtn.source_id
-            )
-            
-            # Logic to handle new items vs updates to existing draft items
-            qty = Decimal(instance.transfer_qty)
-            if created:
-                cs.reserved_qty += qty
-            else:
-                # If updating a draft item, you'd need pre_save old_qty logic 
-                # similar to your GRN implementation.
-                pass
-            
-            cs.recompute_closing()
-            
-            # 2. Update ProductStock (Aggregate Level)
-            ps, _ = ProductStock.objects.select_for_update().get_or_create(
-                product=instance.product,
-                location_type=mtn.source_type,
-                location_id=mtn.source_id
-            )
-            ps.total_reserved_qty += instance.transfer_qty
-            ps.save()
+
+    if mtn.status != 'DRAFT':
+        return
+
+    new_qty = Decimal(instance.transfer_qty or 0)
+    old_qty = Decimal(getattr(instance, "_old_transfer_qty", 0))
+    delta = new_qty - old_qty
+
+    if delta == 0:
+        return
+
+    with transaction.atomic():
+        # ----- CurrentStock (Batch level) -----
+        cs = CurrentStock.objects.select_for_update().get(
+            product=instance.product,
+            batch=instance.batch,
+            location_type=mtn.source_type,
+            location_id=mtn.source_id
+        )
+
+        cs.reserved_qty += delta
+        cs.recompute_closing()
+
+        # ----- ProductStock (Aggregate level) -----
+        ps = ProductStock.objects.select_for_update().get(
+            product=instance.product,
+            location_type=mtn.source_type,
+            location_id=mtn.source_id
+        )
+
+        ps.total_reserved_qty += delta
+        ps.save()
 
 @receiver(pre_save, sender=MaterialTransferNote)
 def handle_mtn_status_change(sender, instance, **kwargs):
@@ -406,3 +420,42 @@ def handle_mtn_status_change(sender, instance, **kwargs):
                     document_id=instance.id, in_qty=item.transfer_qty,
                     balance_qty=cs_dest.closing_qty, remarks=f"Received from {instance.source_type}:{instance.source_id}"
                 )
+
+
+
+
+
+@receiver(post_delete, sender=MTNItem)
+def handle_mtn_item_delete(sender, instance, **kwargs):
+    mtn = instance.mtn
+
+    if mtn.status != 'DRAFT':
+        return
+
+    qty = Decimal(instance.transfer_qty or 0)
+
+    with transaction.atomic():
+        cs = CurrentStock.objects.select_for_update().filter(
+            product=instance.product,
+            batch=instance.batch,
+            location_type=mtn.source_type,
+            location_id=mtn.source_id
+        ).first()
+
+        if cs:
+            cs.reserved_qty -= qty
+            if cs.reserved_qty < 0:
+                cs.reserved_qty = Decimal('0')
+            cs.recompute_closing()
+
+        ps = ProductStock.objects.select_for_update().filter(
+            product=instance.product,
+            location_type=mtn.source_type,
+            location_id=mtn.source_id
+        ).first()
+
+        if ps:
+            ps.total_reserved_qty -= qty
+            if ps.total_reserved_qty < 0:
+                ps.total_reserved_qty = Decimal('0')
+            ps.save()

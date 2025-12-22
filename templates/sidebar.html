@@ -1206,14 +1206,15 @@
                     </ul>
                 </div>
             </li>
-
+            {% endif %}
+            {% if role == 'admin' or role == 'branch_manager' %}
             <li class="has-submenu">
                 <i class="fas fa-warehouse"></i> Inventory
                 <span class="arrow-down"></span>
 
                 <div class="submenu">
                     <ul>
-
+                        {% if role == 'admin'  %}
                         <li class="has-submenu">
                             <i class="fas fa-users"></i> Vendors
                             <span class="arrow-down"></span>
@@ -1229,16 +1230,18 @@
                                 </ul>
                             </div>
                         </li>
-
+                        {% endif %}
                         <li class="has-submenu">
                             <i class="fas fa-shopping-cart"></i> Purchase Orders
                             <span class="arrow-down"></span>
 
                             <div class="submenu">
                                 <ul>
+                                    {% if role == 'admin'  %}
                                     <a href="{% url 'purchase_order_create' %}">
                                         <li>Create PO</li>
                                     </a>
+                                    {% endif %}
                                     <a href="{% url 'purchase_order_list' %}">
                                         <li>PO List</li>
                                     </a>
@@ -1247,7 +1250,7 @@
                         </li>
 
                         <li class="has-submenu">
-                            <i class="fa-solid fa-file"></i> GRN  
+                            <i class="fa-solid fa-file"></i> GRN
                             <span class="arrow-down"></span>
 
                             <div class="submenu">
@@ -1255,13 +1258,30 @@
                                     <a href="{% url 'grn_list' %}">
                                         <li>GRN List</li>
                                     </a>
-                                   
+
                                 </ul>
                             </div>
                         </li>
 
                         <li class="has-submenu">
-                            <i class="fa-solid fa-boxes-stacked"></i> Stock  
+                            <i class="fa-solid fa-file"></i> MTN
+                            <span class="arrow-down"></span>
+
+                            <div class="submenu">
+                                <ul>
+                                    <a href="{% url 'mtn_create' %}">
+                                        <li>Create MTN</li>
+                                    </a>
+                                    <a href="{% url 'mtn_list_view' %}">
+                                        <li>MTN List</li>
+                                    </a>
+
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="has-submenu">
+                            <i class="fa-solid fa-boxes-stacked"></i> Stock
                             <span class="arrow-down"></span>
 
                             <div class="submenu">
@@ -1269,7 +1289,7 @@
                                     <a href="{% url 'products_stock_list' %}">
                                         <li>Stock</li>
                                     </a>
-                                   
+
                                 </ul>
                             </div>
                         </li>
@@ -1277,8 +1297,8 @@
                     </ul>
                 </div>
             </li>
+          
             {% endif %}
-
             {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' %}
             <li class="has-submenu">
                 <i class="fas fa-file-alt"></i> Sites <span class="arrow-down"></span>
@@ -1328,7 +1348,7 @@
                 </div>
             </li>
 
-            
+
 
 
             <a href="/ocrapp/scan/" style="text-decoration: none;">

@@ -46,8 +46,17 @@ urlpatterns = [
     # path('stock/product/<int:product_id>/', product_stock_view, name='product_stock_view'),
 
     # -------MTN----
+    path("mtn/fetch-qty/", fetch_mtn_available_qty, name="fetch_mtn_available_qty"),
     path("mtn/", mtn_list_view, name="mtn_list_view"),
     path('mtn/create/',create_mtn,name="mtn_create"),
     path("mtn/<int:pk>/", mtn_detail_view, name="mtn_detail_view"),
     path("mtn/<int:pk>/edit/", mtn_edit_view, name="mtn_edit_view"),
+
+    # -----------Material Request ---------------
+    path('mreq/create/', create_material_request, name="create_material_request"),
+    path('mreq/list/', material_request_list, name="material_request_list"),
+    path("mreq/<int:pk>/", material_request_detail,name="material_request_detail"),
+    path("mreq/<int:pk>/approve/", approve_material_request, name="material_request_approve"),
+    path("mreq/<int:pk>/reject/", reject_material_request, name="material_request_reject"),
+
 ]
