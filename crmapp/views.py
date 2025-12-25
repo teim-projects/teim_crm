@@ -115,7 +115,7 @@ def login_view(request):
             try:
                 role = user.userprofile.role
 
-                if role in ["admin", "sales","branch_manager","operation_person"]:
+                if role in ["admin", "sales","branch_manager","operation_person","HO_operation","HO_manager"]:
                     login(request, user)
                     return redirect("index")   # Admin/Sales Dashboard
                 elif role == "technician":
@@ -131,7 +131,7 @@ def login_view(request):
     return render(request, "landing_page.html")
 
 @login_required
-@role_required(['admin', 'sales', 'branch_manager','operation_person'])
+@role_required(['admin', 'sales', 'branch_manager','operation_person',"HO_operation","HO_manager"])
 def index(request):
         # Fetch data for Service Management
         service_data = service_management.objects.values('selected_services').annotate(total_charges=Sum('total_charges'))

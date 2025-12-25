@@ -514,3 +514,7 @@ def material_request_notification(sender, instance, created, **kwargs):
                     message=f"Your request {instance.request_no} was {instance.status.lower()}",
                     related_request=instance
                 )
+
+
+# Alerts for stock expiry expiry range (30 days)
+

@@ -85,12 +85,16 @@
                   {{ form.confirm_password|add_class:"form-control" }}
                 </div>
                 
-
+                
+                
+                {% if role == "HO_manager" %}
                 <div class="col-6 form-group mb-0 mt-4">
                   <label class="mb-2">Is Manager?</label><br>
                   {{ form.is_manager }}
                   <small class="text-muted">(HO Manager)</small>
                 </div>
+                {% endif %}
+   
                 
               </div>
               <div class="text-center mt-2">

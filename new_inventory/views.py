@@ -25,7 +25,7 @@ from num2words import num2words
 import re
 from crmapp.custom_filters import price_in_words
 from django.utils.dateparse import parse_date
-
+from crmapp.decorators import role_required
 
 state_map = {
         'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
@@ -80,7 +80,10 @@ def load_destinations(request):
 
 
 # ------------ Vendor Section start here ----------
+@login_required
+@role_required(['admin',"HO_operation","HO_manager"])
 def vendor_add(request):
+    
     if request.method == "POST":
         form = VendorForm(request.POST)
         if form.is_valid():
@@ -90,7 +93,8 @@ def vendor_add(request):
         form = VendorForm()
     return render(request, 'inventory/add_vendor.html', {'form': form , "state_map":state_map})
 
-
+@login_required
+@role_required(['admin',"HO_operation","HO_manager"])
 def vendor_list(request):
     search = request.GET.get("search", "")
     company_type = request.GET.get("company_type", "")
@@ -131,7 +135,8 @@ def vendor_list(request):
 
     return render(request, "inventory/vendor_list.html", context)
 
-
+@login_required
+@role_required(['admin',"HO_operation","HO_manager"])
 def vendor_edit(request, id):
     vendor = get_object_or_404(Vendor, id=id)
     form = VendorForm(request.POST or None, instance=vendor)
@@ -142,7 +147,8 @@ def vendor_edit(request, id):
 
     return render(request, 'inventory/vendor_edit.html', {'form': form,   "vendor": vendor, "state_map":state_map})
 
-
+@login_required
+@role_required(['admin',"HO_operation","HO_manager"])
 def vendor_delete(request, id):
     vendor = get_object_or_404(Vendor, id=id)
     vendor.delete()
@@ -151,8 +157,10 @@ def vendor_delete(request, id):
 
 # ----------------------- Head Office staff section ------------------------
 UserModel = get_user_model()
-
+@login_required
+@role_required(['admin',"HO_manager"])
 def add_ho_staff(request):
+    role = request.user.userprofile.role 
     if request.method == "POST":
         form = HoForm(request.POST)
         if form.is_valid():
@@ -197,10 +205,11 @@ def add_ho_staff(request):
             return redirect('ho_list')
     else:
         form = HoForm()
+        print("role",role)
+    return render(request, "inventory/add_ho.html", {"form": form, "role":role})
 
-    return render(request, "inventory/add_ho.html", {"form": form})
-
-
+@login_required
+@role_required(['admin',"HO_manager"])
 def ho_list(request):
     search = request.GET.get("search", "")
     role = request.GET.get("role", "")
@@ -232,6 +241,8 @@ def ho_list(request):
     return render(request, "inventory/list_ho.html", context)
 
 
+@login_required
+@role_required(['admin',"HO_manager"])
 def ho_edit(request, pk):
     ho = get_object_or_404(HO, id=pk)
 
@@ -257,7 +268,8 @@ def ho_edit(request, pk):
 
     return render(request, "inventory/add_ho.html", {"form": form, "ho": ho})
 
-
+@login_required
+@role_required(['admin',"HO_manager"])
 def ho_delete(request, pk):
     ho = get_object_or_404(HO, id=pk)
     ho.delete()
@@ -265,6 +277,9 @@ def ho_delete(request, pk):
 
 
 # ----------------- Site section -----------------------
+
+@login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def add_site(request):
     if request.method == "POST":
         form = SiteForm(request.POST)
@@ -276,7 +291,8 @@ def add_site(request):
 
     return render(request, "inventory/add_site.html", {"form": form})
 
-
+@login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def site_list(request):
     search = request.GET.get("search", "")
     sites = Site.objects.all()
@@ -300,7 +316,8 @@ def site_list(request):
 
     return render(request, "inventory/site_list.html", context)
 
-
+@login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def site_edit(request, id):
     site = get_object_or_404(Site, id=id)
     form = SiteForm(request.POST or None, instance=site)
@@ -311,7 +328,8 @@ def site_edit(request, id):
 
     return render(request, "inventory/add_site.html", {"form": form, "site": site})
 
-
+@login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def site_delete(request, id):
     site = get_object_or_404(Site, id=id)
     site.delete()
@@ -320,6 +338,7 @@ def site_delete(request, id):
 
 # ------------------ Purchase order section --------------- 
 @login_required
+@role_required(['admin',"HO_operation","HO_manager"])
 def purchase_order_create(request):
     if request.method == "POST":
         form = PurchaseOrderForm(request.POST, request.FILES)
@@ -358,6 +377,7 @@ def purchase_order_create(request):
 # ------------------ Purchase order list ---------------------
 
 @login_required
+@role_required(['admin',"HO_operation","HO_manager"])
 def purchase_order_list(request):
     search = request.GET.get("search", "")
     destination_type = request.GET.get("destination_type", "")
@@ -419,6 +439,7 @@ def purchase_order_list(request):
 # ------------------ Purchase Order Edit ---------------------
 
 @login_required
+@role_required(['admin',"HO_operation","HO_manager"])
 def purchase_order_edit(request, id):
     po = get_object_or_404(PurchaseOrder, id=id)
     dest_obj = get_destination_object(po.destination_type, po.destination_id)
@@ -456,6 +477,7 @@ def purchase_order_edit(request, id):
 # ------------------ Purchase Order Delete ---------------------
 
 @login_required
+@role_required(['admin',"HO_operation","HO_manager"])
 def purchase_order_delete(request, id):
     po = get_object_or_404(PurchaseOrder, id=id)
     po.delete()
@@ -466,6 +488,7 @@ def purchase_order_delete(request, id):
 #---------------------PDF------------------------
 
 @login_required
+
 def purchase_order_pdf(request, id):
     """
     Render PO PDF. Use ?download=1 to force download (attachment).
@@ -510,6 +533,7 @@ def purchase_order_pdf(request, id):
 
 #----------------------------------GRN------------------------------------
 @login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def grn_create(request, po_id):
     po = get_object_or_404(PurchaseOrder, id=po_id)
     po_items = po.items.all()
@@ -671,7 +695,7 @@ def grn_create(request, po_id):
         "remaining_by_item": remaining_by_item,
     })
 
-
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def grn_list(request):
     qs = GoodsReceiveNote.objects.select_related("purchase_order", "purchase_order__vendor").all().order_by("-created_at")
 
@@ -737,6 +761,7 @@ def grn_list(request):
 
 
 @login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def grn_detail(request, grn_id):
     grn = get_object_or_404(GoodsReceiveNote, id=grn_id)
     items = grn.items.select_related(
@@ -760,6 +785,8 @@ def _parse_int_or_none(val):
     except (TypeError, ValueError):
         return None
 
+@login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def products_stock_list_view(request):
     search = request.GET.get('q') or None
     location_type = request.GET.get('location_type') or None
@@ -886,6 +913,8 @@ def fetch_mtn_available_qty(request):
     })
 
 
+@login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def create_mtn(request):
     if request.method == "POST":
         source_type = request.POST.get("source_type")
@@ -947,6 +976,8 @@ def create_mtn(request):
 
 from crmapp.models import BranchManager
 
+@login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def mtn_list_view(request):
     mtns = MaterialTransferNote.objects.all().order_by('-transfer_date')
 
@@ -993,6 +1024,8 @@ def mtn_list_view(request):
     return render(request, "inventory/mtn_list.html", context)
 
 
+@login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def mtn_detail_view(request, pk):
     mtn = get_object_or_404(
         MaterialTransferNote.objects.prefetch_related(
@@ -1010,7 +1043,8 @@ def mtn_detail_view(request, pk):
     }
     return render(request, "inventory/mtn_detail.html", context)
 
-
+@login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def mtn_edit_view(request, pk):
     mtn = get_object_or_404(MaterialTransferNote, pk=pk)
 
@@ -1102,6 +1136,7 @@ def generate_request_no():
 
 
 @login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 @transaction.atomic
 def create_material_request(request):
     role = request.user.userprofile.role
@@ -1143,6 +1178,7 @@ def create_material_request(request):
 
 
 @login_required
+@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def material_request_list(request):
     role = request.user.userprofile.role
 
