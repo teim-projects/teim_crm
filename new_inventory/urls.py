@@ -57,6 +57,9 @@ urlpatterns = [
     path('mreq/list/', material_request_list, name="material_request_list"),
     path("mreq/<int:pk>/", material_request_detail,name="material_request_detail"),
     path("mreq/<int:pk>/approve/", approve_material_request, name="material_request_approve"),
-    path("mreq/<int:pk>/reject/", reject_material_request, name="material_request_reject"),
+    path("mreq/<int:pk>/reject/", reject_material_request, name="material_request_reject"), 
+
+
+    path("notification/<int:pk>/", notification_read, name="notification_read")
 
 ]

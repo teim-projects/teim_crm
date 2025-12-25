@@ -8,8 +8,11 @@ from django.utils import timezone
 
 from .models import (
     GoodsReceiveNoteItem, GoodsReceiveNote,
-    CurrentStock, StockLedger, ProductStock ,MaterialTransferNote, MTNItem
+    CurrentStock, StockLedger, ProductStock ,MaterialTransferNote, MTNItem , MaterialRequest, Notification
 )
+
+from crmapp.models import BranchManager
+from django.contrib.auth.models import User
 
 def _effective_qty(item):
     val = getattr(item, 'accepted_qty', None)
@@ -459,3 +462,55 @@ def handle_mtn_item_delete(sender, instance, **kwargs):
             if ps.total_reserved_qty < 0:
                 ps.total_reserved_qty = Decimal('0')
             ps.save()
+
+
+
+
+
+@receiver(pre_save, sender=MaterialRequest)
+def store_old_status(sender, instance, **kwargs):
+    if instance.pk:
+        old = MaterialRequest.objects.filter(pk=instance.pk).first()
+        instance._old_status = old.status if old else None
+    else:
+        instance._old_status = None
+
+
+# -------------------------------------------------
+# On CREATE & STATUS CHANGE
+# -------------------------------------------------
+@receiver(post_save, sender=MaterialRequest)
+def material_request_notification(sender, instance, created, **kwargs):
+
+    # 🔔 1. When BRANCH creates request → Admin & HO
+    if created and instance.status == "SUBMITTED":
+        users = User.objects.filter(
+            userprofile__role__in=["admin", "HO_manager"]
+        )
+
+        Notification.objects.bulk_create([
+            Notification(
+                user=u,
+                title="New Material Request",
+                message=f"Request {instance.request_no} raised by branch",
+                related_request=instance
+            ) for u in users
+        ])
+
+    # 🔔 2. When STATUS changes → Notify Branch
+    elif not created and instance._old_status != instance.status:
+        if instance.status in ["APPROVED", "REJECTED"]:
+
+            branch_manager = User.objects.filter(
+                username__in=BranchManager.objects.filter(
+                    branch_id=instance.source_id
+                ).values_list("mobile_no", flat=True)
+            ).first()
+
+            if branch_manager:
+                Notification.objects.create(
+                    user=branch_manager,
+                    title=f"Material Request {instance.status}",
+                    message=f"Your request {instance.request_no} was {instance.status.lower()}",
+                    related_request=instance
+                )

@@ -322,37 +322,47 @@
       <!-- pagination -->
       {% if paginator.num_pages > 1 %}
       <nav aria-label="Page navigation">
-        <ul class="pagination pagination-sm">
+        <ul class="pagination pagination-sm justify-content-center">
+      
+          {# Previous #}
           {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link"
-              href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}"
-              aria-label="Previous">&laquo;</a>
+            <li class="page-item">
+              <a class="page-link"
+                 href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                &laquo; 
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&laquo;</span>
+            </li>
+          {% endif %}
+      
+          {# Current page only #}
+          <li class="page-item active">
+            <span class="page-link">
+              {{ page_obj.number }} / {{ paginator.num_pages }}
+            </span>
           </li>
-          {% else %}
-          <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
-          {% endif %}
-
-          {% for num in paginator.page_range %}
-          {% if num == page_obj.number %}
-          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-          {% else %}
-          <li class="page-item"><a class="page-link" href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ num }}">{{
-              num }}</a></li>
-          {% endif %}
-          {% endfor %}
-
+      
+          {# Next #}
           {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}"
-              aria-label="Next">&raquo;</a>
-          </li>
+            <li class="page-item">
+              <a class="page-link"
+                 href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}">
+                 &raquo;
+              </a>
+            </li>
           {% else %}
-          <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            <li class="page-item disabled">
+              <span class="page-link">&raquo;</span>
+            </li>
           {% endif %}
+      
         </ul>
       </nav>
       {% endif %}
+      
 
     </div>
   </div>

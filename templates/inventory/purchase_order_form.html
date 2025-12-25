@@ -34,6 +34,18 @@
     input[type="checkbox"][id$="-DELETE"] {
       display: none;
     }
+
+    /* Chrome, Edge, Safari */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
   </style>
 </head>
 <body>
@@ -119,14 +131,14 @@
               <table class="table table-bordered">
                 <thead>
                   <tr>
-                    <th style="min-width:220px">Product</th>
-                    <th style="width:100px">Qty</th>
-                    <th style="width:120px">Rate</th>
-                    <th style="width:120px">GST Rate</th>
-                    <th style="width:130px">Discount (%)</th>
-                    <th style="min-width:150px;">Unit</th>
-                    <th style="min-width:150px">Remarks</th>
-                    <th style="width:60px"></th>
+                    <th style="min-width:200px">Product</th>
+                    <th style="min-width:100px">Qty</th>
+                    <th style="min-width:100px">Rate</th>
+                    <th style="min-width:100px">GST Rate</th>
+                    <th style="min-width:100px">Discount (%)</th>
+                    <th style="min-width:100px;">Unit</th>
+                    <th style="min-width:100px">Remarks</th>
+                    <th style="min-width:40px"></th>
                   </tr>
                 </thead>
 

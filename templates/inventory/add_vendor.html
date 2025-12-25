@@ -90,6 +90,30 @@
                 </div>
 
                 <div class="col-6 form-group mb-0">
+                  <label for="{{ form.pan_details.id_for_label }}">{{ form.pan_details.label }}</label>
+                  {{ form.pan_details|add_class:"form-control" }}
+                </div>
+
+                <div class="col-6 form-group mb-0">
+                  <label for="state">State</label>
+                  <select id="state" name="state" class="form-control">
+                    <option value="">Select State</option>
+                    {% for state, data in state_map.items %}
+                      <option value="{{ state }}">{{ state }}</option>
+                    {% endfor %}
+                  </select>
+                  
+                </div>
+
+                <div class="col-6 form-group mb-0">
+                  <label for="state_code">State Code</label>
+                  <select id="state_code" name="state_code" class="form-control" readonly>
+                    <option value="">State Code</option>
+                  </select>
+                </div>
+                
+
+                <div class="col-6 form-group mb-0">
                   <label for="{{ form.office_poc_name.id_for_label }}">{{ form.office_poc_name.label }} <span class="text-danger">*</span></label>
                   {{ form.office_poc_name|add_class:"form-control" }}
                 </div>
@@ -229,6 +253,32 @@
       document.getElementById('modal').classList.remove('active');
     }
   </script>
+
+
+
+<script>
+  const stateMap = {{ state_map|safe }};
+
+  document.getElementById("state").addEventListener("change", function () {
+    const selectedState = this.value;
+    const stateCodeSelect = document.getElementById("state_code");
+
+    stateCodeSelect.innerHTML = '<option value="">State Code</option>';
+
+    if (selectedState && stateMap[selectedState]) {
+      const code = stateMap[selectedState].code;
+      const shortcut = stateMap[selectedState].shortcut;
+
+      const option = document.createElement("option");
+      option.value = code;
+      option.textContent = `${code} (${shortcut})`;
+      option.selected = true;
+
+      stateCodeSelect.appendChild(option);
+    }
+  });
+</script>
+
 </body>
 
 </html>

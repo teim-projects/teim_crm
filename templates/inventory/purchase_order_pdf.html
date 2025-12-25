@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Tax Invoice</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <style>
         @page {
             size: A4;
@@ -83,6 +84,7 @@
   /* keep outer table borders consistent */
   .outer-td { border: 1px solid #000; }
     </style>
+
 </head>
 
 <body>
@@ -151,17 +153,15 @@
         </table>
         
 
-        <table>
+        <table class="table table-bordered" style="width:100%; table-layout:fixed;">
             <thead>
                 <tr>
-                    <th>Sr.</th>
-                    <th>Description of Goods</th>
-                    <th>Due on</th>
-                    <th>Qty</th>
-                    <th>Rate</th>
-                    <th>Per</th>
-                    <th>Disc.(%)</th>
-                    <th>Amount</th>
+                    <th style="width:5%;">Sr.</th>
+                    <th style="width:40%;">Description of Goods</th>
+                    <th style="width:10%;">Qty</th>
+                    <th style="width:15%;">Rate</th>
+                    <th style="width:10%;">Per</th>
+                    <th style="width:20%;">Amount</th>
                 </tr>
             </thead>
             <tbody>
@@ -172,44 +172,48 @@
                         <br/><span class="small-text">{{ x.remarks }}</span>
                     {% endif %}
                     </td>
-                    <td>{{ po.created_at|date:"d-M-y" }}</td>
+                    <!-- <td>{{ po.created_at|date:"d-M-y" }}</td> -->
                     <td>{{ x.quantity|floatformat:2 }}  {{ x.unit }}</td>
                     <td>{{ x.rate|floatformat:2 }}</td>
                     <td>{{ x.unit }}</td>
-                    <td>{{ x.discount }}</td>
+                    <!-- <td>{{ x.discount }}</td> -->
                     <td>{{ x.total }}</td>
                 </tr>
                 {% endfor %}
 
                 {% if po.gst_type == "cgst_sgst" %}
                 <tr>
-                    <td colspan="7" class="text-right fw-bold">CGST</td>
-                    <td class="text-right">{{ po.cgst_total|floatformat:2 }}</td>
+                    <td colspan="5" class="text-end fw-bold">CGST</td>
+                    <td class="text-end">{{ po.cgst_total|floatformat:2 }}</td>
                 </tr>
                 <tr>
-                    <td colspan="7" class="text-right fw-bold">SGST</td>
-                    <td class="text-right">{{ po.sgst_total|floatformat:2 }}</td>
+                    <td colspan="5" class="text-end fw-bold">SGST</td>
+                    <td class="text-end">{{ po.sgst_total|floatformat:2 }}</td>
                 </tr>
+                
                 {% elif  po.gst_type == "igst" %} 
                 <tr>
-                    <td colspan="7" class="text-right fw-bold">IGST</td>
-                    <td class="text-right">{{ po.igst_total|floatformat:2 }}</td>
+                    <td colspan="5" class="text-end fw-bold">IGST</td>
+                    <td class="text-end">{{ po.igst_total|floatformat:2 }}</td>
                 </tr>
+                
                 {% else %}
                 
                 {% endif %}
 
                 {% if po.freight_charges %}
                 <tr>
-                    <td colspan="7" class="text-right fw-bold">Freight Charges</td>
-                    <td class="text-right">{{ po.freight_charges|floatformat:2 }}</td>
+                    <td colspan="5" class="text-end fw-bold">Freight Charges</td>
+                    <td class="text-end">{{ po.freight_charges|floatformat:2 }}</td>
                 </tr>
+                
 
                 {% endif %}
                 <tr>
-                    <td colspan="7" class="text-right fw-bold">Total</td>
-                    <td class="text-right"><strong>{{ po.grand_total|floatformat:2 }}</strong></td>
+                    <td colspan="5" class="text-end fw-bold">Total</td>
+                    <td class="text-end fw-bold">{{ po.grand_total|floatformat:2 }}</td>
                 </tr>
+                
                 
             </tbody>
         </table>
@@ -222,7 +226,7 @@
             </tr>
             <tr>
                 
-                <td colspan="2" style="height:80px; vertical-align:bottom;">
+                <td colspan="2" style="height:80px; vertical-align:bottom; text-align:right;">
                     for <strong>Seva Facility Services Pvt. Ltd.-Pune</strong><br><br><br>
                     Authorised Signatory
                 </td>
@@ -234,6 +238,7 @@
         </p>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
 </body>
 

@@ -27,6 +27,49 @@ from crmapp.custom_filters import price_in_words
 from django.utils.dateparse import parse_date
 
 
+state_map = {
+        'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
+        'Andhra Pradesh': {'code': 37, 'shortcut': 'AP'},
+        'Arunachal Pradesh': {'code': 12, 'shortcut': 'AR'},
+        'Assam': {'code': 18, 'shortcut': 'AS'},
+        'Bihar': {'code': 10, 'shortcut': 'BR'},
+        'Chandigarh': {'code': 4, 'shortcut': 'CH'},
+        'Chhattisgarh': {'code': 22, 'shortcut': 'CG'},
+        'Dadra and Nagar Haveli and Daman and Diu': {'code': 26, 'shortcut': 'DNHDD'},
+        'Delhi': {'code': 7, 'shortcut': 'DL'},
+        'Goa': {'code': 30, 'shortcut': 'GA'},
+        'Gujarat': {'code': 24, 'shortcut': 'GJ'},
+        'Haryana': {'code': 6, 'shortcut': 'HR'},
+        'Himachal Pradesh': {'code': 2, 'shortcut': 'HP'},
+        'Jammu and Kashmir': {'code': 1, 'shortcut': 'JK'},
+        'Jharkhand': {'code': 20, 'shortcut': 'JH'},
+        'Karnataka': {'code': 29, 'shortcut': 'KA'},
+        'Kerala': {'code': 32, 'shortcut': 'KL'},
+        'Ladakh': {'code': 38, 'shortcut': 'LA'},
+        'Lakshadweep': {'code': 31, 'shortcut': 'LD'},
+        'Madhya Pradesh': {'code': 23, 'shortcut': 'MP'},
+        'Maharashtra': {'code': 27, 'shortcut': 'MH'},
+        'Manipur': {'code': 14, 'shortcut': 'MN'},
+        'Meghalaya': {'code': 17, 'shortcut': 'ML'},
+        'Mizoram': {'code': 15, 'shortcut': 'MZ'},
+        'Nagaland': {'code': 13, 'shortcut': 'NL'},
+        'Odisha': {'code': 21, 'shortcut': 'OD'},
+        'Other Country': {'code': 99, 'shortcut': 'OC'},
+        'Other Territory': {'code': 97, 'shortcut': 'OT'},
+        'Puducherry': {'code': 34, 'shortcut': 'PY'},
+        'Punjab': {'code': 3, 'shortcut': 'PB'},
+        'Rajasthan': {'code': 8, 'shortcut': 'RJ'},
+        'Sikkim': {'code': 11, 'shortcut': 'SK'},
+        'Tamil Nadu': {'code': 33, 'shortcut': 'TN'},
+        'Telangana': {'code': 36, 'shortcut': 'TS'},
+        'Tripura': {'code': 16, 'shortcut': 'TR'},
+        'Uttar Pradesh': {'code': 9, 'shortcut': 'UP'},
+        'Uttarakhand': {'code': 5, 'shortcut': 'UK'},
+        'West Bengal': {'code': 19, 'shortcut': 'WB'}
+        } 
+
+
+
 # ------- load destination --------
 def load_destinations(request):
     dest_type = request.GET.get("destination_type")
@@ -45,7 +88,7 @@ def vendor_add(request):
             return redirect("vendor_list")
     else:
         form = VendorForm()
-    return render(request, 'inventory/add_vendor.html', {'form': form})
+    return render(request, 'inventory/add_vendor.html', {'form': form , "state_map":state_map})
 
 
 def vendor_list(request):
@@ -97,7 +140,7 @@ def vendor_edit(request, id):
         form.save()
         return redirect("vendor_list")
 
-    return render(request, 'inventory/vendor_edit.html', {'form': form})
+    return render(request, 'inventory/vendor_edit.html', {'form': form,   "vendor": vendor, "state_map":state_map})
 
 
 def vendor_delete(request, id):
@@ -755,7 +798,7 @@ def products_stock_list_view(request):
         expiry_to=expiry_to
     ).order_by('product_name')
 
-    paginator = Paginator(qs, 25)
+    paginator = Paginator(qs, 10)
     try:
         products_page = paginator.page(page)
     except PageNotAnInteger:
@@ -1062,8 +1105,8 @@ def generate_request_no():
 @transaction.atomic
 def create_material_request(request):
     role = request.user.userprofile.role
-    if role not in ["branch_manager", "admin"]:
-          raise PermissionDenied("Only branch manager and admin can raise request")
+    if role not in ["branch_manager"]:
+          raise PermissionDenied("Only branch manager can raise request")
 
     branch = BranchManager.objects.get(
         mobile_no=request.user.username
@@ -1098,28 +1141,61 @@ def create_material_request(request):
 
 
 
+
 @login_required
 def material_request_list(request):
     role = request.user.userprofile.role
 
+    # ---------------- BASE QUERYSET ----------------
     if role == "branch_manager":
         branch = BranchManager.objects.get(
             mobile_no=request.user.username
         ).branch
+
         qs = MaterialRequest.objects.filter(
             source_type="BRANCH",
             source_id=branch.id
         )
     else:
         qs = MaterialRequest.objects.all()
+        branch = None
+
+    # ---------------- FILTER PARAMS ----------------
+    search = request.GET.get("search", "")
+    branch_id = request.GET.get("branch", "")
+    status = request.GET.get("status", "")
+
+    if search:
+        qs = qs.filter(request_no__icontains=search)
+
+    if branch_id:
+        qs = qs.filter(source_type="BRANCH", source_id=branch_id)
+
+    if status:
+        qs = qs.filter(status=status)
+
+    qs = qs.order_by("-created_at")
+
+    # ---------------- PAGINATION ----------------
+    paginator = Paginator(qs, 10)   # 10 records per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    branches = Branch.objects.all()
 
     return render(
         request,
         "inventory/material_request_list.html",
-        {"requests": qs.order_by("-created_at")}
+        {
+            "requests": page_obj,          # IMPORTANT
+            "page_obj": page_obj,
+            "branches": branches,
+            "selected_search": search,
+            "selected_branch": branch_id,
+            "selected_status": status,
+            "role":role,
+        }
     )
-
-
 
 @login_required
 @transaction.atomic
@@ -1193,3 +1269,29 @@ def reject_material_request(request, pk):
     mr.status = "REJECTED"
     mr.save()
     return redirect("material_request_list")
+
+
+
+@login_required
+def notification_read(request, pk):
+    notification = get_object_or_404(
+        Notification, pk=pk, user=request.user
+    )
+    notification.is_read = True
+    notification.save()
+
+    return redirect(
+        "material_request_detail",
+        pk=notification.related_request.id
+    )
+
+
+def notification_context(request):
+    if request.user.is_authenticated:
+        unread_count = request.user.notifications.filter(is_read=False).count()
+        return {
+            "unread_notification_count": unread_count
+        }
+    return {
+        "unread_notification_count": 0
+    }

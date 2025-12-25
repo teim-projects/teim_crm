@@ -84,6 +84,32 @@
                   {{ form.gst_details|add_class:"form-control" }}
                 </div>
 
+                
+                <div class="col-6 form-group mb-0">
+                  <label for="{{ form.pan_details.id_for_label }}">{{ form.pan_details.label }}</label>
+                  {{ form.pan_details|add_class:"form-control" }}
+                </div>
+
+                <div class="col-6 form-group mb-0">
+                  <label for="state">State</label>
+                  <select id="state" name="state" class="form-control">
+                    <option value="">Select State</option>
+                    {% for state, data in state_map.items %}
+                      <option value="{{ state }}" 
+                      {% if vendor.state == state %}selected{% endif %}
+                        >{{ state }}</option>
+                    {% endfor %}
+                  </select>
+                  
+                </div>
+
+                <div class="col-6 form-group mb-0">
+                  <label for="state_code">State Code</label>
+                  <select id="state_code" name="state_code" class="form-control" readonly>
+                    <option value="">State Code</option>
+                  </select>
+                </div>
+
                 <div class="col-6 form-group mb-0">
                   <label for="{{ form.office_poc_name.id_for_label }}">{{ form.office_poc_name.label }} <span class="text-danger">*</span></label>
                   {{ form.office_poc_name|add_class:"form-control" }}
@@ -203,5 +229,44 @@
   <!-- include scripts at the end -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const stateMap = {{ state_map|safe }};
+      const stateSelect = document.getElementById("state");
+      const stateCodeSelect = document.getElementById("state_code");
+  
+      function updateStateCode(selectedState) {
+        stateCodeSelect.innerHTML = '<option value="">State Code</option>';
+  
+        if (selectedState && stateMap[selectedState]) {
+          const code = stateMap[selectedState].code;
+          const shortcut = stateMap[selectedState].shortcut;
+  
+          const option = document.createElement("option");
+          option.value = code;
+          option.textContent = `${code} (${shortcut})`;
+          option.selected = true;
+  
+          stateCodeSelect.appendChild(option);
+        }
+      }
+  
+      // 🔁 Change handler (works always)
+      stateSelect.addEventListener("change", function () {
+        updateStateCode(this.value);
+      });
+  
+      // 🔥 Preselect on EDIT
+      const preState = "{{ vendor.state|default:'' }}";
+      if (preState) {
+        stateSelect.value = preState;
+        updateStateCode(preState);
+      }
+    });
+  </script>
+  
+  
+  
 </body>
 </html>
