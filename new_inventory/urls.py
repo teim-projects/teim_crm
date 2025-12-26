@@ -38,12 +38,13 @@ urlpatterns = [
 
     # ---------------- GRN (Goods Receive Note) ----------------
     path("grn/create/<int:po_id>/", grn_create, name="grn_create"),
+    path("grn/list/", grn_list, name="grn_list"),  
     path("grn/<int:grn_id>/", grn_detail, name="grn_detail"),
+    path("grn/<int:pk>/edit/", grn_edit, name="grn_edit"),
 
     # Optional placeholder (when you create GRN list page)
-    path("grn/list/", grn_list, name="grn_list"),  
     path('stock/products/', products_stock_list_view, name='products_stock_list'),
-    # path('stock/product/<int:product_id>/', product_stock_view, name='product_stock_view'),
+
 
     # -------MTN----
     path("mtn/fetch-qty/", fetch_mtn_available_qty, name="fetch_mtn_available_qty"),

@@ -758,6 +758,42 @@ def grn_list(request):
         "querystring": querystring,
     })
 
+@login_required
+@role_required(["admin", "HO_operation", "HO_manager"])
+def grn_edit(request, pk):
+    grn = get_object_or_404(GoodsReceiveNote, pk=pk)
+    items = grn.items.select_related("batch", "product")
+
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                for item in items:
+                    if not item.batch:
+                        continue  # safety
+
+                    mfg_str = request.POST.get(f"mfg_{item.id}")
+                    exp_str = request.POST.get(f"exp_{item.id}")
+
+                    batch = item.batch
+
+                    if mfg_str:
+                        batch.manufacturing_date = datetime.date.fromisoformat(mfg_str)
+
+                    if exp_str:
+                        batch.expiry_date = datetime.date.fromisoformat(exp_str)
+
+                    batch.save(update_fields=["manufacturing_date", "expiry_date"])
+
+                messages.success(request, "GRN updated successfully.")
+                return redirect("grn_list")
+
+        except Exception as e:
+            messages.error(request, f"Update failed: {e}")
+
+    return render(request, "inventory/grn_edit.html", {
+        "grn": grn,
+        "items": items,
+    })
 
 
 @login_required
