@@ -5196,8 +5196,10 @@ def complete_work(request, work_id):
 
         # Update customer payment status on WorkAllocation
         payment_status = request.POST.get('customer_payment_status')
-        work_allocation.customer_payment_status = payment_status
-        work_allocation.save()
+        if not payment_status:
+            payment_status = work_allocation.customer_payment_status or 'Pending'
+            work_allocation.customer_payment_status = payment_status
+            work_allocation.save()
 
         tech_work.payment_mode = payment_status
         print('payment_status',payment_status)

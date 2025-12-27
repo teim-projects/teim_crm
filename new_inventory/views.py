@@ -912,6 +912,90 @@ def products_stock_list_view(request):
 
     return render(request, "inventory/products_stock_list.html", context)
 
+
+# stock export to excel
+from openpyxl import Workbook
+
+@login_required
+@role_required(['admin', 'HO_operation', 'HO_manager', 'branch_manager'])
+def export_products_stock_excel(request):
+    search = request.GET.get('q') or None
+    location_type = request.GET.get('location_type') or None
+    location_id = _parse_int_or_none(request.GET.get('location_id'))
+
+    batch_no = request.GET.get('batch_no') or None
+    expiry_from = request.GET.get('expiry_from') or None
+    expiry_to = request.GET.get('expiry_to') or None
+
+    user = request.user
+    role = getattr(user.userprofile, "role", None)
+
+    # 🔐 ROLE BASED LOCATION FILTER
+    if role == "branch_manager":
+        branch_id = BranchManager.objects.get(
+            mobile_no=user.username
+        ).branch.id
+
+        location_type = "BRANCH"
+        location_id = branch_id
+
+    # Fetch stock data (same as list view)
+    qs = annotated_product_stock_qs(
+        Product,
+        location_type=location_type,
+        location_id=location_id,
+        search=search,
+        batch_no=batch_no,
+        expiry_from=expiry_from,
+        expiry_to=expiry_to
+    ).order_by('product_name')
+
+    # 🟢 Create Excel workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Product Stock"
+
+    # 🟢 Excel Header
+    headers = [
+        "Product Name",
+        "In Qty",
+        "Out Qty",
+        "Reserved Qty",
+        "Closing Qty",
+    ]
+    ws.append(headers)
+
+    # 🟢 Excel Rows
+    for p in qs:
+        if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
+            in_qty = getattr(p, 'batch_in_qty', Decimal('0'))
+            out_qty = Decimal('0')
+            reserved = Decimal('0')
+        else:
+            in_qty = getattr(p, 'in_qty', Decimal('0'))
+            out_qty = getattr(p, 'out_qty', Decimal('0'))
+            reserved = getattr(p, 'reserved_qty', Decimal('0'))
+
+        closing = in_qty - out_qty - reserved
+
+        ws.append([
+            getattr(p, 'product_name', str(p)),
+            float(in_qty),
+            float(out_qty),
+            float(reserved),
+            float(closing),
+        ])
+
+    # 🟢 Prepare HTTP response
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="product_stock.xlsx"'
+
+    wb.save(response)
+    return response
+
+
 # ---- batch api ------
 def load_batches(request):
     product_id = request.GET.get("product_id")

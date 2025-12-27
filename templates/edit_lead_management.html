@@ -126,10 +126,11 @@
         <option disabled {% if not x.usourceoflead %}selected{% endif %}>Source of Lead</option>
         <option value="Google" {% if x.sourceoflead == "Google" %}selected{% endif %}>Google</option>
         <option value="Justdial" {% if x.sourceoflead == "Justdial" %}selected{% endif %}>Justdial</option>
-        <option value="Indianmart" {% if x.sourceoflead == "Indianmart" %}selected{% endif %}>Indianmart</option>
+        <option value="Indiamart" {% if x.sourceoflead == "Indiamart" %}selected{% endif %}>Indiamart</option>
+        <option value="TradeIndia" {% if x.sourceoflead == "TradeIndia" %}selected{% endif %}>TradeIndia</option>
         <option value="Customer Reference" {% if x.sourceoflead == "Customer Reference" %}selected{% endif %}>Customer Reference<option>
         <option value="BNI" {% if x.sourceoflead == "BNI" %}selected{% endif %}>BNI</option>
-        <option value="Lineclub" {% if x.sourceoflead == "Lineclub" %}selected{% endif %}>Lineclub</option>
+        <option value="Lionsclub" {% if x.sourceoflead == "Lionsclub" %}selected{% endif %}>Lions Club</option>
         <option value="Employee Reference" {% if x.sourceoflead == "Employee Reference" %}selected{% endif %}>Employee Reference</option>
         <option value="Others" {% if x.sourceoflead == "Others" %}selected{% endif %}>Others</option>
       </select>
@@ -196,11 +197,7 @@
       <input type="number" name="uor_contact" class="form-control" value="{{ x.or_contact }}">
     </div>
  
-<<<<<<< HEAD
-  <!-- <div class="col-md-4 mb-4">
-=======
   <div class="col-md-4 mb-4">
->>>>>>> new_inventory
     <label>Select Salesperson<span class="star">*</span></label>
     <select name="usalesperson" class="form-control form-control-lg" required>
         {% for sp in salespersons %}
@@ -209,14 +206,6 @@
             </option>
         {% endfor %}
     </select>
-<<<<<<< HEAD
-  </div> -->
-</div>
-<div class="text-center">
-  <button type="button" class="btn btn-primary" style="width: 200px;" onclick="nextStep(1)">Next</button>
-</div>
-=======
->>>>>>> new_inventory
   </div>
 </div>
 <div class="text-center">
@@ -280,13 +269,8 @@
   </div>
   <div class="row">
     <div class="col-md-6 mb-4">
-<<<<<<< HEAD
-      <label>Customer Email</label>
-      <input type="email" name="ucustomeremail" class="form-control form-control-lg" value="{{ x.customeremail }}"/>
-=======
       <label>Customer Email<span class="star">*</span></label>
       <input type="email" name="ucustomeremail" class="form-control form-control-lg" value="{{ x.customeremail }}" required/>
->>>>>>> new_inventory
     </div>
     <div class="col-md-6 mb-4">
       <label>Location</label>

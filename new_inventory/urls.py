@@ -44,6 +44,7 @@ urlpatterns = [
 
     # Optional placeholder (when you create GRN list page)
     path('stock/products/', products_stock_list_view, name='products_stock_list'),
+    path("products-stock/export/",export_products_stock_excel, name="export_products_stock_excel"),
 
 
     # -------MTN----

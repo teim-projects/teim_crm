@@ -249,6 +249,12 @@
         <small class="small-muted">Showing product totals (all batches aggregated)</small>
       </div>
 
+      <a href="{% url 'export_products_stock_excel' %}?{{ base_qs }}"
+         class="btn btn-success btn-sm">
+         Export Excel
+      </a>
+
+
       <form method="get" class="d-flex flex-wrap align-items-center gap-2 mb-3" id="filterForm">
 
         <input type="text" name="q" value="{{ filters.q|default_if_none:'' }}" placeholder="Search product"

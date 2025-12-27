@@ -194,6 +194,12 @@
                     <option value="Half Payment" data-translate="half_payment">Half Payment</option>
                   </select>
                 </div>
+
+                {% else %}
+                <!-- Hidden fallback -->
+                <input type="hidden"
+                       name="customer_payment_status"
+                       value="{{ w.customer_payment_status }}">
                 
                 {% endif %}
                 {% endfor %}

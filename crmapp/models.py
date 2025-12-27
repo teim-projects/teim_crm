@@ -357,6 +357,7 @@ class lead_management(models.Model):
         ('Justdial', 'Justdial'),
         ('Indiamart', 'IndiaMart'),
         ('TradeIndia', 'TradeIndia'),
+        ('Renewal', 'Renewal'),
         ('Customer Reference', 'Customer Reference'),
         ('BNI', 'BNI'),
         ('Lionsclub', 'Lions Club'),
