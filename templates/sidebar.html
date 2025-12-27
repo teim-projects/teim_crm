@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"> -->
     <link rel="stylesheet" href="{% static 'css/customer.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
@@ -1034,7 +1034,7 @@
     </div>
 
 
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
 
         <div class="close-button" id="closeButton">
             <i class="fas fa-times"></i>
@@ -1558,23 +1558,37 @@
         }
     </script>
 
-    <script>
-        document.querySelectorAll('.has-submenu').forEach(menu => {
-            menu.addEventListener('click', function (e) {
-
-                // allow links to work (if the user clicks a specific <a> inside)
-                if (e.target.closest('a')) return;
-
-                // Stop propagation so clicking 'Vendors' doesn't close 'Inventory'
-                e.stopPropagation();
-
-                // toggle only THIS menu
-                this.classList.toggle('open');
-            });
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    
+      document.querySelectorAll('.sidebar .has-submenu').forEach(menu => {
+        menu.addEventListener('click', function (e) {
+    
+          // 🚫 DO NOT TOUCH FORM / DROPDOWN INTERACTIONS
+          if (
+            e.target.closest('#technicianDropdown') ||
+            e.target.closest('.dropdown') ||
+            e.target.closest('.dropdown-menu') ||
+            e.target.closest('input') ||
+            e.target.closest('label') ||
+            e.target.closest('button') ||
+            e.target.closest('select') ||
+            e.target.closest('textarea') ||
+            e.target.closest('a')
+          ) {
+            return;
+          }
+    
+          // ✅ Sidebar accordion logic only
+          e.stopPropagation();
+          this.classList.toggle('open');
         });
+      });
+    
+    });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script> -->
 
 </body>
 
