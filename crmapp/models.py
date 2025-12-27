@@ -355,10 +355,11 @@ class lead_management(models.Model):
     sourceoflead = models.CharField(max_length=200, choices=[
         ('Google', 'Google'),
         ('Justdial', 'Justdial'),
-        ('Indiamart', 'Indiamart'),
+        ('Indiamart', 'IndiaMart'),
+        ('TradeIndia', 'TradeIndia'),
         ('Customer Reference', 'Customer Reference'),
         ('BNI', 'BNI'),
-        ('Lineclub', 'Lineclub'),
+        ('Lionsclub', 'Lions Club'),
         ('Employee Reference', 'Employee Reference'),
         ('Others', 'Others')
     ], default="NOT SELECTED")
