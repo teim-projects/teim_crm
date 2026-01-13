@@ -132,8 +132,9 @@ input[type=number] {
                 <thead>
                   <tr>
                     <th style="min-width:200px">Product</th>
+                    <th style="min-width:250px">Description</th>   <!-- ✅ ADD -->
                     <th style="min-width:100px">Qty</th>
-                    <th style="min-width:100px">Rate</th>
+                    <th style="min-width:100px">Unit Rate</th>
                     <th style="min-width:100px">GST Rate</th>
                     <th style="min-width:100px">Discount (%)</th>
                     <th style="min-width:100px;">Unit</th>
@@ -142,24 +143,27 @@ input[type=number] {
                   </tr>
                 </thead>
 
+
                 <tbody id="po-items-body">
                   {{ formset.management_form }}
 
                   {% for f in formset %}
-                    <tr class="po-item-row">
-                      <td>{{ f.product }}</td>
-                      <td>{{ f.quantity }}</td>
-                      <td>{{ f.rate }}</td>
-                      <td>{{ f.gst_rate }}</td>
-                      <td>{{ f.discount }}</td>
-                      <td>{{ f.unit }}</td>
-                      <td>{{ f.remarks }}</td>
-                      <td class="text-center align-middle">
-                        <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
-                        {{ f.DELETE }}
-                      </td>
-                    </tr>
+                  <tr class="po-item-row">
+                    <td>{{ f.product }}</td>
+                    <td>{{ f.description }}</td>   <!-- ✅ ADD -->
+                    <td>{{ f.quantity }}</td>
+                    <td>{{ f.rate }}</td>
+                    <td>{{ f.gst_rate|add_class:"gst-rate-input" }}</td>
+                    <td>{{ f.discount }}</td>
+                    <td>{{ f.unit }}</td>
+                    <td>{{ f.remarks }}</td>
+                    <td class="text-center align-middle">
+                      <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
+                      {{ f.DELETE }}
+                    </td>
+                  </tr>
                   {% endfor %}
+
                 </tbody>
               </table>
             </div>
@@ -173,9 +177,10 @@ input[type=number] {
             <table class="d-none"><tbody>
               <tr id="empty-form-row">
                 <td>{{ formset.empty_form.product }}</td>
+                <td>{{ formset.empty_form.description }}</td>   <!-- ✅ ADD -->
                 <td>{{ formset.empty_form.quantity }}</td>
                 <td>{{ formset.empty_form.rate }}</td>
-                <td>{{ formset.empty_form.gst_rate }}</td>
+                <td>{{ formset.empty_form.gst_rate|add_class:"gst-rate-input" }}</td>
                 <td>{{ formset.empty_form.discount }}</td>
                 <td>{{ formset.empty_form.unit }}</td>
                 <td>{{ formset.empty_form.remarks }}</td>
@@ -183,6 +188,7 @@ input[type=number] {
                   <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
                 </td>
               </tr>
+
             </tbody></table>
 
             <div class="mt-4">
@@ -232,47 +238,61 @@ input[type=number] {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
   <!-- PO items JS: clean template, init visible selects, init+open new row select -->
-  <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const addBtn = document.getElementById('add-item-row');
-    const tableBody = document.getElementById('po-items-body');
-    const emptyRow = document.getElementById('empty-form-row');
-    const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS'); // ensure your formset prefix is 'items'
+<script>
+document.addEventListener('DOMContentLoaded', function () {
 
-    // CLEAN: ensure the hidden template isn't already select2-wrapped
-    (function cleanHiddenTemplate() {
-      if (!emptyRow) return;
-      $(emptyRow).find('select').each(function() {
-        const $s = $(this);
-        if ($s.hasClass('select2-hidden-accessible')) {
-          try { $s.select2('destroy'); } catch(e) {}
-        }
-        $s.next('.select2').remove();
-        $s.removeClass('select2-hidden-accessible');
-        $s.show();
-      });
-    })();
+  const addBtn = document.getElementById('add-item-row');
+  const tableBody = document.getElementById('po-items-body');
+  const emptyRow = document.getElementById('empty-form-row');
+  const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
 
-    // Initialize select2 on a jQuery container (only uninitialized selects)
-    function activateSelect2($container) {
-      $container.find('select').each(function () {
-        const $s = $(this);
-        if (!$s.hasClass('select2-hidden-accessible')) {
-          $s.select2({
-            width: '100%',
-            placeholder: 'Search product...',
-            allowClear: true,
-            dropdownParent: $(document.body)
-          });
-        }
-      });
-    }
+  /* -----------------------------------------
+     CLEAN hidden template (important)
+  ----------------------------------------- */
+  (function cleanHiddenTemplate() {
+    if (!emptyRow) return;
+    $(emptyRow).find('select').each(function () {
+      const $s = $(this);
+      if ($s.hasClass('select2-hidden-accessible')) {
+        try { $s.select2('destroy'); } catch (e) {}
+      }
+      $s.next('.select2').remove();
+      $s.removeClass('select2-hidden-accessible');
+      $s.show();
+    });
+  })();
 
-    function bindRemoveButtons() {
-      // unbind first to avoid duplicates
-      $(document).off('click', '.remove-row').on('click', '.remove-row', function () {
+  /* -----------------------------------------
+     Select2 initializer (ONLY ONE)
+  ----------------------------------------- */
+  function activateSelect2($container) {
+    $container.find('select').each(function () {
+      const $s = $(this);
+
+      if (!$s.hasClass('select2-hidden-accessible')) {
+        const isUnit = $s.hasClass('unit-select');
+
+        $s.select2({
+          width: '100%',
+          placeholder: isUnit ? 'Select or type unit...' : 'Search product...',
+          allowClear: true,
+          tags: isUnit, // ✅ typing allowed ONLY for unit
+          dropdownParent: $(document.body)
+        });
+      }
+    });
+  }
+
+  /* -----------------------------------------
+     Remove row handler
+  ----------------------------------------- */
+  function bindRemoveButtons() {
+    $(document)
+      .off('click', '.remove-row')
+      .on('click', '.remove-row', function () {
         const $row = $(this).closest('tr');
         const $del = $row.find('input[type="checkbox"][name$="-DELETE"]');
+
         if ($del.length) {
           $del.prop('checked', true);
           $row.hide();
@@ -280,63 +300,59 @@ input[type=number] {
           $row.remove();
         }
       });
+  }
+
+  /* -----------------------------------------
+     Open Select2 safely
+  ----------------------------------------- */
+  function tryOpen($select, attemptsLeft = 6) {
+    if (!$select || !$select.length || attemptsLeft <= 0) return;
+    try {
+      $select.select2('open');
+    } catch {
+      setTimeout(() => tryOpen($select, attemptsLeft - 1), 80);
     }
+  }
 
-    // open helper with retries (timing races)
-    function tryOpen($select, attemptsLeft = 6) {
-      if (! $select || !$select.length) return;
-      if (attemptsLeft <= 0) {
-        console.warn('[Select2] could not open after retries for', $select);
-        return;
-      }
-      try {
-        $select.select2('open');
-        const s2 = $select.data('select2');
-        if (s2 && s2.$selection) s2.$selection.focus();
-        console.log('[Select2] opened for', $select.attr('id'));
-      } catch (err) {
-        setTimeout(() => tryOpen($select, attemptsLeft - 1), 80);
-      }
-    }
+  /* -----------------------------------------
+     Init existing rows
+  ----------------------------------------- */
+  activateSelect2($('#po-items-body'));
+  bindRemoveButtons();
 
-    // Initialize visible selects on page load (do NOT initialize hidden template)
-    activateSelect2($('#po-items-body'));
-    bindRemoveButtons();
-
-    // Add new formset row
+  /* -----------------------------------------
+   Add new formset row
+  ----------------------------------------- */
+  if (addBtn) {
     addBtn.addEventListener('click', function () {
-      const index = totalFormsInput ? parseInt(totalFormsInput.value, 10) : tableBody.querySelectorAll('tr').length;
-      // clone template HTML and replace prefix
+
+      const index = parseInt(totalFormsInput.value, 10);
+
       let newRowHtml = emptyRow.outerHTML.replace(/__prefix__/g, index);
 
-      // create element and append
       const temp = document.createElement('tbody');
       temp.innerHTML = newRowHtml.trim();
       const newRow = temp.firstChild;
+
       newRow.id = '';
       newRow.classList.remove('d-none');
       tableBody.appendChild(newRow);
 
-      // update total forms (if present)
-      if (totalFormsInput) totalFormsInput.value = index + 1;
+      totalFormsInput.value = index + 1;
 
-      // init select2 for this new row
       const $newRow = $(newRow);
       activateSelect2($newRow);
       bindRemoveButtons();
 
-      // attempt to open the product select in new row
-      const $sel = $newRow.find('select').first();
-      if ($sel.length) {
-        // small delay then try open (retries handled inside tryOpen)
-        setTimeout(() => tryOpen($sel), 50);
-      }
+      const $productSelect = $newRow.find('select').first();
+      setTimeout(() => tryOpen($productSelect), 50);
 
-      // scroll into view
-      newRow.scrollIntoView({behavior: 'smooth', block: 'center'});
+      newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
-  });
-  </script>
+  }
+
+</script>
+
 
 
 <!-- sidebar js -->
@@ -414,5 +430,90 @@ input[type=number] {
     document.getElementById('modal').classList.remove('active');
   }
 </script>
+<script>
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const gstTypeSelect = document.getElementById("id_gst_type");
+
+    function updateGSTUI() {
+        if (!gstTypeSelect) return;
+
+        const gstType = gstTypeSelect.value.toLowerCase();
+        const gstInputs = document.querySelectorAll(".gst-rate-input");
+
+        gstInputs.forEach(input => {
+            if (gstType === "no_gst") {
+                input.value = 0;
+                input.readOnly = true;
+                input.style.backgroundColor = "#f2f2f2";
+            } else {
+                input.readOnly = false;
+                input.style.backgroundColor = "";
+            }
+        });
+    }
+
+    gstTypeSelect?.addEventListener("change", updateGSTUI);
+    updateGSTUI();
+});
+</script>
+
+
+<script>
+document.addEventListener("change", function (e) {
+    if (!e.target.classList.contains("product-select")) return;
+
+    const productSelect = e.target;
+    const row = productSelect.closest("tr");
+    const productId = productSelect.value;
+
+    if (!productId) return;
+
+    fetch(`/new_inventory/ajax/product-details/${productId}/`)
+        .then(res => res.json())
+        .then(data => {
+
+            /* ---------- DESCRIPTION ---------- */
+            const descriptionField = row.querySelector(
+                "textarea[name$='description']"
+            );
+            if (descriptionField) {
+                descriptionField.value = data.description || "";
+            }
+
+            /* ---------- UNIT ---------- */
+            const unitField = row.querySelector("select[name$='unit']");
+            if (!unitField) return;
+
+            const backendUnit = (data.unit || "").trim();
+            if (!backendUnit) return;
+
+            // 1️⃣ Find matching option ignoring case
+            let matchedOption = Array.from(unitField.options).find(
+                opt => opt.value.toLowerCase() === backendUnit.toLowerCase()
+            );
+
+            // 2️⃣ If not found, create new option (ALLOW ANY UNIT)
+            if (!matchedOption) {
+                matchedOption = new Option(
+                    backendUnit,
+                    backendUnit,
+                    true,
+                    true
+                );
+                unitField.appendChild(matchedOption);
+            }
+
+            // 3️⃣ Set value properly for Select2
+            $(unitField).val(matchedOption.value).trigger("change");
+
+        })
+        .catch(err => console.error("Product fetch error:", err));
+});
+</script>
+
+
 </body>
 </html>

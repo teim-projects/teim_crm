@@ -34,23 +34,74 @@ class InventoryAddForm(forms.ModelForm):
 class AddProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['product_name','hsn_code' ,'category']
+        fields = [
+            'product_name',
+            'hsn_code',
+            'description',      # ✅ ADD
+            'standard_unit',    # ✅ ADD
+            'category'
+        ]
+
         labels = {
             'product_name': 'Product Name',
-            'hsn_code':'HSN Code',
+            'hsn_code': 'HSN Code',
+            'description': 'Product Description',
+            'standard_unit': 'Standard Unit',
             'category': 'Select Category'
         }
 
+        widgets = {
+            'product_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'hsn_code': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Enter product description'
+            }),
+            'standard_unit': forms.TextInput(attrs={
+                'class': 'form-control standard-unit-select',
+                'placeholder': 'Type unit (Kg, Litre, Box, etc)'
+            }),
+
+
+            'category': forms.Select(attrs={'class': 'form-control'}),
+        }
 
 class UpdateProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['product_name','hsn_code', 'category']
+        fields = [
+            'product_name',
+            'hsn_code',
+            'description',      # ✅ ADD
+            'standard_unit',    # ✅ ADD
+            'category'
+        ]
+
         labels = {
             'product_name': 'Product Name',
-            'hsn_code':'HSN Code',
+            'hsn_code': 'HSN Code',
+            'description': 'Product Description',
+            'standard_unit': 'Standard Unit',
             'category': 'Select Category'
         }
+
+        widgets = {
+            'product_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'hsn_code': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3
+            }),
+            'standard_unit': forms.TextInput(attrs={
+                'class': 'form-control standard-unit-select',
+                'placeholder': 'Type unit (Kg, Litre, Box, etc)'
+            }),
+
+
+            'category': forms.Select(attrs={'class': 'form-control'}),
+        }
+
 
 
 

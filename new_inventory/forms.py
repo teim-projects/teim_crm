@@ -163,21 +163,62 @@ class PurchaseOrderForm(forms.ModelForm):
 
 
 # ---------------- PURCHASE ORDER ITEM FORM ----------------
+UNIT_CHOICES = [
+    ("", "---------"),
+    ("Nos", "Nos"),
+    ("Kg", "Kg"),
+    ("Gram", "Gram"),
+    ("Liter", "Liter"),
+    ("ML", "ML"),
+    ("Box", "Box"),
+    ("Packet", "Packet"),
+    ("Set", "Set"),
+    ("Dozen", "Dozen"),
+    ("Meter", "Meter"),
+    ("Feet", "Feet"),
+    ("Roll", "Roll"),
+]
+
 
 class PurchaseOrderItemForm(forms.ModelForm):
+    unit = forms.ChoiceField(
+        required=False,
+        choices=UNIT_CHOICES,   # ⭐ THIS WAS MISSING
+        widget=forms.Select(attrs={
+            "class": "form-control unit-select"
+        })
+    )
+
+
+
     class Meta:
         model = PurchaseOrderItem
-        fields = ["product", "quantity", "rate", "discount","unit" ,"remarks","gst_rate"]   
+        fields = [
+            "product",
+            "description",   # 👈 ADD HERE (THIS ANSWERS YOUR "WHERE")
+            "quantity",
+            "rate",
+            "discount",
+            "unit",
+            "remarks",
+            "gst_rate",
+        ]
         widgets = {
-            "product": forms.Select(attrs={"class": "form-control product-select",
-                                           "style": "color: black;"}),
+            "product": forms.Select(attrs={
+                "class": "form-control product-select",
+                "style": "color: black;"
+            }),
+
+            "description": forms.Textarea(attrs={   # 👈 ADD HERE
+                "class": "form-control",
+                "rows": 2,
+                "placeholder": "Product description"
+            }),
             "quantity": forms.NumberInput(attrs={"class": "form-control"}),
-            "rate": forms.NumberInput(attrs={"class": "form-control"}),         
-            "discount": forms.NumberInput(attrs={"class": "form-control"}),  
-            "unit": forms.TextInput(attrs={"class": "form-control"}),   
+            "rate": forms.NumberInput(attrs={"class": "form-control"}),
+            "discount": forms.NumberInput(attrs={"class": "form-control"}),
             "remarks": forms.TextInput(attrs={"class": "form-control"}),
             "gst_rate": forms.NumberInput(attrs={"class": "form-control"}),
-
         }
 
 

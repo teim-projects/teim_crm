@@ -192,10 +192,16 @@ class PurchaseOrder(models.Model):
 
     mode_terms_of_payments = models.TextField(blank=True, null=True)
     terms_of_delivery = models.TextField(blank=True, null=True)
-    gst_type = models.TextField(max_length=200, choices= (
-        ('cgst_sgst', 'CGST SGST'),
-        ('igst', 'IGST'),
-    ))
+    gst_type = models.CharField(
+        max_length=20,
+        choices=(
+            ('no_gst', 'No GST'),
+            ('cgst_sgst', 'CGST+SGST'),
+            ('igst', 'IGST'),
+        ),
+        default='no_gst'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -207,27 +213,35 @@ class PurchaseOrder(models.Model):
             total += (item.gst_amount or Decimal("0.00"))
         return total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
+
     @property
     def cgst_total(self) -> Decimal:
         """Half of total_gst when gst_type is cgst_sgst, else 0"""
         if (self.gst_type or "").lower() == "cgst_sgst":
-            half = (self.total_gst / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-            return half
+            return (self.total_gst / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         return Decimal("0.00")
+
 
     @property
     def sgst_total(self) -> Decimal:
+        """Half of total_gst when gst_type is cgst_sgst, else 0"""
         if (self.gst_type or "").lower() == "cgst_sgst":
-            half = (self.total_gst / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-            return half
+            return (self.total_gst / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         return Decimal("0.00")
+
 
     @property
     def igst_total(self) -> Decimal:
-        """All GST as IGST when gst_type isn't cgst_sgst"""
-        if (self.gst_type or "").lower() != "cgst_sgst":
+        """All GST as IGST only when gst_type is igst"""
+        if (self.gst_type or "").lower() == "igst":
             return self.total_gst
         return Decimal("0.00")
+
+
+    @property
+    def is_no_gst(self):
+        return (self.gst_type or "").lower() == "no_gst"
+
 
     @property
     def grand_total(self) -> Decimal:
@@ -247,7 +261,6 @@ class PurchaseOrder(models.Model):
         return self.po_no
 
 # ----------------------------- PURCHASE ORDER ITEMS ------------------------------
-
 class PurchaseOrderItem(models.Model):
     purchase_order = models.ForeignKey(
         PurchaseOrder, on_delete=models.CASCADE,
@@ -257,11 +270,13 @@ class PurchaseOrderItem(models.Model):
 
     quantity = models.DecimalField(max_digits=12, decimal_places=2)
     unit = models.CharField(max_length=200, blank=True, null=True)
-    rate = models.DecimalField(max_digits=12, decimal_places=2, default=0 ,  blank=True, null=True)      # NEW
-    gst_rate = models.DecimalField(max_digits=12, decimal_places=2, default=0 ,  blank=True, null=True) 
-    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True, null=True)   # NEW (%)
+    rate = models.DecimalField(max_digits=12, decimal_places=2, default=0, blank=True, null=True)
+    gst_rate = models.DecimalField(max_digits=12, decimal_places=2, default=0, blank=True, null=True)
+    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True, null=True)
 
+    description = models.TextField(null=True, blank=True)   # 👈 NEW
     remarks = models.TextField(null=True, blank=True)
+
 
     @property
     def amount_excl_gst(self) -> Decimal:

@@ -8,6 +8,13 @@ urlpatterns = [
 
     # ---------- batch loadr --------
     path("ajax/load-batches/", load_batches, name="load_batches"),
+    # -------- Product details (description + unit) --------
+    path(
+        "ajax/product-details/<int:product_id>/",
+        get_product_details,
+        name="get_product_details"
+    ),
+
 
     # ---------------- Vendor ----------------
     path('vendor_add/', vendor_add, name="vendor_add"),

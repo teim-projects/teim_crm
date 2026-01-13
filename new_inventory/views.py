@@ -2,6 +2,8 @@ from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
 from crmapp.models import UserProfile, Product
+from crmapp.models import UserProfile
+
 from .models import *
 from .forms import *
 from .utils import *
@@ -77,6 +79,26 @@ def load_destinations(request):
 
     data = [{"id": obj.id, "name": str(obj)} for obj in qs]
     return JsonResponse({"results": data})
+
+
+
+# ---------------- Product details API (FOR PO AUTO-FILL) ----------------
+@login_required
+def get_product_details(request, product_id):
+    try:
+        product = Product.objects.get(product_id=product_id)
+        return JsonResponse({
+            "description": product.description or "",
+            "unit": product.standard_unit or ""
+        })
+    except Product.DoesNotExist:
+        return JsonResponse({
+            "description": "",
+            "unit": ""
+        })
+
+
+
 
 
 # ------------ Vendor Section start here ----------

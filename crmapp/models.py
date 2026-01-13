@@ -139,18 +139,45 @@ class Product(models.Model):
     product_name = models.CharField(max_length=255)
     hsn_code = models.CharField(max_length=100, blank=True, null=True)
 
+    # ✅ NEW: Product Description
+    description = models.TextField(blank=True, null=True)
+
+    # ✅ NEW: Standard Unit (same as PO units)
+    STANDARD_UNIT_CHOICES = [
+        ('Nos', 'Nos'),
+        ('Kg', 'Kg'),
+        ('Gram', 'Gram'),
+        ('Liter', 'Liter'),
+        ('ML', 'ML'),
+        ('Box', 'Box'),
+        ('Packet', 'Packet'),
+        ('Set', 'Set'),
+        ('Dozen', 'Dozen'),
+        ('Meter', 'Meter'),
+        ('Feet', 'Feet'),
+        ('Roll', 'Roll'),
+    ]
+
+    standard_unit = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
     CATEGORY_CHOICES = [
         ('Pest Control', 'Pest Control'),
         ('Fumigation', 'Fumigation'),
         ('Product Sale', 'Product Sale'),
     ]
-   
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="NULL")
 
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        default="NULL"
+    )
 
     def __str__(self):
         return self.product_name
-
 
     def delete_product(self):
         self.delete()

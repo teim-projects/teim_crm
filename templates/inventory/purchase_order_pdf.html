@@ -168,10 +168,17 @@
                 {% for x in po.items.all %}
                 <tr>
                     <td class="srno">{{ forloop.counter }}</td>
-                    <td><strong>{{ x.product.product_name }}</strong><br>{% if item.remarks %}
-                        <br/><span class="small-text">{{ x.remarks }}</span>
-                    {% endif %}
+                    <td>
+                        <strong>{{ x.product.product_name }}</strong>
+
+                        {% if x.description %}
+                            <br>
+                            <span style="font-size:8.5pt;">
+                                {{ x.description|linebreaksbr }}
+                            </span>
+                        {% endif %}
                     </td>
+
                     <!-- <td>{{ po.created_at|date:"d-M-y" }}</td> -->
                     <td>{{ x.quantity|floatformat:2 }}  {{ x.unit }}</td>
                     <td>{{ x.rate|floatformat:2 }}</td>
