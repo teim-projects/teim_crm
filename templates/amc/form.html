@@ -1,0 +1,261 @@
+{% load static %}
+{% include 'sidebar.html' %}
+
+<div class="main">
+    <div class="container" style="margin-top: 90px; max-width: 1000px;">
+
+        <div class="shadow p-4 bg-white rounded">
+
+            <h3 class="text-center mb-3" style="color:#444;">{{ title }}</h3>
+            <hr>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <table class="table table-borderless align-middle">
+
+                    <!-- Customer + Service -->
+                    <tr>
+                        <td width="20%">
+                            <label>Customer Mobile <span class="text-danger">*</span></label>
+                        </td>
+                        <td width="30%">
+                            <input
+                                type="text"
+                                id="customer_phone"
+                                class="form-control"
+                                placeholder="Enter customer mobile number"
+                            >
+                            <small class="text-muted" id="customer_status"></small>
+
+                            <!-- 🔒 HIDDEN CUSTOMER FIELD (REQUIRED) -->
+                            <div style="display:none;">
+                                {{ form.customer }}
+                            </div>
+                        </td>
+
+                        <td width="20%">
+                            <label>Service <span class="text-danger">*</span></label>
+                        </td>
+                        <td width="30%">
+                            {{ form.service }}
+                            <small class="text-muted">Select customer first</small>
+                        </td>
+                    </tr>
+
+
+                    <!-- Branch + AMC Type -->
+                    <tr>
+                        <td><label>Branch</label></td>
+                        <td>{{ form.branch }}</td>
+
+                        <td><label>AMC Type</label></td>
+                        <td>{{ form.amc_type }}</td>
+                    </tr>
+
+                    <!-- Contract Number (only display when editing) -->
+                    {% if form.instance.pk %}
+                    <tr>
+                        <td><label>Contract Number</label></td>
+                        <td colspan="3">
+                            <input type="text" class="form-control" value="{{ form.instance.contract_number }}" readonly>
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- Dates -->
+                    <tr>
+                        <td><label>Start Date <span class="text-danger">*</span></label></td>
+                        <td>{{ form.start_date }}</td>
+
+                        <td><label>End Date <span class="text-danger">*</span></label></td>
+                        <td>
+                            <input type="text"
+                                class="form-control"
+                                value="{{ form.instance.end_date|default:'Will be calculated after save' }}"
+                                readonly>
+
+                            <small class="text-muted">Calculated automatically</small>
+                        </td>
+
+                    </tr>
+
+                    <!-- Frequency + Technicians -->
+                    <!-- Frequency -->
+                    <tr>
+                        <td><label>Frequency (Services / Year)</label></td>
+                        <td colspan="3">
+                            <div style="max-width: 200px;">
+                                {{ form.frequency }}
+                            </div>
+                        </td>
+                    </tr>
+
+
+
+                    <!-- Description -->
+                    <tr>
+                        <td><label>Service Description</label></td>
+                        <td colspan="3">{{ form.service_description }}</td>
+                    </tr>
+
+                    <!-- Notes -->
+                    <tr>
+                        <td><label>Notes</label></td>
+                        <td colspan="3">{{ form.notes }}</td>
+                    </tr>
+
+                </table>
+
+                <!-- ACTION BUTTONS -->
+                <div class="row mt-4">
+                    <div class="col-4"></div>
+
+                    <div class="col-2">
+                        <a href="{% url 'amc:list' %}" class="btn btn-secondary w-100">Cancel</a>
+                    </div>
+
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary w-100">Save AMC</button>
+                    </div>
+
+                    <div class="col-4"></div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+
+    /* -------------------------------------------
+        HELPER: LOAD SERVICES FOR CUSTOMER
+    --------------------------------------------- */
+    function loadServices(customer_id) {
+        if (!customer_id) return;
+
+        $("#id_service").html('<option value="">Loading...</option>');
+
+        $.ajax({
+            url: "{% url 'amc:load_services' %}",
+            data: { customer_id: customer_id },
+            success: function (data) {
+
+                let serviceSelect = $("#id_service");
+                serviceSelect.empty();
+                serviceSelect.append('<option value="">Select Service</option>');
+
+                data.forEach(function (item) {
+                    serviceSelect.append(
+                        `<option value="${item.id}">
+                            ${item.service_subject}
+                        </option>`
+                    );
+                });
+            }
+        });
+    }
+
+    /* -------------------------------------------
+        PHONE → CUSTOMER LOOKUP
+    --------------------------------------------- */
+    $("#customer_phone").on("blur", function () {
+
+        let phone = $(this).val().trim();
+        if (!phone) return;
+
+        $("#customer_status").text("Checking customer...");
+
+        $.ajax({
+            url: "{% url 'amc:find_customer_by_phone' %}",
+            data: { phone: phone },
+            success: function (data) {
+
+                if (!data.found) {
+                    $("#customer_status").text("❌ Customer not found");
+                    $("#id_customer").val("");
+                    $("#id_service").empty().append(
+                        '<option value="">Select Service</option>'
+                    );
+                    return;
+                }
+
+                $("#customer_status").html(`✅ ${data.customer_name}`);
+
+                // ✅ SET CUSTOMER ID (hidden field)
+                $("#id_customer").val(data.customer_id);
+
+                // ✅ LOAD SERVICES
+                loadServices(data.customer_id);
+            }
+        });
+    });
+
+    /* -------------------------------------------
+        SERVICE SELECT → AUTO POPULATE
+    --------------------------------------------- */
+    $("#id_service").on("change", function () {
+
+        let service_id = $(this).val();
+        if (!service_id) return;
+
+        $.ajax({
+            url: "{% url 'amc:load_service_details' %}",
+            data: { service_id: service_id },
+            success: function (data) {
+
+                if (data.branch_id) {
+                    $("#id_branch").val(data.branch_id);
+                }
+
+                if (data.start_candidate) {
+                    $("#id_start_date").val(data.start_candidate);
+                }
+
+                if (data.frequency) {
+                    $("#id_frequency").val(data.frequency);
+                }
+            }
+        });
+    });
+
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+
+    menuItems.forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            const submenu = this.querySelector('.submenu');
+            const arrow = this.querySelector('.arrow-down');
+
+            // Close other submenus
+            menuItems.forEach(other => {
+                if (other !== this) {
+                    const sm = other.querySelector('.submenu');
+                    const ar = other.querySelector('.arrow-down');
+                    if (sm) sm.style.display = 'none';
+                    if (ar) ar.classList.remove('arrow-up');
+                }
+            });
+
+            // Toggle current submenu
+            if (submenu) {
+                const isOpen = submenu.style.display === 'block';
+                submenu.style.display = isOpen ? 'none' : 'block';
+                if (arrow) arrow.classList.toggle('arrow-up', !isOpen);
+            }
+        });
+    });
+});
+</script>
+

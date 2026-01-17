@@ -31,5 +31,7 @@ urlpatterns = [
     path('generate_invoice/', include('generate_invoice.urls')),
 	path("chat_app/", include("chat_app.urls")),
     path("dashboard/", include("dashboard.urls")),
+    path("amc/", include("amc.urls")),
+
     
 ]

@@ -1,0 +1,29 @@
+{% load static %}
+{% include 'sidebar.html' %}
+
+<div class="main">
+    <div class="container mt-5">
+
+        <div class="card shadow-sm p-4 text-center">
+
+            <h3 class="fw-bold text-danger">
+                Cancel AMC Contract
+            </h3>
+
+            <p>
+                Are you sure you want to cancel contract
+                <strong>{{ amc.contract_number }}</strong>
+                for customer
+                <strong>{{ amc.customer.fullname }}</strong>?
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger px-4">Yes, Cancel</button>
+                <a href="{% url 'amc:detail' amc.id %}" class="btn btn-secondary px-4">No, Go Back</a>
+            </form>
+
+        </div>
+
+    </div>
+</div>

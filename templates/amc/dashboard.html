@@ -1,0 +1,220 @@
+{% load static %}
+{% include 'sidebar.html' %}
+
+<div class="main">
+    <div class="container" style="margin-top: 90px;">
+
+        <div class="shadow p-4 bg-white rounded">
+
+            <h3 class="text-center text-dark mb-4">AMC Dashboard</h3>
+            <hr>
+
+            <!-- ================= SUMMARY CARDS ================= -->
+            <div class="row text-center mb-4">
+
+                <div class="col-md-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h6>Total AMCs</h6>
+                            <h3>{{ total_amcs }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h6>Active AMCs</h6>
+                            <h3 class="text-success">{{ active_amcs }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h6>Expiring Soon</h6>
+                            <h3 class="text-danger">{{ expiring_soon }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h6>Renewal Requests</h6>
+                            <h3 class="text-warning">{{ renewal_requests }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= ACTION BUTTONS ================= -->
+            <div class="text-center mb-4">
+                <a href="{% url 'amc:list' %}" class="btn btn-primary me-2">
+                    View AMC Contracts
+                </a>
+
+                <a href="{% url 'amc:renewal_requests' %}" class="btn btn-warning">
+                    Renewal Requests
+                </a>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- ================= CALENDAR ================= -->
+            <h4 class="mb-3">AMC Calendar</h4>
+            <div id="amc-calendar"></div>
+
+            <hr class="my-4">
+            <hr class="my-4">
+
+            <h4 class="mb-3 text-danger">Expiring AMC Contracts (Next 15 Days)</h4>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>Contract No</th>
+                            <th>Customer</th>
+                            <th>Branch</th>
+                            <th>End Date</th>
+                            <th>Days Left</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for amc in expiring_amcs %}
+                        <tr>
+                            <td>{{ amc.contract_number }}</td>
+                            <td>{{ amc.customer.customer_name }}</td>
+                            <td>{{ amc.branch.branch_name }}</td>
+                            <td class="text-danger fw-bold">{{ amc.end_date }}</td>
+                            <td>
+                                {{ amc.end_date|timeuntil }}
+                            </td>
+                            <td>
+                                <a href="{% url 'amc:detail' amc.pk %}" class="btn btn-sm btn-danger">
+                                    View AMC
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-dark">
+                                No AMC contracts expiring in next 15 days 🎉
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+
+            <!-- ================= UPCOMING SERVICES ================= -->
+            <h4 class="mb-3">Upcoming Services (Next 15 Days)</h4>
+
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Branch</th>
+                        <th>Contract</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for visit in upcoming_services %}
+                    <tr>
+                        <td>{{ visit.service_date }}</td>
+                        <td>{{ visit.amc.customer.customer_name }}</td>
+                        <td>{{ visit.amc.branch.branch_name }}</td>
+                        <td>{{ visit.amc.contract_number }}</td>
+                        <td>
+                            <a href="{% url 'amc:detail' visit.amc.id %}"
+                               class="btn btn-sm btn-info text-white">
+                                View AMC
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-dark">
+                            No upcoming services in next 15 days
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+<!-- ================= FULLCALENDAR ================= -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('amc-calendar');
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 550,
+        events: "{% url 'amc:calendar_events' %}",
+
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listWeek'
+        },
+
+        eventClick: function(info) {
+            if (info.event.url) {
+                window.location.href = info.event.url;
+                info.jsEvent.preventDefault();
+            }
+        }
+    });
+
+    calendar.render();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+
+    menuItems.forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            const submenu = this.querySelector('.submenu');
+            const arrow = this.querySelector('.arrow-down');
+
+            // Close other submenus
+            menuItems.forEach(other => {
+                if (other !== this) {
+                    const sm = other.querySelector('.submenu');
+                    const ar = other.querySelector('.arrow-down');
+                    if (sm) sm.style.display = 'none';
+                    if (ar) ar.classList.remove('arrow-up');
+                }
+            });
+
+            // Toggle current submenu
+            if (submenu) {
+                const isOpen = submenu.style.display === 'block';
+                submenu.style.display = isOpen ? 'none' : 'block';
+                if (arrow) arrow.classList.toggle('arrow-up', !isOpen);
+            }
+        });
+    });
+});
+</script>
+
+

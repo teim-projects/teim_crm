@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 	'django_celery_results',
     'crmapp',
     'ocrapp',
+    'amc',
 	'email_sender',
     'schedule_meetings',
     'generate_invoice',
@@ -90,7 +91,7 @@ WSGI_APPLICATION = 'crm.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'crmdb',
+        'NAME': 'crmdb_intgra',
         'HOST' : 'localhost',
         'USER' : 'root',
         'PASSWORD' : '',
@@ -271,6 +272,31 @@ CELERY_CACHE_BACKEND = 'django-cache'
 
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+from celery.schedules import crontab
+
+# --- AMC CELERY TASKS ---
+if 'CELERY_BEAT_SCHEDULE' not in globals():
+    CELERY_BEAT_SCHEDULE = {}
+
+CELERY_BEAT_SCHEDULE.update({
+
+    "amc-service-reminder-daily": {
+        "task": "amc.tasks.send_service_reminder_emails",
+        "schedule": crontab(hour=9, minute=0),
+    },
+
+    "amc-create-service-visit-daily": {
+        "task": "amc.tasks.create_service_visit_on_service_day",
+        "schedule": crontab(hour=9, minute=5),
+    },
+
+    "amc-expiry-check-daily": {
+        "task": "amc.tasks.check_expiring_amcs",
+        "schedule": crontab(hour=9, minute=10),
+    },
+})
+
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1GB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1GB

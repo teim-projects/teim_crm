@@ -181,13 +181,14 @@ UNIT_CHOICES = [
 
 
 class PurchaseOrderItemForm(forms.ModelForm):
-    unit = forms.ChoiceField(
+    unit = forms.CharField(
         required=False,
-        choices=UNIT_CHOICES,   # ⭐ THIS WAS MISSING
-        widget=forms.Select(attrs={
-            "class": "form-control unit-select"
+        widget=forms.TextInput(attrs={
+            "class": "form-control unit-select",
+            "placeholder": "Unit (e.g. Nos, Kg, Pieces)"
         })
     )
+
 
 
 

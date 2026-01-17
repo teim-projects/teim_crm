@@ -69,6 +69,34 @@ urlpatterns = [
     path("mreq/<int:pk>/reject/", reject_material_request, name="material_request_reject"), 
 
 
-    path("notification/<int:pk>/", notification_read, name="notification_read")
+    path("notification/<int:pk>/", notification_read, name="notification_read"),
+
+
+    path(
+        "delivery-challan/create/<int:mtn_id>/",
+        create_dc_from_mtn,
+        name="create_dc_from_mtn"
+    ),
+
+    path(
+        "delivery-challan/<int:pk>/",
+        dc_detail_view,
+        name="dc_detail_view"
+    ),
+
+    path(
+        "delivery-challan/",
+        dc_list_view,
+        name="dc_list_view"
+    ),
+
+        path(
+            "delivery-challan/edit/<int:pk>/",
+            dc_edit_view,
+            name="dc_edit"
+        ),
+
+
+
 
 ]

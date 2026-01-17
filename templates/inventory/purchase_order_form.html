@@ -236,6 +236,11 @@ input[type=number] {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  <script>
+    const PRODUCT_DETAILS_URL =
+      "{% url 'get_product_details' 0 %}".replace("0/", "");
+  </script>
+
 
   <!-- PO items JS: clean template, init visible selects, init+open new row select -->
 <script>
@@ -244,7 +249,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const addBtn = document.getElementById('add-item-row');
   const tableBody = document.getElementById('po-items-body');
   const emptyRow = document.getElementById('empty-form-row');
-  const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
+  const totalFormsInput = document.querySelector(
+    'input[name$="-TOTAL_FORMS"]'
+  );
 
   /* -----------------------------------------
      CLEAN hidden template (important)
@@ -350,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
       newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }
+});   // ← THIS WAS MISSING
 
 </script>
 
@@ -386,29 +394,27 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   });
+  let deleteUrl = '';   // ✅ ADD THIS LINE
+
   const deleteLinks = document.querySelectorAll('.delete-link');
   const confirmationModal = document.getElementById('confirmationModal');
   const confirmDeleteButton = document.getElementById('confirmDeleteButton');
   const cancelDeleteButton = document.getElementById('cancelDeleteButton');
-  let deleteUrl = '';
 
-  deleteLinks.forEach(link => {
-    link.addEventListener('click', function (event) {
-      event.preventDefault();
-      deleteUrl = this.getAttribute('href');
-      confirmationModal.style.display = 'block';
+  if (confirmationModal && confirmDeleteButton && cancelDeleteButton) {
+
+    confirmDeleteButton.addEventListener('click', function () {
+      if (deleteUrl) {
+        window.location.href = deleteUrl;
+      }
     });
-  });
 
-  confirmDeleteButton.addEventListener('click', function () {
-    if (deleteUrl) {
-      window.location.href = deleteUrl;
-    }
-  });
+    cancelDeleteButton.addEventListener('click', function () {
+      confirmationModal.style.display = 'none';
+    });
 
-  cancelDeleteButton.addEventListener('click', function () {
-    confirmationModal.style.display = 'none';
-  });
+  }
+
 
   window.addEventListener('click', function (event) {
     if (event.target == confirmationModal) {
@@ -460,59 +466,36 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
 <script>
-document.addEventListener("change", function (e) {
-    if (!e.target.classList.contains("product-select")) return;
+$(document).on("select2:select", ".product-select", function () {
 
-    const productSelect = e.target;
-    const row = productSelect.closest("tr");
-    const productId = productSelect.value;
+    const $select = $(this);
+    const row = $select.closest("tr");
+    const productId = $select.val();
 
     if (!productId) return;
 
-    fetch(`/new_inventory/ajax/product-details/${productId}/`)
+    fetch(`${PRODUCT_DETAILS_URL}${productId}/`)
         .then(res => res.json())
         .then(data => {
 
-            /* ---------- DESCRIPTION ---------- */
-            const descriptionField = row.querySelector(
-                "textarea[name$='description']"
-            );
-            if (descriptionField) {
-                descriptionField.value = data.description || "";
+            // ✅ Description
+            const desc = row.find("textarea[name$='description']");
+            if (desc.length) {
+                desc.val(data.description || "");
             }
 
-            /* ---------- UNIT ---------- */
-            const unitField = row.querySelector("select[name$='unit']");
-            if (!unitField) return;
-
-            const backendUnit = (data.unit || "").trim();
-            if (!backendUnit) return;
-
-            // 1️⃣ Find matching option ignoring case
-            let matchedOption = Array.from(unitField.options).find(
-                opt => opt.value.toLowerCase() === backendUnit.toLowerCase()
-            );
-
-            // 2️⃣ If not found, create new option (ALLOW ANY UNIT)
-            if (!matchedOption) {
-                matchedOption = new Option(
-                    backendUnit,
-                    backendUnit,
-                    true,
-                    true
-                );
-                unitField.appendChild(matchedOption);
+            // ✅ Unit (TEXT INPUT — dynamic & safe)
+            const unitField = row.find("[name$='unit']");
+            if (unitField.length && data.unit) {
+                unitField.val(data.unit);
             }
-
-            // 3️⃣ Set value properly for Select2
-            $(unitField).val(matchedOption.value).trigger("change");
 
         })
-        .catch(err => console.error("Product fetch error:", err));
+        .catch(err => console.error("Product auto-fill error:", err));
 });
 </script>
+
 
 
 </body>

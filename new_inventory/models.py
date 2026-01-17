@@ -77,7 +77,7 @@ class Vendor(models.Model):
     bank_details = models.TextField(blank=True, null=True)
     office_address = models.TextField(blank=True, null=True)
     store_address = models.TextField(blank=True, null=True)
-    compony_type = models.CharField(max_length=100, blank=True, null=True)
+    company_type = models.CharField(max_length=100, blank=True, null=True)
     supplier_category = models.CharField(max_length=100, blank=True, null=True)
     gst_details = models.CharField(max_length=100, blank=True, null=True)
     # pan_no = models.CharField(max_length=200, blank=True, null=True)
@@ -781,3 +781,92 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.user.username}"
+    
+
+    #-----------------------challan--------------------
+
+
+# ---------------- DELIVERY CHALLAN ----------------
+
+def generate_dc_no():
+    today = timezone.now().strftime("%Y%m%d")
+    prefix = f"DC/{today}/"
+    last = DeliveryChallan.objects.filter(
+        dc_no__startswith=prefix
+    ).order_by("-dc_no").first()
+
+    if last:
+        last_no = int(last.dc_no.split("/")[-1])
+        new_no = last_no + 1
+    else:
+        new_no = 1
+
+    return f"{prefix}{new_no:03d}"
+
+
+class DeliveryChallan(models.Model):
+    dc_no = models.CharField(
+        max_length=50,
+        unique=True,
+        default=generate_dc_no,
+        editable=False
+    )
+
+    # 🔗 LINK TO MTN
+    mtn = models.OneToOneField(
+        MaterialTransferNote,
+        on_delete=models.PROTECT,
+        related_name="delivery_challan"
+    )
+
+    source_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
+    source_id = models.BigIntegerField()
+
+    destination_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
+    destination_id = models.BigIntegerField()
+
+    delivery_date = models.DateField(default=timezone.now)
+
+    status = models.CharField(
+        max_length=20,
+        choices=(
+            ("DRAFT", "Draft"),
+            ("DISPATCHED", "Dispatched"),
+        ),
+        default="DRAFT"
+    )
+
+    remarks = models.TextField(null=True, blank=True)
+
+    # ✅ ADD ONLY THESE 3 FIELDS
+    delivery_partner_name = models.CharField(
+        max_length=100, blank=True, null=True
+    )
+    delivery_person_name = models.CharField(
+        max_length=100, blank=True, null=True
+    )
+    delivery_person_phone = models.CharField(
+        max_length=15, blank=True, null=True
+    )
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.dc_no
+
+
+
+class DeliveryChallanItem(models.Model):
+    delivery_challan = models.ForeignKey(
+        DeliveryChallan,
+        on_delete=models.CASCADE,
+        related_name="items"
+    )
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    batch = models.ForeignKey(ProductBatch, on_delete=models.PROTECT)
+    quantity = models.DecimalField(max_digits=12, decimal_places=3)
+    remarks = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.product} - {self.quantity}"

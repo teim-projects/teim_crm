@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
 from crmapp.models import UserProfile, Product
 from crmapp.models import UserProfile
+from .utils import get_destination_object
 
 from .models import *
 from .forms import *
@@ -86,11 +87,14 @@ def load_destinations(request):
 @login_required
 def get_product_details(request, product_id):
     try:
-        product = Product.objects.get(product_id=product_id)
+        # ✅ FIX: use primary key (id), not product_id
+        product = Product.objects.get(pk=product_id)
+
         return JsonResponse({
             "description": product.description or "",
             "unit": product.standard_unit or ""
         })
+
     except Product.DoesNotExist:
         return JsonResponse({
             "description": "",
@@ -1473,3 +1477,217 @@ def notification_context(request):
     return {
         "unread_notification_count": 0
     }
+
+
+
+
+
+@login_required
+@role_required(['admin', 'HO_operation', 'HO_manager'])
+@transaction.atomic
+def create_dc_from_mtn(request, mtn_id):
+    mtn = get_object_or_404(MaterialTransferNote, id=mtn_id)
+
+    # 🚫 Only approved MTN allowed
+    if mtn.status != "APPROVED":
+        messages.error(request, "MTN must be approved before creating Delivery Challan.")
+        return redirect("mtn_detail_view", pk=mtn.id)
+
+    # 🚫 Prevent duplicate DC
+    if hasattr(mtn, "delivery_challan"):
+        messages.warning(request, "Delivery Challan already created for this MTN.")
+        return redirect("mtn_detail_view", pk=mtn.id)
+
+    mtn_items = mtn.items.select_related("product", "batch")
+
+    if request.method == "POST":
+        delivery_date = request.POST.get("delivery_date") or timezone.now().date()
+        remarks = request.POST.get("remarks")
+
+        # 1️⃣ Create DC HEADER
+        dc = DeliveryChallan.objects.create(
+            mtn=mtn,
+            source_type=mtn.source_type,
+            source_id=mtn.source_id,
+            destination_type=mtn.destination_type,
+            destination_id=mtn.destination_id,
+            delivery_date=delivery_date,
+            remarks=remarks,
+            status="DISPATCHED",
+            created_by=request.user,
+            delivery_partner_name = request.POST.get("delivery_partner_name"),
+            delivery_person_name = request.POST.get("delivery_person_name"),
+            delivery_person_phone = request.POST.get("delivery_person_phone"),
+
+        )
+
+        # 2️⃣ Create DC ITEMS (copy from MTN)
+        for item in mtn_items:
+            DeliveryChallanItem.objects.create(
+                delivery_challan=dc,
+                product=item.product,
+                batch=item.batch,
+                quantity=item.transfer_qty,
+                remarks=item.remarks
+            )
+
+            # 3️⃣ FINAL STOCK OUT
+            stock = CurrentStock.objects.select_for_update().get(
+                product=item.product,
+                batch=item.batch,
+                location_type=mtn.source_type,
+                location_id=mtn.source_id
+            )
+
+            stock.out_qty += item.transfer_qty
+            stock.reserved_qty -= item.transfer_qty
+            stock.recompute_closing()
+
+            StockLedger.objects.create(
+                product=item.product,
+                batch=item.batch,
+                location_type=mtn.source_type,
+                location_id=mtn.source_id,
+                transaction_type="MTN_OUT",
+                transaction_ref=dc.dc_no,
+                document_id=dc.id,
+                out_qty=item.transfer_qty,
+                balance_qty=stock.closing_qty,
+                created_by=request.user,
+                remarks="Delivery Challan Dispatch",
+                
+
+            )
+
+        messages.success(request, f"Delivery Challan {dc.dc_no} created successfully.")
+        return redirect("mtn_detail_view", pk=mtn.id)
+
+    return render(request, "inventory/delivery_challan_create.html", {
+        "mtn": mtn,
+        "items": mtn_items,
+    })
+
+
+from .utils import get_destination_details
+
+@login_required
+@role_required(['admin', 'HO_operation', 'HO_manager', 'branch_manager'])
+def dc_detail_view(request, pk):
+    dc = get_object_or_404(
+        DeliveryChallan.objects.select_related("mtn").prefetch_related(
+            "items",
+            "items__product",
+            "items__batch",
+            "items__batch__batch",
+        ),
+        pk=pk
+    )
+
+    source = get_destination_details(dc.source_type, dc.source_id)
+    destination = get_destination_details(dc.destination_type, dc.destination_id)
+
+    return render(
+        request,
+        "inventory/delivery_challan_detail.html",
+        {
+            "dc": dc,
+            "items": dc.items.all(),
+            "source": source,
+            "destination": destination,
+        }
+    )
+
+
+
+
+@login_required
+@role_required(['admin', 'HO_operation', 'HO_manager', 'branch_manager'])
+def dc_list_view(request):
+    qs = DeliveryChallan.objects.select_related(
+        "mtn"
+    ).order_by("-created_at")
+
+    user = request.user.username
+    role = request.user.userprofile.role
+
+    # 🔐 ROLE BASED FILTER
+    if role == "branch_manager":
+        branch_id = BranchManager.objects.get(
+            mobile_no=user
+        ).branch.id
+
+        qs = qs.filter(
+            source_type="BRANCH",
+            source_id=branch_id
+        )
+
+    # 🔍 SEARCH
+    search = request.GET.get("search", "")
+    if search:
+        qs = qs.filter(
+            Q(dc_no__icontains=search) |
+            Q(mtn__mtn_no__icontains=search)
+        )
+
+    # 📅 DATE FILTER
+    from_date = request.GET.get("from_date")
+    to_date = request.GET.get("to_date")
+
+    if from_date:
+        qs = qs.filter(delivery_date__gte=from_date)
+    if to_date:
+        qs = qs.filter(delivery_date__lte=to_date)
+
+    paginator = Paginator(qs, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    for dc in page_obj:
+        src = get_destination_object(dc.source_type, dc.source_id)
+        dst = get_destination_object(dc.destination_type, dc.destination_id)
+
+        dc.source_name = str(src) if src else "-"
+        dc.destination_name = str(dst) if dst else "-"
+
+
+    return render(
+        request,
+        "inventory/delivery_challan_list.html",
+        {
+            "dcs": page_obj,
+            "page_obj": page_obj,
+            "querystring": request.GET.urlencode(),
+        }
+    )
+
+
+
+@login_required
+@role_required(['admin', 'HO_operation', 'HO_manager'])
+def dc_edit_view(request, pk):
+    dc = get_object_or_404(DeliveryChallan, pk=pk)
+
+    if request.method == "POST":
+        dc.delivery_partner_name = request.POST.get("delivery_partner_name")
+        dc.delivery_person_name = request.POST.get("delivery_person_name")
+        dc.delivery_person_phone = request.POST.get("delivery_person_phone")
+        dc.remarks = request.POST.get("remarks")
+
+        dc.save(update_fields=[
+            "delivery_partner_name",
+            "delivery_person_name",
+            "delivery_person_phone",
+            "remarks",
+        ])
+
+        messages.success(request, "Delivery Challan updated successfully.")
+        return redirect("dc_detail_view", pk=dc.pk)
+
+    return render(
+        request,
+        "inventory/delivery_challan_edit.html",
+        {
+            "dc": dc
+        }
+    )
+
+

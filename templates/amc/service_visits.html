@@ -1,0 +1,72 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Service Visits – {{ amc.contract_number }}</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Service Date</th>
+            <th>Technicians</th>
+            <th>Remarks</th>
+            <th>Next Visit</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for visit in visits %}
+        <tr>
+            <td>{{ visit.service_date }}</td>
+            <td>
+                {% for tech in visit.technicians.all %}
+                    {{ tech }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    Not Assigned
+                {% endfor %}
+            </td>
+            <td>{{ visit.remarks|default:"-" }}</td>
+            <td>{{ visit.next_visit_date|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No service visits scheduled.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'amc:renewal_requests' %}" class="button">Back</a>
+
+{% endblock %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+
+    menuItems.forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            const submenu = this.querySelector('.submenu');
+            const arrow = this.querySelector('.arrow-down');
+
+            // Close other submenus
+            menuItems.forEach(other => {
+                if (other !== this) {
+                    const sm = other.querySelector('.submenu');
+                    const ar = other.querySelector('.arrow-down');
+                    if (sm) sm.style.display = 'none';
+                    if (ar) ar.classList.remove('arrow-up');
+                }
+            });
+
+            // Toggle current submenu
+            if (submenu) {
+                const isOpen = submenu.style.display === 'block';
+                submenu.style.display = isOpen ? 'none' : 'block';
+                if (arrow) arrow.classList.toggle('arrow-up', !isOpen);
+            }
+        });
+    });
+});
+</script>

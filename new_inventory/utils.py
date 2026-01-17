@@ -10,6 +10,8 @@ from decimal import Decimal
 from datetime import timedelta, date
 from collections import OrderedDict
 from .models import *
+from crmapp.models import BranchManager
+
 
 
 def get_destination_queryset(dest_type: str):
@@ -70,6 +72,10 @@ def get_destination_details(dest_type: str, dest_id: Any) -> Optional[Dict[str, 
         "shortcut": "",
         "is_head_office": False,
         "raw": dest,
+        "manager_name": "",
+        "manager_phone": "",
+        "manager_email": "",
+
     }
 
     # Branch-like objects (Branch has branch_name, full_address, contact_1, contact_2, etc.)
@@ -92,6 +98,28 @@ def get_destination_details(dest_type: str, dest_id: Any) -> Optional[Dict[str, 
         details["state"] = _str_attr(dest, "state", "branch_state")
         details["shortcut"] = _str_attr(dest, "shortcut")
         details["is_head_office"] = bool(getattr(dest, "is_head_office", False))
+
+        # ---- Branch Manager details (CRM) ----
+        # IMPORTANT: HO is also a Branch → always fetch manager
+        if dest_type in ("HO", "BRANCH"):
+            manager = (
+                BranchManager.objects
+                .filter(branch=dest)
+                .order_by("-id")
+                .first()
+            )
+
+            if manager:
+                details["contact_person"] = manager.full_name
+                details["phone"] = manager.mobile_no
+                details["email1"] = manager.email
+
+                details["manager_name"] = manager.full_name
+                details["manager_phone"] = manager.mobile_no
+                details["manager_email"] = manager.email
+
+
+
 
     # Site-like objects
     elif dest_type == "SITE":
