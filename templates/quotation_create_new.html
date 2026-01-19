@@ -1682,11 +1682,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ✅ BLOCK ENTER KEY to avoid accidental submits
     form.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-            e.preventDefault();
-        }
-    });
+    if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
+        e.preventDefault();
+    }
 });
+
 </script>
 
 

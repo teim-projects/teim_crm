@@ -183,6 +183,9 @@
                     <option value="UPI" data-translate="upi">UPI</option>
                     <option value="Cash" data-translate="cash">Cash</option>
                     <option value="UPI+Cash" data-translate="upi_cash">UPI + Cash</option>
+                    <option value="GST">GST Account</option>
+                    <option value="NON_GST">Non GST Account</option>
+
                   </select>
                 </div>
                 
@@ -246,6 +249,28 @@
                 <label for="cash_amount" data-translate="cash_amount"><b>Enter Cash Amount Paid Now:</b></label>
                 <input type="number" name="cash_amount" id="cash_amount" class="form-control" placeholder="Enter cash amount" data-placeholder="cash_amount_ph">
               </div>
+
+
+              <!-- NON GST BANK DETAILS -->
+              <div id="nongst-bank-section" style="display:none;" class="section-box mt-3">
+                <h5><b>Bank Details (Non GST)</b></h5>
+                <p><b>Bank Name:</b> Indian Bank</p>
+                <p><b>Branch Name:</b> Ravet, Pune</p>
+                <p><b>IFSC Code:</b> IDIB000R115</p>
+                <p><b>Branch Code:</b> 03002</p>
+              </div>
+
+              <!-- GST BANK DETAILS -->
+              <div id="gst-bank-section" style="display:none;" class="section-box mt-3">
+                <h5><b>Bank Details (GST)</b></h5>
+                <p><b>Bank Name:</b> Axis Bank</p>
+                <p><b>Branch Name:</b> Ravet (Pune)</p>
+                <p><b>Account No:</b> 9170200675204474</p>
+                <p><b>IFSC Code:</b> UTIB0003144</p>
+                <p><b>MICR Code:</b> 411411050</p>
+              </div>
+
+
           
               <!-- Remaining Balance (for half payment) -->
               <div id="balance-section" style="display:none;" class="mt-2">
@@ -292,8 +317,11 @@
         
         // take total amount from template
         const totalAmount = parseFloat(document.getElementById("total-amount").innerText.replace(/[^0-9.-]+/g,"")) || 0;
+        const gstBankSection = document.getElementById("gst-bank-section");
+        const nonGstBankSection = document.getElementById("nongst-bank-section");
 
-        function updatePaymentFields() {
+
+       function updatePaymentFields() {
     const mode = paymentMode.value;
     const type = paymentType.value;
 
@@ -303,8 +331,11 @@
     cashSection.style.display = "none";
     upiAmountWrapper.style.display = "none";
     balanceSection.style.display = "none";
+    gstBankSection.style.display = "none";
+    nonGstBankSection.style.display = "none";
 
-    // 🔹 Clear old values when mode changes
+
+    // Clear old values
     document.getElementById("upi_amount").value = "";
     document.getElementById("cash_amount").value = "";
     remainingBalance.value = "";
@@ -314,6 +345,7 @@
 
         if (mode === "UPI") {
             upiSection.style.display = "block";
+
             if (type === "Half Payment") {
                 upiAmountWrapper.style.display = "block";
                 balanceSection.style.display = "block";
@@ -321,6 +353,7 @@
         } 
         else if (mode === "Cash") {
             cashSection.style.display = "block";
+
             if (type === "Half Payment") {
                 balanceSection.style.display = "block";
             }
@@ -328,13 +361,22 @@
         else if (mode === "UPI+Cash") {
             upiSection.style.display = "block";
             cashSection.style.display = "block";
+
             if (type === "Half Payment") {
                 upiAmountWrapper.style.display = "block";
                 balanceSection.style.display = "block";
             }
         }
+        else if (mode === "GST") {
+            gstBankSection.style.display = "block";
+        }
+        else if (mode === "NON_GST") {
+            nonGstBankSection.style.display = "block";
+        }
+
     }
 }
+
 
         // Calculate remaining balance
         function calculateBalance() {

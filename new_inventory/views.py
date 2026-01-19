@@ -139,12 +139,12 @@ def vendor_list(request):
         )
 
     if company_type:
-        vendors = vendors.filter(compony_type=company_type)
+        vendors = vendors.filter(company_type=company_type)
 
     if supplier_category:
         vendors = vendors.filter(supplier_category=supplier_category)
 
-    company_types = Vendor.objects.values_list("compony_type", flat=True).distinct()
+    company_types = Vendor.objects.values_list("company_type", flat=True).distinct()
     supplier_categories = Vendor.objects.values_list("supplier_category", flat=True).distinct()
 
     paginator = Paginator(vendors, 10)
