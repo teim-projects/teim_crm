@@ -1,220 +1,435 @@
-{% load static %}
-{% include 'sidebar.html' %}
+{% load static%}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
 
-<div class="main">
-    <div class="container" style="margin-top: 90px;">
+<head>
+    <title>TEIMCRM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        <div class="shadow p-4 bg-white rounded">
 
-            <h3 class="text-center text-dark mb-4">AMC Dashboard</h3>
-            <hr>
+    <style>
+        /* ================= FULLCALENDAR UI FIX ================= */
 
-            <!-- ================= SUMMARY CARDS ================= -->
-            <div class="row text-center mb-4">
+        #amc-calendar {
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
 
-                <div class="col-md-3">
-                    <div class="card shadow-sm">
+        /* Calendar header */
+        .fc-toolbar-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #0d6efd;
+        }
+
+        /* Buttons */
+        .fc .fc-button {
+            background-color: #0d6efd;
+            border: none;
+            box-shadow: none;
+            font-weight: 500;
+        }
+
+        .fc .fc-button:hover {
+            background-color: #084298;
+        }
+
+        .fc .fc-button:disabled {
+            background-color: #adb5bd;
+        }
+
+        /* Day numbers */
+        .fc-daygrid-day-number {
+            font-weight: 600;
+            color: #212529;
+        }
+
+        /* Today highlight */
+        .fc-day-today {
+            background-color: #e7f1ff !important;
+        }
+
+        /* Event cards */
+        .fc-event {
+            background-color: #198754;
+            border: none;
+            border-radius: 6px;
+            padding: 3px 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        /* Event hover */
+        .fc-event:hover {
+            background-color: #157347;
+        }
+
+        /* List view */
+        .fc-list-event-title,
+        .fc-list-event-time {
+            font-weight: 500;
+        }
+
+        /* Weekday headers */
+        .fc-col-header-cell-cushion {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        /* Remove ugly borders */
+        .fc-theme-standard td,
+        .fc-theme-standard th {
+            border: 1px solid #dee2e6;
+        }
+    </style>
+
+</head>
+
+<body>
+    {% include 'sidebar.html' %}
+    <div class="main">
+
+        <div class="container">
+            <div class="row form-rowsales">
+
+
+
+
+                <div class="shadow p-4 bg-white rounded">
+
+                    <h3 class="text-center text-dark mb-4">AMC Dashboard</h3>
+                    <hr>
+
+                    <!-- ================= SUMMARY CARDS ================= -->
+                    <div class="row text-center mb-4">
+
+                        <div class="col-md-3">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h6>Total AMCs</h6>
+                                    <h3>{{ total_amcs }}</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h6>Active AMCs</h6>
+                                    <h3 class="text-success">{{ active_amcs }}</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h6>Expiring Soon</h6>
+                                    <h3 class="text-danger">{{ expiring_soon }}</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h6>Renewal Requests</h6>
+                                    <h3 class="text-warning">{{ renewal_requests }}</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ================= ACTION BUTTONS ================= -->
+                    <div class="text-center mb-4">
+                        <a href="{% url 'amc:list' %}" class="btn btn-primary me-2">
+                            View AMC Contracts
+                        </a>
+
+                        <a href="{% url 'amc:renewal_requests' %}" class="btn btn-warning">
+                            Renewal Requests
+                        </a>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- ================= CALENDAR ================= -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="text-primary fs-4 mb-0">
+                            AMC Calendar
+                        </h4>
+                    
+                        <button class="btn btn-outline-primary btn-sm"
+                                id="toggleCalendar"
+                                title="Open Calendar">
+                            <i class="bi bi-calendar-event"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="card shadow-sm d-none" id="calendarWrapper">
                         <div class="card-body">
-                            <h6>Total AMCs</h6>
-                            <h3>{{ total_amcs }}</h3>
+                            <div id="amc-calendar"></div>
                         </div>
                     </div>
+                    
+
+
+                    <hr class="my-4">
+                    <hr class="my-4">
+
+                    <h4 class="mb-3 text-danger fs-4 text">Expiring AMC Contracts (Next 15 Days)</h4>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead class="table-danger">
+                                <tr>
+                                    <th>Contract No</th>
+                                    <th>Customer</th>
+                                    <th>Branch</th>
+                                    <th>End Date</th>
+                                    <th>Days Left</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for amc in expiring_amcs %}
+                                <tr>
+                                    <td>{{ amc.contract_number }}</td>
+                                    <td>{{ amc.customer.customer_name }}</td>
+                                    <td>{{ amc.branch.branch_name }}</td>
+                                    <td class="text-danger fw-bold">{{ amc.end_date }}</td>
+                                    <td>
+                                        {{ amc.end_date|timeuntil }}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'amc:detail' amc.pk %}" class="btn btn-sm btn-danger">
+                                            View AMC
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-dark">
+                                        No AMC contracts expiring in next 15 days 🎉
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                    <!-- ================= UPCOMING SERVICES ================= -->
+                    <h4 class="mb-3 text-dark fs-4 text">Upcoming Services (Next 15 Days)</h4>
+
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Branch</th>
+                                <th>Contract</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for visit in upcoming_services %}
+                            <tr>
+                                <td>{{ visit.service_date }}</td>
+                                <td>{{ visit.amc.customer.customer_name }}</td>
+                                <td>{{ visit.amc.branch.branch_name }}</td>
+                                <td>{{ visit.amc.contract_number }}</td>
+                                <td>
+                                    <a href="{% url 'amc:detail' visit.amc.id %}"
+                                        class="btn btn-sm btn-info text-white">
+                                        View AMC
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-dark">
+                                    No upcoming services in next 15 days
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
                 </div>
 
-                <div class="col-md-3">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h6>Active AMCs</h6>
-                            <h3 class="text-success">{{ active_amcs }}</h3>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-md-3">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h6>Expiring Soon</h6>
-                            <h3 class="text-danger">{{ expiring_soon }}</h3>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-md-3">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h6>Renewal Requests</h6>
-                            <h3 class="text-warning">{{ renewal_requests }}</h3>
-                        </div>
-                    </div>
-                </div>
+
 
             </div>
+        </div>
 
-            <!-- ================= ACTION BUTTONS ================= -->
-            <div class="text-center mb-4">
-                <a href="{% url 'amc:list' %}" class="btn btn-primary me-2">
-                    View AMC Contracts
-                </a>
+    </div>
 
-                <a href="{% url 'amc:renewal_requests' %}" class="btn btn-warning">
-                    Renewal Requests
-                </a>
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+        <div class="row p-3">
+            <div class="col-md-12 text-center">
+                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+                    © 2025. Powered by
+                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://www.chronoanalytics.in/"
+                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                        Solution</a>
+                    All Rights Reserved.
+                </p>
             </div>
-
-            <hr class="my-4">
-
-            <!-- ================= CALENDAR ================= -->
-            <h4 class="mb-3">AMC Calendar</h4>
-            <div id="amc-calendar"></div>
-
-            <hr class="my-4">
-            <hr class="my-4">
-
-            <h4 class="mb-3 text-danger">Expiring AMC Contracts (Next 15 Days)</h4>
-
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead class="table-danger">
-                        <tr>
-                            <th>Contract No</th>
-                            <th>Customer</th>
-                            <th>Branch</th>
-                            <th>End Date</th>
-                            <th>Days Left</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for amc in expiring_amcs %}
-                        <tr>
-                            <td>{{ amc.contract_number }}</td>
-                            <td>{{ amc.customer.customer_name }}</td>
-                            <td>{{ amc.branch.branch_name }}</td>
-                            <td class="text-danger fw-bold">{{ amc.end_date }}</td>
-                            <td>
-                                {{ amc.end_date|timeuntil }}
-                            </td>
-                            <td>
-                                <a href="{% url 'amc:detail' amc.pk %}" class="btn btn-sm btn-danger">
-                                    View AMC
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center text-dark">
-                                No AMC contracts expiring in next 15 days 🎉
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                    © 2025. Marketed by
+                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+                    All Rights Reserved.
+                </p>
             </div>
-
-
-            <!-- ================= UPCOMING SERVICES ================= -->
-            <h4 class="mb-3">Upcoming Services (Next 15 Days)</h4>
-
-            <table class="table table-bordered table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Date</th>
-                        <th>Customer</th>
-                        <th>Branch</th>
-                        <th>Contract</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for visit in upcoming_services %}
-                    <tr>
-                        <td>{{ visit.service_date }}</td>
-                        <td>{{ visit.amc.customer.customer_name }}</td>
-                        <td>{{ visit.amc.branch.branch_name }}</td>
-                        <td>{{ visit.amc.contract_number }}</td>
-                        <td>
-                            <a href="{% url 'amc:detail' visit.amc.id %}"
-                               class="btn btn-sm btn-info text-white">
-                                View AMC
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center text-dark">
-                            No upcoming services in next 15 days
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
         </div>
     </div>
-</div>
+    <!-- sidebar js -->
+    <!-- <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+      menuItems.forEach(item => {
+        item.addEventListener('click', function () {
+          const submenu = this.querySelector('.submenu');
+          const arrow = this.querySelector('.arrow-down');
 
-<!-- ================= FULLCALENDAR ================= -->
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var calendarEl = document.getElementById('amc-calendar');
-
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        height: 550,
-        events: "{% url 'amc:calendar_events' %}",
-
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,listWeek'
-        },
-
-        eventClick: function(info) {
-            if (info.event.url) {
-                window.location.href = info.event.url;
-                info.jsEvent.preventDefault();
+          // Hide all other submenus
+          menuItems.forEach(otherItem => {
+            if (otherItem !== this) {
+              const otherSubmenu = otherItem.querySelector('.submenu');
+              const otherArrow = otherItem.querySelector('.arrow-down');
+              if (otherSubmenu) {
+                otherSubmenu.style.display = 'none';
+                if (otherArrow.classList.contains('arrow-up')) {
+                  otherArrow.classList.remove('arrow-up');
+                }
+              }
             }
-        }
+          });
+
+          // Toggle current submenu
+          if (submenu) {
+            submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+            arrow.classList.toggle('arrow-up');
+          }
+        });
+      });
+    });
+    const deleteLinks = document.querySelectorAll('.delete-link');
+    const confirmationModal = document.getElementById('confirmationModal');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    let deleteUrl = '';
+
+    deleteLinks.forEach(link => {
+      link.addEventListener('click', function (event) {
+        event.preventDefault();
+        deleteUrl = this.getAttribute('href');
+        confirmationModal.style.display = 'block';
+      });
     });
 
-    calendar.render();
-});
-</script>
+    confirmDeleteButton.addEventListener('click', function () {
+      if (deleteUrl) {
+        window.location.href = deleteUrl;
+      }
+    });
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+    cancelDeleteButton.addEventListener('click', function () {
+      confirmationModal.style.display = 'none';
+    });
 
-    menuItems.forEach(item => {
-        item.addEventListener('click', function (e) {
-            e.stopPropagation();
+    window.addEventListener('click', function (event) {
+      if (event.target == confirmationModal) {
+        confirmationModal.style.display = 'none';
+      }
+    });
 
-            const submenu = this.querySelector('.submenu');
-            const arrow = this.querySelector('.arrow-down');
+    function openModal(service_id) {
+      fetch(`/get_service_details/${service_id}/`)
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('modal-content').innerHTML = html;
+          document.getElementById('modal').classList.add('active');
+        });
 
-            // Close other submenus
-            menuItems.forEach(other => {
-                if (other !== this) {
-                    const sm = other.querySelector('.submenu');
-                    const ar = other.querySelector('.arrow-down');
-                    if (sm) sm.style.display = 'none';
-                    if (ar) ar.classList.remove('arrow-up');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+  </script> -->
+    <!-- ================= FULLCALENDAR ================= -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        
+            const toggleBtn = document.getElementById("toggleCalendar");
+            const wrapper = document.getElementById("calendarWrapper");
+            const icon = toggleBtn.querySelector("i");
+        
+            let calendarInitialized = false;
+            let calendar;
+        
+            toggleBtn.addEventListener("click", function () {
+        
+                wrapper.classList.toggle("d-none");
+        
+                // Toggle icon
+                icon.classList.toggle("bi-calendar-event");
+                icon.classList.toggle("bi-x-lg");
+        
+                // Init calendar only once
+                if (!calendarInitialized) {
+                    const calendarEl = document.getElementById("amc-calendar");
+        
+                    calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        height: 550,
+                        events: "{% url 'amc:calendar_events' %}",
+        
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,listWeek'
+                        },
+        
+                        eventClick: function (info) {
+                            if (info.event.url) {
+                                window.location.href = info.event.url;
+                                info.jsEvent.preventDefault();
+                            }
+                        }
+                    });
+        
+                    calendar.render();
+                    calendarInitialized = true;
                 }
             });
-
-            // Toggle current submenu
-            if (submenu) {
-                const isOpen = submenu.style.display === 'block';
-                submenu.style.display = isOpen ? 'none' : 'block';
-                if (arrow) arrow.classList.toggle('arrow-up', !isOpen);
-            }
         });
-    });
-});
-</script>
+        </script>
+        
+</body>
 
-
+</html>

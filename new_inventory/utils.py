@@ -314,3 +314,5 @@ def annotated_product_stock_qs(ProductModel, location_type=None, location_id=Non
             qs = qs.filter(currentstock__location_id=location_id)
 
     return qs.distinct()
+
+

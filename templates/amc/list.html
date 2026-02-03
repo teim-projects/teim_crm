@@ -1,259 +1,353 @@
-{% load static %}
-{% include 'sidebar.html' %}
+{% load static%}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
 
-<style>
-    .amc-table th {
-        background-color: #212529;
-        color: #fff;
-        text-align: center;
-        vertical-align: middle;
-        font-size: 14px;
-    }
+<head>
+    <title>TEIMCRM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    .amc-table td {
-        vertical-align: middle;
-        font-size: 13.5px;
-    }
+    <style>
+        .amc-table th {
+            background-color: #212529;
+            color: #fff;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 14px;
+        }
 
-    .badge-status {
-        font-size: 12px;
-        padding: 5px 8px;
-        border-radius: 6px;
-    }
+        .amc-table td {
+            vertical-align: middle;
+            font-size: 13.5px;
+        }
 
-    .btn-action {
-        min-width: 60px;
-        margin-bottom: 4px;
-    }
+        .badge-status {
+            font-size: 12px;
+            padding: 5px 8px;
+            border-radius: 6px;
+        }
 
-    .table-hover tbody tr:hover {
-        background-color: #f8f9fa;
-    }
+        .btn-action {
+            min-width: 60px;
+            margin-bottom: 4px;
+        }
 
-    .date-muted {
-        color: #6c757d;
-        font-size: 12px;
-    }
-</style>
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
 
-<div class="main">
-    <div class="container" style="margin-top: 90px;">
+        .date-muted {
+            color: #6c757d;
+            font-size: 12px;
+        }
+    </style>
 
-        <div class="shadow-sm p-4 bg-white rounded">
+</head>
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="mb-0 text-dark fw-bold">AMC Contracts</h4>
+<body>
+    {% include 'sidebar.html' %}
+    <div class="main">
 
-                <a href="{% url 'amc:create' %}" class="btn btn-primary btn-sm">
-                    + Create AMC
-                </a>
-            </div>
+        <div class="container">
+            <div class="row form-rowsales">
 
-            <hr>
 
-            <table class="table table-bordered table-hover amc-table">
-                <thead>
-                    <tr>
-                        <th>Contract No</th>
-                        <th>Customer</th>
-                        <th>Service</th>
-                        <th>Branch</th>
-                        <th>AMC Type</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Next Visit</th>
-                        <th>Status</th>
-                        <th>Renewal</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
 
-                <tbody>
-                    {% for amc in contracts %}
-                    <tr class="{% if amc.is_active and amc.end_date and amc.end_date <= today|add:'15' %}table-warning{% endif %}">
 
-                        <td class="text-center fw-semibold">
-                            {{ amc.contract_number }}
-                        </td>
+                <div class="shadow-sm p-4 bg-white rounded">
 
-                        <td>{{ amc.customer }}</td>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0 text-dark fw-bold">AMC Contracts</h4>
 
-                        <td>
-                            {% if amc.service %}
-                                {{ amc.service.service_subject }}
-                            {% else %}
-                                <span class="text-danger">Not Linked</span>
-                            {% endif %}
-                        </td>
-
-                        <td>{{ amc.branch.branch_name }}</td>
-
-                        <td class="text-center">{{ amc.amc_type }}</td>
-
-                        <td class="text-center">
-                            {{ amc.start_date|date:"d M Y" }}
-                        </td>
-
-                        <td class="text-center">
-                            {{ amc.end_date|date:"d M Y" }}
-                        </td>
-
-                        <!-- NEXT VISIT (HTML-ONLY SAFE) -->
-                        <td class="text-center">
-                            {% if amc.next_service_date %}
-                                <strong>{{ amc.next_service_date|date:"d M Y" }}</strong>
-                                <div class="text-muted small">Upcoming</div>
-                            {% else %}
-                                <span class="text-muted">—</span>
-                            {% endif %}
-                        </td>
-
-                        <!-- STATUS -->
-                        <td class="text-center">
-                            {% if amc.is_active %}
-                                <span class="badge bg-success badge-status">Active</span>
-                            {% else %}
-                                <span class="badge bg-danger badge-status">Inactive</span>
-                            {% endif %}
-                        </td>
-
-                        <!-- RENEWAL STATUS (FIXED) -->
-                        <td class="text-center">
-                            {% if amc.renewal_status == "PENDING" %}
-                                <span class="badge bg-info badge-status">Pending</span>
-                            {% elif amc.renewal_status == "REQUESTED" %}
-                                <span class="badge bg-warning text-dark badge-status">Requested</span>
-                            {% elif amc.renewal_status == "APPROVED" %}
-                                <span class="badge bg-success badge-status">Approved</span>
-                            {% elif amc.renewal_status == "REJECTED" %}
-                                <span class="badge bg-danger badge-status">Rejected</span>
-                            {% elif amc.renewal_status == "NOT_RENEWED" %}
-                                <span class="badge bg-secondary badge-status">Not Renewed</span>
-                            {% endif %}
-                        </td>
-
-                        <!-- ACTIONS -->
-                        <td class="text-center">
-                            <a href="{% url 'amc:detail' amc.pk %}"
-                               class="btn btn-sm btn-info text-white btn-action">
-                                View
-                            </a>
-
-                            {% if amc.renewal_status == "REQUESTED" %}
-                                <button class="btn btn-sm btn-secondary btn-action" disabled>
-                                    Edit
-                                </button>
-                            {% else %}
-                                <a href="{% url 'amc:edit' amc.pk %}"
-                                   class="btn btn-sm btn-warning text-white btn-action">
-                                    Edit
-                                </a>
-                            {% endif %}
-
-                            <a href="{% url 'amc:delete' amc.pk %}"
-                               class="btn btn-sm btn-danger btn-action">
-                                Delete
-                            </a>
-                        </td>
-
-                    </tr>
-
-                    {% empty %}
-                    <tr>
-                        <td colspan="11" class="text-center text-muted py-4">
-                            No AMC Contracts Found
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            {% if contracts.paginator.num_pages > 1 %}
-            <nav aria-label="AMC pagination">
-                <ul class="pagination justify-content-center mt-4">
-
-                    <!-- Previous -->
-                    {% if contracts.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ contracts.previous_page_number }}">
-                            &laquo;
+                        <a href="{% url 'amc:create' %}" class="btn btn-primary btn-sm">
+                            + Create AMC
                         </a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&laquo;</span>
-                    </li>
-                    {% endif %}
+                    </div>
 
-                    <!-- Page Numbers -->
-                    {% for num in contracts.paginator.page_range %}
-                        {% if num == contracts.number %}
+                    <hr>
+
+                    <table class="table table-bordered table-hover amc-table">
+                        <thead>
+                            <tr>
+                                <th>Contract No</th>
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Branch</th>
+                                <th>AMC Type</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Next Visit</th>
+                                <th>Status</th>
+                                <th>Renewal</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for amc in contracts %}
+                            <tr
+                                class="{% if amc.is_active and amc.end_date and amc.end_date <= today|add:'15' %}table-warning{% endif %}">
+
+                                <td class="text-center fw-semibold">
+                                    {{ amc.contract_number }}
+                                </td>
+
+                                <td>{{ amc.customer }}</td>
+
+                                <td>
+                                    {% if amc.service %}
+                                    {{ amc.service.service_subject }}
+                                    {% else %}
+                                    <span class="text-danger">Not Linked</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>{{ amc.branch.branch_name }}</td>
+
+                                <td class="text-center">{{ amc.amc_type }}</td>
+
+                                <td class="text-center">
+                                    {{ amc.start_date|date:"d M Y" }}
+                                </td>
+
+                                <td class="text-center">
+                                    {{ amc.end_date|date:"d M Y" }}
+                                </td>
+
+                                <!-- NEXT VISIT (HTML-ONLY SAFE) -->
+                                <td class="text-center">
+                                    {% if amc.next_service_date %}
+                                    <strong>{{ amc.next_service_date|date:"d M Y" }}</strong>
+                                    <div class="text-muted small">Upcoming</div>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- STATUS -->
+                                <td class="text-center">
+                                    {% if amc.is_active %}
+                                    <span class="badge bg-success badge-status">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger badge-status">Inactive</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- RENEWAL STATUS (FIXED) -->
+                                <td class="text-center">
+                                    {% if amc.renewal_status == "PENDING" %}
+                                    <span class="badge bg-info badge-status">Pending</span>
+                                    {% elif amc.renewal_status == "REQUESTED" %}
+                                    <span class="badge bg-warning text-dark badge-status">Requested</span>
+                                    {% elif amc.renewal_status == "APPROVED" %}
+                                    <span class="badge bg-success badge-status">Approved</span>
+                                    {% elif amc.renewal_status == "REJECTED" %}
+                                    <span class="badge bg-danger badge-status">Rejected</span>
+                                    {% elif amc.renewal_status == "NOT_RENEWED" %}
+                                    <span class="badge bg-secondary badge-status">Not Renewed</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- ACTIONS -->
+                                <td class="text-center">
+                                    <a href="{% url 'amc:detail' amc.pk %}"
+                                        class="btn btn-sm btn-info text-white btn-action">
+                                        View
+                                    </a>
+
+                                    {% if amc.renewal_status == "REQUESTED" %}
+                                    <button class="btn btn-sm btn-secondary btn-action" disabled>
+                                        Edit
+                                    </button>
+                                    {% else %}
+                                    <a href="{% url 'amc:edit' amc.pk %}"
+                                        class="btn btn-sm btn-warning text-white btn-action">
+                                        Edit
+                                    </a>
+                                    {% endif %}
+
+                                    <a href="{% url 'amc:delete' amc.pk %}" class="btn btn-sm btn-danger btn-action">
+                                        Delete
+                                    </a>
+                                </td>
+
+                            </tr>
+
+                            {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center text-muted py-4">
+                                    No AMC Contracts Found
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% if contracts.paginator.num_pages > 1 %}
+                    <nav aria-label="AMC pagination">
+                        <ul class="pagination justify-content-center mt-4">
+
+                            <!-- Previous -->
+                            {% if contracts.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ contracts.previous_page_number }}">
+                                    &laquo;
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                            </li>
+                            {% endif %}
+
+                            <!-- Page Numbers -->
+                            {% for num in contracts.paginator.page_range %}
+                            {% if num == contracts.number %}
                             <li class="page-item active">
                                 <span class="page-link">{{ num }}</span>
                             </li>
-                        {% elif num > contracts.number|add:'-3' and num < contracts.number|add:'3' %}
-                            <li class="page-item">
+                            {% elif num > contracts.number|add:'-3' and num < contracts.number|add:'3' %} <li
+                                class="page-item">
                                 <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
+                                </li>
+                                {% endif %}
+                                {% endfor %}
 
-                    <!-- Next -->
-                    {% if contracts.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ contracts.next_page_number }}">
-                            &raquo;
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&raquo;</span>
-                    </li>
+                                <!-- Next -->
+                                {% if contracts.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ contracts.next_page_number }}">
+                                        &raquo;
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">&raquo;</span>
+                                </li>
+                                {% endif %}
+
+                        </ul>
+
+                        <p class="text-center text-muted small">
+                            Showing page {{ contracts.number }} of {{ contracts.paginator.num_pages }}
+                        </p>
+                    </nav>
                     {% endif %}
 
-                </ul>
 
-                <p class="text-center text-muted small">
-                    Showing page {{ contracts.number }} of {{ contracts.paginator.num_pages }}
-                </p>
-            </nav>
-            {% endif %}
-
-
+                </div>
+            </div>
         </div>
-        
+
     </div>
-</div>
 
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+        <div class="row p-3">
+            <div class="col-md-12 text-center">
+                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+                    © 2025. Powered by
+                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://www.chronoanalytics.in/"
+                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                        Solution</a>
+                    All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                    © 2025. Marketed by
+                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+                    All Rights Reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- sidebar js -->
+    <!-- <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const submenu = this.querySelector('.submenu');
+                    const arrow = this.querySelector('.arrow-down');
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+                    // Hide all other submenus
+                    menuItems.forEach(otherItem => {
+                        if (otherItem !== this) {
+                            const otherSubmenu = otherItem.querySelector('.submenu');
+                            const otherArrow = otherItem.querySelector('.arrow-down');
+                            if (otherSubmenu) {
+                                otherSubmenu.style.display = 'none';
+                                if (otherArrow.classList.contains('arrow-up')) {
+                                    otherArrow.classList.remove('arrow-up');
+                                }
+                            }
+                        }
+                    });
 
-    menuItems.forEach(item => {
-        item.addEventListener('click', function (e) {
-            e.stopPropagation();
-
-            const submenu = this.querySelector('.submenu');
-            const arrow = this.querySelector('.arrow-down');
-
-            // Close other submenus
-            menuItems.forEach(other => {
-                if (other !== this) {
-                    const sm = other.querySelector('.submenu');
-                    const ar = other.querySelector('.arrow-down');
-                    if (sm) sm.style.display = 'none';
-                    if (ar) ar.classList.remove('arrow-up');
-                }
+                    // Toggle current submenu
+                    if (submenu) {
+                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+                        arrow.classList.toggle('arrow-up');
+                    }
+                });
             });
+        });
+        const deleteLinks = document.querySelectorAll('.delete-link');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+        let deleteUrl = '';
 
-            // Toggle current submenu
-            if (submenu) {
-                const isOpen = submenu.style.display === 'block';
-                submenu.style.display = isOpen ? 'none' : 'block';
-                if (arrow) arrow.classList.toggle('arrow-up', !isOpen);
+        deleteLinks.forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                deleteUrl = this.getAttribute('href');
+                confirmationModal.style.display = 'block';
+            });
+        });
+
+        confirmDeleteButton.addEventListener('click', function () {
+            if (deleteUrl) {
+                window.location.href = deleteUrl;
             }
         });
-    });
-});
-</script>
+
+        cancelDeleteButton.addEventListener('click', function () {
+            confirmationModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function (event) {
+            if (event.target == confirmationModal) {
+                confirmationModal.style.display = 'none';
+            }
+        });
+
+        function openModal(service_id) {
+            fetch(`/get_service_details/${service_id}/`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('modal-content').innerHTML = html;
+                    document.getElementById('modal').classList.add('active');
+                });
+
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+    </script> -->
+</body>
+
+</html>
