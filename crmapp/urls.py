@@ -3,6 +3,7 @@ from django.urls import path,include
 from crmapp import views , forms
 from crm import settings
 from django.conf.urls.static import static
+from crmapp.views import landing_page_lead_create_api
 
 
 
@@ -208,6 +209,9 @@ urlpatterns = [
     path('send-invoice-email/<int:id>/', views.send_invoice_email, name='send_invoice_email'),
     path('send-invoice-whatsapp/<int:id>/', views.send_invoice_pdf_on_whatsapp, name='send_invoice_pdf_on_whatsapp'),
     path("technician-work-list/export/", views.export_technician_work_list, name="export_technician_work_list"),
+    # app/urls.py
+    path("api/enquiry/", landing_page_lead_create_api),
+
 ]
 
 
