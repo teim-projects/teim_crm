@@ -389,7 +389,8 @@ class lead_management(models.Model):
         ('BNI', 'BNI'),
         ('Lionsclub', 'Lions Club'),
         ('Employee Reference', 'Employee Reference'),
-        ('Others', 'Others')
+        ('Others', 'Others'),
+        ('Landing Page','Landing Page')
     ], default="NOT SELECTED")
     admin = models.ForeignKey(User, on_delete=models.SET_NULL,blank=True, null=True, related_name='admin_leads')
     salesperson = models.ForeignKey(SalesPerson, on_delete=models.SET_NULL, blank=True, null=True, related_name="sales_leads")

@@ -168,14 +168,6 @@ AUTHENTICATION_BACKENDS = [
 
 
 
-
-
-
-
-
-#        celery practice
-# settings.py
-
 # Celery configuration
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'django-db'

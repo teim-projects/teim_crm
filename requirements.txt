@@ -59,7 +59,7 @@ jiter==0.10.0
 kiwisolver==1.4.8
 kombu==5.5.4
 lxml==5.4.0
-mariadb==1.1.12
+mariadb==1.1.14
 matplotlib==3.10.3
 multidict==6.6.4
 mysqlclient==2.2.7

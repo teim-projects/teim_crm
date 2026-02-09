@@ -2139,7 +2139,87 @@ def lead_management_create(request):
                 'error': 'There was an error submitting the form. Please try again.'
             })
 
+# @csrf_exempt
+# def landing_page_lead_create_api(request):
+#     if request.method != "POST":
+#         return JsonResponse({
+#             "status": False,
+#             "message": "Only POST method allowed"
+#         }, status=405)
 
+#     try:
+#         sourceoflead = "Landing Page"
+
+#         customername = request.POST.get('customername')
+#         customersegment = request.POST.get('customersegment')
+
+#         enquirydate = date.today()
+
+        
+#         maincategory = request.POST.get('maincategory')
+#         subcategory = request.POST.get('subcategory')
+
+#         primarycontact = request.POST.get('primarycontact')
+#         primarycontact = int(primarycontact) if primarycontact and primarycontact.isdigit() else None
+
+#         secondarycontact = request.POST.get('secondarycontact')
+#         secondarycontact = int(secondarycontact) if secondarycontact and secondarycontact.isdigit() else None
+
+#         or_contact = request.POST.get('or_contact')
+#         or_contact = int(or_contact) if or_contact and or_contact.isdigit() else None
+
+#         or_name = request.POST.get('or_name')
+
+#         customeremail = request.POST.get('customeremail')
+#         customeraddress = request.POST.get('customeraddress')
+#         location = request.POST.get('location')
+#         city = request.POST.get('city', 'Unknown City')
+#         state = request.POST.get('state')
+#         typeoflead = request.POST.get('typeoflead')
+#         customer_type = request.POST.get('customer_type')
+
+#         firstfollowupdate_str = request.POST.get('firstfollowupdate')
+#         firstfollowupdate = datetime.strptime(firstfollowupdate_str, '%Y-%m-%d').date() if firstfollowupdate_str else None
+
+#         branch_id = request.POST.get('branch')
+#         branch = Branch.objects.get(id=int(branch_id)) if branch_id else None
+
+#         lead = lead_management.objects.create(
+#             sourceoflead=sourceoflead,
+#             customername=customername,
+#             customersegment=customersegment,
+#             enquirydate=enquirydate,
+           
+#             maincategory=maincategory,
+#             subcategory=subcategory,
+#             primarycontact=primarycontact,
+#             secondarycontact=secondarycontact,
+#             customeremail=customeremail,
+#             customeraddress=customeraddress,
+#             location=location,
+#             state=state,
+#             city=city,
+#             branch=branch,
+#             typeoflead=typeoflead,
+#             firstfollowupdate=firstfollowupdate,
+#             or_contact=or_contact,
+#             or_name=or_name,
+#             customer_type=customer_type,
+#         )
+
+#         return JsonResponse({
+#             "status": True,
+#             "message": "Lead submitted successfully",
+#             "lead_id": lead.id
+#         }, status=201)
+
+#     except Exception as e:
+#         print("Landing Page API Error:", e)
+#         return JsonResponse({
+#             "status": False,
+#             "message": "Something went wrong while submitting lead",
+#             "error": str(e)
+#         }, status=500)
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import lead_management, main_followup
