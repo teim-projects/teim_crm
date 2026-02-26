@@ -588,13 +588,68 @@ class MTNItem(models.Model):
                     f"Insufficient stock at source. Available: {available}."
                 )
     
+    # def save(self, *args, **kwargs):
+    #     # 🔑 Force Decimal conversion (safe)
+    #     if self.transfer_qty is not None:
+    #         self.transfer_qty = Decimal(self.transfer_qty)
+
+    #     super().save(*args, **kwargs)
+
     def save(self, *args, **kwargs):
-        # 🔑 Force Decimal conversion (safe)
-        if self.transfer_qty is not None:
-            self.transfer_qty = Decimal(self.transfer_qty)
-
-        super().save(*args, **kwargs)
-
+        with transaction.atomic():
+        
+            super().save(*args, **kwargs)
+    
+            source_type = self.mtn.source_type
+            source_id = self.mtn.source_id
+            dest_type = self.mtn.destination_type
+            dest_id = self.mtn.destination_id
+    
+            # 🔑 Always force Decimal conversion safely
+            transfer_qty = Decimal(str(self.transfer_qty or 0))
+    
+            # ===============================
+            # DRAFT → Reserve stock
+            # ===============================
+            if self.mtn.status == "DRAFT":
+            
+                stock, _ = CurrentStock.objects.get_or_create(
+                    product=self.product,
+                    batch=self.batch,
+                    location_type=source_type,
+                    location_id=source_id,
+                    defaults={"opening_qty": Decimal("0")}
+                )
+    
+                stock.reserved_qty = Decimal(stock.reserved_qty or 0) + transfer_qty
+                stock.recompute_closing()
+    
+            # ===============================
+            # APPROVED → Move stock
+            # ===============================
+            if self.mtn.status == "APPROVED":
+            
+                source_stock = CurrentStock.objects.get(
+                    product=self.product,
+                    batch=self.batch,
+                    location_type=source_type,
+                    location_id=source_id
+                )
+    
+                source_stock.reserved_qty = Decimal(source_stock.reserved_qty or 0) - transfer_qty
+                source_stock.out_qty = Decimal(source_stock.out_qty or 0) + transfer_qty
+                source_stock.recompute_closing()
+    
+                dest_stock, _ = CurrentStock.objects.get_or_create(
+                    product=self.product,
+                    batch=self.batch,
+                    location_type=dest_type,
+                    location_id=dest_id,
+                    defaults={"opening_qty": Decimal("0")}
+                )
+    
+                dest_stock.in_qty = Decimal(dest_stock.in_qty or 0) + transfer_qty
+                dest_stock.recompute_closing()
     def __str__(self):
         return f"{self.product.product_name} - {self.transfer_qty}"
 
@@ -630,8 +685,15 @@ class CurrentStock(models.Model):
         return (self.closing_qty or Decimal('0')) - (self.reserved_qty or Decimal('0'))
 
     def recompute_closing(self):
-        """Recompute and save closing based on opening/in/out/reserved."""
-        self.closing_qty = (self.opening_qty or Decimal('0')) + (self.in_qty or Decimal('0')) - (self.out_qty or Decimal('0')) - (self.reserved_qty or Decimal('0'))
+        """
+        Closing = Opening + In - Out
+        (Reserved is NOT part of physical stock)
+        """
+        self.closing_qty = (
+            (self.opening_qty or Decimal('0')) +
+            (self.in_qty or Decimal('0')) -
+            (self.out_qty or Decimal('0'))
+        )
         self.save(update_fields=['closing_qty', 'last_updated'])
 
     def __str__(self):

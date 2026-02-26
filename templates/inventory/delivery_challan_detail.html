@@ -6,240 +6,213 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; font-size: 10pt; }
+      .card { box-shadow: none !important; border: 1px solid #ccc !important; }
+      .container { margin: 0; max-width: 100%; padding: 0 15px; }
+    }
+
+    .header-gradient {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      color: white;
+      border-radius: 12px 12px 0 0;
+      padding: 1.75rem 2rem;
+    }
+
+    .dc-title {
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+      margin-bottom: 0.4rem;
+    }
+
+    .dc-number {
+      font-size: 1.2rem;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      font-size: 1.05rem;
+      padding: 0.6rem 1.4rem;
+      font-weight: 600;
+    }
+  </style>
 </head>
 
 <body class="bg-light">
+
 {% include "sidebar.html" %}
 
-<div class="container" style="margin-top:130px; max-width:1100px;">
+<div class="container py-5" style="max-width: 1180px; margin-top: 100px;">
 
   <!-- ================= HEADER ================= -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body d-flex justify-content-between align-items-center">
-      <div>
-        <h4 class="fw-bold mb-1">
-          Delivery Challan
-        </h4>
-        <span class="text-muted">
-          DC No: <strong>{{ dc.dc_no }}</strong>
-        </span>
-      </div>
+  <div class="card shadow border-0 mb-5 overflow-hidden rounded-3">
+    <div class="header-gradient">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
+        
+        <div>
+          <h1 class="dc-title">Delivery Challan</h1>
+          <div class="dc-number">
+            DC No: <strong>{{ dc.dc_no }}</strong>
+          </div>
+        </div>
 
-      <span class="badge px-3 py-2 fs-6
-        {% if dc.status == 'DISPATCHED' %}
-          bg-success
-        {% else %}
-          bg-warning text-dark
-        {% endif %}">
-        {{ dc.status }}
-      </span>
+        <div>
+          <span class="status-badge badge rounded-pill
+            {% if dc.status == 'DISPATCHED' %} bg-success {% else %} bg-warning text-dark {% endif %}">
+            <i class="bi {% if dc.status == 'DISPATCHED' %}bi-check-circle-fill{% else %}bi-clock-history{% endif %} me-2"></i>
+            {{ dc.status }}
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="card-body bg-white border-top no-print py-3">
+      <div class="d-flex flex-wrap gap-2 justify-content-end">
+        <a href="{% url 'dc_list_view' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left-short me-1"></i> Back to List
+        </a>
+        <a href="{% url 'dc_edit' dc.id %}" class="btn btn-primary">
+          <i class="bi bi-pencil-square me-1"></i> Edit Challan
+        </a>
+        <a href="{% url 'mtn_detail_view' dc.mtn.id %}" class="btn btn-outline-primary">
+          <i class="bi bi-arrow-return-left me-1"></i> Back to MTN
+        </a>
+      </div>
     </div>
   </div>
-  <div class="d-flex justify-content-end gap-2 mb-3">
-  <a href="{% url 'dc_list_view' %}" class="btn btn-outline-secondary">
-      ← Back
-    </a>
 
-    <a href="{% url 'dc_edit' dc.id %}" class="btn btn-primary">
-      ✏️ Edit DC
-    </a>
-  </div>
-
-
-  <!-- ================= BASIC DETAILS ================= -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header fw-bold bg-white">
+  <!-- ================= CHALLAN DETAILS ================= -->
+  <div class="card shadow-sm border-0 mb-4 rounded-3">
+    <div class="card-header bg-white fw-bold text-primary border-bottom">
       Challan Details
     </div>
-
     <div class="card-body">
       <div class="row g-4">
-
         <div class="col-md-3">
-          <div class="text-muted small">Delivery Date</div>
-          <div class="fw-semibold">
-            {{ dc.delivery_date|date:"d-m-Y" }}
-          </div>
+          <div class="text-muted small mb-1">Delivery Date</div>
+          <div class="fw-semibold fs-5">{{ dc.delivery_date|date:"d-M-Y" }}</div>
         </div>
-
         <div class="col-md-3">
-          <div class="text-muted small">MTN Reference</div>
-          <div class="fw-semibold">
-            {{ dc.mtn.mtn_no }}
-          </div>
+          <div class="text-muted small mb-1">MTN Reference</div>
+          <div class="fw-semibold fs-5">{{ dc.mtn.mtn_no|default:"—" }}</div>
         </div>
-
         <div class="col-md-3">
-          <div class="text-muted small">Source</div>
-          <div class="fw-semibold">
-            {{ dc.source_type }} – {{ dc.source_name }}
-          </div>
+          <div class="text-muted small mb-1">Source</div>
+          <div class="fw-semibold fs-5">{{ dc.source_type }} – {{ dc.source_name }}</div>
         </div>
-
         <div class="col-md-3">
-          <div class="text-muted small">Destination</div>
-          <div class="fw-semibold">
-            {{ dc.destination_type }} – {{ dc.destination_name }}
+          <div class="text-muted small mb-1">Destination</div>
+          <div class="fw-semibold fs-5">{{ dc.destination_type }} – {{ dc.destination_name }}</div>
+        </div>
+        <div class="col-12 mt-3">
+          <div class="text-muted small mb-1">Remarks</div>
+          <div class="fw-medium border-start border-3 border-primary ps-3 py-1">
+            {{ dc.remarks|linebreaks|default:"No remarks provided." }}
           </div>
         </div>
-
-        <div class="col-md-12">
-          <div class="text-muted small">Remarks</div>
-          <div class="fw-semibold">
-            {{ dc.remarks|default:"-" }}
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
 
-  <!-- ================= SOURCE DETAILS ================= -->
-<div class="card shadow-sm mb-4">
-  <div class="card-header fw-bold bg-white">
-    Source Details
-  </div>
+  <!-- ================= SOURCE & DESTINATION ================= -->
+  <div class="row g-4 mb-4">
+    <!-- Source -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100 border-0 rounded-3">
+        <div class="card-header bg-primary text-white fw-bold">
+          <i class="bi bi-box-arrow-up-right me-2"></i> Source Details
+        </div>
+        <div class="card-body">
+          <dl class="row g-3 mb-0">
+            <dt class="col-sm-4 text-muted">Location</dt>
+            <dd class="col-sm-8 fw-semibold">{{ source.name|default:"—" }}</dd>
 
-  <div class="card-body">
-    <div class="row g-3">
+            <dt class="col-sm-4 text-muted">GSTIN</dt>
+            <dd class="col-sm-8">{{ source.gstin|default:"—" }}</dd>
 
-      <div class="col-md-6">
-        <div class="text-muted small">Location</div>
-        <div class="fw-semibold">
-          {{ source.name }}
+            <dt class="col-sm-4 text-muted">Manager</dt>
+            <dd class="col-sm-8">{{ source.manager_name|default:"—" }}</dd>
+
+            <dt class="col-sm-4 text-muted">Phone</dt>
+            <dd class="col-sm-8">{{ source.manager_phone|default:"—" }}</dd>
+
+            <dt class="col-sm-4 text-muted">Email</dt>
+            <dd class="col-sm-8">{{ source.manager_email|default:"—" }}</dd>
+
+            <dt class="col-sm-4 text-muted">Address</dt>
+            <dd class="col-sm-8">{{ source.address|linebreaks|default:"—" }}</dd>
+          </dl>
         </div>
       </div>
-
-      <div class="col-md-6">
-        <div class="text-muted small">GSTIN</div>
-        <div class="fw-semibold">
-          {{ source.gstin|default:"-" }}
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="text-muted small">Branch Manager</div>
-        <div class="fw-semibold">
-          {{ source.manager_name|default:"-" }}
-        </div>
-      </div>
-
-      <div class="col-md-3">
-        <div class="text-muted small">Phone</div>
-        <div class="fw-semibold">
-          {{ source.manager_phone|default:"-" }}
-        </div>
-      </div>
-
-      <div class="col-md-3">
-        <div class="text-muted small">Email</div>
-        <div class="fw-semibold">
-          {{ source.manager_email|default:"-" }}
-        </div>
-      </div>
-
-      <div class="col-md-12">
-        <div class="text-muted small">Address</div>
-        <div class="fw-semibold">
-          {{ source.address|default:"-" }}
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- ================= DESTINATION DETAILS ================= -->
-<div class="card shadow-sm mb-4">
-  <div class="card-header fw-bold bg-white">
-    Destination Details
-  </div>
-
-  <div class="card-body">
-    <div class="row g-3">
-
-      <div class="col-md-6">
-        <div class="text-muted small">Location</div>
-        <div class="fw-semibold">
-          {{ destination.name }}
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="text-muted small">GSTIN</div>
-        <div class="fw-semibold">
-          {{ destination.gstin|default:"-" }}
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="text-muted small">Contact Person</div>
-        <div class="fw-semibold">
-          {{ destination.manager_name|default:destination.contact_person|default:"-" }}
-        </div>
-      </div>
-
-      <div class="col-md-3">
-        <div class="text-muted small">Phone</div>
-        <div class="fw-semibold">
-          {{ destination.manager_phone|default:destination.phone|default:"-" }}
-        </div>
-      </div>
-
-      <div class="col-md-3">
-        <div class="text-muted small">Email</div>
-        <div class="fw-semibold">
-          {{ destination.manager_email|default:"-" }}
-        </div>
-      </div>
-
-      <div class="col-md-12">
-        <div class="text-muted small">Address</div>
-        <div class="fw-semibold">
-          {{ destination.address|default:"-" }}
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-  <!-- ================= ITEMS ================= -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header fw-bold bg-white">
-      Dispatched Items
     </div>
 
-    <div class="card-body p-0">
-      <table class="table table-bordered mb-0 align-middle">
-        <thead class="table-light">
+    <!-- Destination -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100 border-0 rounded-3">
+        <div class="card-header bg-success text-white fw-bold">
+          <i class="bi bi-box-arrow-in-down-right me-2"></i> Destination Details
+        </div>
+        <div class="card-body">
+          <dl class="row g-3 mb-0">
+            <dt class="col-sm-4 text-muted">Location</dt>
+            <dd class="col-sm-8 fw-semibold">{{ destination.name|default:"—" }}</dd>
+
+            <dt class="col-sm-4 text-muted">GSTIN</dt>
+            <dd class="col-sm-8">{{ destination.gstin|default:"—" }}</dd>
+
+            <dt class="col-sm-4 text-muted">Contact Person</dt>
+            <dd class="col-sm-8">{{ destination.manager_name|default:destination.contact_person|default:"—" }}</dd>
+
+            <dt class="col-sm-4 text-muted">Phone</dt>
+            <dd class="col-sm-8">{{ destination.manager_phone|default:destination.phone|default:"—" }}</dd>
+
+            <dt class="col-sm-4 text-muted">Email</dt>
+            <dd class="col-sm-8">{{ destination.manager_email|default:"—" }}</dd>
+
+            <dt class="col-sm-4 text-muted">Address</dt>
+            <dd class="col-sm-8">{{ destination.address|linebreaks|default:"—" }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ITEMS TABLE ================= -->
+  <div class="card shadow-sm border-0 mb-4 rounded-3">
+    <div class="card-header bg-info text-white fw-bold">
+      <i class="bi bi-truck me-2"></i> Dispatched Items
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover table-striped align-middle mb-0">
+        <thead class="table-dark">
           <tr>
-            <th style="width:40%">Product</th>
-            <th style="width:25%">Batch</th>
-            <th style="width:15%" class="text-end">Quantity</th>
-            <th style="width:20%">Remarks</th>
+            <th scope="col" class="ps-4">Product</th>
+            <th scope="col">Batch No</th>
+            <th scope="col" class="text-end">Quantity</th>
+            <th scope="col">Remarks</th>
           </tr>
         </thead>
-
         <tbody>
           {% for item in items %}
           <tr>
-            <td>{{ item.product.product_name }}</td>
-            <td>{{ item.batch.batch.batch_no }}</td>
-            <td class="text-end fw-semibold">
-              {{ item.quantity }}
-            </td>
-            <td>{{ item.remarks|default:"-" }}</td>
+            <td class="ps-4 fw-medium">{{ item.product.product_name }}</td>
+            <td>{{ item.batch.batch.batch_no|default:"—" }}</td>
+            <td class="text-end fw-bold">{{ item.quantity }}</td>
+            <td>{{ item.remarks|default:"—" }}</td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4" class="text-center text-muted py-4">
-              No items found
+            <td colspan="4" class="text-center py-5 text-muted fst-italic">
+              No items in this delivery challan
             </td>
           </tr>
           {% endfor %}
@@ -248,57 +221,31 @@
     </div>
   </div>
 
-    <!-- ================= Delivery Partner Details ================= -->
-    <div class="card shadow-sm mb-4">
-      <div class="card-header fw-bold">
-        Delivery Partner Details
-      </div>
-
-      <div class="card-body">
-        <div class="row g-3">
-
-          <div class="col-md-4">
-            <div class="text-muted small">Delivery Partner</div>
-            <div class="fw-semibold">
-              {{ dc.delivery_partner_name|default:"-" }}
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="text-muted small">Delivery Person</div>
-            <div class="fw-semibold">
-              {{ dc.delivery_person_name|default:"-" }}
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="text-muted small">Delivery Person Phone</div>
-            <div class="fw-semibold">
-              {{ dc.delivery_person_phone|default:"-" }}
-            </div>
-          </div>
-
+  <!-- ================= DELIVERY PARTNER ================= -->
+  <div class="card shadow-sm border-0 mb-5 rounded-3">
+    <div class="card-header bg-secondary text-white fw-bold">
+      <i class="bi bi-person-badge-fill me-2"></i> Delivery Partner Details
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="text-muted small">Delivery Partner</div>
+          <div class="fw-semibold fs-5">{{ dc.delivery_partner_name|default:"—" }}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="text-muted small">Delivery Person</div>
+          <div class="fw-semibold fs-5">{{ dc.delivery_person_name|default:"—" }}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="text-muted small">Contact Number</div>
+          <div class="fw-semibold fs-5">{{ dc.delivery_person_phone|default:"—" }}</div>
         </div>
       </div>
     </div>
-
-
-  <!-- ================= ACTIONS ================= -->
-  <div class="d-flex justify-content-end gap-2 mb-5">
-    <a href="{% url 'mtn_detail_view' dc.mtn.id %}"
-       class="btn btn-outline-secondary">
-      ← Back to MTN
-    </a>
-
-    <!-- future buttons -->
-    <!--
-    <button class="btn btn-primary">Print DC</button>
-    <button class="btn btn-success">Download PDF</button>
-    -->
   </div>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
