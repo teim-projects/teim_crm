@@ -310,8 +310,23 @@ def add_site(request):
     if request.method == "POST":
         form = SiteForm(request.POST)
         if form.is_valid():
-            form.save()
+            site = form.save()                              # ← added: store the saved object
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'site': {
+                        'id': site.id,
+                        'name': site.name,
+                    }
+                })
             return redirect("site_list")
+        else:
+            # Optional: handle AJAX form errors (you can keep or remove this block later)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors.as_json()
+                }, status=400)
     else:
         form = SiteForm()
 
@@ -846,23 +861,32 @@ def _parse_int_or_none(val):
         return int(val)
     except (TypeError, ValueError):
         return None
-
+    
+from django.db.models.functions import Lower   # ✅ ADD THIS IMPORT
 @login_required
 @role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def products_stock_list_view(request):
+
+    # -----------------------------
+    # GET FILTER VALUES
+    # -----------------------------
     search = request.GET.get('q') or None
     location_type = request.GET.get('location_type') or None
     location_id = _parse_int_or_none(request.GET.get('location_id'))
-
     batch_no = request.GET.get('batch_no') or None
     expiry_from = request.GET.get('expiry_from') or None
     expiry_to = request.GET.get('expiry_to') or None
     page = request.GET.get('page', 1)
 
+    # NEW: Get sort parameter
+    sort = request.GET.get('sort')  # 'asc', 'desc' or None/empty
+
     user = request.user
     role = getattr(user.userprofile, "role", None)
 
-    # 🔐 ROLE BASED LOCATION FILTER
+    # -----------------------------
+    # ROLE BASED LOCATION FILTER
+    # -----------------------------
     if role == "branch_manager":
         branch_id = BranchManager.objects.get(
             mobile_no=user.username
@@ -871,12 +895,20 @@ def products_stock_list_view(request):
         location_type = "BRANCH"
         location_id = branch_id
 
-    # destination dropdown
+    elif not location_type and role in ["admin", "HO_operation", "HO_manager"]:
+        location_type = "HO"
+
+    # -----------------------------
+    # DESTINATION DROPDOWN DATA
+    # -----------------------------
     if location_type:
         destination_qs = get_destination_queryset(location_type)
     else:
         destination_qs = []
 
+    # -----------------------------
+    # MAIN STOCK QUERY (ONLY SORT UPDATED)
+    # -----------------------------
     qs = annotated_product_stock_qs(
         Product,
         location_type=location_type,
@@ -885,17 +917,42 @@ def products_stock_list_view(request):
         batch_no=batch_no,
         expiry_from=expiry_from,
         expiry_to=expiry_to
-    ).order_by('product_name')
+    )
 
+    # ────────────── FIX: Annotate closing_qty so we can sort on it ──────────────
+    from django.db.models import F, ExpressionWrapper, DecimalField
+
+    qs = qs.annotate(
+        closing_qty=ExpressionWrapper(
+            F('in_qty') - F('out_qty') - F('reserved_qty'),
+            output_field=DecimalField(max_digits=15, decimal_places=3, null=True)
+        )
+    )
+    # ───────────────────────────────────────────────────────────────────────────────
+
+    # Dynamic sorting based on ?sort= parameter
+    if sort == 'desc':
+        qs = qs.order_by('-product_name')          # Z → A
+    elif sort == 'asc':
+        qs = qs.order_by(Lower('product_name'))    # A → Z
+    elif sort == 'avail_desc':
+        qs = qs.order_by('-closing_qty')           # Highest available first
+    elif sort == 'avail_asc':
+        qs = qs.order_by('closing_qty')            # Lowest available first
+    else:
+        qs = qs.order_by(Lower('product_name'))    # default A → Z (same as before)
+
+    # -----------------------------
+    # PAGINATION
+    # -----------------------------
     paginator = Paginator(qs, 10)
-    try:
-        products_page = paginator.page(page)
-    except PageNotAnInteger:
-        products_page = paginator.page(1)
-    except EmptyPage:
-        products_page = paginator.page(paginator.num_pages)
+    products_page = paginator.get_page(page)
 
+    # -----------------------------
+    # PREPARE TABLE DATA
+    # -----------------------------
     rows = []
+
     for p in products_page:
         if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
             in_qty = getattr(p, 'batch_in_qty', Decimal('0'))
@@ -917,6 +974,9 @@ def products_stock_list_view(request):
             "closing_qty": str(closing),
         })
 
+    # -----------------------------
+    # PRESERVE FILTERS FOR PAGINATION
+    # -----------------------------
     params = request.GET.copy()
     params.pop('page', None)
 
@@ -932,12 +992,12 @@ def products_stock_list_view(request):
             "batch_no": batch_no,
             "expiry_from": expiry_from,
             "expiry_to": expiry_to,
+            "sort": sort,                     # pass current sort to template
         },
         "destination_qs": destination_qs,
     }
 
     return render(request, "inventory/products_stock_list.html", context)
-
 
 # stock export to excel
 from openpyxl import Workbook
