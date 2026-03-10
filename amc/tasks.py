@@ -186,3 +186,161 @@ def create_service_visit_on_service_day():
 
         schedule.is_completed = True
         schedule.save(update_fields=["is_completed"])
+
+
+from celery import shared_task
+from django.utils import timezone
+from datetime import timedelta
+from .models import AMCServiceVisit
+
+
+from celery import shared_task
+from django.utils import timezone
+from datetime import timedelta
+from django.core.mail import send_mail
+from django.conf import settings
+
+from .models import AMCServiceVisit
+
+
+@shared_task
+def auto_allocate_amc_work():
+
+    today = timezone.now().date()
+    target_date = today + timedelta(days=2)
+
+    print("AUTO AMC ALLOCATION TASK RUNNING")
+    print("Today:", today)
+    print("Target Date:", target_date)
+
+    visits = AMCServiceVisit.objects.filter(
+        service_date=target_date,
+        allocation_status="PENDING",
+        auto_allocation_done=False
+    )
+
+    print("Visits found:", visits.count())
+
+    for visit in visits:
+
+        if not visit.technicians.exists():
+            print("No technician assigned")
+            continue
+
+        visit.allocation_status = "ALLOCATED"
+        visit.auto_allocation_done = True
+        visit.save()
+
+        print(f"Visit {visit.id} allocated")
+
+        amc = visit.amc
+        customer = amc.customer
+        technicians = visit.technicians.all()
+        sales_email = amc.service.sales_person_email
+        sales_name = amc.service.sales_person_name
+        gps = amc.default_gps_location
+
+        tech_names = []
+        tech_contacts = []
+
+        for t in technicians:
+            tech_names.append(f"{t.first_name} {t.last_name}")
+            tech_contacts.append(t.contact_number)
+
+        tech_names_str = ", ".join(tech_names)
+        tech_contacts_str = ", ".join(tech_contacts)
+
+        print("Customer email:", customer.primaryemail)
+
+        # CUSTOMER EMAIL
+        if customer.primaryemail:
+
+            send_mail(
+                "AMC Service Technician Assigned",
+                f"""
+Dear {customer.fullname},
+
+Your AMC service has been scheduled.
+
+AMC Contract: {amc.contract_number}
+Service Date: {visit.service_date}
+
+Technician Assigned:
+{tech_names_str}
+
+Technician Contact:
+{tech_contacts_str}
+
+Service Address:
+{customer.shifttopartyaddress}
+
+Location:
+{gps}
+""",
+                settings.EMAIL_HOST_USER,
+                [customer.primaryemail],
+                fail_silently=False
+            )
+
+            print("Customer email sent")
+
+        # TECHNICIAN EMAIL
+        for tech in technicians:
+
+            print("Technician email:", tech.email)
+
+            if tech.email:
+                send_mail(
+                    "New AMC Work Assigned",
+                    f"""
+Hello {tech.first_name},
+
+You have been assigned a new AMC service.
+
+Customer: {customer.fullname}
+Customer Contact: {customer.primarycontact}
+
+Service Date: {visit.service_date}
+
+Address:
+{customer.shifttopartyaddress}
+
+GPS Location:
+{gps}
+""",
+                    settings.EMAIL_HOST_USER,
+                    [tech.email],
+                    fail_silently=False
+                )
+
+                print("Technician email sent")
+
+        # SALES PERSON EMAIL
+        # SALES PERSON EMAIL
+        if sales_email:
+        
+            send_mail(
+                "AMC Work Allocated",
+                f"""
+        Hello {sales_name},
+        
+        AMC service has been allocated.
+        
+        Customer: {customer.fullname}
+        Service Date: {visit.service_date}
+        AMC Contract: {amc.contract_number}
+        
+        Technicians:
+        {tech_names_str}
+        
+        Location:
+        {gps}
+        """,
+                settings.EMAIL_HOST_USER,
+                [sales_email],
+                fail_silently=False
+            )
+        
+            print("Sales email sent")
+
+    return "AMC allocation + notifications completed"

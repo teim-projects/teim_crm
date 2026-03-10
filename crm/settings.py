@@ -51,7 +51,7 @@ INSTALLED_APPS = [
 	'chat_app',
     'dashboard',
     'new_inventory',
-    'corsheaders',
+   
 ]
 
 MIDDLEWARE = [
@@ -287,6 +287,12 @@ CELERY_BEAT_SCHEDULE.update({
     "amc-expiry-check-daily": {
         "task": "amc.tasks.check_expiring_amcs",
         "schedule": crontab(hour=9, minute=10),
+    },
+
+
+    "amc-auto-allocate-work-daily": {
+        "task": "amc.tasks.auto_allocate_amc_work",
+        "schedule": crontab(minute="*/1"),
     },
 })
 
