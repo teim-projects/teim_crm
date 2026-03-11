@@ -2927,6 +2927,14 @@ def display_allocation(request):
     if sort_order == 'desc':
         order_field = f'-{order_field}'
 
+
+    # After (recommended fix)
+    sort_field_map = {
+    'customerid': 'customer__customerid',
+    'fullname':   'customer__fullname',     # ← add this line
+        }
+
+   
     # ✅ Apply sorting
     unallocated = unallocated.order_by(order_field)
     pending = pending.order_by(order_field)
@@ -6612,6 +6620,7 @@ def payment_records_details(request , pk):
     }
     return render(request, "payment_records_details.html", context)
 
+
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame, Paragraph, Spacer, Table, TableStyle, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -6624,10 +6633,35 @@ import io
 from .models import quotation_management, MessageTemplates
 from .custom_filters import price_in_words  
 from reportlab.lib.colors import HexColor   
-from reportlab.lib.enums import TA_RIGHT
-from reportlab.platypus import Paragraph
-from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_RIGHT, TA_CENTER
+
+
+def indian_currency(number):
+    """
+    Format number in Indian style: 1,23,456.00
+    Safe against invalid input (returns 0.00)
+    """
+    try:
+        number = float(number)
+    except (ValueError, TypeError):
+        number = 0.0
+        
+    s = f"{number:.2f}"
+    integer, decimal = s.split(".")
+    
+    if len(integer) > 3:
+        last3 = integer[-3:]
+        rest = integer[:-3]
+        parts = []
+        while len(rest) > 2:
+            parts.insert(0, rest[-2:])
+            rest = rest[:-2]
+        if rest:
+            parts.insert(0, rest)
+        integer = ",".join(parts) + "," + last3
+            
+    return f"{integer}.{decimal}"
+
 
 def draw_footer_and_logo(canvas, doc, logo_path, footer_path, branch):
     # --- HEADER ---
@@ -6718,6 +6752,7 @@ def draw_footer_and_logo(canvas, doc, logo_path, footer_path, branch):
     except Exception as e:
         print("Footer load failed:", e)
 
+
 def reportlab_quotation_pdf(request, id):
     quotation = quotation_management.objects.get(id=id)
     branch = quotation.branch
@@ -6733,7 +6768,7 @@ def reportlab_quotation_pdf(request, id):
     frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
 
     def _header_footer(canvas, doc_obj):
-        draw_footer_and_logo(canvas, doc_obj, logo_path, footer_path,branch)
+        draw_footer_and_logo(canvas, doc_obj, logo_path, footer_path, branch)
 
     doc.addPageTemplates([PageTemplate(id='quotation_template', frames=frame, onPage=_header_footer)])
 
@@ -6755,8 +6790,6 @@ def reportlab_quotation_pdf(request, id):
         leading=14,       # extra line gap
     )
 
-
-    
     customer_details = [
         Paragraph(f"<b>Name :</b> {quotation.customer.fullname}", left_style),
         Paragraph(f"<b>Phone :</b> {quotation.customer.primarycontact}", left_style),
@@ -6797,9 +6830,6 @@ def reportlab_quotation_pdf(request, id):
         parent=full_width,
         fontSize=10,
         leading=14,        # extra line gap
-        # firstLineIndent=0, # label starts at margin
-        # leftIndent=65,     # adjust so wrapped lines start after label
-        # spaceAfter=10
     )
     elements.append(Paragraph(f"<b>Subject:</b> {quotation.subject}", full_width))
     elements.append(Spacer(1, 8))
@@ -6809,30 +6839,6 @@ def reportlab_quotation_pdf(request, id):
     elements.append(Spacer(1, 10))
 
     # --- Product Table ---
-    # 
-    # product_data = [["Sr. No.", "Product / Service", "HSN", "Rate (Rs)", "Qty", "Total (Rs)"]]
-    # for idx, item in enumerate(quotation.product_details_json, start=1):
-    #     try:
-    #         price = float(item['price'])
-    #         hsn = item.get['hsn_code','']
-    #         quantity = float(item['quantity'])
-    #         total = price * quantity
-    #     except (ValueError, KeyError, TypeError):
-    #         price = quantity = total = 0.0
-
-    #     description = item.get('description', '').replace('\n', '<br/>')
-
-    #     product_data.append([
-    #         str(idx),
-    #          Paragraph(
-    #             f"<b>{item['name']}</b><br/><font size='8'><i>{description}</i></font>",
-    #             small
-    #         ),
-    #         hsn,
-    #         Paragraph(f"{price:,.2f}",ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
-    #         Paragraph(f"{quantity:.2f}<br/>{item['unit']}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
-    #         f"{total:,.2f}"
-    #     ])
     product_data = [["Sr. No.", "Product / Service", "HSN", "Rate (Rs)", "Qty", "Total (Rs)"]]
     
     for idx, item in enumerate(quotation.product_details_json, start=1):
@@ -6843,11 +6849,11 @@ def reportlab_quotation_pdf(request, id):
         total = 0.0
 
         hsn_style = ParagraphStyle(
-        name="hsn_style",
-        parent=small,
-        alignment=TA_CENTER,
-        wordWrap="CJK"  # keeps text in one line
-         )
+            name="hsn_style",
+            parent=small,
+            alignment=TA_CENTER,
+            wordWrap="CJK"  # keeps text in one line
+        )
 
         hsn_text = Paragraph(hsn, hsn_style)
         try:
@@ -6865,16 +6871,13 @@ def reportlab_quotation_pdf(request, id):
                 f"<b>{item.get('name', '')}</b><br/><font size='8'><i>{description}</i></font>",
                 small
             ),
-            hsn_text,  # blank if missing
-            Paragraph(f"{price:,.2f}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+            hsn_text,
+            Paragraph(indian_currency(price), ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             Paragraph(f"{quantity:.2f}<br/>{item.get('unit', '')}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
-            f"{total:,.2f}"
+            indian_currency(total)
         ])
 
-
-    # Add empty rows if needed to maintain uniform height
-   
-    col_widths = [13 * mm, 70 * mm,20 * mm, 21 * mm, 21 * mm, 25 * mm]
+    col_widths = [13 * mm, 70 * mm, 20 * mm, 21 * mm, 21 * mm, 25 * mm]
     total_width = sum(col_widths)
 
     product_table = Table(product_data, colWidths=col_widths)
@@ -6892,52 +6895,46 @@ def reportlab_quotation_pdf(request, id):
      # Data rows alignment
      ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # Sr. No.
      ('ALIGN', (1, 1), (1, -1), 'LEFT'),    # Product / Service (all rows)
-     ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),  # Rate, Qty, Total
+     ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),  # Rate, Qty, Total   ← changed from 1 to 2
 
      ('FONTSIZE', (0, 0), (-1, -1), 9),
     ]))
 
     elements.append(product_table)
-    # elements.append(Spacer(1, 8))
 
     hr = Table([['']], colWidths=[total_width], rowHeights=16)
     hr.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#D9D9D9')),
-        # ('HEIGHT', (0, 0), (-1, -1), 2),  # 4 points height (adjust if needed)
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
         ('RIGHTPADDING', (0, 0), (-1, -1), 0),
         ('TOPPADDING', (0, 0), (-1, -1), 0),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
-
     ]))
     elements.append(hr)
 
-
-   
-     # -- Totals data (2 columns only) --
+    # -- Totals data (2 columns only) --
     totals_data = []
     
     totals_data.append([Paragraph(f"<b>Total :</b>", right_style),
-                        Paragraph(f"<b>{quotation.total_price:,.2f}</b>", right_style)])
+                        Paragraph(f"<b>{indian_currency(quotation.total_price)}</b>", right_style)])
 
     if quotation.apply_gst:
         if quotation.igst:
-            totals_data.append([Paragraph(f"<b>IGST :</b>",right_style),
-                                Paragraph(f"<b>{quotation.igst:,.2f}</b>", right_style)])
+            totals_data.append([Paragraph(f"<b>IGST :</b>", right_style),
+                                Paragraph(f"<b>{indian_currency(quotation.igst)}</b>", right_style)])
         else:
-
             totals_data.append([Paragraph(f"<b>CGST :</b>", right_style), 
-                                Paragraph(f"<b>{quotation.cgst:,.2f}</b>", right_style)])
-            totals_data.append([Paragraph(f"<b>SGST :</b>",right_style),
-                                Paragraph(f"<b>{quotation.sgst:,.2f}</b>",right_style)])
-            totals_data.append([Paragraph(f"<b>Total Tax :</b>",right_style), 
-                                Paragraph(f"<b>{quotation.gst_total:,.2f}</b>", right_style)])
+                                Paragraph(f"<b>{indian_currency(quotation.cgst)}</b>", right_style)])
+            totals_data.append([Paragraph(f"<b>SGST :</b>", right_style),
+                                Paragraph(f"<b>{indian_currency(quotation.sgst)}</b>", right_style)])
+            totals_data.append([Paragraph(f"<b>Total Tax :</b>", right_style), 
+                                Paragraph(f"<b>{indian_currency(quotation.gst_total)}</b>", right_style)])
 
-   
     totals_data.append([
-    Paragraph("<b>Grand Total :</b>", right_style),  
-    Paragraph(f"<b>{quotation.total_price_with_gst:,.2f}</b>", right_style)])
+        Paragraph("<b>Grand Total :</b>", right_style),  
+        Paragraph(f"<b>{indian_currency(quotation.total_price_with_gst)}</b>", right_style)
+    ])
 
     # --- Total in Words as last row, spanning both columns ---
     amount_words = price_in_words(quotation.total_price_with_gst)
@@ -6968,11 +6965,8 @@ def reportlab_quotation_pdf(request, id):
     elements.append(totals_wrapper)
 
     # --- Terms & Footer ---
-   
-    # Title
     elements.append(Spacer(1, 5))
     elements.append(Paragraph("<b>Terms & Conditions</b>", bold))
-
 
     # 1. Ordered terms from M2M field
     ordered_terms = []
@@ -7000,6 +6994,10 @@ def reportlab_quotation_pdf(request, id):
         idx += 1
     
     # Wrap inside table for styling
+
+    if not terms_paragraphs:
+         terms_paragraphs = [[Paragraph("No Terms & Conditions.", small)]]
+
     terms_table = Table(terms_paragraphs, colWidths=[doc.width])
     terms_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -7026,14 +7024,12 @@ def reportlab_quotation_pdf(request, id):
         small
     ))
     elements.append(Spacer(1,8))
-    # elements.append(Spacer(1, 6))
 
     elements.append(Paragraph("<b>Thanking You,</b>", small))
     elements.append(Spacer(1, 2))
     elements.append(Paragraph("<b>Seva Facility Services Pvt Ltd</b>", small))
     elements.append(Spacer(1, 6))
     elements.append(Paragraph(f"<b>SFS Representative:</b> {quotation.contact_by} - {quotation.contact_by_no}", small))
-
 
     doc.build(elements)
     buffer.seek(0)
@@ -7049,6 +7045,7 @@ def reportlab_quotation_pdf(request, id):
         response['Content-Disposition'] = f'inline; filename="Quotation_{quotation.quotation_no}.pdf"'
 
     return response
+
 
 def get_message_templates(request):
     templates = MessageTemplates.objects.all()
