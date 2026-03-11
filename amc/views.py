@@ -620,42 +620,75 @@ def edit_amc_visit(request, visit_id):
 from .forms import AMCDefaultAssignmentForm
 
 
+from .utils import distance_km
+
 @login_required
 def assign_amc_technicians(request, amc_id):
+
     amc = get_object_or_404(AMCContract, id=amc_id)
 
     if request.method == "POST":
+
         form = AMCDefaultAssignmentForm(request.POST, instance=amc)
+
         if form.is_valid():
-            form.save()
 
-            # 🔁 Sync technicians to ALL future visits
-            for visit in amc.visits.filter(crm_service__isnull=True):
-                visit.technicians.set(amc.technicians.all())
+            amc = form.save(commit=False)
+            amc.save()
 
-            messages.success(request, "Default technicians & work details updated.")
+            tech_ids = request.POST.getlist("technicians")
+            selected_techs = TechnicianProfile.objects.filter(id__in=tech_ids)
+
+            amc.technicians.set(selected_techs)
+
+            service_lat = amc.service.latitude
+            service_lon = amc.service.longitude
+
+            for visit in amc.visits.all():
+
+                assigned = False
+
+                # find existing visits with same day + month
+                existing_visits = AMCServiceVisit.objects.filter(
+                    service_date__day=visit.service_date.day,
+                    service_date__month=visit.service_date.month
+                ).exclude(amc=amc)
+
+                for old_visit in existing_visits:
+
+                    old_service = old_visit.amc.service
+
+                    if not old_service.latitude or not old_service.longitude:
+                        continue
+
+                    dist = distance_km(
+                        service_lat,
+                        service_lon,
+                        old_service.latitude,
+                        old_service.longitude
+                    )
+
+                    if dist <= 10 and old_visit.technicians.exists():
+
+                        visit.technicians.set(old_visit.technicians.all())
+                        assigned = True
+                        break
+
+                if not assigned:
+                    visit.technicians.set(selected_techs)
+
+            messages.success(request, "Technicians assigned successfully.")
             return redirect("amc:detail", amc.id)
 
     else:
-        # ✅ AUTO-FILL DATA HERE
-        form = AMCDefaultAssignmentForm(
-            instance=amc,
-            initial={
-                "default_customer_contact": amc.default_customer_contact or amc.customer.primarycontact,
-                "default_customer_address": amc.default_customer_address or amc.customer.shifttopartyaddress,
-                "default_gps_location": amc.default_gps_location or getattr(amc.service, "gps_location", ""),
-                "default_payment_amount": amc.default_payment_amount or amc.per_visit_amount,
-                "default_payment_status": amc.default_payment_status or "Pending",
-                "default_work_description": amc.default_work_description,
-            }
-        )
+
+        form = AMCDefaultAssignmentForm(instance=amc)
 
     return render(request, "amc/assign_technicians.html", {
         "amc": amc,
         "form": form,
         "technicians": TechnicianProfile.objects.all(),
     })
-
 
 
 

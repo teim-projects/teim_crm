@@ -1191,6 +1191,8 @@ def service_management_create(request):
             total_price = float(request.POST.get('total_price', 0) or 0)
             total_with_gst = float(request.POST.get('total_with_gst', 0) or 0)
             total_gst = float(request.POST.get('gst_price', 0) or 0)
+            latitude = request.POST.get('latitude')
+            longitude = request.POST.get('longitude')
 
             apply_gst = request.POST.get('apply_gst') == 'on'
             gst_status = 'GST' if apply_gst else 'NON-GST'
@@ -1216,11 +1218,15 @@ def service_management_create(request):
                 state=request.POST.get('state', 'Null'),
                 city=request.POST.get('city', 'Null'),
                 pincode=request.POST.get('pincode', '000000'),
+                latitude=latitude,
+                longitude=longitude,
                 gps_location=request.POST.get('gps_location'),
+                
                 frequency_count=request.POST.get('frequency_count', 'NOT SELECTED'),
                 payment_terms=request.POST.get('payment_terms', '100% Advance payment OR Whatever mutually Decided'),
                 sales_person_name=request.POST.get('sales_person_name'),
                 sales_person_contact_no=request.POST.get('sales_person_contact_no'),
+                sales_person_email=request.POST.get('sales_person_email'),
                 delivery_time=delivery_time,
                 lead_date=lead_date,
                 service_date=service_date,

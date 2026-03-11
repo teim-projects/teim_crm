@@ -10,12 +10,21 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/customer.css' %}">
     <script src="{% static 'js/script.js' %}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f0fbff;
             color: #333333;
         }
+
+        #map {
+    width: 100%;
+    height: 400px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
 
 
         .main-container {
@@ -535,9 +544,30 @@
                         <label>Address<span class="star">*</span></label>
                         <textarea name="address" id="address" class="form-control" required></textarea>
 
-                        <label>GPS Location <span>( GPS Location is mandatory for service.)</span></label>
-                        <input type="url" name="gps_location" class="form-control">
+                        
 
+<label>Search Address or Paste Google Map Link</label>
+<div class="input-group mb-2">
+    <input type="text" id="location-search" class="form-control"
+           placeholder="Enter address OR paste Google Maps link">
+    <button type="button" class="btn btn-primary" onclick="searchLocation()">Search</button>
+</div>
+
+
+
+<input type="hidden" name="latitude" id="latitude">
+<input type="hidden" name="longitude" id="longitude">
+
+                        <label>Select Location on Map</label>
+
+<div id="map" ></div>
+
+
+
+<label>GPS Location (For Technician Navigation)</label>
+<input type="url" id="gps_location" name="gps_location"
+class="form-control"
+placeholder="Paste Google Maps location link for technician">
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
@@ -574,7 +604,7 @@
                                 <select name="sales_person_name" id="sales_person_select" class="form-control" required>
                                     <option value="">-- Select Sales Person --</option>
                                     {% for person in sales_persons %}
-                                    <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}">
+                                    <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}" data-email="{{ person.email }}">
                                         {{ person.full_name }}</option>
                                     {% endfor %}
                                 </select>
@@ -585,6 +615,14 @@
                                     class="form-control" pattern="\d{10}"
                                     title="Please enter a valid 10-digit phone number" required readonly>
                             </div>
+                            <div class="col-6">
+    <label>Sales Person Email <span class="star">*</span></label>
+    <input type="email"
+           id="sales_person_email"
+           name="sales_person_email"
+           class="form-control"
+           readonly>
+</div>
                         </div>
                         <div class="row">
                             <div class="col-6">
@@ -676,17 +714,28 @@
 
     <!-- sales contact autofill -->
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const select = document.getElementById("sales_person_select");
-            const contactInput = document.getElementById("sales_person_contact_no");
+document.addEventListener("DOMContentLoaded", function () {
 
-            select.addEventListener("change", function () {
-                const selectedOption = this.options[this.selectedIndex];
-                const contact = selectedOption.getAttribute("data-contact") || '';
-                contactInput.value = contact;
-            });
-        });
-    </script>
+    const select = document.getElementById("sales_person_select");
+    const contactInput = document.getElementById("sales_person_contact_no");
+    const emailInput = document.getElementById("sales_person_email");
+
+    if(!select) return;
+
+    select.addEventListener("change", function () {
+
+        const selectedOption = this.options[this.selectedIndex];
+
+        const contact = selectedOption.getAttribute("data-contact") || "";
+        const email = selectedOption.getAttribute("data-email") || "";
+
+        contactInput.value = contact;
+        emailInput.value = email;
+
+    });
+
+});
+</script>
 
 
     <script>
@@ -937,13 +986,22 @@
         let currentStep = 0;
 
         function showStep(index) {
-            steps.forEach((step, i) => {
-                step.classList.toggle("d-none", i !== index);
-            });
-            indicators.forEach((indicator, i) => {
-                indicator.classList.toggle("active", i === index);
-            });
-        }
+
+    steps.forEach((step, i) => {
+        step.classList.toggle("d-none", i !== index);
+    });
+
+    indicators.forEach((indicator, i) => {
+        indicator.classList.toggle("active", i === index);
+    });
+
+    // FIX LEAFLET MAP SIZE
+    if(index === 1){   // step where map is
+        setTimeout(function(){
+            map.invalidateSize();
+        }, 200);
+    }
+}
 
         nextBtns.forEach(btn => {
             btn.addEventListener("click", () => {
@@ -965,6 +1023,121 @@
 
         // Init on load
         showStep(currentStep);
+
+
+
+
+        // leaflet map
+
+        var map = L.map('map').setView([20.5937, 78.9629], 5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+var marker;
+
+map.on('click', function(e) {
+
+    var lat = e.latlng.lat;
+    var lng = e.latlng.lng;
+
+    if(marker){
+        map.removeLayer(marker);
+    }
+
+    marker = L.marker([lat, lng]).addTo(map);
+
+    // ONLY store coordinates
+    document.getElementById("latitude").value = lat;
+    document.getElementById("longitude").value = lng;
+
+});
+
+
+
+function extractLatLngFromURL(url){
+
+    let patterns = [
+        /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+        /q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+        /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/
+    ];
+
+    for(let regex of patterns){
+        let match = url.match(regex);
+        if(match){
+            return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
+        }
+    }
+
+    return null;
+}
+
+
+async function searchLocation(){
+
+    let query = document.getElementById("location-search").value.trim();
+
+    if(!query){
+        alert("Enter location");
+        return;
+    }
+
+    // Check if coordinates already exist in link
+    let coords = extractLatLngFromURL(query);
+
+    if(coords){
+        placeMarker(coords.lat, coords.lng);
+        return;
+    }
+
+    try{
+
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+
+        const response = await fetch(url,{
+            headers:{
+                "Accept": "application/json"
+            }
+        });
+
+        const data = await response.json();
+
+        if(!data || data.length === 0){
+            alert("Location not found");
+            return;
+        }
+
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+
+        placeMarker(lat, lon);
+
+    }catch(error){
+        console.error(error);
+        alert("Error fetching location");
+    }
+}
+
+function placeMarker(lat, lon){
+
+    map.setView([lat, lon], 15);
+
+    if(marker){
+        map.removeLayer(marker);
+    }
+
+    marker = L.marker([lat, lon]).addTo(map);
+
+    document.getElementById("latitude").value = lat;
+    document.getElementById("longitude").value = lon;
+
+}
+    
     </script>
 
 </body>
