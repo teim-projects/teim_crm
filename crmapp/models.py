@@ -176,6 +176,10 @@ class Product(models.Model):
         default="NULL"
     )
 
+      # ✅ ADD THIS BLOCK
+    class Meta:
+        ordering = ["product_name"]   # A → Z sorting
+
     def __str__(self):
         return self.product_name
 
