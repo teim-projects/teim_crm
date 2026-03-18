@@ -13,26 +13,18 @@
     <title>TEIM CRM</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script> -->
-
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"> -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script> -->
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="icon" href="{% static 'images/crono.png' %}" type="image/png">
 
-    <!-- <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"> -->
-    <!-- <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script> -->
-    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"> -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Cardo:ital@0;1&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Outfit:wght@100..900&display=swap"
         rel="stylesheet">
 
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
     <style>
         /* Body Styling */
         body {
@@ -44,7 +36,6 @@
         }
 
         /* Title Styling */
-
         h1,
         .hh {
             font-family: 'Playfair Display', serif;
@@ -56,9 +47,7 @@
             border-bottom: 3px solid rgb(80, 16, 177);
         }
 
-
         /* Content Layout */
-
         .table-wrapper {
             background-color: white;
             border: 1px solid black;
@@ -75,7 +64,6 @@
             margin: auto;
             max-width: 100%;
             padding: 0 20px;
-
         }
 
         /* Table Styling */
@@ -92,7 +80,6 @@
             text-align: left;
             border: 1px solid #7c7c7c;
             white-space: nowrap;
-            /* Prevent wrapping */
         }
 
         th {
@@ -133,16 +120,6 @@
             background-color: #343434;
         }
 
-        /* Search Bar Styling */
-        .navbar {
-            padding: 10px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-
-
         .pagination {
             margin-top: 20px;
             display: flex;
@@ -176,11 +153,6 @@
             color: white;
         }
 
-
-        /* .form-inline .form-control {
-            border: 1px solid #000000;
-            color: #000000;
-        } */
         .form-inline .form-control {
             border: 1px solid #075efe;
             color: #000000;
@@ -188,19 +160,8 @@
             background-color: #ddd;
         }
 
-        /* .form-inline .btn-outline-success {
-            color: #000000;
-            border: 1px solid #000000;
-        }
-        
-
-        .form-inline .btn-outline-success:hover {
-            background-color: #707070;
-            color: #ffffff;
-        } */
         .form-inline .btn-outline-success {
             color: #000000;
-
         }
 
         .form-inline .btn-outline-success:hover {
@@ -210,16 +171,12 @@
 
         .edit-delete-buttons {
             white-space: nowrap;
-            /* Prevent wrapping for buttons */
             text-align: center;
-            /* Center align buttons */
         }
 
         .edit-delete-buttons a {
             display: inline-block;
-            /* Ensure inline block to prevent overflow */
             width: auto;
-            /* Set width to auto */
             margin-right: 5px;
         }
 
@@ -235,7 +192,6 @@
             color: #fff;
             border-radius: 0.25rem;
             text-decoration: none;
-            /* Remove underline */
         }
 
         .btn-like.delete-link {
@@ -247,45 +203,37 @@
             background-color: #218838;
         }
 
-        /* CHANGE THIS */
-.custom-modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.6);
-}
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+        }
 
-.custom-modal-content {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-}
-
+        .custom-modal-content {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
 
         .modal-buttons {
             display: flex;
-            /* Use flexbox for buttons */
             justify-content: center;
-            /* Center-align buttons */
             gap: 15px;
-            /* Spacing between buttons */
         }
 
         .modal-buttons button {
             padding: 12px 25px;
-            /* Larger buttons for better UI */
             font-size: 1rem;
-            /* Readable font size */
             border-radius: 5px;
-            /* Rounded button edges */
         }
 
         .view-btn {
@@ -311,7 +259,6 @@
             transition: 0.3s;
             overflow-y: auto;
             padding: 20px;
-
         }
 
         #modal.active {
@@ -332,13 +279,10 @@
             display: inline-block;
         }
 
-
-        /* Style for the dropdown content */
         .dropdown-content {
             display: none;
             position: absolute;
             background-color: #f9f9f9;
-            /* box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); */
             min-width: 100px;
             z-index: 1;
             border-radius: 30px;
@@ -351,49 +295,36 @@
             display: block;
         }
 
-
-        /* Show dropdown on hover */
         .dropdown:hover .dropdown-content {
             display: block;
         }
 
-        /* Smooth fade-in animation */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        /* On small screens, set margin to 0 when sidebar is hidden */
         @media (max-width: 768px) {
             .table-wrapper {
                 margin-left: 0;
                 margin-top: 10px;
                 max-width: 100%;
                 padding: 20px;
-                /* Add some padding for better appearance */
             }
 
             .open-sidebar .table-wrapper {
                 margin-left: 300px;
-                /* Adjust content when sidebar is open */
             }
 
             #modal {
                 width: 80%;
             }
-
         }
 
         a.linarbtn:hover {
             box-shadow: 0px 0px 10px #6a11cb;
         }
     </style>
-
 </head>
 
 <body>
@@ -407,64 +338,61 @@
                         <h1> Quotation Information</h1>
 
                         <div class="container-fluid">
-                            <form method="get" class="row align-items-center mb-3 g-2">
+                            <!-- Added id so date modal can target this form -->
+                            <form method="get" class="row align-items-center mb-3 g-2" id="mainFilterForm">
                           
                               <!-- Search Bar -->
                               <div class="col-md-3">
                                 <div class="d-flex">
-                                  <input class="form-control me-2" type="search" name="search"
+                                  <input class="form-control me-2" type="search" name="search" id="searchInput"
                                     placeholder="Search by Cust.ID / Mobile / Company Name"
                                     value="{{ request.GET.search }}">
                                   <button class="btn btn-outline-success" type="submit" style="min-width: 100px;">Search</button>
                                 </div>
                               </div>
                           
-                              <!-- Customer Type Dropdown -->
+                              <!-- Customer Type - NO auto submit -->
                               <div class="col-md-1">
-                                <select class="form-select" name="customer_type" onchange="this.form.submit()">
+                                <select class="form-select" name="customer_type">
                                   <option value="">All Type</option>
                                   <option value="Individual" {% if request.GET.customer_type == 'Individual' %}selected{% endif %}>Individual</option>
                                   <option value="Organization" {% if request.GET.customer_type == 'Organization' %}selected{% endif %}>Organization</option>
                                 </select>
                               </div>
                           
-                              <!-- Branch Dropdown -->
+                              <!-- Branch - NO auto submit -->
+                              {% if request.user.userprofile.role == 'admin' or is_sales_coordinator %}
+                              <div class="col-md-2">
+                                  <select class="form-select" name="branch">
+                                      <option value="">All Branches</option>
+                                      {% for branch in branches %}
+                                      <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
+                                      {% endfor %}
+                                  </select>
+                              </div>
+                              
+                              <!-- SFS Representative - NO auto submit -->
+                              <div class="col-md-2">
+                                  <select class="form-select" name="sfs_representatives">
+                                      <option value="">SFS Representative</option>
+                                      {% for rep in sfs_representatives %}
+                                      <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
+                                      {% endfor %}
+                                  </select>
+                              </div>
+                              {% endif %}
 
-                               {% if request.user.userprofile.role == 'admin' or is_sales_coordinator %}
-                               <div class="col-md-2">
-                                   <select class="form-select" name="branch" onchange="this.form.submit()">
-                                       <option value="">All Branches</option>
-                                       {% for branch in branches %}
-                                       <option value="{{ branch.id }}" {% if request.GET.branch == branch.id|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
-                                       {% endfor %}
-                                    </select>
-                                </div>
-                                
-                                <!-- SFS Representative -->
-                                <div class="col-md-2">
-                                    <select class="form-select" name="sfs_representatives" onchange="this.form.submit()">
-                                        <option value="">SFS Representative</option>
-                                        {% for rep in sfs_representatives %}
-                                        <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                {% endif %}
-
-                                
-                                {% if request.user.userprofile.role == 'branch_manager' %}
-                                <!-- SFS Representative -->
-                                <div class="col-md-2">
-                                    <select class="form-select" name="sfs_representatives" onchange="this.form.submit()">
-                                        <option value="">SFS Representative</option>
-                                        {% for rep in sfs_representatives %}
-                                        <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                {% endif %}
+                              {% if request.user.userprofile.role == 'branch_manager' %}
+                              <div class="col-md-2">
+                                  <select class="form-select" name="sfs_representatives">
+                                      <option value="">SFS Representative</option>
+                                      {% for rep in sfs_representatives %}
+                                      <option value="{{ rep }}" {% if request.GET.sfs_representatives == rep %}selected{% endif %}>{{ rep }}</option>
+                                      {% endfor %}
+                                  </select>
+                              </div>
+                              {% endif %}
                                     
-                          
                               <!-- Date Filter Button -->
                               <div class="col-md-2">
                                 <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
@@ -472,35 +400,39 @@
                                 </button>
                               </div>
 
+                              <!-- This is the ONLY button that applies filters -->
+                              <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                  <i class="fa fa-filter"></i> Apply Filters
+                                </button>
+                              </div>
 
                               {% if request.user.userprofile.role == 'branch_manager' %}
                                 <div class="col-md-2"></div>
                               {% endif %}
                                 
-                          
                               <!-- Export Button -->
-                              <div class="col-md-2">
+                              <div class="col-md-2 col-md-auto ms-md-auto mb-3 mt-md-3">
                                 <a href="{% url 'export_quotation' %}?{{ request.GET.urlencode }}">
-                                  <button type="button" class="btn btn-primary w-100">📤 &nbsp;Export Excel</button>
+                                  <button type="button" class="btn btn-primary w-100">📤 Export Excel</button>
                                 </a>
                               </div>
                           
                             </form>
-                          </div>
-                          
+                        </div>
 
                         <div class="p mb-3">
-                            <p class="text-primary text-end">Total Quotation's : <strong> {{ filter_count }}</strong></p>
+                            <p class="text-primary text-end">Total Quotation's : <strong>{{ filter_count }}</strong></p>
                         </div>
+
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover align-middle text-nowrap">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Sr.No</th>
-                                        <th  class="text-center">Actions</th>
+                                        <th class="text-center">Actions</th>
                                         <th>
-                                            <a href="?sort_by=quotation_no&order={% if current_sort_by == 'quotation_no' and current_order == 'asc' %}desc{% else %}asc{% endif %}"
-                                            class="text-decoration-none text-dark">
+                                            <a href="?sort_by=quotation_no&order={% if current_sort_by == 'quotation_no' and current_order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
                                                 Quotation No
                                                 {% if current_sort_by == 'quotation_no' %}
                                                     {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
@@ -509,8 +441,7 @@
                                         </th>
                                         <th>Quotation Date</th>
                                         <th>
-                                            <a href="?sort_by=customer_full_name&order={% if current_sort_by == 'customer_full_name' and current_order == 'asc' %}desc{% else %}asc{% endif %}"
-                                            class="text-decoration-none text-dark">
+                                            <a href="?sort_by=customer_full_name&order={% if current_sort_by == 'customer_full_name' and current_order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
                                                 Customer Name
                                                 {% if current_sort_by == 'customer_full_name' %}
                                                     {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
@@ -536,22 +467,12 @@
                                     <tr>
                                         <td>{{ forloop.counter|add:start_index }}</td>
                                         <td>
-                                            <a href="{% url 'view_quotation_pdf' x.id %}?download=true"
-                                            class="btn btn-sm btn-primary"><i class="fa-solid fa-download"></i></a>
-                                        
-                                            <a href="{% url 'view_quotation_pdf' x.id %}"
-                                            class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
-                                    
+                                            <a href="{% url 'view_quotation_pdf' x.id %}?download=true" class="btn btn-sm btn-primary"><i class="fa-solid fa-download"></i></a>
+                                            <a href="{% url 'view_quotation_pdf' x.id %}" class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
                                             <a href="{% url 'edit_quotation' x.id %}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        
                                             <a href="/delete_quotation/{{ x.id }}" class="btn btn-sm btn-danger delete-link"><i class="fa-solid fa-trash"></i></a>
-
-                                            <a href="{% url 'send_quotation_email' x.id %}" class="btn btn-sm btn-primary">
-                                                <i class="fa-solid fa-envelope"></i>
-                                            </a> 
-                                            <a href="{% url 'send_quotation_pdf_on_whatsapp' x.id %}" class="btn btn-sm btn-success">
-                                                <i class="fa-brands fa-whatsapp"></i>
-                                            </a> 
+                                            <a href="{% url 'send_quotation_email' x.id %}" class="btn btn-sm btn-primary"><i class="fa-solid fa-envelope"></i></a> 
+                                            <a href="{% url 'send_quotation_pdf_on_whatsapp' x.id %}" class="btn btn-sm btn-success"><i class="fa-brands fa-whatsapp"></i></a> 
                                         </td>
                                         <td>{{ x.quotation_no }}</td>
                                         <td>{{ x.quotation_date }}</td>
@@ -582,17 +503,13 @@
                                         <td>{{ x.total_price|floatformat:2 }}</td>
                                         <td>{{ x.total_price_with_gst|floatformat:2 }}</td>
                                         <td>{{ x.subject|truncatechars:25 }}</td>
-                                        
-                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
 
-
                         <div class="pagination">
-
                             {% if page_obj.has_previous %}
                             <li><a href="?{{ querystring }}&page=1">&laquo; First</a></li>
                             <li><a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
@@ -604,8 +521,8 @@
                             <li><a href="?{{ querystring }}&page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
                             <li><a href="?{{ querystring }}&page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
                             {% endif %}
-
                         </div>
+
                         {% include 'buttons.html' %}
 
                     </div>
@@ -613,20 +530,18 @@
             </div>
         </div>
     </div>
+
     <div id="confirmationModal" class="custom-modal">
         <div class="custom-modal-content">
             <form id="deleteForm" method="POST">
                 {% csrf_token %}
                 <p class="hh">Are you sure you want to delete this record?</p>
                 <div>
-                    <input type="password" id="password" name="password" placeholder="Enter Password"
-                        class="form-control" required>
+                    <input type="password" id="password" name="password" placeholder="Enter Password" class="form-control" required>
                 </div>
                 <div class="modal-buttons">
-                    <button type="submit" id="confirmDeleteButton" class="btn btn-outline-info mt-3"
-                        style="width: 150px;">Yes</button>
-                    <button type="button" id="cancelDeleteButton" class="btn btn-outline-danger  mt-3"
-                        style="width: 150px;">Cancel</button>
+                    <button type="submit" id="confirmDeleteButton" class="btn btn-outline-info mt-3" style="width: 150px;">Yes</button>
+                    <button type="button" id="cancelDeleteButton" class="btn btn-outline-danger mt-3" style="width: 150px;">Cancel</button>
                 </div>
             </form>
         </div>
@@ -639,27 +554,21 @@
     </div>
 
     <!-- Date Filter Modal -->
-    <!-- Date Filter Modal -->
-    <div class="modal fade " id="dateFilterModal" tabindex="-1" aria-labelledby="dateFilterModalLabel" aria-hidden="true">
+    <div class="modal fade" id="dateFilterModal" tabindex="-1" aria-labelledby="dateFilterModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content " style="margin-top: 50%;">
-    
+        <div class="modal-content" style="margin-top: 50%;">
           <div class="modal-header">
             <h5 class="modal-title text-primary" id="dateFilterModalLabel">Select Date Range</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-    
-          <div class="modal-body ">
+          <div class="modal-body">
             <div class="row row-cols-2 g-2 mb-3">
-                <div class="col-4"><button class="btn btn-outline-primary w-100" onclick="setRange('today')">Today</button></div>
-                <div class="col-4"><button class="btn btn-outline-primary w-100" onclick="setRange('yesterday')">Yesterday</button></div>
-                <div class="col-4"><button class="btn btn-outline-primary w-100" onclick="setRange('this_month')">This Month</button></div>
-                <div class="col-6"><button class="btn btn-outline-primary w-100" onclick="setRange('last_month')">Past Month</button></div>
-                <div class="col-6"><button class="btn btn-outline-primary w-100" onclick="setRange('last_3')">Past 3 Months</button></div>
-              </div>
-              
-    
-            <!-- Custom From / To -->
+              <div class="col-4"><button class="btn btn-outline-primary w-100" onclick="setRange('today')">Today</button></div>
+              <div class="col-4"><button class="btn btn-outline-primary w-100" onclick="setRange('yesterday')">Yesterday</button></div>
+              <div class="col-4"><button class="btn btn-outline-primary w-100" onclick="setRange('this_month')">This Month</button></div>
+              <div class="col-6"><button class="btn btn-outline-primary w-100" onclick="setRange('last_month')">Past Month</button></div>
+              <div class="col-6"><button class="btn btn-outline-primary w-100" onclick="setRange('last_3')">Past 3 Months</button></div>
+            </div>
             <div class="row">
               <div class="col">
                 <label for="fromDate" class="form-label">From</label>
@@ -671,16 +580,13 @@
               </div>
             </div>
           </div>
-    
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-primary" onclick="applyDateFilter()" data-bs-dismiss="modal">Apply</button>
           </div>
-    
         </div>
       </div>
     </div>
-    
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -690,7 +596,6 @@
                     const submenu = this.querySelector('.submenu');
                     const arrow = this.querySelector('.arrow-down');
 
-                    // Hide all other submenus
                     menuItems.forEach(otherItem => {
                         if (otherItem !== this) {
                             const otherSubmenu = otherItem.querySelector('.submenu');
@@ -704,7 +609,6 @@
                         }
                     });
 
-                    // Toggle current submenu
                     if (submenu) {
                         submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
                         arrow.classList.toggle('arrow-up');
@@ -716,21 +620,17 @@
         document.addEventListener("DOMContentLoaded", function () {
             const deleteLinks = document.querySelectorAll('.delete-link');
             const confirmationModal = document.getElementById('confirmationModal');
-            const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-            const cancelDeleteButton = document.getElementById('cancelDeleteButton');
             const deleteForm = document.getElementById('deleteForm');
-            let deleteUrl = '';
 
             deleteLinks.forEach(link => {
                 link.addEventListener('click', function (event) {
                     event.preventDefault();
-                    deleteUrl = this.getAttribute('href');
-                    deleteForm.setAttribute('action', deleteUrl);
+                    deleteForm.action = this.getAttribute('href');
                     confirmationModal.style.display = 'block';
                 });
             });
 
-            cancelDeleteButton.addEventListener('click', function () {
+            document.getElementById('cancelDeleteButton').addEventListener('click', function () {
                 confirmationModal.style.display = 'none';
             });
         });
@@ -742,69 +642,84 @@
                     document.getElementById('modal-content').innerHTML = html;
                     document.getElementById('modal').classList.add('active');
                 });
-
         }
 
         function closeModal() {
             document.getElementById('modal').classList.remove('active');
         }
 
-
         // Date Filter Functions
         function formatDate(date) {
-  return date.toISOString().split('T')[0];
-}
+            return date.toISOString().split('T')[0];
+        }
 
-function setRange(range) {
-  const today = new Date();
-  let start, end;
+        function setRange(range) {
+            const today = new Date();
+            let start, end;
 
-  if (range === 'today') {
-    start = end = today;
-    selectedRange.innerText = "Today";
-  } else if (range === 'yesterday') {
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
-    start = end = yesterday;
-    selectedRange.innerText = "Yesterday";
-  } else if (range === 'this_month') {
-    start = new Date(today.getFullYear(), today.getMonth(), 1);
-    end = today;
-    selectedRange.innerText = "This Month";
-  } else if (range === 'last_month') {
-    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    end = new Date(today.getFullYear(), today.getMonth(), 0);
-    selectedRange.innerText = "Past Month";
-  } else if (range === 'last_3') {
-    start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-    end = today;
-    selectedRange.innerText = "Past 3 Months";
-  }
+            if (range === 'today') {
+                start = end = today;
+                selectedRange.innerText = "Today";
+            } else if (range === 'yesterday') {
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                start = end = yesterday;
+                selectedRange.innerText = "Yesterday";
+            } else if (range === 'this_month') {
+                start = new Date(today.getFullYear(), today.getMonth(), 1);
+                end = today;
+                selectedRange.innerText = "This Month";
+            } else if (range === 'last_month') {
+                start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                end = new Date(today.getFullYear(), today.getMonth(), 0);
+                selectedRange.innerText = "Past Month";
+            } else if (range === 'last_3') {
+                start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+                end = today;
+                selectedRange.innerText = "Past 3 Months";
+            }
 
-  document.getElementById("fromDate").value = formatDate(start);
-  document.getElementById("toDate").value = formatDate(end);
-}
+            document.getElementById("fromDate").value = formatDate(start);
+            document.getElementById("toDate").value = formatDate(end);
+        }
 
-function applyDateFilter() {
-  const from = document.getElementById("fromDate").value;
-  const to = document.getElementById("toDate").value;
+        function applyDateFilter() {
+            const from = document.getElementById("fromDate").value;
+            const to = document.getElementById("toDate").value;
 
-  if (from && to) {
-    document.getElementById("selectedRange").innerText = from + " → " + to;
+            if (from && to) {
+                document.getElementById("selectedRange").innerText = from + " → " + to;
 
-    // Reload page with query params
-    const url = new URL(window.location.href);
-    url.searchParams.set('from_date', from);
-    url.searchParams.set('to_date', to);
-    window.location.href = url.toString();
-  }
-}
+                const form = document.getElementById("mainFilterForm");
 
+                // Add or update from_date
+                let fromInput = form.querySelector('input[name="from_date"]');
+                if (!fromInput) {
+                    fromInput = document.createElement("input");
+                    fromInput.type = "hidden";
+                    fromInput.name = "from_date";
+                    form.appendChild(fromInput);
+                }
+                fromInput.value = from;
 
+                // Add or update to_date
+                let toInput = form.querySelector('input[name="to_date"]');
+                if (!toInput) {
+                    toInput = document.createElement("input");
+                    toInput.type = "hidden";
+                    toInput.name = "to_date";
+                    form.appendChild(toInput);
+                }
+                toInput.value = to;
+
+                // Submit the main form (applies ALL filters)
+                form.submit();
+            }
+        }
     </script>
-    <!-- Footer -->
 
-    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+    <!-- Footer -->
+    <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:200px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">
                 <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
@@ -812,19 +727,20 @@ function applyDateFilter() {
                     <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
                         style="height: 20px; vertical-align: middle;">
                     <a href="http://www.chronoanalytics.in/"
-                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
-                        Solution</a>
+                        style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">
+                        Chronoanalytics Solution
+                    </a>
                     All Rights Reserved.
                 </p>
             </div>
             <div class="col-md-12 text-center">
-                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000">
                     © 2025. Marketed by
                     <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
                         style="height: 20px; vertical-align: middle;">
-                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+                    <a href="http://teim.in/" style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">
+                        TEIM
+                    </a>
                     All Rights Reserved.
                 </p>
             </div>
@@ -834,5 +750,4 @@ function applyDateFilter() {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
-
 </html>

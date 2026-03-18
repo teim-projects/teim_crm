@@ -35,6 +35,12 @@ urlpatterns = [
         name="find_customer_by_phone"
     ),
 
+    path(
+        "get-amc-details/",
+        views.get_amc_details,
+        name="get_amc_details"
+    ),
+
 
     # -----------------------
     # DASHBOARD & CALENDAR

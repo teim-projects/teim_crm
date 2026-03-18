@@ -1,360 +1,465 @@
-{% load static%}
+{% load static %}
 {% load widget_tweaks %}
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <title>TEIMCRM</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="css/style.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEIMCRM - {{ title }}</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
+    <style>
+        .old-amc-box {
+            background: #fff5f5;
+            border: 1px solid #ffcccc;
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .old-amc-box h6 {
+            color: #c0392b;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .view-amc {
+            color: #0d6efd;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .view-amc:hover {
+            color: #0a58ca;
+        }
+        .modal-product-table th {
+            background-color: #f8f9fa;
+            font-weight: 500;
+        }
+        .modal-product-table td {
+            vertical-align: middle;
+        }
+        .spinner-container {
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        /* Detail view styling */
+        .detail-row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 1.1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-label {
+            width: 190px;
+            font-weight: 600;
+            color: #333;
+            flex-shrink: 0;
+        }
+        .detail-value {
+            flex: 1;
+            word-break: break-word;
+        }
+        .amount-value {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .terms-box {
+            background: #f8f9fa;
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .section-title {
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.25rem;
+            color: #0d6efd;
+        }
+
+        /* Offcanvas improvements */
+        #customerOffcanvas .offcanvas-header {
+            border-bottom: 1px solid #dee2e6;
+        }
+        #customerOffcanvas .offcanvas-title {
+            font-weight: 600;
+            font-size: 1.35rem;
+        }
+        #customerOffcanvas {
+            width: 520px !important;
+            max-width: 90vw;
+        }
+        #customerOffcanvas .offcanvas-body {
+            padding: 1.5rem;
+        }
+    </style>
 </head>
-
 <body>
+
     {% include 'sidebar.html' %}
+
     <div class="main">
+        <div class="container mt-4" style="max-width: 1100px;">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <h3 class="text-center mb-4" style="color:#333;">{{ title }}</h3>
+                    <hr class="mb-4">
 
-        <div class="container">
-            <div class="row form-rowsales">
+                    <form method="POST" action="">
+                        {% csrf_token %}
 
+                        <table class="table table-borderless align-middle">
+                            <tr>
+                                <td width="20%"><label class="form-label">Customer Mobile <span class="text-danger">*</span></label></td>
+                                <td width="30%">
+                                    <input type="text" id="customer_phone" class="form-control" placeholder="Enter 10-digit mobile number">
+                                    <small id="customer_status" class="form-text"></small>
+                                    <div style="display:none;">{{ form.customer }}</div>
+                                </td>
 
-                <div class="container" style="max-width: 1000px;">
+                                <td width="20%"><label class="form-label">Service <span class="text-danger">*</span></label></td>
+                                <td width="30%">
+                                    {{ form.service|add_class:"form-select" }}
+                                    <small class="form-text text-muted">Select customer first</small>
+                                </td>
+                            </tr>
 
-                    <div class="shadow p-4 bg-white rounded">
-
-                        <h3 class="text-center mb-3" style="color:#444;">{{ title }}</h3>
-                        <hr>
-
-                        <form method="POST">
-                            {% csrf_token %}
-
-                            <table class="table table-borderless align-middle">
-
-                                <!-- Customer + Service -->
-                                <tr>
-                                    <td width="20%">
-                                        <label>Customer Mobile <span class="text-danger">*</span></label>
-                                    </td>
-                                    <td width="30%">
-                                        <input type="text" id="customer_phone" class="form-control"
-                                            placeholder="Enter customer mobile number">
-                                        <small class="text-muted" id="customer_status"></small>
-
-                                        <!-- 🔒 HIDDEN CUSTOMER FIELD (REQUIRED) -->
-                                        <div style="display:none;">
-                                            {{ form.customer }}
+                            <tr id="old_amc_section" style="display:none;">
+                                <td colspan="4">
+                                    <div class="old-amc-box">
+                                        <h6>Existing AMC Contracts</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered mt-2">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Contract</th>
+                                                        <th>Service</th>
+                                                        <th>Start</th>
+                                                        <th>End</th>
+                                                        <th>Type</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="old_amc_table"></tbody>
+                                            </table>
                                         </div>
-                                    </td>
+                                    </div>
+                                </td>
+                            </tr>
 
-                                    <td width="20%">
-                                        <label>Service <span class="text-danger">*</span></label>
-                                    </td>
-                                    <td width="30%">
-                                        {{ form.service }}
-                                        <small class="text-muted">Select customer first</small>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td><label class="form-label">Branch</label></td>
+                                <td>{{ form.branch|add_class:"form-select" }}</td>
+                                <td><label class="form-label">AMC Type</label></td>
+                                <td>{{ form.amc_type|add_class:"form-select" }}</td>
+                            </tr>
 
+                            {% if form.instance.pk %}
+                            <tr>
+                                <td><label class="form-label">Contract Number</label></td>
+                                <td colspan="3">
+                                    <input type="text" class="form-control bg-light" value="{{ form.instance.contract_number }}" readonly>
+                                </td>
+                            </tr>
+                            {% endif %}
 
-                                <!-- Branch + AMC Type -->
+                            <tr>
+                                <td><label class="form-label">Start Date <span class="text-danger">*</span></label></td>
+                                <td>{{ form.start_date|add_class:"form-control" }}</td>
+                                <td><label class="form-label">End Date <span class="text-danger">*</span></label></td>
+                                <td>
+                                    <input type="text" class="form-control bg-light" 
+                                           value="{{ form.instance.end_date|default:'Will be calculated after save' }}" readonly>
+                                    <small class="form-text text-muted">Calculated automatically</small>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><label class="form-label">Frequency (Services / Year)</label></td>
+                                <td colspan="3">
+                                    <div style="max-width: 220px;">
+                                        {{ form.frequency|add_class:"form-control" }}
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><label class="form-label"> Scope Of Service</label></td>
+                                <td colspan="3">{{ form.service_description|add_class:"form-control" }}</td>
+                            </tr>
+                            <tr>
+                                <td><label class="form-label">Notes</label></td>
+                                <td colspan="3">{{ form.notes|add_class:"form-control" }}</td>
+                            </tr>
+                        </table>
+
+                        <div class="d-flex justify-content-center gap-3 mt-5">
+                            <a href="{% url 'amc:list' %}" class="btn btn-outline-secondary px-5">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-5">Save AMC</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="container-fluid bg-light mt-5 py-4">
+        <div class="text-center small text-muted">
+            <p class="mb-1">
+                © 2025. Powered by 
+                <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics" style="height:18px; vertical-align:middle;">
+                <a href="http://www.chronoanalytics.in/" class="text-primary text-decoration-none">Chronoanalytics Solution</a>
+            </p>
+            <p class="mb-0">
+                © 2025. Marketed by 
+                <img src="{% static 'images/TeimLogo.png' %}" alt="TEIM" style="height:18px; vertical-align:middle;">
+                <a href="http://teim.in/" class="text-primary text-decoration-none">TEIM</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Right-side Offcanvas (replaces old modal) -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="customerOffcanvas" aria-labelledby="customerOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="customerOffcanvasLabel">AMC Contract Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" id="offcanvasBody">
+            <div class="spinner-container">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3 text-muted">Loading contract details...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+
+        function loadServices(customer_id) {
+            if (!customer_id) return;
+            $("#id_service").html('<option value="">Loading...</option>');
+
+            $.ajax({
+                url: "{% url 'amc:load_services' %}",
+                data: { customer_id: customer_id },
+                success: function(data) {
+                    let sel = $("#id_service");
+                    sel.empty().append('<option value="">Select Service</option>');
+                    data.forEach(item => {
+                        sel.append(`<option value="${item.id}">${item.service_subject}</option>`);
+                    });
+                }
+            });
+        }
+
+        $("#customer_phone").on("blur", function(){
+            let phone = $(this).val().trim();
+            if (!phone) return;
+            $("#customer_status").text("Checking...");
+
+            $.ajax({
+                url: "{% url 'amc:find_customer_by_phone' %}",
+                data: { phone: phone },
+                success: function(data) {
+                    if (!data.found) {
+                        $("#customer_status").addClass("text-danger").text("❌ Customer not found");
+                        $("#id_customer").val("");
+                        $("#id_service").empty().append('<option value="">Select Service</option>');
+                        $("#old_amc_section").hide();
+                        return;
+                    }
+                    $("#customer_status").removeClass("text-danger").addClass("text-success").html(`✅ ${data.customer_name}`);
+                    $("#id_customer").val(data.customer_id);
+                    loadServices(data.customer_id);
+
+                    let table = $("#old_amc_table");
+                    table.empty();
+                    if (data.amcs && data.amcs.length > 0) {
+                        data.amcs.forEach(amc => {
+                            table.append(`
                                 <tr>
-                                    <td><label>Branch</label></td>
-                                    <td>{{ form.branch }}</td>
+                                    <td><a href="#" class="view-amc" data-contract="${amc.contract_number}">${amc.contract_number}</a></td>
+                                    <td>${amc.service || '-'}</td>
+                                    <td>${amc.start_date || '-'}</td>
+                                    <td>${amc.end_date || '-'}</td>
+                                    <td>${amc.amc_type || '-'}</td>
+                                    <td>${amc.status || '-'}</td>
+                                </tr>`);
+                        });
+                        $("#old_amc_section").show();
+                    } else {
+                        $("#old_amc_section").hide();
+                    }
+                },
+                error: function() {
+                    $("#customer_status").addClass("text-danger").text("⚠️ Error checking customer");
+                }
+            });
+        });
 
-                                    <td><label>AMC Type</label></td>
-                                    <td>{{ form.amc_type }}</td>
-                                </tr>
+        $("#id_service").on("change", function(){
+            let sid = $(this).val();
+            if (!sid) return;
+            $.ajax({
+                url: "{% url 'amc:load_service_details' %}",
+                data: { service_id: sid },
+                success: function(data) {
+                    if (data.branch_id) $("#id_branch").val(data.branch_id);
+                    if (data.start_candidate) $("#id_start_date").val(data.start_candidate);
+                    if (data.frequency) $("#id_frequency").val(data.frequency);
+                }
+            });
+        });
 
-                                <!-- Contract Number (only display when editing) -->
-                                {% if form.instance.pk %}
-                                <tr>
-                                    <td><label>Contract Number</label></td>
-                                    <td colspan="3">
-                                        <input type="text" class="form-control"
-                                            value="{{ form.instance.contract_number }}" readonly>
-                                    </td>
-                                </tr>
-                                {% endif %}
+        // ────────────────────────────────────────────────
+        //  RIGHT OFFCANVAS - AMC Details
+        // ────────────────────────────────────────────────
+        $(document).on("click", ".view-amc", function(e){
+            e.preventDefault();
+            let contract = $(this).data("contract");
+            let $body = $("#offcanvasBody");
 
-                                <!-- Dates -->
-                                <tr>
-                                    <td><label>Start Date <span class="text-danger">*</span></label></td>
-                                    <td>{{ form.start_date }}</td>
+            // Show loading
+            $body.html(`
+                <div class="spinner-container">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3 text-muted">Loading contract details...</p>
+                </div>
+            `);
 
-                                    <td><label>End Date <span class="text-danger">*</span></label></td>
-                                    <td>
-                                        <input type="text" class="form-control"
-                                            value="{{ form.instance.end_date|default:'Will be calculated after save' }}"
-                                            readonly>
+            // Open offcanvas
+            const offcanvasElement = document.getElementById('customerOffcanvas');
+            const offcanvas = new bootstrap.Offcanvas(offcanvasElement);
+            offcanvas.show();
 
-                                        <small class="text-muted">Calculated automatically</small>
-                                    </td>
+            $.ajax({
+                url: "{% url 'amc:get_amc_details' %}",
+                data: { contract: contract },
+                dataType: "json",
+                success: function(data) {
+                    console.log("AMC data:", data);
 
-                                </tr>
+                    let html = `
+                        <div style="padding: 0.5rem 0;">
+                            <h5 class="mb-4 pb-2 border-bottom text-primary section-title">
+                                Contract: ${data.contract || '—'}
+                            </h5>
 
-                                <!-- Frequency + Technicians -->
-                                <!-- Frequency -->
-                                <tr>
-                                    <td><label>Frequency (Services / Year)</label></td>
-                                    <td colspan="3">
-                                        <div style="max-width: 200px;">
-                                            {{ form.frequency }}
-                                        </div>
-                                    </td>
-                                </tr>
-
-
-
-                                <!-- Description -->
-                                <tr>
-                                    <td><label>Service Description</label></td>
-                                    <td colspan="3">{{ form.service_description }}</td>
-                                </tr>
-
-                                <!-- Notes -->
-                                <tr>
-                                    <td><label>Notes</label></td>
-                                    <td colspan="3">{{ form.notes }}</td>
-                                </tr>
-
-                            </table>
-
-                            <!-- ACTION BUTTONS -->
-                            <div class="row mt-4">
-                                <div class="col-4"></div>
-
-                                <div class="col-2">
-                                    <a href="{% url 'amc:list' %}" class="btn btn-secondary w-100">Cancel</a>
+                            <div class="mb-4">
+                                <div class="detail-row">
+                                    <div class="detail-label">Customer</div>
+                                    <div class="detail-value">${data.customer || '—'}</div>
                                 </div>
-
-                                <div class="col-2">
-                                    <button type="submit" class="btn btn-primary w-100">Save AMC</button>
+                                <div class="detail-row">
+                                    <div class="detail-label">Service</div>
+                                    <div class="detail-value">${data.service || '—'}</div>
                                 </div>
-
-                                <div class="col-4"></div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Branch</div>
+                                    <div class="detail-value">${data.branch || '—'}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Start Date</div>
+                                    <div class="detail-value">${data.start_date || '—'}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">End Date</div>
+                                    <div class="detail-value">${data.end_date || '—'}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Frequency</div>
+                                    <div class="detail-value">${data.frequency || '—'} services/year</div>
+                                </div>
                             </div>
 
-                        </form>
-                    </div>
-                </div>
+                            <div class="terms-box">
+                                <h6 class="mb-3">AMC Terms</h6>
+                                <div class="detail-row">
+                                    <div class="detail-label">Type</div>
+                                    <div class="detail-value">${data.amc_type || '—'}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Status</div>
+                                    <div class="detail-value">
+                                        <span class="badge ${data.status === 'Active' ? 'bg-success' : 'bg-secondary'} px-3 py-2">
+                                            ${data.status || '—'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Total Amount</div>
+                                    <div class="detail-value amount-value">
+                                        ₹${Number(data.total_amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Per Visit</div>
+                                    <div class="detail-value amount-value">
+                                        ₹${Number(data.per_visit_amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}
+                                    </div>
+                                </div>
+                            </div>
 
+                            <h6 class="mb-3 section-title">Covered Products / Items</h6>
+                    `;
 
+                    if (Array.isArray(data.products) && data.products.length > 0) {
+                        html += `
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered modal-product-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th class="text-end">Price</th>
+                                            <th class="text-center">Qty</th>
+                                            <th class="text-end">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
 
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:80px;">
-        <div class="row p-3">
-            <div class="col-md-12 text-center">
-                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
-                    © 2025. Powered by
-                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
-                        style="height: 20px; vertical-align: middle;">
-                    <a href="http://www.chronoanalytics.in/"
-                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
-                        Solution</a>
-                    All Rights Reserved.
-                </p>
-            </div>
-            <div class="col-md-12 text-center">
-                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
-                    © 2025. Marketed by
-                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
-                        style="height: 20px; vertical-align: middle;">
-                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
-                    All Rights Reserved.
-                </p>
-            </div>
-        </div>
-    </div>
-    <!-- sidebar js -->
-    <!-- <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
-      menuItems.forEach(item => {
-        item.addEventListener('click', function () {
-          const submenu = this.querySelector('.submenu');
-          const arrow = this.querySelector('.arrow-down');
-
-          // Hide all other submenus
-          menuItems.forEach(otherItem => {
-            if (otherItem !== this) {
-              const otherSubmenu = otherItem.querySelector('.submenu');
-              const otherArrow = otherItem.querySelector('.arrow-down');
-              if (otherSubmenu) {
-                otherSubmenu.style.display = 'none';
-                if (otherArrow.classList.contains('arrow-up')) {
-                  otherArrow.classList.remove('arrow-up');
-                }
-              }
-            }
-          });
-
-          // Toggle current submenu
-          if (submenu) {
-            submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
-            arrow.classList.toggle('arrow-up');
-          }
-        });
-      });
-    });
-    const deleteLinks = document.querySelectorAll('.delete-link');
-    const confirmationModal = document.getElementById('confirmationModal');
-    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
-    let deleteUrl = '';
-
-    deleteLinks.forEach(link => {
-      link.addEventListener('click', function (event) {
-        event.preventDefault();
-        deleteUrl = this.getAttribute('href');
-        confirmationModal.style.display = 'block';
-      });
-    });
-
-    confirmDeleteButton.addEventListener('click', function () {
-      if (deleteUrl) {
-        window.location.href = deleteUrl;
-      }
-    });
-
-    cancelDeleteButton.addEventListener('click', function () {
-      confirmationModal.style.display = 'none';
-    });
-
-    window.addEventListener('click', function (event) {
-      if (event.target == confirmationModal) {
-        confirmationModal.style.display = 'none';
-      }
-    });
-
-    function openModal(service_id) {
-      fetch(`/get_service_details/${service_id}/`)
-        .then(response => response.text())
-        .then(html => {
-          document.getElementById('modal-content').innerHTML = html;
-          document.getElementById('modal').classList.add('active');
-        });
-
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
-    }
-  </script> -->
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-
-            /* -------------------------------------------
-                HELPER: LOAD SERVICES FOR CUSTOMER
-            --------------------------------------------- */
-            function loadServices(customer_id) {
-                if (!customer_id) return;
-
-                $("#id_service").html('<option value="">Loading...</option>');
-
-                $.ajax({
-                    url: "{% url 'amc:load_services' %}",
-                    data: { customer_id: customer_id },
-                    success: function (data) {
-
-                        let serviceSelect = $("#id_service");
-                        serviceSelect.empty();
-                        serviceSelect.append('<option value="">Select Service</option>');
-
-                        data.forEach(function (item) {
-                            serviceSelect.append(
-                                `<option value="${item.id}">
-                              ${item.service_subject}
-                          </option>`
-                            );
+                        $.each(data.products, function(i, p) {
+                            html += `
+                                <tr>
+                                    <td>${p.name || '—'}</td>
+                                    <td class="text-end">₹${Number(p.price || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                    <td class="text-center">${p.qty || 0}</td>
+                                    <td class="text-end fw-bold amount-value">₹${Number(p.total || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                </tr>
+                            `;
                         });
+
+                        html += `</tbody></table></div>`;
+                    } else {
+                        html += `<p class="text-muted text-center py-4 fst-italic">No products defined for this contract.</p>`;
                     }
-                });
-            }
 
-            /* -------------------------------------------
-                PHONE → CUSTOMER LOOKUP
-            --------------------------------------------- */
-            $("#customer_phone").on("blur", function () {
+                    html += `</div>`;
 
-                let phone = $(this).val().trim();
-                if (!phone) return;
-
-                $("#customer_status").text("Checking customer...");
-
-                $.ajax({
-                    url: "{% url 'amc:find_customer_by_phone' %}",
-                    data: { phone: phone },
-                    success: function (data) {
-
-                        if (!data.found) {
-                            $("#customer_status").text("❌ Customer not found");
-                            $("#id_customer").val("");
-                            $("#id_service").empty().append(
-                                '<option value="">Select Service</option>'
-                            );
-                            return;
-                        }
-
-                        $("#customer_status").html(`✅ ${data.customer_name}`);
-
-                        // ✅ SET CUSTOMER ID (hidden field)
-                        $("#id_customer").val(data.customer_id);
-
-                        // ✅ LOAD SERVICES
-                        loadServices(data.customer_id);
-                    }
-                });
+                    $body.html(html);
+                },
+                error: function(xhr) {
+                    let msg = "Could not load AMC details.";
+                    if (xhr.status === 404) msg = "Contract not found.";
+                    else if (xhr.status >= 500) msg = "Server error – check logs.";
+                    $body.html(`
+                        <div class="alert alert-danger m-4 text-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i><br>
+                            ${msg}
+                        </div>
+                    `);
+                }
             });
-
-            /* -------------------------------------------
-                SERVICE SELECT → AUTO POPULATE
-            --------------------------------------------- */
-            $("#id_service").on("change", function () {
-
-                let service_id = $(this).val();
-                if (!service_id) return;
-
-                $.ajax({
-                    url: "{% url 'amc:load_service_details' %}",
-                    data: { service_id: service_id },
-                    success: function (data) {
-
-                        if (data.branch_id) {
-                            $("#id_branch").val(data.branch_id);
-                        }
-
-                        if (data.start_candidate) {
-                            $("#id_start_date").val(data.start_candidate);
-                        }
-
-                        if (data.frequency) {
-                            $("#id_frequency").val(data.frequency);
-                        }
-                    }
-                });
-            });
-
         });
+    });
     </script>
-
 </body>
-
 </html>

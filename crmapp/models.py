@@ -176,6 +176,10 @@ class Product(models.Model):
         default="NULL"
     )
 
+      # ✅ ADD THIS BLOCK
+    class Meta:
+        ordering = ["product_name"]   # A → Z sorting
+
     def __str__(self):
         return self.product_name
 
@@ -601,12 +605,16 @@ class service_management(models.Model):
     city = models.CharField(max_length=100, default="Null")
     pincode = models.CharField(max_length=6, default="000000")
     address = models.TextField(default="Null")
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
     gps_location = models.URLField(null=True, blank=True)
     # gst_number = models.CharField(max_length=15, null=True, blank=True)
     frequency_count = models.CharField(max_length=50, choices=[(str(i), str(i)) for i in range(1, 13)] + [('Fortnight', 'Fortnight'), ('Weekly', 'Weekly'), ('Daily', 'Daily')], default="NOT SELECTED")
     payment_terms = models.CharField(max_length=200, default="100% Advance payment OR Whatever mutually Decided", editable=False)
     sales_person_name = models.CharField(max_length=100, null=True, blank=True)
     sales_person_contact_no = models.CharField(max_length=15, null=True, blank=True)
+    sales_person_email = models.EmailField(null=True, blank=True)
     delivery_time = models.TimeField(default=timezone.now)
     lead_date = models.DateField(default=timezone.now)
     service_date = models.DateField(null=True, blank=True)

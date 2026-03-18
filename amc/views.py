@@ -140,6 +140,7 @@ from datetime import date
 @login_required
 def amc_list(request):
     amc_qs = AMCContract.objects.all().order_by("-created_at")
+    
 
     paginator = Paginator(amc_qs, 10)  # 👈 10 records per page
     page_number = request.GET.get("page")
@@ -620,42 +621,75 @@ def edit_amc_visit(request, visit_id):
 from .forms import AMCDefaultAssignmentForm
 
 
+from .utils import distance_km
+
 @login_required
 def assign_amc_technicians(request, amc_id):
+
     amc = get_object_or_404(AMCContract, id=amc_id)
 
     if request.method == "POST":
+
         form = AMCDefaultAssignmentForm(request.POST, instance=amc)
+
         if form.is_valid():
-            form.save()
 
-            # 🔁 Sync technicians to ALL future visits
-            for visit in amc.visits.filter(crm_service__isnull=True):
-                visit.technicians.set(amc.technicians.all())
+            amc = form.save(commit=False)
+            amc.save()
 
-            messages.success(request, "Default technicians & work details updated.")
+            tech_ids = request.POST.getlist("technicians")
+            selected_techs = TechnicianProfile.objects.filter(id__in=tech_ids)
+
+            amc.technicians.set(selected_techs)
+
+            service_lat = amc.service.latitude
+            service_lon = amc.service.longitude
+
+            for visit in amc.visits.all():
+
+                assigned = False
+
+                # find existing visits with same day + month
+                existing_visits = AMCServiceVisit.objects.filter(
+                    service_date__day=visit.service_date.day,
+                    service_date__month=visit.service_date.month
+                ).exclude(amc=amc)
+
+                for old_visit in existing_visits:
+
+                    old_service = old_visit.amc.service
+
+                    if not old_service.latitude or not old_service.longitude:
+                        continue
+
+                    dist = distance_km(
+                        service_lat,
+                        service_lon,
+                        old_service.latitude,
+                        old_service.longitude
+                    )
+
+                    if dist <= 10 and old_visit.technicians.exists():
+
+                        visit.technicians.set(old_visit.technicians.all())
+                        assigned = True
+                        break
+
+                if not assigned:
+                    visit.technicians.set(selected_techs)
+
+            messages.success(request, "Technicians assigned successfully.")
             return redirect("amc:detail", amc.id)
 
     else:
-        # ✅ AUTO-FILL DATA HERE
-        form = AMCDefaultAssignmentForm(
-            instance=amc,
-            initial={
-                "default_customer_contact": amc.default_customer_contact or amc.customer.primarycontact,
-                "default_customer_address": amc.default_customer_address or amc.customer.shifttopartyaddress,
-                "default_gps_location": amc.default_gps_location or getattr(amc.service, "gps_location", ""),
-                "default_payment_amount": amc.default_payment_amount or amc.per_visit_amount,
-                "default_payment_status": amc.default_payment_status or "Pending",
-                "default_work_description": amc.default_work_description,
-            }
-        )
+
+        form = AMCDefaultAssignmentForm(instance=amc)
 
     return render(request, "amc/assign_technicians.html", {
         "amc": amc,
         "form": form,
         "technicians": TechnicianProfile.objects.all(),
     })
-
 
 
 
@@ -695,7 +729,11 @@ def amc_assign_defaults(request, amc_id):
 
 
 
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 from crmapp.models import customer_details
+from amc.models import AMCContract
+
 
 @login_required
 def find_customer_by_phone(request):
@@ -711,8 +749,80 @@ def find_customer_by_phone(request):
     if not customer:
         return JsonResponse({"found": False})
 
+    # 🔹 get old AMC contracts
+    amcs = AMCContract.objects.filter(customer=customer).order_by("-start_date")
+
+    amc_list = []
+
+    for amc in amcs:
+        amc_list.append({
+            "contract_number": amc.contract_number,
+            "service": amc.service.service_subject if amc.service else "",
+            "start_date": amc.start_date.strftime("%d-%m-%Y"),
+            "end_date": amc.end_date.strftime("%d-%m-%Y") if amc.end_date else "",
+            "amc_type": amc.amc_type,
+            "status": amc.status
+        })
+
     return JsonResponse({
         "found": True,
         "customer_id": customer.id,
-        "customer_name": customer.fullname
+        "customer_name": customer.fullname,
+        "amcs": amc_list
     })
+
+
+
+
+
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from amc.models import AMCContract
+
+
+@login_required
+def get_amc_details(request):
+
+    contract = request.GET.get("contract")
+
+    try:
+        amc = AMCContract.objects.select_related(
+            "customer",
+            "service",
+            "branch"
+        ).get(contract_number=contract)
+
+        data = {
+            "contract": amc.contract_number,
+            "customer": amc.customer.fullname,
+            "service": amc.service.service_subject,
+            "branch": str(amc.branch) if amc.branch else "",
+            "start_date": amc.start_date.strftime("%d-%m-%Y"),
+            "end_date": amc.end_date.strftime("%d-%m-%Y"),
+            "frequency": amc.frequency,
+            "total_amount": float(amc.total_amount),
+            "per_visit_amount": float(amc.per_visit_amount),
+            "amc_type": amc.amc_type,
+            "status": amc.status,
+        }
+
+        products = []
+
+        if hasattr(amc.service, "service_products"):
+            for p in amc.service.service_products.all():
+                products.append({
+                    "name": p.product.product_name,
+                    "price": float(p.price),
+                    "qty": p.quantity,
+                    "total": float(p.price * p.quantity)
+                })
+
+        data["products"] = products
+
+        return JsonResponse(data)
+
+    except AMCContract.DoesNotExist:
+        return JsonResponse({"error": "AMC not found"}, status=404)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

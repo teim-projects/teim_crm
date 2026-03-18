@@ -13,7 +13,9 @@
 </head>
 
 <body class="bg-light">
+
   {% include 'sidebar.html' %}
+
   <div class="container" style="margin-top: 130px;">
 
     <form method="post"
@@ -29,8 +31,6 @@
       <div class="card shadow-sm mb-4">
         <div class="card-header fw-bold d-flex justify-content-between align-items-center">
           Material Transfer Details
-          
-          <!-- Site button on RIGHT side -->
           <div>
             <button type="button" class="btn btn-md text-white shadow-sm" id="addSiteBtn"
                     style="background: linear-gradient(90deg, #6f42c1, #9f7aea); border: none; transition: all 0.3s;">
@@ -47,28 +47,28 @@
               <select class="form-select destination-type" name="source_type">
                 <option value="">Select</option>
                 <option value="BRANCH" {% if mtn.source_type == "BRANCH" %}selected{% endif %}>Branch</option>
-                <option value="HO" {% if mtn.source_type == "HO" %}selected{% endif %}>Head Office</option>
-                <option value="SITE" {% if mtn.source_type == "SITE" %}selected{% endif %}>Site</option>
+                <option value="HO"     {% if mtn.source_type == "HO"     %}selected{% endif %}>Head Office</option>
+                <option value="SITE"   {% if mtn.source_type == "SITE"   %}selected{% endif %}>Site</option>
               </select>
             </div>
-            
+
             <div class="col-md-3 destination-group">
               <label class="form-label">Source</label>
               <select class="form-select destination-id" name="source">
                 <option value="">Select Source</option>
               </select>
             </div>
-            
+
             <div class="col-md-3 destination-group">
               <label class="form-label">Destination Type</label>
               <select class="form-select destination-type" name="destination_type">
                 <option value="">Select</option>
                 <option value="BRANCH" {% if mtn.destination_type == "BRANCH" %}selected{% endif %}>Branch</option>
-                <option value="HO" {% if mtn.destination_type == "HO" %}selected{% endif %}>Head Office</option>
-                <option value="SITE" {% if mtn.destination_type == "SITE" %}selected{% endif %}>Site</option>
+                <option value="HO"     {% if mtn.destination_type == "HO"     %}selected{% endif %}>Head Office</option>
+                <option value="SITE"   {% if mtn.destination_type == "SITE"   %}selected{% endif %}>Site</option>
               </select>
             </div>
-            
+
             <div class="col-md-3 destination-group">
               <label class="form-label">Destination</label>
               <select class="form-select destination-id" name="destination">
@@ -76,22 +76,19 @@
               </select>
             </div>
 
-            <!-- Date -->
             <div class="col-md-3">
               <label class="form-label">Date</label>
               <input type="date" class="form-control" name="date" value="{{ mtn.transfer_date|date:'Y-m-d' }}">
             </div>
 
-            <!-- Status -->
             <div class="col-md-3">
               <label class="form-label">Status</label>
               <select class="form-select" name="status">
-                <option value="DRAFT" {% if mtn.status == "DRAFT" %}selected{% endif %}>Draft</option>
+                <option value="DRAFT"    {% if mtn.status == "DRAFT"    %}selected{% endif %}>Draft</option>
                 <option value="APPROVED" {% if mtn.status == "APPROVED" %}selected{% endif %}>Approved</option>
               </select>
             </div>
 
-            <!-- Remarks -->
             <div class="col-md-6">
               <label class="form-label">Remarks</label>
               <textarea class="form-control" name="remarks" rows="2"></textarea>
@@ -140,7 +137,6 @@
                       {% endfor %}
                     </select>
                   </td>
-
                   <td>
                     <select class="form-select batch-select" name="batch[]">
                       {% if item.batch %}
@@ -150,20 +146,17 @@
                       {% endif %}
                     </select>
                   </td>
-                      
                   <td>
                     <span class="available-qty text-success fw-bold">0.000</span>
                   </td>
                   <td>
                     <input type="number" class="form-control" name="qty[]"
-                           value="{{ item.transfer_qty }}" required>
+                           value="{{ item.transfer_qty }}" required step="any">
                   </td>
-
                   <td>
                     <input type="text" class="form-control" name="item_remarks[]"
                            value="{{ item.remarks }}">
                   </td>
-
                   <td class="text-center">
                     <button type="button" class="btn btn-danger btn-sm removeRowBtn">×</button>
                   </td>
@@ -181,7 +174,6 @@
                       {% endfor %}
                     </select>
                   </td>
-
                   <td>
                     <select class="form-select batch-select" name="batch[]">
                       <option value="">Select Batch</option>
@@ -190,15 +182,12 @@
                   <td>
                     <span class="available-qty text-success fw-bold">0.000</span>
                   </td>
-
                   <td>
-                    <input type="number" class="form-control" name="qty[]" min="1" required>
+                    <input type="number" class="form-control" name="qty[]" min="0" step="any" required>
                   </td>
-
                   <td>
                     <input type="text" class="form-control" name="item_remarks[]">
                   </td>
-
                   <td class="text-center">
                     <button type="button" class="btn btn-danger btn-sm removeRowBtn">×</button>
                   </td>
@@ -211,15 +200,15 @@
       </div>
 
       <!-- ================= SUBMIT ================= -->
-      <div class="text-end">
-        <button type="submit" class="btn btn-primary px-4">
+      <div class="text-end mb-4">
+        <button type="submit" class="btn btn-primary px-5 py-2">
           Save MTN
         </button>
       </div>
 
     </form>
 
-    <!-- ================= ADD SITE MODAL (POPUP) ================= -->
+    <!-- ================= ADD SITE MODAL ================= -->
     <div class="modal fade" id="addSiteModal" tabindex="-1" aria-labelledby="addSiteModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -264,14 +253,12 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-      // ────────────── Open modal when clicking "Site" button ──────────────
-      document.getElementById("addSiteBtn").addEventListener("click", function () {
-        const modal = new bootstrap.Modal(document.getElementById("addSiteModal"));
-        modal.show();
+      // ─── Add Site Modal ────────────────────────────────
+      document.getElementById("addSiteBtn")?.addEventListener("click", () => {
+        new bootstrap.Modal(document.getElementById("addSiteModal")).show();
       });
 
-      // ────────────── Save site via AJAX ──────────────
-      document.getElementById("saveSiteBtn").addEventListener("click", function () {
+      document.getElementById("saveSiteBtn")?.addEventListener("click", function () {
         const form = document.getElementById("addSiteForm");
         if (!form.checkValidity()) {
           form.reportValidity();
@@ -289,29 +276,19 @@
             "X-CSRFToken": csrfToken
           }
         })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
+        .then(r => r.json())
         .then(data => {
           if (data.success && data.site) {
-            // Decide which dropdown to update
-            const sourceType = document.querySelector('[name="source_type"]').value;
-            const destType   = document.querySelector('[name="destination_type"]').value;
-            let targetSelect = null;
+            const sourceType  = document.querySelector('[name="source_type"]').value;
+            const destType    = document.querySelector('[name="destination_type"]').value;
+            let targetSelect  = null;
 
-            if (destType === "SITE") {
-              targetSelect = document.querySelector('[name="destination"]');
-            } else if (sourceType === "SITE") {
-              targetSelect = document.querySelector('[name="source"]');
-            }
+            if (destType === "SITE") targetSelect = document.querySelector('[name="destination"]');
+            else if (sourceType === "SITE") targetSelect = document.querySelector('[name="source"]');
 
             if (targetSelect) {
-              const option = new Option(data.site.name, data.site.id);
-              option.selected = true;
-              targetSelect.appendChild(option);
+              const opt = new Option(data.site.name, data.site.id, true, true);
+              targetSelect.appendChild(opt);
               targetSelect.dispatchEvent(new Event('change'));
             }
 
@@ -321,138 +298,145 @@
             alert("Error: " + (data.error || "Unknown error"));
           }
         })
-        .catch(error => {
-          console.error("Save site error:", error);
-          alert("Failed to save site. Check browser console (F12) for details.");
+        .catch(err => {
+          console.error(err);
+          alert("Failed to save site. Check console.");
         });
       });
 
-      // ────────────── Your original destination loading logic ──────────────
-      document.querySelectorAll("form[data-destination-url]").forEach(form => {
-        const url = form.dataset.destinationUrl;
-        const sourceId = form.dataset.sourceId;
-        const destinationId = form.dataset.destinationId;
+      // ─── Load Source/Destination ───────────────────────
+      const form = document.querySelector("form[data-destination-url]");
+      const destUrl = form.dataset.destinationUrl;
 
-        form.querySelectorAll(".destination-type").forEach(typeSelect => {
-          if (typeSelect.name === "source_type" && typeSelect.value && sourceId) {
-            loadDestinations(typeSelect, sourceId);
-          }
-          if (typeSelect.name === "destination_type" && typeSelect.value && destinationId) {
-            loadDestinations(typeSelect, destinationId);
-          }
+      form.querySelectorAll(".destination-type").forEach(sel => {
+        sel.addEventListener("change", loadDestinations);
+        // Initial load on edit
+        if (sel.value) loadDestinations.call(sel);
+      });
 
-          typeSelect.addEventListener("change", function () {
-            loadDestinations(this, null);
-          });
-        });
+      function loadDestinations() {
+        const group = this.closest(".destination-group");
+        const nextGroup = group.nextElementSibling;
+        const destSelect = nextGroup?.querySelector(".destination-id");
 
-        function loadDestinations(typeSelect, preselectId) {
-          const typeGroup = typeSelect.closest(".destination-group");
-          const destGroup = typeGroup.nextElementSibling;
-          const destSelect = destGroup?.querySelector(".destination-id");
+        if (!destSelect) return;
 
-          if (!destSelect) return;
+        destSelect.innerHTML = `<option value="">Select</option>`;
+        if (!this.value) return;
 
-          destSelect.innerHTML = `<option value="">Select</option>`;
-          if (!typeSelect.value) return;
-
-          fetch(`${url}?destination_type=${typeSelect.value}`)
-            .then(res => res.json())
-            .then(data => {
-              (data.results || []).forEach(item => {
-                const opt = new Option(item.name, item.id);
-                if (preselectId && String(item.id) === String(preselectId)) {
-                  opt.selected = true;
-                }
-                destSelect.appendChild(opt);
-              });
+        fetch(`${destUrl}?destination_type=${this.value}`)
+          .then(r => r.json())
+          .then(data => {
+            (data.results || []).forEach(item => {
+              const opt = new Option(item.name, item.id);
+              if (String(item.id) === String(this.dataset.preselect || "")) {
+                opt.selected = true;
+              }
+              destSelect.appendChild(opt);
             });
-        }
-      });
+          });
+      }
 
-      // ────────────── Your original add row, batch, qty logic remains unchanged ──────────────
+      // ─── Add / Remove Row ──────────────────────────────
       const tbody = document.getElementById("mtnItemsBody");
-      const addRowBtn = document.getElementById("addRowBtn");
-      const form = document.querySelector("form");
-      const batchUrl = form.dataset.batchUrl;
 
-      addRowBtn.addEventListener("click", function () {
-        const newRow = tbody.querySelector(".mtn-item-row").cloneNode(true);
+      document.getElementById("addRowBtn")?.addEventListener("click", function () {
+        let rowToClone = tbody.querySelector(".mtn-item-row");
+        if (!rowToClone) return;
+
+        let newRow = rowToClone.cloneNode(true);
+
+        // Reset fields
         newRow.querySelector(".product-select").value = "";
-        newRow.querySelector(".batch-select").innerHTML = `<option value="">Select Batch</option>`;
-        newRow.querySelector('input[name="qty[]"]').value = "";
-        newRow.querySelector('input[name="item_remarks[]"]').value = "";
+        newRow.querySelector(".batch-select").innerHTML = '<option value="">Select Batch</option>';
+        newRow.querySelector(".available-qty").innerText = "0.000";
+        newRow.querySelector("input[name='qty[]']").value = "";
+        newRow.querySelector("input[name='item_remarks[]']").value = "";
+
         tbody.appendChild(newRow);
       });
 
-      tbody.addEventListener("click", function (e) {
-        if (e.target.classList.contains("removeRowBtn")) {
+      tbody.addEventListener("click", e => {
+        if (e.target.closest(".removeRowBtn")) {
           if (tbody.querySelectorAll(".mtn-item-row").length > 1) {
             e.target.closest(".mtn-item-row").remove();
           }
         }
       });
 
-      tbody.addEventListener("change", function (e) {
-        if (e.target.classList.contains("product-select")) {
-          const productId = e.target.value;
-          if (!productId) return;
-          const row = e.target.closest(".mtn-item-row");
-          const batchSelect = row.querySelector(".batch-select");
+      // ─── Load Batches when Product changes ─────────────
+      tbody.addEventListener("change", e => {
+        if (!e.target.matches(".product-select")) return;
 
-          fetch(`${batchUrl}?product_id=${productId}`)
-            .then(res => res.json())
-            .then(data => {
-              batchSelect.innerHTML = `<option value="">Select Batch</option>`;
-              data.results.forEach(b => {
-                batchSelect.insertAdjacentHTML("beforeend", `<option value="${b.id}">${b.name}</option>`);
-              });
-            })
-            .catch(err => console.error("Batch load error:", err));
+        const productId = e.target.value;
+        const row = e.target.closest(".mtn-item-row");
+        const batchSelect = row.querySelector(".batch-select");
+
+        if (!productId) {
+          batchSelect.innerHTML = '<option value="">Select Batch</option>';
+          row.querySelector(".available-qty").innerText = "0.000";
+          return;
         }
+
+        fetch(`${form.dataset.batchUrl}?product_id=${productId}`)
+          .then(r => r.json())
+          .then(data => {
+            batchSelect.innerHTML = '<option value="">Select Batch</option>';
+            (data.results || []).forEach(b => {
+              batchSelect.insertAdjacentHTML("beforeend", `<option value="${b.id}">${b.name}</option>`);
+            });
+          })
+          .catch(err => console.error("Batch fetch error:", err));
       });
 
-      // Available qty logic
-      const qtyUrl = form.dataset.qtyUrl;
-
-      function fetchAvailableQty(row) {
-        const product = row.querySelector('[name="product[]"]').value;
-        const batch = row.querySelector('[name="batch[]"]').value;
-        const sourceType = document.querySelector('[name="source_type"]').value;
-        const sourceId = document.querySelector('[name="source"]').value;
+      // ─── Fetch Available Quantity ──────────────────────
+      function updateAvailableQty(row) {
+        const product  = row.querySelector('[name="product[]"]').value;
+        const batch    = row.querySelector('[name="batch[]"]').value;
+        const srcType  = document.querySelector('[name="source_type"]').value;
+        const srcId    = document.querySelector('[name="source"]').value;
         const qtyInput = row.querySelector('[name="qty[]"]');
-        const availableSpan = row.querySelector(".available-qty");
+        const availSpan = row.querySelector(".available-qty");
 
-        if (!product || !batch || !sourceType || !sourceId) {
-          availableSpan.innerText = "0.000";
+        if (!product || !batch || !srcType || !srcId) {
+          availSpan.innerText = "0.000";
           qtyInput.max = "";
           return;
         }
-        console.log(fetch(`${qtyUrl}?product_id=${product}&batch_id=${batch}&source_type=${sourceType}&source_id=${sourceId}`));
-        fetch(`${qtyUrl}?product_id=${product}&batch_id=${batch}&source_type=${sourceType}&source_id=${sourceId}`)
-          .then(res => res.json())
+
+        fetch(`${form.dataset.qtyUrl}?product_id=${product}&batch_id=${batch}&source_type=${srcType}&source_id=${srcId}`)
+          .then(r => r.json())
           .then(data => {
-            const available = parseFloat(data.available_qty || 0).toFixed(3);
-            availableSpan.innerText = available;
-            qtyInput.max = available;
-            if (qtyInput.value && parseFloat(qtyInput.value) > available) {
-              qtyInput.value = available;
+            const qty = parseFloat(data.available_qty || 0).toFixed(3);
+            availSpan.innerText = qty;
+            qtyInput.max = qty;
+            if (qtyInput.value && parseFloat(qtyInput.value) > parseFloat(qty)) {
+              qtyInput.value = qty;
             }
-          });
+          })
+          .catch(err => console.error("Qty fetch error:", err));
       }
 
-      document.getElementById("mtnItemsBody").addEventListener("change", function (e) {
-        if (e.target.classList.contains("batch-select")) {
-          fetchAvailableQty(e.target.closest(".mtn-item-row"));
+      tbody.addEventListener("change", e => {
+        if (e.target.matches(".batch-select")) {
+          updateAvailableQty(e.target.closest(".mtn-item-row"));
         }
       });
 
-      document.querySelector('[name="source"]').addEventListener("change", function () {
-        document.querySelectorAll(".mtn-item-row").forEach(fetchAvailableQty);
+      // Refresh qty when source changes
+      document.querySelector('[name="source"]')?.addEventListener("change", () => {
+        document.querySelectorAll(".mtn-item-row").forEach(updateAvailableQty);
       });
 
-      document.querySelector('[name="source_type"]').addEventListener("change", function () {
-        document.querySelectorAll(".mtn-item-row").forEach(fetchAvailableQty);
+      document.querySelector('[name="source_type"]')?.addEventListener("change", () => {
+        document.querySelectorAll(".mtn-item-row").forEach(updateAvailableQty);
+      });
+
+      // Initial load for edit mode
+      document.querySelectorAll(".mtn-item-row").forEach(row => {
+        if (row.querySelector(".product-select").value && row.querySelector(".batch-select").value) {
+          updateAvailableQty(row);
+        }
       });
 
     });
