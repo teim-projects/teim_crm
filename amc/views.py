@@ -140,6 +140,7 @@ from datetime import date
 @login_required
 def amc_list(request):
     amc_qs = AMCContract.objects.all().order_by("-created_at")
+    
 
     paginator = Paginator(amc_qs, 10)  # 👈 10 records per page
     page_number = request.GET.get("page")
@@ -728,7 +729,11 @@ def amc_assign_defaults(request, amc_id):
 
 
 
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 from crmapp.models import customer_details
+from amc.models import AMCContract
+
 
 @login_required
 def find_customer_by_phone(request):
@@ -744,8 +749,80 @@ def find_customer_by_phone(request):
     if not customer:
         return JsonResponse({"found": False})
 
+    # 🔹 get old AMC contracts
+    amcs = AMCContract.objects.filter(customer=customer).order_by("-start_date")
+
+    amc_list = []
+
+    for amc in amcs:
+        amc_list.append({
+            "contract_number": amc.contract_number,
+            "service": amc.service.service_subject if amc.service else "",
+            "start_date": amc.start_date.strftime("%d-%m-%Y"),
+            "end_date": amc.end_date.strftime("%d-%m-%Y") if amc.end_date else "",
+            "amc_type": amc.amc_type,
+            "status": amc.status
+        })
+
     return JsonResponse({
         "found": True,
         "customer_id": customer.id,
-        "customer_name": customer.fullname
+        "customer_name": customer.fullname,
+        "amcs": amc_list
     })
+
+
+
+
+
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from amc.models import AMCContract
+
+
+@login_required
+def get_amc_details(request):
+
+    contract = request.GET.get("contract")
+
+    try:
+        amc = AMCContract.objects.select_related(
+            "customer",
+            "service",
+            "branch"
+        ).get(contract_number=contract)
+
+        data = {
+            "contract": amc.contract_number,
+            "customer": amc.customer.fullname,
+            "service": amc.service.service_subject,
+            "branch": str(amc.branch) if amc.branch else "",
+            "start_date": amc.start_date.strftime("%d-%m-%Y"),
+            "end_date": amc.end_date.strftime("%d-%m-%Y"),
+            "frequency": amc.frequency,
+            "total_amount": float(amc.total_amount),
+            "per_visit_amount": float(amc.per_visit_amount),
+            "amc_type": amc.amc_type,
+            "status": amc.status,
+        }
+
+        products = []
+
+        if hasattr(amc.service, "service_products"):
+            for p in amc.service.service_products.all():
+                products.append({
+                    "name": p.product.product_name,
+                    "price": float(p.price),
+                    "qty": p.quantity,
+                    "total": float(p.price * p.quantity)
+                })
+
+        data["products"] = products
+
+        return JsonResponse(data)
+
+    except AMCContract.DoesNotExist:
+        return JsonResponse({"error": "AMC not found"}, status=404)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

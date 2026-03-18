@@ -1,446 +1,1363 @@
 {% load static %}
-{% load widget_tweaks %}
-
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEIM CRM • AMC Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TEIM CRM • AMC Dashboard</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+  <!-- Vendors -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
 
-    <style>
-        :root {
-            --primary:    #5b21b6;        /* deep violet-indigo */
-            --primary-dark: #4c1d95;
-            --primary-glow: rgba(91, 33, 182, 0.18);
-            --success:    #059669;
-            --warning:    #d97706;
-            --danger:     #dc2626;
-            --glass:      rgba(255, 255, 255, 0.82);
-            --glass-border: rgba(255,255,255,0.30);
-            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
-        }
+  {{ status_counts|json_script:"status-counts" }}
+  {{ services_series|json_script:"services-series" }}
 
-        * { box-sizing: border-box; }
+  <style>
+    /* ═══════════════════════════════════════════════
+       DESIGN TOKENS — LIGHT (default)
+    ═══════════════════════════════════════════════ */
+    :root {
+      --font: "Plus Jakarta Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg-gradient);
-            color: #111827;
-            min-height: 100vh;
-            margin: 0;
-        }
+      /* Background layers */
+      --page-bg:    #f0f4ff;
+      --page-bg2:   #e8f0fe;
+      --card-bg:    rgba(255,255,255,.96);
+      --card-bg2:   rgba(255,255,255,.80);
+      --glass-bg:   rgba(255,255,255,.75);
 
-        .main {
-            padding: 2.5rem 1.25rem;
-        }
+      /* Borders & shadows */
+      --border:     rgba(99,102,241,.15);
+      --border2:    rgba(99,102,241,.22);
+      --shadow-sm:  0 4px 16px rgba(67,56,202,.08);
+      --shadow-md:  0 12px 40px rgba(67,56,202,.12);
+      --shadow-lg:  0 24px 70px rgba(67,56,202,.16);
+      --shadow-card:0 8px 32px rgba(67,56,202,.10);
+      --radius-lg:  28px;
+      --radius-md:  18px;
+      --radius-sm:  12px;
 
-        .dashboard-glass {
-            background: var(--glass);
-            backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px);
-            border: 1px solid var(--glass-border);
-            border-radius: 28px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.09), inset 0 0 0 1px rgba(255,255,255,0.4);
-            padding: 3rem 2.5rem;
-            position: relative;
-            overflow: hidden;
-        }
+      /* Brand colours — fresh indigo/violet/rose/cyan */
+      --indigo:     #4f46e5;
+      --indigo-l:   #818cf8;
+      --violet:     #7c3aed;
+      --violet-l:   #a78bfa;
+      --rose:       #e11d48;
+      --rose-l:     #fb7185;
+      --amber:      #d97706;
+      --amber-l:    #fbbf24;
+      --emerald:    #059669;
+      --emerald-l:  #34d399;
+      --cyan:       #0891b2;
+      --cyan-l:     #22d3ee;
+      --sky:        #0284c7;
+      --sky-l:      #38bdf8;
 
-        .dashboard-glass::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 30% 20%, rgba(91,33,182,0.08) 0%, transparent 50%);
-            pointer-events: none;
-        }
+      /* Text */
+      --text:       #1e1b4b;
+      --text-2:     #4338ca;
+      --muted:      #6b7280;
+      --muted-2:    #9ca3af;
+    }
 
-        .title-gradient {
-            font-size: 3.1rem;
-            font-weight: 800;
-            background: linear-gradient(90deg, #7c3aed, #a78bfa, #c4b5fd);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
-            margin-bottom: 2.5rem;
-            text-align: center;
-        }
+    /* ═══════════════════════════════════════════════
+       DARK THEME
+    ═══════════════════════════════════════════════ */
+    html[data-theme="dark"] {
+      --page-bg:    #0d0f1c;
+      --page-bg2:   #111827;
+      --card-bg:    rgba(17,24,39,.88);
+      --card-bg2:   rgba(17,24,39,.65);
+      --glass-bg:   rgba(17,24,39,.60);
+      --border:     rgba(99,102,241,.22);
+      --border2:    rgba(99,102,241,.30);
+      --shadow-sm:  0 4px 16px rgba(0,0,0,.30);
+      --shadow-md:  0 12px 40px rgba(0,0,0,.40);
+      --shadow-lg:  0 24px 70px rgba(0,0,0,.55);
+      --shadow-card:0 8px 32px rgba(0,0,0,.38);
+      --text:       #e0e7ff;
+      --text-2:     #a5b4fc;
+      --muted:      #9ca3af;
+      --muted-2:    #6b7280;
+    }
 
-        .stat-card {
-            background: white;
-            border-radius: 20px;
-            padding: 1.8rem 1.4rem;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            border: 1px solid rgba(229,231,235,0.6);
-        }
+    /* ═══════════════════════════════════════════════
+       BASE
+    ═══════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .stat-card:hover {
-            transform: translateY(-14px) scale(1.04);
-            box-shadow: 0 30px 70px rgba(91,33,182,0.22);
-        }
+    body {
+      font-family: var(--font);
+      background: linear-gradient(145deg, var(--page-bg) 0%, var(--page-bg2) 100%);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background .35s, color .35s;
+    }
 
-        .stat-icon {
-            font-size: 3.2rem;
-            margin-bottom: 1.1rem;
-            display: block;
-        }
+    /* Subtle animated mesh on body */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 20%,  rgba(79,70,229,.07)  0%, transparent 70%),
+        radial-gradient(ellipse 50% 35% at 90% 10%,  rgba(124,58,237,.06) 0%, transparent 65%),
+        radial-gradient(ellipse 55% 45% at 50% 95%,  rgba(8,145,178,.05)  0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 80% 70%,  rgba(225,29,72,.04)  0%, transparent 60%);
+    }
 
-        .stat-number {
-            font-size: 3.6rem;
-            font-weight: 800;
-            line-height: 1;
-            background: linear-gradient(90deg, var(--primary), #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    .main {
+      position: relative;
+      z-index: 1;
+      padding: 2.4rem 1.4rem 4rem;
+    }
 
-        .section-title {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 1.8rem;
-            position: relative;
-            display: inline-block;
-        }
+    /* ═══════════════════════════════════════════════
+       GLASS CARD (main wrapper)
+    ═══════════════════════════════════════════════ */
+    .glass {
+      background: var(--glass-bg);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      overflow: hidden;
+      position: relative;
+    }
 
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 110px;
-            height: 6px;
-            background: linear-gradient(90deg, var(--primary), #c4b5fd);
-            border-radius: 3px;
-        }
+    .glass::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--indigo), var(--violet-l), var(--cyan-l), var(--rose-l));
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
 
-        /* Calendar – more premium look */
-        #amc-calendar {
-            --fc-border-color: rgba(203,213,225,0.5);
-            --fc-daygrid-event-dot-width: 9px;
-        }
+    .content-wrap {
+      position: relative;
+      z-index: 1;
+      padding: 2.8rem 2.4rem 2.4rem;
+    }
 
-        .fc .fc-toolbar-title {
-            font-size: 2.1rem;
-            font-weight: 800;
-            background: linear-gradient(90deg, #7c3aed, #c4b5fd);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    /* ═══════════════════════════════════════════════
+       TOPBAR
+    ═══════════════════════════════════════════════ */
+    .topbar {
+      display: flex;
+      gap: 1.2rem;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 2.2rem;
+    }
 
-        .fc .fc-button {
-            background: var(--primary);
-            border: none;
-            border-radius: 14px;
-            padding: 0.7rem 1.5rem;
-            font-weight: 700;
-            box-shadow: 0 6px 18px var(--primary-glow);
-            transition: all 0.35s;
-        }
+    .page-title {
+      font-size: clamp(2rem, 2.8vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      background: linear-gradient(125deg, var(--indigo) 0%, var(--violet-l) 45%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-        .fc .fc-button:hover {
-            background: var(--primary-dark);
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(91,33,182,0.35);
-        }
+    .page-subtitle {
+      color: var(--muted);
+      font-weight: 500;
+      margin-top: .45rem;
+      font-size: .95rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
 
-        .fc-event {
-            border: none !important;
-            border-radius: 12px;
-            padding: 7px 12px;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-            transition: all 0.28s;
-        }
+    .page-subtitle::before {
+      content: "";
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 0 3px rgba(5,150,105,.25);
+      animation: pulse-dot 2s infinite;
+    }
 
-        .fc-event:hover {
-            transform: scale(1.06) translateY(-2px);
-            box-shadow: 0 10px 28px rgba(0,0,0,0.25);
-        }
+    @keyframes pulse-dot {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(5,150,105,.25); }
+      50%       { box-shadow: 0 0 0 6px rgba(5,150,105,.10); }
+    }
 
-        .fc-daygrid-day:hover .fc-daygrid-day-frame {
-            background: rgba(124, 58, 237, 0.06);
-        }
+    /* Pill badge */
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border2);
+      padding: .55rem 1rem;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+    }
 
-        .table-premium thead th {
-            background: linear-gradient(to bottom, #f1f5f9, #e5e7eb);
-            color: #374151;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.86rem;
-            letter-spacing: 0.6px;
-            border: none;
-        }
+    .pill-badge .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+    }
 
-        .table-premium tbody tr {
-            transition: all 0.25s;
-        }
+    /* Action buttons */
+    .btn-action {
+      border-radius: var(--radius-sm);
+      font-weight: 800;
+      font-size: .88rem;
+      padding: .65rem 1.2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      transition: all .22s cubic-bezier(.4,0,.2,1);
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-action:hover  { transform: translateY(-4px); filter: brightness(1.06); box-shadow: var(--shadow-md); }
+    .btn-action:active { transform: translateY(-1px); }
 
-        .table-premium tbody tr:hover {
-            background: rgba(124,58,237,0.05);
-            transform: scale(1.005);
-        }
+    .btn-primary-action {
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      color: #fff;
+      box-shadow: 0 10px 28px rgba(79,70,229,.30);
+    }
+    .btn-warning-action {
+      background: linear-gradient(135deg, var(--amber-l), var(--amber));
+      color: #fff;
+      box-shadow: 0 10px 28px rgba(217,119,6,.28);
+    }
+    .btn-ghost-action {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      box-shadow: var(--shadow-sm);
+    }
 
-        .btn-lux {
-            border-radius: 14px;
-            padding: 0.75rem 1.6rem;
-            font-weight: 700;
-            box-shadow: 0 8px 24px var(--primary-glow);
-            transition: all 0.38s cubic-bezier(0.34,1.56,0.64,1);
-            position: relative;
-            overflow: hidden;
-        }
+    /* ═══════════════════════════════════════════════
+       STAT CARDS
+    ═══════════════════════════════════════════════ */
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      padding: 1.6rem 1.4rem 1.4rem;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      transition: transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s;
+    }
 
-        .btn-lux:hover {
-            transform: translateY(-6px) scale(1.07);
-            box-shadow: 0 20px 50px rgba(91,33,182,0.4);
-        }
+    .stat-card::before {
+      content: "";
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      opacity: .07;
+      transition: transform .3s;
+    }
 
-        .btn-lux::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255,255,255,0.25);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-            pointer-events: none;
-        }
+    .stat-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); }
+    .stat-card:hover::before { transform: scale(1.3); }
 
-        .btn-lux:active::after {
-            width: 300px;
-            height: 300px;
-            opacity: 0;
-        }
+    .stat-card.s-indigo  { border-top: 4px solid var(--indigo); }
+    .stat-card.s-emerald { border-top: 4px solid var(--emerald); }
+    .stat-card.s-rose    { border-top: 4px solid var(--rose); }
+    .stat-card.s-amber   { border-top: 4px solid var(--amber); }
+    .stat-card.s-cyan    { border-top: 4px solid var(--cyan); }
 
-        @media (max-width: 992px) {
-            .dashboard-glass { padding: 2rem 1.5rem; border-radius: 20px; }
-            .title-gradient { font-size: 2.5rem; }
-            .stat-number { font-size: 2.8rem; }
-        }
-    </style>
+    .stat-card.s-indigo::before  { background: var(--indigo); }
+    .stat-card.s-emerald::before { background: var(--emerald); }
+    .stat-card.s-rose::before    { background: var(--rose); }
+    .stat-card.s-amber::before   { background: var(--amber); }
+    .stat-card.s-cyan::before    { background: var(--cyan); }
+
+    .stat-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #fff;
+      margin-bottom: 1.1rem;
+      box-shadow: 0 10px 24px rgba(0,0,0,.14);
+    }
+
+    .icon-indigo  { background: linear-gradient(135deg, #818cf8, var(--indigo)); }
+    .icon-emerald { background: linear-gradient(135deg, #34d399, var(--emerald)); }
+    .icon-rose    { background: linear-gradient(135deg, #fb7185, var(--rose)); }
+    .icon-amber   { background: linear-gradient(135deg, #fbbf24, var(--amber)); }
+    .icon-cyan    { background: linear-gradient(135deg, #22d3ee, var(--cyan)); }
+
+    .stat-label {
+      font-size: .8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: var(--muted);
+      margin-bottom: .3rem;
+    }
+
+    .stat-value {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .stat-value.v-indigo  { color: var(--indigo); }
+    .stat-value.v-emerald { color: var(--emerald); }
+    .stat-value.v-rose    { color: var(--rose); }
+    .stat-value.v-amber   { color: var(--amber); }
+    .stat-value.v-cyan    { color: var(--cyan); }
+
+    .stat-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .78rem;
+      font-weight: 700;
+      margin-top: .5rem;
+      padding: .25rem .6rem;
+      border-radius: 999px;
+    }
+    .trend-up   { background: rgba(5,150,105,.12);  color: var(--emerald); }
+    .trend-warn { background: rgba(217,119,6,.12);  color: var(--amber); }
+    .trend-down { background: rgba(225,29,72,.12);  color: var(--rose); }
+
+    /* ═══════════════════════════════════════════════
+       SECTION HEADINGS
+    ═══════════════════════════════════════════════ */
+    .section-wrap {
+      margin-top: 2.4rem;
+    }
+
+    .section-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.1rem;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .section-heading .h-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      color: #fff;
+    }
+
+    .section-heading .underline {
+      display: block;
+      width: 100%;
+      height: 4px;
+      margin-top: 5px;
+      border-radius: 999px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SEARCH BOX
+    ═══════════════════════════════════════════════ */
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: .6rem 1rem;
+      box-shadow: var(--shadow-sm);
+      min-width: min(380px, 100%);
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .search-wrap:focus-within {
+      border-color: var(--indigo);
+      box-shadow: 0 0 0 4px rgba(79,70,229,.12);
+    }
+
+    .search-wrap .bi { color: var(--muted); font-size: 1rem; }
+
+    .search-wrap input {
+      border: none;
+      outline: none;
+      background: transparent;
+      width: 100%;
+      font-weight: 600;
+      font-size: .92rem;
+      color: var(--text);
+      font-family: var(--font);
+    }
+
+    .search-wrap input::placeholder { color: var(--muted-2); }
+
+    .btn-clear {
+      border: none;
+      background: rgba(79,70,229,.10);
+      color: var(--indigo);
+      font-weight: 800;
+      font-size: .78rem;
+      border-radius: 8px;
+      padding: .3rem .65rem;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .btn-clear:hover { background: rgba(79,70,229,.18); }
+
+    /* ═══════════════════════════════════════════════
+       CALENDAR
+    ═══════════════════════════════════════════════ */
+    .calendar-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .calendar-inner { padding: 1.6rem; }
+
+    /* FullCalendar overrides */
+    #amc-calendar {
+      --fc-border-color:       rgba(99,102,241,.18);
+      --fc-today-bg-color:     rgba(79,70,229,.07);
+      --fc-page-bg-color:      transparent;
+      --fc-neutral-bg-color:   transparent;
+      --fc-event-border-color: transparent;
+    }
+
+    .fc .fc-toolbar-title {
+      font-family: var(--font);
+      font-weight: 900;
+      letter-spacing: -1px;
+      font-size: 1.55rem;
+      background: linear-gradient(90deg, var(--indigo), var(--violet-l), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .fc .fc-button {
+      background: linear-gradient(135deg, var(--indigo), var(--violet)) !important;
+      border: none !important;
+      border-radius: var(--radius-sm) !important;
+      font-family: var(--font) !important;
+      font-weight: 800 !important;
+      font-size: .82rem !important;
+      padding: .5rem .9rem !important;
+      box-shadow: 0 8px 22px rgba(79,70,229,.28) !important;
+      transition: all .2s !important;
+    }
+
+    .fc .fc-button:hover {
+      transform: translateY(-3px) !important;
+      box-shadow: 0 14px 32px rgba(79,70,229,.38) !important;
+      filter: brightness(1.07) !important;
+    }
+
+    .fc .fc-button:not(:disabled):active,
+    .fc .fc-button-active {
+      background: linear-gradient(135deg, var(--violet), var(--indigo)) !important;
+      box-shadow: 0 6px 16px rgba(79,70,229,.30) !important;
+    }
+
+    .fc .fc-event {
+      border: none !important;
+      border-radius: 10px !important;
+      font-family: var(--font) !important;
+      font-weight: 700 !important;
+      font-size: .78rem !important;
+      padding: 4px 9px !important;
+      cursor: pointer !important;
+      box-shadow: 0 6px 16px rgba(0,0,0,.15) !important;
+      transition: transform .18s, box-shadow .18s !important;
+    }
+
+    .fc .fc-event:hover {
+      transform: scale(1.04) !important;
+      box-shadow: 0 10px 24px rgba(0,0,0,.20) !important;
+    }
+
+    .fc .fc-col-header-cell-cushion,
+    .fc .fc-daygrid-day-number {
+      font-family: var(--font);
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .fc .fc-day-today .fc-daygrid-day-number {
+      background: var(--indigo);
+      color: #fff !important;
+      border-radius: 8px;
+      padding: 2px 7px;
+    }
+
+    .fc .fc-daygrid-day:hover { background: rgba(79,70,229,.04); }
+
+    .fc th { border-color: var(--border) !important; }
+    .fc td { border-color: var(--border) !important; }
+
+    /* Calendar legend */
+    .cal-legend {
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      padding: .8rem 1.6rem 1rem;
+      border-top: 1px solid var(--border);
+      background: rgba(79,70,229,.03);
+    }
+
+    .leg-item {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .leg-dot {
+      width: 10px; height: 10px;
+      border-radius: 3px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       TABLES
+    ═══════════════════════════════════════════════ */
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    .table-card table { margin: 0; }
+
+    .table-card thead th {
+      background: linear-gradient(180deg,
+        rgba(238,242,255,.95) 0%,
+        rgba(224,231,255,.85) 100%);
+      border-bottom: 2px solid rgba(99,102,241,.18);
+      color: #3730a3;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .55px;
+      font-size: .78rem;
+      padding: 1rem 1rem;
+      white-space: nowrap;
+    }
+
+    html[data-theme="dark"] .table-card thead th {
+      background: linear-gradient(180deg,
+        rgba(30,27,75,.85) 0%,
+        rgba(17,24,39,.75) 100%);
+      color: var(--text-2);
+      border-bottom: 2px solid rgba(99,102,241,.25);
+    }
+
+    .table-card tbody td {
+      padding: .9rem 1rem;
+      border-top: 1px solid rgba(99,102,241,.09);
+      vertical-align: middle;
+      font-size: .88rem;
+    }
+
+    .table-card tbody tr {
+      transition: background .18s, transform .18s;
+    }
+
+    .table-card tbody tr:hover {
+      background: rgba(79,70,229,.04);
+      transform: scale(1.002);
+    }
+
+    /* Table empty state */
+    .tbl-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .tbl-empty .empty-icon {
+      font-size: 2.8rem;
+      margin-bottom: .8rem;
+      opacity: .4;
+    }
+
+    .tbl-empty p { color: var(--muted); font-weight: 700; margin: 0; }
+
+    /* ═══════════════════════════════════════════════
+       BADGES & CHIPS
+    ═══════════════════════════════════════════════ */
+    .badge-days {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-weight: 800;
+      font-size: .8rem;
+      padding: .3rem .7rem;
+      border-radius: 999px;
+    }
+    .badge-days.urgent  { background: rgba(225,29,72,.12);  color: var(--rose); }
+    .badge-days.warning { background: rgba(217,119,6,.12);  color: var(--amber); }
+    .badge-days.ok      { background: rgba(5,150,105,.12);  color: var(--emerald); }
+
+    .badge-contract {
+      background: rgba(79,70,229,.10);
+      color: var(--indigo);
+      font-weight: 800;
+      font-size: .78rem;
+      padding: .25rem .65rem;
+      border-radius: 8px;
+    }
+
+    /* Small action buttons inside table */
+    .btn-tbl {
+      border: none;
+      border-radius: 9px;
+      font-weight: 800;
+      font-size: .78rem;
+      padding: .4rem .8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      cursor: pointer;
+      transition: all .2s;
+      text-decoration: none;
+    }
+    .btn-tbl:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+    .btn-tbl-danger {
+      background: linear-gradient(135deg, #fb7185, var(--rose));
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(225,29,72,.24);
+    }
+    .btn-tbl-info {
+      background: linear-gradient(135deg, var(--sky-l), var(--sky));
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(2,132,199,.24);
+    }
+
+    /* ═══════════════════════════════════════════════
+       MODAL
+    ═══════════════════════════════════════════════ */
+    .modal-content {
+      background: var(--card-bg) !important;
+      border: 1px solid var(--border2) !important;
+      border-radius: var(--radius-md) !important;
+      box-shadow: var(--shadow-lg) !important;
+      backdrop-filter: blur(20px);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.3rem 1.5rem;
+    }
+
+    .modal-title {
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: var(--text);
+    }
+
+    .modal-body { padding: 1.4rem 1.5rem 1.6rem; }
+
+    .event-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      background: rgba(79,70,229,.08);
+      color: var(--indigo);
+      font-weight: 700;
+      font-size: .85rem;
+      padding: .4rem .85rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    .event-desc {
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+    }
+
+    /* ═══════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════ */
+    .site-footer {
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      text-align: center;
+    }
+
+    .site-footer p {
+      margin: 0 0 .4rem;
+      font-weight: 600;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+
+    .site-footer a {
+      background: linear-gradient(90deg, #4f46e5, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    /* ═══════════════════════════════════════════════
+       DIVIDER WITH LABEL
+    ═══════════════════════════════════════════════ */
+    .divider-label {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      margin: 2rem 0 1rem;
+    }
+
+    .divider-label::before,
+    .divider-label::after {
+      content: "";
+      flex: 1;
+      height: 1.5px;
+      border-radius: 999px;
+    }
+
+    .divider-label::before { background: linear-gradient(90deg, transparent, var(--border2)); }
+    .divider-label::after  { background: linear-gradient(90deg, var(--border2), transparent); }
+
+    .div-text {
+      font-size: .75rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SCROLL
+    ═══════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(79,70,229,.28);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(79,70,229,.45); }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .content-wrap { padding: 1.6rem 1.2rem; }
+      .stat-value { font-size: 2.2rem; }
+      .topbar { gap: .8rem; }
+    }
+  </style>
 </head>
 
 <body>
+  {% include "sidebar.html" %}
 
-    {% include 'sidebar.html' %}
+  <div class="main">
+    <div class="container" style="max-width: 1520px;">
+      <div class="glass">
+        <div class="content-wrap">
 
-    <div class="main">
-        <div class="container">
-            <div class="dashboard-glass mx-auto" style="max-width: 1450px;">
-
-                <h1 class="title-gradient">AMC Dashboard</h1>
-
-                <!-- Summary Cards -->
-                <div class="row g-4 mb-5">
-                    <div class="col-lg-3 col-md-6">
-                        <div class="stat-card">
-                            <i class="bi bi-journal-text stat-icon text-primary"></i>
-                            <h6 class="text-muted mb-2 fs-5">Total AMCs</h6>
-                            <div class="stat-number">{{ total_amcs }}</div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="stat-card">
-                            <i class="bi bi-check-circle-fill stat-icon text-success"></i>
-                            <h6 class="text-muted mb-2 fs-5">Active AMCs</h6>
-                            <div class="stat-number">{{ active_amcs }}</div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="stat-card">
-                            <i class="bi bi-hourglass-split stat-icon text-danger"></i>
-                            <h6 class="text-muted mb-2 fs-5">Expiring Soon</h6>
-                            <div class="stat-number">{{ expiring_soon }}</div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="stat-card">
-                            <i class="bi bi-arrow-repeat stat-icon text-warning"></i>
-                            <h6 class="text-muted mb-2 fs-5">Renewal Requests</h6>
-                            <div class="stat-number">{{ renewal_requests }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="text-center mb-5">
-                    <a href="{% url 'amc:list' %}" class="btn btn-primary btn-lg btn-lux me-4">
-                        <i class="bi bi-list-ul me-2"></i> View All Contracts
-                    </a>
-                    <a href="{% url 'amc:renewal_requests' %}" class="btn btn-warning btn-lg btn-lux">
-                        <i class="bi bi-arrow-clockwise me-2"></i> Renewal Requests
-                    </a>
-                </div>
-
-                <!-- Calendar -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="section-title">AMC Calendar</h4>
-                    <button class="btn btn-outline-primary btn-lux" id="toggleCalendar">
-                        <i class="bi bi-calendar-event me-2"></i> Show Calendar
-                    </button>
-                </div>
-
-                <div class="d-none mb-5" id="calendarWrapper" style="background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 22px; overflow: hidden;">
-                    <div class="p-4">
-                        <div id="amc-calendar"></div>
-                    </div>
-                </div>
-
-                <!-- Expiring -->
-                <h4 class="section-title text-danger">Expiring Contracts (Next 15 Days)</h4>
-                <div class="table-responsive mb-5">
-                    <table class="table table-premium table-hover table-bordered rounded-4 overflow-hidden">
-                        <thead>
-                            <tr>
-                                <th>Contract No</th>
-                                <th>Customer</th>
-                                <th>Branch</th>
-                                <th>End Date</th>
-                                <th>Days Left</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for amc in expiring_amcs %}
-                            <tr>
-                                <td class="fw-bold">{{ amc.contract_number }}</td>
-                                <td>{{ amc.customer.customer_name }}</td>
-                                <td>{{ amc.branch.branch_name }}</td>
-                                <td class="text-danger fw-bold">{{ amc.end_date }}</td>
-                                <td class="fw-semibold">{{ amc.end_date|timeuntil }}</td>
-                                <td>
-                                    <a href="{% url 'amc:detail' amc.pk %}" class="btn btn-sm btn-danger btn-lux">
-                                        <i class="bi bi-eye me-1"></i> View
-                                    </a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="6" class="text-center py-5 text-success fs-4 fw-medium">No expiring contracts — all good! 🎉</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Upcoming -->
-                <h4 class="section-title">Upcoming Services (Next 15 Days)</h4>
-                <div class="table-responsive">
-                    <table class="table table-premium table-hover table-bordered rounded-4 overflow-hidden">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Customer</th>
-                                <th>Branch</th>
-                                <th>Contract</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for visit in upcoming_services %}
-                            <tr>
-                                <td class="fw-bold">{{ visit.service_date }}</td>
-                                <td>{{ visit.amc.customer.customer_name }}</td>
-                                <td>{{ visit.amc.branch.branch_name }}</td>
-                                <td>{{ visit.amc.contract_number }}</td>
-                                <td>
-                                    <a href="{% url 'amc:detail' visit.amc.id %}" class="btn btn-sm btn-info btn-lux text-white">
-                                        <i class="bi bi-eye me-1"></i> View AMC
-                                    </a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="5" class="text-center py-5 text-muted fs-4 fw-medium">No upcoming services in next 15 days</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
+          <!-- ╔══════════════════════════════╗
+               ║         TOPBAR               ║
+               ╚══════════════════════════════╝ -->
+          <div class="topbar">
+            <div>
+              <h1 class="page-title">AMC Dashboard</h1>
+              <p class="page-subtitle">Live overview · contracts, renewals &amp; service schedule</p>
             </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <!-- Live clock pill -->
+              <div class="pill-badge">
+                <span class="dot"></span>
+                <i class="bi bi-clock" style="color:var(--indigo);"></i>
+                <span style="font-size:.8rem;" id="updatedAt">Loading…</span>
+              </div>
+
+              <!-- Theme toggle -->
+              <button class="btn-action btn-ghost-action" id="themeToggle" type="button">
+                <i class="bi bi-moon-stars"></i>
+                <span>Theme</span>
+              </button>
+
+              <!-- View All Contracts -->
+              <a href="{% url 'amc:list' %}" class="btn-action btn-primary-action">
+                <i class="bi bi-list-ul"></i>
+                <span>All Contracts</span>
+              </a>
+
+              <!-- Renewal Requests -->
+              <a href="{% url 'amc:renewal_requests' %}" class="btn-action btn-warning-action">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Renewal Requests</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ╔══════════════════════════════╗
+               ║      SUMMARY STAT CARDS      ║
+               ╚══════════════════════════════╝ -->
+          <div class="row g-3 mb-2">
+
+            <!-- Total AMCs -->
+            <div class="col-xl col-md-6">
+              <div class="stat-card s-indigo">
+                <div class="stat-icon icon-indigo"><i class="bi bi-journal-text"></i></div>
+                <div class="stat-label">Total AMCs</div>
+                <div class="stat-value v-indigo">{{ total_amcs|default:0 }}</div>
+                <div class="stat-trend trend-up"><i class="bi bi-arrow-up-right"></i> All contracts</div>
+              </div>
+            </div>
+
+            <!-- Active AMCs -->
+            <div class="col-xl col-md-6">
+              <div class="stat-card s-emerald">
+                <div class="stat-icon icon-emerald"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-label">Active AMCs</div>
+                <div class="stat-value v-emerald">{{ active_amcs|default:0 }}</div>
+                <div class="stat-trend trend-up"><i class="bi bi-activity"></i> Currently active</div>
+              </div>
+            </div>
+
+            <!-- Expiring Soon -->
+            <div class="col-xl col-md-6">
+              <div class="stat-card s-rose">
+                <div class="stat-icon icon-rose"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-label">Expiring (15 Days)</div>
+                <div class="stat-value v-rose">{{ expiring_soon|default:0 }}</div>
+                <div class="stat-trend trend-down"><i class="bi bi-exclamation-triangle"></i> Needs attention</div>
+              </div>
+            </div>
+
+            <!-- Renewal Requests -->
+            <div class="col-xl col-md-6">
+              <div class="stat-card s-amber">
+                <div class="stat-icon icon-amber"><i class="bi bi-arrow-repeat"></i></div>
+                <div class="stat-label">Renewal Requests</div>
+                <div class="stat-value v-amber">{{ renewal_requests|default:0 }}</div>
+                <div class="stat-trend trend-warn"><i class="bi bi-clock-history"></i> Pending review</div>
+              </div>
+            </div>
+
+            <!-- Upcoming Services -->
+            <div class="col-xl col-md-6">
+              <div class="stat-card s-cyan">
+                <div class="stat-icon icon-cyan"><i class="bi bi-tools"></i></div>
+                <div class="stat-label">Upcoming Services</div>
+                <div class="stat-value" style="color:var(--cyan);">{{ upcoming_services|length|default:0 }}</div>
+                <div class="stat-trend trend-up" style="background:rgba(8,145,178,.10);color:var(--cyan);">
+                  <i class="bi bi-calendar-check"></i> Next 15 days
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ╔══════════════════════════════╗
+               ║   SEARCH + QUICK VIEW BAR    ║
+               ╚══════════════════════════════╝ -->
+          <div class="divider-label">
+            <span class="div-text">Quick View &amp; Search</span>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+            <div class="section-heading">
+              <div class="h-icon" style="background:linear-gradient(135deg,var(--indigo-l),var(--indigo));">
+                <i class="bi bi-grid-3x3-gap"></i>
+              </div>
+              <div>
+                <div>Contract Explorer</div>
+                <span class="underline" style="background:linear-gradient(90deg,var(--indigo),var(--violet-l));"></span>
+              </div>
+            </div>
+
+            <div class="search-wrap">
+              <i class="bi bi-search"></i>
+              <input id="tableSearch" type="text"
+                placeholder="Search customer / contract / branch…" autocomplete="off" />
+              <button class="btn-clear" id="clearSearch" type="button">✕ Clear</button>
+            </div>
+          </div>
+
+          <!-- ╔══════════════════════════════╗
+               ║         AMC CALENDAR         ║
+               ╚══════════════════════════════╝ -->
+          <div class="section-wrap">
+            <div class="section-bar">
+              <div class="section-heading">
+                <div class="h-icon" style="background:linear-gradient(135deg,var(--violet-l),var(--violet));">
+                  <i class="bi bi-calendar3"></i>
+                </div>
+                <div>
+                  <div>AMC Service Calendar</div>
+                  <span class="underline" style="background:linear-gradient(90deg,var(--violet),var(--violet-l));"></span>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 flex-wrap">
+                <button class="btn-action btn-ghost-action" id="toggleCalendar" type="button">
+                  <i class="bi bi-calendar-event"></i>
+                  <span>Show Calendar</span>
+                </button>
+                <button class="btn-action btn-ghost-action d-none" id="refreshCalendar" type="button">
+                  <i class="bi bi-arrow-repeat"></i>
+                  <span>Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Calendar wrapper (hidden by default) -->
+            <div class="calendar-container d-none" id="calendarWrapper">
+              <div class="calendar-inner">
+                <div id="amc-calendar"></div>
+              </div>
+              <!-- Legend -->
+              <div class="cal-legend">
+                <div class="leg-item">
+                  <span class="leg-dot" style="background:#4f46e5;"></span> Scheduled Service
+                </div>
+                <div class="leg-item">
+                  <span class="leg-dot" style="background:#059669;"></span> Service Visit
+                </div>
+                <div class="leg-item">
+                  <span class="leg-dot" style="background:#e11d48;"></span> Contract Expiry
+                </div>
+                <div class="leg-item">
+                  <span class="leg-dot" style="background:#d97706;"></span> Renewal Due
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ╔══════════════════════════════════════════╗
+               ║     EXPIRING CONTRACTS (15 DAYS)         ║
+               ╚══════════════════════════════════════════╝ -->
+          <div class="section-wrap">
+            <div class="section-bar">
+              <div class="section-heading">
+                <div class="h-icon" style="background:linear-gradient(135deg,#fb7185,var(--rose));">
+                  <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div>
+                  <div style="color:var(--rose);">Expiring Contracts <small style="font-size:.75rem;font-weight:700;color:var(--muted);">· Next 15 Days</small></div>
+                  <span class="underline" style="background:linear-gradient(90deg,var(--rose),#fb7185);"></span>
+                </div>
+              </div>
+
+              <!-- Count badge -->
+              <span style="background:rgba(225,29,72,.10);color:var(--rose);padding:.35rem .85rem;border-radius:999px;font-weight:900;font-size:.83rem;">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                {{ expiring_amcs|length }} contract{{ expiring_amcs|length|pluralize }} expiring
+              </span>
+            </div>
+
+            <div class="table-card">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle" id="expiringTable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Contract No.</th>
+                      <th>Customer</th>
+                      <th>Branch</th>
+                      <th>End Date</th>
+                      <th>Days Left</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for amc in expiring_amcs %}
+                    <tr>
+                      <td style="color:var(--muted-2);font-weight:700;font-size:.8rem;">{{ forloop.counter }}</td>
+                      <td>
+                        <span class="badge-contract">{{ amc.contract_number }}</span>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div style="width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--indigo-l),var(--indigo));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem;flex-shrink:0;">
+                            {{ amc.customer.customer_name|first|upper }}
+                          </div>
+                          <span style="font-weight:700;">{{ amc.customer.customer_name }}</span>
+                        </div>
+                      </td>
+                      <td style="color:var(--muted);font-weight:600;">{{ amc.branch.branch_name }}</td>
+                      <td style="font-weight:800;color:var(--rose);">
+                        <i class="bi bi-calendar-x me-1"></i>{{ amc.end_date|date:"d M Y" }}
+                      </td>
+                      <td>
+                        {% if amc.days_left is not None %}
+                          {% if amc.days_left <= 3 %}
+                            <span class="badge-days urgent"><i class="bi bi-fire"></i> {{ amc.days_left }}d</span>
+                          {% elif amc.days_left <= 7 %}
+                            <span class="badge-days warning"><i class="bi bi-exclamation"></i> {{ amc.days_left }}d</span>
+                          {% else %}
+                            <span class="badge-days ok"><i class="bi bi-clock"></i> {{ amc.days_left }}d</span>
+                          {% endif %}
+                        {% else %}
+                          <span class="badge-days warning">{{ amc.end_date|timeuntil }}</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <a href="{% url 'amc:detail' amc.pk %}" class="btn-tbl btn-tbl-danger">
+                          <i class="bi bi-eye"></i> View
+                        </a>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="7">
+                        <div class="tbl-empty">
+                          <div class="empty-icon">🎉</div>
+                          <p>No expiring contracts in the next 15 days — you're all clear!</p>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ╔══════════════════════════════════════════╗
+               ║      UPCOMING SERVICES (15 DAYS)         ║
+               ╚══════════════════════════════════════════╝ -->
+          <div class="section-wrap">
+            <div class="section-bar">
+              <div class="section-heading">
+                <div class="h-icon" style="background:linear-gradient(135deg,var(--sky-l),var(--sky));">
+                  <i class="bi bi-tools"></i>
+                </div>
+                <div>
+                  <div>Upcoming Services <small style="font-size:.75rem;font-weight:700;color:var(--muted);">· Next 15 Days</small></div>
+                  <span class="underline" style="background:linear-gradient(90deg,var(--sky),var(--sky-l));"></span>
+                </div>
+              </div>
+
+              <span style="background:rgba(2,132,199,.10);color:var(--sky);padding:.35rem .85rem;border-radius:999px;font-weight:900;font-size:.83rem;">
+                <i class="bi bi-tools me-1"></i>
+                {{ upcoming_services|length }} service{{ upcoming_services|length|pluralize }} scheduled
+              </span>
+            </div>
+
+            <div class="table-card">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle" id="servicesTable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Service Date</th>
+                      <th>Customer</th>
+                      <th>Branch</th>
+                      <th>Contract No.</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for visit in upcoming_services %}
+                    <tr>
+                      <td style="color:var(--muted-2);font-weight:700;font-size:.8rem;">{{ forloop.counter }}</td>
+                      <td>
+                        <div style="font-weight:800;color:var(--sky);">
+                          <i class="bi bi-calendar-check me-1"></i>{{ visit.service_date|date:"d M Y" }}
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div style="width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--sky-l),var(--sky));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem;flex-shrink:0;">
+                            {{ visit.amc.customer.customer_name|first|upper }}
+                          </div>
+                          <span style="font-weight:700;">{{ visit.amc.customer.customer_name }}</span>
+                        </div>
+                      </td>
+                      <td style="color:var(--muted);font-weight:600;">{{ visit.amc.branch.branch_name }}</td>
+                      <td>
+                        <span class="badge-contract">{{ visit.amc.contract_number }}</span>
+                      </td>
+                      <td>
+                        <a href="{% url 'amc:detail' visit.amc.id %}" class="btn-tbl btn-tbl-info">
+                          <i class="bi bi-eye"></i> View AMC
+                        </a>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="6">
+                        <div class="tbl-empty">
+                          <div class="empty-icon">📅</div>
+                          <p>No upcoming services scheduled in the next 15 days.</p>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- END content-wrap -->
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- ────────────────────────────────────────────── -->
-    <!--               ORIGINAL FOOTER (unchanged)       -->
-    <!-- ────────────────────────────────────────────── -->
-    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
-        <div class="row p-3">
-            <div class="col-md-12 text-center">
-                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
-                    © 2025. Powered by
-                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
-                        style="height: 20px; vertical-align: middle;">
-                    <a href="http://www.chronoanalytics.in/"
-                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
-                        Solution</a>
-                    All Rights Reserved.
-                </p>
-            </div>
-            <div class="col-md-12 text-center">
-                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
-                    © 2025. Marketed by
-                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
-                        style="height: 20px; vertical-align: middle;">
-                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
-                    All Rights Reserved.
-                </p>
-            </div>
+  <!-- ══════════════════════════════════════
+       EVENT DETAIL MODAL
+  ════════════════════════════════════════ -->
+  <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="eventTitle">Event Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+        <div class="modal-body">
+          <div class="event-meta" id="eventDate">
+            <i class="bi bi-calendar-event"></i>
+            <span>—</span>
+          </div>
+          <div class="event-desc" id="eventDesc"></div>
+          <a class="btn-action btn-primary-action w-100 justify-content-center d-none"
+             id="eventLink" href="#" style="border-radius:var(--radius-sm);">
+            <i class="bi bi-box-arrow-up-right"></i> Open Full Details
+          </a>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <!-- ══════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════ -->
+  <div class="site-footer">
+    <p>
+      © 2025 · Powered by
+      <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics" style="height:18px;vertical-align:middle;margin:0 4px;">
+      <a href="http://www.chronoanalytics.in/">Chronoanalytics Solution</a>
+      · All rights reserved.
+    </p>
+    <p style="margin-bottom:0;">
+      © 2025 · Marketed by
+      <img src="{% static 'images/TeimLogo.png' %}" alt="TEIM" style="height:18px;vertical-align:middle;margin:0 4px;">
+      <a href="http://teim.in/">TEIM</a>
+      · All rights reserved.
+    </p>
+  </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const toggle = document.getElementById("toggleCalendar");
-            const wrapper = document.getElementById("calendarWrapper");
-            let cal, ready = false;
+  <!-- ══════════════════════════════════════
+       SCRIPTS
+  ════════════════════════════════════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
-            toggle.addEventListener("click", () => {
-                wrapper.classList.toggle("d-none");
+  <script>
+    /* ── Theme toggle ─────────────────────────── */
+    (function () {
+      const root = document.documentElement;
+      const btn  = document.getElementById("themeToggle");
+      const saved = localStorage.getItem("amc_theme");
+      if (saved) root.setAttribute("data-theme", saved);
 
-                toggle.innerHTML = wrapper.classList.contains("d-none")
-                    ? '<i class="bi bi-calendar-event me-2"></i> Show Calendar'
-                    : '<i class="bi bi-x-lg me-2"></i> Hide Calendar';
+      function syncIcon() {
+        const dark = root.getAttribute("data-theme") === "dark";
+        btn.innerHTML = dark
+          ? '<i class="bi bi-sun"></i><span>Light</span>'
+          : '<i class="bi bi-moon-stars"></i><span>Dark</span>';
+      }
 
-                if (!ready && !wrapper.classList.contains("d-none")) {
-                    const el = document.getElementById("amc-calendar");
-                    cal = new FullCalendar.Calendar(el, {
-                        initialView: 'dayGridMonth',
-                        height: 620,
-                        events: "{% url 'amc:calendar_events' %}",
-                        headerToolbar: {
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'dayGridMonth,timeGridWeek,listWeek'
-                        },
-                        eventClick: info => {
-                            if (info.event.url) {
-                                window.location.href = info.event.url;
-                                info.jsEvent.preventDefault();
-                            }
-                        }
-                    });
-                    cal.render();
-                    ready = true;
-                }
-            });
+      syncIcon();
+
+      btn.addEventListener("click", () => {
+        const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("amc_theme", next);
+        syncIcon();
+      });
+    })();
+
+    /* ── Live clock pill ──────────────────────── */
+    (function () {
+      const el = document.getElementById("updatedAt");
+      function tick() {
+        const now = new Date();
+        el.textContent = now.toLocaleString(undefined, {
+          day: "2-digit", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit", second: "2-digit"
         });
-    </script>
+      }
+      tick();
+      setInterval(tick, 1000);
+    })();
 
+    /* ── Table search across BOTH tables ─────── */
+    (function () {
+      const input  = document.getElementById("tableSearch");
+      const clear  = document.getElementById("clearSearch");
+      const tables = [
+        document.getElementById("expiringTable"),
+        document.getElementById("servicesTable")
+      ];
+
+      function filter() {
+        const q = (input.value || "").trim().toLowerCase();
+        tables.forEach(tbl => {
+          if (!tbl) return;
+          tbl.querySelectorAll("tbody tr").forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+          });
+        });
+      }
+
+      input.addEventListener("input", filter);
+      clear.addEventListener("click", () => { input.value = ""; filter(); });
+    })();
+
+    /* ── FullCalendar (lazy init) ─────────────── */
+    document.addEventListener("DOMContentLoaded", function () {
+      const toggle     = document.getElementById("toggleCalendar");
+      const wrapper    = document.getElementById("calendarWrapper");
+      const refreshBtn = document.getElementById("refreshCalendar");
+
+      let calendar = null;
+      let ready    = false;
+
+      const modalEl = document.getElementById("eventModal");
+      const modal   = new bootstrap.Modal(modalEl);
+
+      /* Event colour map by keyword */
+      function eventColor(title) {
+        const t = (title || "").toLowerCase();
+        if (t.includes("expir"))   return "#e11d48";
+        if (t.includes("renewal")) return "#d97706";
+        if (t.includes("visit"))   return "#059669";
+        return "#4f46e5";
+      }
+
+      function ensureCalendar() {
+        if (ready) return;
+
+        const el = document.getElementById("amc-calendar");
+        calendar = new FullCalendar.Calendar(el, {
+          initialView: "dayGridMonth",
+          height: 640,
+          nowIndicator: true,
+          eventDisplay: "block",
+          dayMaxEventRows: 4,
+          events: "{% url 'amc:calendar_events' %}",
+
+          headerToolbar: {
+            left:   "prev,next today",
+            center: "title",
+            right:  "dayGridMonth,timeGridWeek,listWeek"
+          },
+
+          /* Auto-colour events */
+          eventDidMount: function (info) {
+            const color = eventColor(info.event.title);
+            info.el.style.backgroundColor = color;
+            info.el.style.borderLeft = "4px solid " + color + "cc";
+          },
+
+          /* Click → show modal */
+          eventClick: function (info) {
+            info.jsEvent.preventDefault();
+
+            const title   = info.event.title || "Event";
+            const start   = info.event.start;
+            const dateStr = start ? start.toLocaleString(undefined, {
+              weekday:"long", day:"2-digit", month:"long", year:"numeric",
+              hour:"2-digit", minute:"2-digit"
+            }) : "";
+
+            const desc = (info.event.extendedProps || {}).description || "";
+
+            document.getElementById("eventTitle").textContent = title;
+
+            const dateLine = document.getElementById("eventDate");
+            dateLine.innerHTML = `<i class="bi bi-calendar-event"></i> <span>${dateStr}</span>`;
+
+            document.getElementById("eventDesc").textContent = desc;
+
+            const link = document.getElementById("eventLink");
+            if (info.event.url) {
+              link.classList.remove("d-none");
+              link.href = info.event.url;
+            } else {
+              link.classList.add("d-none");
+              link.href = "#";
+            }
+
+            modal.show();
+          }
+        });
+
+        calendar.render();
+        ready = true;
+      }
+
+      toggle.addEventListener("click", () => {
+        const wasHidden = wrapper.classList.contains("d-none");
+        wrapper.classList.toggle("d-none");
+
+        toggle.innerHTML = wasHidden
+          ? '<i class="bi bi-x-lg"></i><span>Hide Calendar</span>'
+          : '<i class="bi bi-calendar-event"></i><span>Show Calendar</span>';
+
+        refreshBtn.classList.toggle("d-none", !wasHidden);
+
+        if (wasHidden) {
+          ensureCalendar();
+          setTimeout(() => calendar && calendar.updateSize(), 60);
+        }
+      });
+
+      refreshBtn.addEventListener("click", () => {
+        if (calendar) calendar.refetchEvents();
+      });
+    });
+  </script>
 </body>
 </html>
