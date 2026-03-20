@@ -6759,18 +6759,42 @@ def draw_footer_and_logo(canvas, doc, logo_path, footer_path, branch):
         print("Footer load failed:", e)
 
 
+        
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, Table, TableStyle, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+from reportlab.lib.colors import HexColor
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+
+# Assuming these are already defined in your file:
+# - draw_footer_and_logo(canvas, doc_obj, logo_path, footer_path, branch)
+# - indian_currency(value)
+# - price_in_words(value)
+# - quotation_management model
+# - static('images/Logo.png') and static('images/NewFooter.png')
+
+def safe_float(value):
+    try:
+        return float(str(value).strip())
+    except (ValueError, TypeError, AttributeError):
+        return 0.0
+
 def reportlab_quotation_pdf(request, id):
     quotation = quotation_management.objects.get(id=id)
     branch = quotation.branch
     logo_path = request.build_absolute_uri(static('images/Logo.png'))
     footer_path = request.build_absolute_uri(static('images/NewFooter.png'))
     light_blue = HexColor("#0070C0")
+
     buffer = io.BytesIO()
     doc = BaseDocTemplate(buffer, pagesize=A4,
                           leftMargin=20 * mm, rightMargin=20 * mm,
                           topMargin=50 * mm, bottomMargin=35 * mm)
-
     doc.quotation_no = quotation.quotation_no
+
     frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
 
     def _header_footer(canvas, doc_obj):
@@ -6782,30 +6806,28 @@ def reportlab_quotation_pdf(request, id):
     normal = styles['Normal']
     bold = ParagraphStyle(name='bold', parent=normal, fontName='Helvetica-Bold')
     small = ParagraphStyle(name='small', parent=normal, fontSize=9)
+
     full_width = ParagraphStyle(name='full_width', parent=normal, leftIndent=0, firstLineIndent=0,
                                 rightIndent=0, spaceBefore=0, spaceAfter=0, fontSize=10, leading=9)
 
     elements = []
 
-    # --- Customer + Quotation Details ---
+    # ── Customer + Quotation Details ────────────────────────────────────────
     left_style = ParagraphStyle(name='left', fontSize=10, leading=10)
-    right_style = ParagraphStyle(name='right', fontSize=10, alignment=2, leading=12)
-    address_style = ParagraphStyle(
-        'address',
-        parent=left_style,
-        leading=14,       # extra line gap
-    )
+    right_style = ParagraphStyle(name='right', fontSize=10, alignment=TA_RIGHT, leading=12)
+    address_style = ParagraphStyle('address', parent=left_style, leading=14)
 
     customer_details = [
         Paragraph(f"<b>Name :</b> {quotation.customer.fullname}", left_style),
         Paragraph(f"<b>Phone :</b> {quotation.customer.primarycontact}", left_style),
         Paragraph(f"<b>Email :</b> {quotation.customer.primaryemail}", left_style),
-        Paragraph(f"<b>Address :</b> {quotation.address}", address_style ),
+        Paragraph(f"<b>Address :</b> {quotation.address}", address_style),
     ]
     if quotation.or_name:
         customer_details.append(
             Paragraph(f"<b>Person :</b> {quotation.or_name} - {quotation.or_contact}", left_style)
         )
+
     left_table = Table([[item] for item in customer_details], colWidths=[95 * mm])
     left_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -6815,10 +6837,11 @@ def reportlab_quotation_pdf(request, id):
     ]))
 
     quotation_details = [
-        Paragraph("<b>Quotation</b>", ParagraphStyle(name='title', fontSize=12, alignment=2, leading=12)),
+        Paragraph("<b>Quotation</b>", ParagraphStyle(name='title', fontSize=12, alignment=TA_RIGHT, leading=12)),
         Paragraph(f"<b>{quotation.quotation_no}</b>", ParagraphStyle(name="temp_right_bold", parent=right_style, fontSize=14, fontName='Helvetica-Bold')),
         Paragraph(f"<b>Date:</b> {quotation.quotation_date.strftime('%d %B %Y')}", right_style)
     ]
+
     right_table = Table([[item] for item in quotation_details], colWidths=[85 * mm])
 
     combined_table = Table([[left_table, right_table]], colWidths=[95 * mm, 85 * mm])
@@ -6827,47 +6850,31 @@ def reportlab_quotation_pdf(request, id):
         ('LEFTPADDING', (0, 0), (-1, -1), 2),
         ('RIGHTPADDING', (0, 0), (-1, -1), 2),
     ]))
+
     elements.append(combined_table)
     elements.append(Spacer(1, 5))
 
-    # --- Subject and Intro ---
-    thank_u_note_style = ParagraphStyle(
-        name="thank_u_note_style",
-        parent=full_width,
-        fontSize=10,
-        leading=14,        # extra line gap
-    )
+    # ── Subject and Intro ───────────────────────────────────────────────────
+    thank_u_note_style = ParagraphStyle(name="thank_u_note_style", parent=full_width, fontSize=10, leading=14)
+
     elements.append(Paragraph(f"<b>Subject:</b> {quotation.subject}", full_width))
     elements.append(Spacer(1, 8))
-    elements.append(Paragraph(
-        f"<b>{ quotation.thank_u_note }:</b>",
-         thank_u_note_style))
+    elements.append(Paragraph(f"<b>{quotation.thank_u_note}:</b>", thank_u_note_style))
     elements.append(Spacer(1, 10))
 
-    # --- Product Table ---
+    # ── Product Table ───────────────────────────────────────────────────────
     product_data = [["Sr. No.", "Product / Service", "HSN", "Rate (Rs)", "Qty", "Total (Rs)"]]
-    
+
+    calculated_total = 0.0
+
     for idx, item in enumerate(quotation.product_details_json, start=1):
-        # always initialize
-        hsn = item.get('hsn_code', '')  
-        price = 0.0
-        quantity = 0.0
-        total = 0.0
+        hsn = item.get('hsn_code', '')
 
-        hsn_style = ParagraphStyle(
-            name="hsn_style",
-            parent=small,
-            alignment=TA_CENTER,
-            wordWrap="CJK"  # keeps text in one line
-        )
+        price = safe_float(item.get('price'))
+        quantity = safe_float(item.get('quantity'))
+        total = price * quantity
 
-        hsn_text = Paragraph(hsn, hsn_style)
-        try:
-            price = float(item.get('price', 0))
-            quantity = float(item.get('quantity', 0))
-            total = price * quantity
-        except (ValueError, TypeError):
-            pass  # keep as 0.0
+        calculated_total += total
 
         description = item.get('description', '').replace('\n', '<br/>')
 
@@ -6877,7 +6884,7 @@ def reportlab_quotation_pdf(request, id):
                 f"<b>{item.get('name', '')}</b><br/><font size='8'><i>{description}</i></font>",
                 small
             ),
-            hsn_text,
+            Paragraph(hsn, ParagraphStyle(name="hsn_style", parent=small, alignment=TA_CENTER)),
             Paragraph(indian_currency(price), ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             Paragraph(f"{quantity:.2f}<br/>{item.get('unit', '')}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             indian_currency(total)
@@ -6888,22 +6895,17 @@ def reportlab_quotation_pdf(request, id):
 
     product_table = Table(product_data, colWidths=col_widths)
     product_table.setStyle(TableStyle([
-     ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
-     ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D9D9D9')),
-     ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-
-     # Center align only header row, except Product / Service
-     ('ALIGN', (0, 0), (0, 0), 'CENTER'),   # Sr. No.
-     ('ALIGN', (2, 0), (-1, 0), 'CENTER'),  # Rate, Qty, Total
-     ('ALIGN', (1, 0), (1, 0), 'LEFT'),     # Product / Service header
-
-     # Data rows alignment
-     ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # Sr. No.
-     ('ALIGN', (1, 1), (1, -1), 'LEFT'),    # Product / Service (all rows)
-     ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),  # Rate, Qty, Total   ← changed from 1 to 2
-
-     ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D9D9D9')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+        ('ALIGN', (2, 0), (-1, 0), 'CENTER'),
+        ('ALIGN', (1, 0), (1, 0), 'LEFT'),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (1, 1), (1, -1), 'LEFT'),
+        ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
     ]))
 
     elements.append(product_table)
@@ -6919,34 +6921,65 @@ def reportlab_quotation_pdf(request, id):
     ]))
     elements.append(hr)
 
-    # -- Totals data (2 columns only) --
-    totals_data = []
-    
-    totals_data.append([Paragraph(f"<b>Total :</b>", right_style),
-                        Paragraph(f"<b>{indian_currency(quotation.total_price)}</b>", right_style)])
+    # ── GST & Totals Calculation ────────────────────────────────────────────
+    gst_amount = cgst = sgst = igst = 0.0
 
     if quotation.apply_gst:
-        if quotation.igst:
-            totals_data.append([Paragraph(f"<b>IGST :</b>", right_style),
-                                Paragraph(f"<b>{indian_currency(quotation.igst)}</b>", right_style)])
-        else:
-            totals_data.append([Paragraph(f"<b>CGST :</b>", right_style), 
-                                Paragraph(f"<b>{indian_currency(quotation.cgst)}</b>", right_style)])
-            totals_data.append([Paragraph(f"<b>SGST :</b>", right_style),
-                                Paragraph(f"<b>{indian_currency(quotation.sgst)}</b>", right_style)])
-            totals_data.append([Paragraph(f"<b>Total Tax :</b>", right_style), 
-                                Paragraph(f"<b>{indian_currency(quotation.gst_total)}</b>", right_style)])
+        gst_rate = 18  # ← you can make this dynamic later if needed
 
+        if quotation.igst:
+            igst = (calculated_total * gst_rate) / 100
+            gst_amount = igst
+        else:
+            cgst = (calculated_total * gst_rate) / 200
+            sgst = (calculated_total * gst_rate) / 200
+            gst_amount = cgst + sgst
+
+    grand_total = calculated_total + gst_amount
+
+    # ── Totals Section ──────────────────────────────────────────────────────
+    totals_data = []
+
+    # Total
     totals_data.append([
-        Paragraph("<b>Grand Total :</b>", right_style),  
-        Paragraph(f"<b>{indian_currency(quotation.total_price_with_gst)}</b>", right_style)
+        Paragraph("<b>Total :</b>", right_style),
+        Paragraph(f"<b>{indian_currency(calculated_total)}</b>", right_style)
     ])
 
-    # --- Total in Words as last row, spanning both columns ---
-    amount_words = price_in_words(quotation.total_price_with_gst)
-    totals_data.append([Paragraph(f"<b>Total in Words : {amount_words}</b>", small), ""])
+    # GST breakdown
+    if quotation.apply_gst:
+        if quotation.igst:
+            totals_data.append([
+                Paragraph("<b>IGST :</b>", right_style),
+                Paragraph(f"<b>{indian_currency(igst)}</b>", right_style)
+            ])
+        else:
+            totals_data.append([
+                Paragraph("<b>CGST :</b>", right_style),
+                Paragraph(f"<b>{indian_currency(cgst)}</b>", right_style)
+            ])
+            totals_data.append([
+                Paragraph("<b>SGST :</b>", right_style),
+                Paragraph(f"<b>{indian_currency(sgst)}</b>", right_style)
+            ])
+            totals_data.append([
+                Paragraph("<b>Total Tax :</b>", right_style),
+                Paragraph(f"<b>{indian_currency(gst_amount)}</b>", right_style)
+            ])
 
-    # --- Create totals table ---
+    # Grand Total
+    totals_data.append([
+        Paragraph("<b>Grand Total :</b>", right_style),
+        Paragraph(f"<b>{indian_currency(grand_total)}</b>", right_style)
+    ])
+
+    # Amount in Words
+    amount_words = price_in_words(grand_total)
+    totals_data.append([
+        Paragraph(f"<b>Total in Words : {amount_words}</b>", small),
+        ""
+    ])
+
     totals_table = Table(totals_data, colWidths=[140 * mm, 30 * mm])
     totals_table.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
@@ -6959,7 +6992,6 @@ def reportlab_quotation_pdf(request, id):
         ('GRID', (0, 0), (-1, -1), 0.3, colors.gray),
     ]))
 
-    # --- Wrap in an outer table to right-align it ---
     totals_wrapper = Table([[totals_table]], colWidths=[total_width])
     totals_wrapper.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
@@ -6968,41 +7000,34 @@ def reportlab_quotation_pdf(request, id):
         ('TOPPADDING', (0, 0), (-1, -1), 0),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
+
     elements.append(totals_wrapper)
 
-    # --- Terms & Footer ---
+    # ── Terms & Conditions ──────────────────────────────────────────────────
     elements.append(Spacer(1, 5))
     elements.append(Paragraph("<b>Terms & Conditions</b>", bold))
 
-    # 1. Ordered terms from M2M field
     ordered_terms = []
     terms_by_id = {t.id: t for t in quotation.terms_and_conditions.all()}
-    
     for tid in quotation.terms_order or []:
         if tid in terms_by_id:
             ordered_terms.append(terms_by_id[tid])
-    
-    # 2. Custom terms (from string)
+
     custom_terms = []
     if quotation.custom_terms:
         custom_terms = [t.strip() for t in quotation.custom_terms.strip().split('\n') if t.strip()]
-    
-    # 3. Create Paragraphs (including both types)
+
     terms_paragraphs = []
-    
     idx = 1
     for t in ordered_terms:
         terms_paragraphs.append([Paragraph(f"{idx}. {t.description}", small)])
         idx += 1
-    
     for ct in custom_terms:
         terms_paragraphs.append([Paragraph(f"{idx}. {ct}", small)])
         idx += 1
-    
-    # Wrap inside table for styling
 
     if not terms_paragraphs:
-         terms_paragraphs = [[Paragraph("No Terms & Conditions.", small)]]
+        terms_paragraphs = [[Paragraph("No Terms & Conditions.", small)]]
 
     terms_table = Table(terms_paragraphs, colWidths=[doc.width])
     terms_table.setStyle(TableStyle([
@@ -7016,7 +7041,6 @@ def reportlab_quotation_pdf(request, id):
 
     elements.append(terms_table)
 
-    # GST Note (only when applicable)
     if quotation.apply_gst:
         elements.append(Paragraph(
             "All above material and services will be attracted to GST extra as per product or service applicable.",
@@ -7024,13 +7048,11 @@ def reportlab_quotation_pdf(request, id):
         ))
         elements.append(Spacer(1, 5))
 
-    # Thank You Block (always shown)
     elements.append(Paragraph(
         "We thank you for the opportunity given to serve you & look forward to adding you to our family of customers.",
         small
     ))
-    elements.append(Spacer(1,8))
-
+    elements.append(Spacer(1, 8))
     elements.append(Paragraph("<b>Thanking You,</b>", small))
     elements.append(Spacer(1, 2))
     elements.append(Paragraph("<b>Seva Facility Services Pvt Ltd</b>", small))
@@ -7039,19 +7061,15 @@ def reportlab_quotation_pdf(request, id):
 
     doc.build(elements)
     buffer.seek(0)
-    
-    # Check for download param
+
     download = request.GET.get("download", "false").lower() == "true"
-
     response = HttpResponse(buffer, content_type='application/pdf')
-
     if download:
         response['Content-Disposition'] = f'attachment; filename="Quotation_{quotation.quotation_no}.pdf"'
     else:
         response['Content-Disposition'] = f'inline; filename="Quotation_{quotation.quotation_no}.pdf"'
 
     return response
-
 
 def get_message_templates(request):
     templates = MessageTemplates.objects.all()
