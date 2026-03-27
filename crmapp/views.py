@@ -6885,12 +6885,12 @@ def reportlab_quotation_pdf(request, id):
                 small
             ),
             Paragraph(hsn, ParagraphStyle(name="hsn_style", parent=small, alignment=TA_CENTER)),
-            Paragraph(indian_currency(price), ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
+            Paragraph(indian_currency(price), ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT, wordWrap='CJK')),
             Paragraph(f"{quantity:.2f}<br/>{item.get('unit', '')}", ParagraphStyle(name="right", parent=small, alignment=TA_RIGHT)),
             indian_currency(total)
         ])
 
-    col_widths = [13 * mm, 70 * mm, 20 * mm, 21 * mm, 21 * mm, 25 * mm]
+    col_widths = [13 * mm, 66 * mm, 20 * mm, 25 * mm, 21 * mm, 25 * mm]
     total_width = sum(col_widths)
 
     product_table = Table(product_data, colWidths=col_widths)
