@@ -69,7 +69,10 @@ urlpatterns = [
     path("mreq/<int:pk>/reject/", reject_material_request, name="material_request_reject"), 
 
 
+
     path("notification/<int:pk>/", notification_read, name="notification_read"),
+ 
+
 
 
     path(
@@ -95,6 +98,9 @@ urlpatterns = [
             dc_edit_view,
             name="dc_edit"
         ),
+
+     path("delivery-challan/<int:pk>/pdf/", dc_pdf_view, name="dc_pdf"),
+
 
 
 

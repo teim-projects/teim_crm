@@ -1751,3 +1751,44 @@ def dc_edit_view(request, pk):
     )
 
 
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+from weasyprint import HTML
+
+from .models import DeliveryChallan
+from .utils import get_destination_details
+
+
+@login_required
+def dc_pdf_view(request, pk):
+    # Get challan
+    dc = get_object_or_404(DeliveryChallan, pk=pk)
+
+    # Get source & destination
+    source = get_destination_details(dc.source_type, dc.source_id)
+    destination = get_destination_details(dc.destination_type, dc.destination_id)
+
+    # Render HTML
+    html_string = render_to_string(
+        "inventory/delivery_challan_detail.html",
+        {
+            "dc": dc,
+            "items": dc.items.all(),
+            "source": source,
+            "destination": destination,
+        }
+    )
+
+    # Generate PDF (IMPORTANT: base_url)
+    pdf_file = HTML(
+        string=html_string,
+        base_url=request.build_absolute_uri('/')
+    ).write_pdf()
+
+    # Response
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="DC_{dc.dc_no}.pdf"'
+
+    return response
