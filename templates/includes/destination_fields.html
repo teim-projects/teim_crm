@@ -1,0 +1,12 @@
+{% load widget_tweaks %}
+<div class="row">
+  <div class="col-6">
+    <label>{{ form.destination_type.label }}</label>
+    {{ form.destination_type|add_class:"form-control destination-type" }}
+  </div>
+
+  <div class="col-6">
+    <label>Destination</label>
+    {{ form.destination_id|add_class:"form-control destination-id" }}
+  </div>
+</div>

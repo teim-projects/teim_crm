@@ -1,0 +1,1450 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Management Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/customer.css' %}">
+    <script src="{% static 'js/script.js' %}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0fbff;
+            color: #333333;
+        }
+
+        #map {
+    width: 100%;
+    height: 400px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+
+
+        }
+
+
+        .card-registration {
+            border-radius: 15px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px rgba(3, 174, 210, 0.2);
+            width: 100%;
+            max-width: 700px;
+
+            margin-top: 70px;
+        }
+
+
+        h3 {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            color: #03AED2;
+            margin-bottom: 30px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            margin-top: 10px;
+            width: 55px;
+            height: 26px;
+        }
+
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ffffff;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+
+        input:checked+.slider {
+            background-color: #4caf50;
+        }
+
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+
+        .gst-toggle-label {
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+            margin-bottom: 35px;
+        }
+
+
+        .form-check {
+            margin-bottom: 10px;
+        }
+
+
+        .form-check-input {
+            margin-right: 10px;
+        }
+
+
+        #gst-price-container,
+        #gst-number-container {
+            display: none;
+            /* Initially hidden, will show only when GST is checked */
+        }
+
+        /* Style for all form labels */
+        label {
+            font-family: 'Playfair Display', serif;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+        }
+
+
+        /* General style for all input fields, select boxes, textareas */
+
+        input[type="number"],
+        input[type="password"],
+        input[type="url"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+
+            margin-bottom: 15px;
+
+            border: 1px solid #ffffff;
+            font-size: 14px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+        }
+
+
+
+
+        input[type="number"],
+        input[type="password"],
+        input[type="url"],
+        select,
+        textarea {
+            border-color: #878787;
+            outline: none;
+            box-shadow: 0 0 8px rgba(237, 237, 237, 0.2);
+        }
+
+
+        /* Style for select dropdowns */
+        select {
+            height: 40px;
+            background-color: #fff;
+
+        }
+
+
+        /* Style for textarea to allow resizing vertically */
+
+
+
+
+
+
+
+
+
+
+        /* Style for form wrapper to center form and add padding */
+        form {
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #ffffff;
+        }
+
+
+        /* Style for error messages */
+        .error-message {
+            color: red;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+
+
+
+
+        /* Style for checkbox label */
+        .form-check-label {
+            margin-left: 5px;
+            font-size: 14px;
+        }
+
+
+
+
+
+        .btn-info {
+            background-color: #03AED2;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-info:hover {
+            background-color: #027994;
+            box-shadow: 0 4px 15px rgba(3, 174, 210, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin-top: 30px;
+            }
+
+            .card {
+                margin-left: 0;
+
+                max-width: 100%;
+                /* Add some padding for better appearance */
+            }
+
+            .open-sidebar .card {
+
+                margin-left: 300px;
+                /* Adjust content when sidebar is open */
+            }
+
+        }
+
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step:not(.d-none) {
+            display: block;
+        }
+
+        .step-indicator.fw-bold {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+
+        /* Toggle switch styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            background-color: #ccc;
+            border-radius: 34px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transition: 0.4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked+.slider {
+            background-color: #28a745;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        .adjustment {
+            padding: 2px !important;
+            padding-left: 6px;
+        }
+
+        /* Apply GST Toggle Alignment Fix */
+        .gst-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        .gst-toggle-container label {
+            margin-bottom: 0 !important;
+            line-height: 26px;
+        }
+
+        @media (max-width: 768px) {
+            .gst-toggle-container {
+                margin-top: 25px;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Custom col-12 spacing for form fields */
+        .col-12 {
+            margin-bottom: -15px;
+        }
+    </style>
+</head>
+
+
+<body>
+    {% include 'sidebar.html' %}
+
+
+    <div class="main-container">
+        <div class="card shadow-2-strong card-registration">
+            <div class="card-body">
+
+                <span onclick="window.location.href='/index'"
+                    style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i
+                        class="fas fa-house-chimney"></i></span>
+                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;"
+                    class="mb-4">X</span>
+
+                <h3 style="  font-weight: 600; margin: 10px;" class="mt-5">Service Management Record</h3>
+                <form method="POST" id="service-management-form">
+                    {% csrf_token %}
+
+                    <!-- STEP 1: Customer & Services -->
+                    <div class="form-step">
+                        <!-- Customer Selection -->
+
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>Customer Contact<span class="star">*</span></label>
+                                <input type="text" id="customer_contact" name="customer_contact" required
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label>Customer Name<span class="star">*</span></label>
+                                <input type="text" id="customer_full_name" name="customer_full_name" readonly required
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label>Customer Email<span class="star">*</span></label>
+                                <input type="text" id="customer_email" name="customer_email" readonly required
+                                    class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label>Subject<span class="star">*</span></label>
+                            <input type="text" name="subject" value="" class="form-control"><br>
+                        </div>
+
+                    <div class="row">
+                        <div class="col-12 col-md-4 gst-toggle-container">
+                            <label>Apply GST</label>
+                            <label class="switch">
+                                <input type="checkbox" id="apply_gst" name="apply_gst" onchange="toggleGST()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- Service Type -->
+                        <div class="col-12 col-md-8 " style="margin-top: 30px;">
+                            <label>Service Type<span class="star">*</span></label>
+                            <select id="servicetype" name="servicetype" class="form-control"
+                                onchange="fetchProducts(this)">
+                                    <option value="">Select service types</option>
+                                    {% for category, display_name in category_choices %}
+                                    <option value="{{ category }}">{{ display_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Product Selection -->
+                        <div class="row" style="margin-top:30px">
+                            <label>Select Products</label>
+
+                            <!-- ✅ Added Search Bar -->
+                            <div class="search mb-2">
+                                <input type="search" id="product-search" class="form-control" 
+                                    placeholder="Search products..." oninput="filterProducts()">
+                            </div>
+
+                            <div id="products-container" style="max-height: 300px; overflow-y: auto;">
+                                <!-- Dynamically loaded -->
+                            </div>
+                        </div>
+
+
+                        <!-- Selected Services List -->
+
+                        <label>Selected Services</label>
+<ul id="selected_services" class="selected-products-list"></ul>
+<input type="hidden" id="selected_services_names" name="selected_services_names">
+<input type="hidden" id="selected_products_json" name="selected_products_json" value="">  <!-- ✅ ADD THIS -->
+<div class="row">
+    <div class="col-5">
+        <!-- Price Fields -->
+        <label>Total Price (without GST)<span class="star">*</span></label>
+        <input type="number" id="total_price" name="total_price" step="0.01" readonly
+            class="form-control">
+    </div>
+
+
+
+                            <!-- GST Details -->
+                            <div id="gst_fields" style="display: none;">
+                                <input type="text" name="gst_number" placeholder="Enter GST Number"
+                                    class="form-control">
+                            </div>
+
+                            <div class="col-3">
+                                <label>GST</label>
+                                <input type="number" id="gst_price" name="gst_price" step="0.01" readonly
+                                    class="form-control">
+                            </div>
+                            <div class="col-4">
+                                <label>Total Price (with GST)</label>
+                                <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" readonly
+                                    class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 text-center col-12">
+                                <button type="button" class="btn btn-primary next-step mt-3"
+                                    style="width: 150px;">Next</button>
+                                <a href="/display_customer" class="btn btn-info mt-3" style="width: 150px;">View
+                                    Records</a>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: Contract & Property Details -->
+                    <div class="form-step d-none">
+                        <div class="row">
+                            <div class="col-4">
+                                <label>Contract Type</label>
+                                <select name="contract_type" class="form-control">
+                                    <option value="One Time">One Time</option>
+                                    <option value="AMC">AMC</option>
+                                    <option value="Warranty">Warranty</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label>Contract Status</label>
+                                <select name="contract_status" class="form-control">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label for="segment">Segment</label>
+                                <select name="segments" id="segment" class="form-control">
+                                    <option value="">-- All Segments --</option>
+                                    {% for value, label in segments %}
+                                    <option value="{{ value }}" {% if value == selected_segment %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+
+
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Property Type</label>
+                                <textarea name="property_type" class="form-control" rows="1"></textarea>
+                            </div>
+                            <div class="col-6">
+                                <label for="warranty_period">Warranty Period</label>
+                                <input type="text" name="warranty_period" class="form-control"><br>
+                            </div>
+                        </div>
+                        <div class="row">
+
+                            <div class="col-4">
+                                <label for="state">State<span class="star">*</span></label>
+                                <input type="text" id="state" name="state" required class="form-control">
+                            </div>
+
+                            <div class="col-4">
+                                <label>City<span class="star">*</span></label>
+                                <input type="text" id="city" name="city" class="form-control" required><br>
+                            </div>
+                            <div class="col-4">
+                                <label>Pincode<span class="star">*</span></label>
+                                <input type="text" id="pincode" name="pincode" maxlength="6" class="form-control"
+                                    required>
+                            </div>
+                        </div>
+
+                        <label>Address<span class="star">*</span></label>
+                        <textarea name="address" id="address" class="form-control" required></textarea>
+
+                        
+
+<label>Search Address or Paste Google Map Link</label>
+<div class="input-group mb-2">
+    <input type="text" id="location-search" class="form-control"
+           placeholder="Enter address OR paste Google Maps link">
+    <button type="button" class="btn btn-primary" onclick="searchLocation()">Search</button>
+</div>
+
+
+
+<input type="hidden" name="latitude" id="latitude">
+<input type="hidden" name="longitude" id="longitude">
+
+                        <label>Select Location on Map</label>
+
+<div id="map" ></div>
+
+
+
+<label>GPS Location (For Technician Navigation)</label>
+<input type="url" id="gps_location" name="gps_location"
+class="form-control"
+placeholder="Paste Google Maps location link for technician">
+
+                        <div class="row">
+                            <div class="col-md-12 text-center col-12">
+                                <button type="button" class="btn btn-secondary prev-step mt-3"
+                                    style="width: 150px;">Previous</button>
+
+                                <button type="button" class="btn btn-primary next-step mt-3"
+                                    style="width: 150px;">Next</button>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: Sales & Delivery -->
+                    <div class="form-step d-none">
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Select Frequency Count</label>
+                                <select name="frequency_count" class="form-control">
+                                    {% for freq in frequency_choices %}
+                                    <option value="{{ freq }}">{{ freq }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label>Payment Terms<span class="star">*</span></label>
+                                <input class="form-control" type="text" name="payment_terms"
+                                    value="100% Advance payment OR Whatever mutually Decided" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Sales Person Name <span class="star">*</span></label>
+                                <select name="sales_person_name" id="sales_person_select" class="form-control" required>
+                                    <option value="">-- Select Sales Person --</option>
+                                    {% for person in sales_persons %}
+                                    <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}" data-email="{{ person.email }}">
+                                        {{ person.full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label>Sales Person Contact No <span class="star">*</span></label>
+                                <input type="text" id="sales_person_contact_no" name="sales_person_contact_no"
+                                    class="form-control" pattern="\d{10}"
+                                    title="Please enter a valid 10-digit phone number" required readonly>
+                            </div>
+                            <div class="col-6">
+    <label>Sales Person Email <span class="star">*</span></label>
+    <input type="email"
+           id="sales_person_email"
+           name="sales_person_email"
+           class="form-control"
+           readonly>
+</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label>Branch<span class="star">*</span></label>
+                                <select name="branch" class="form-control">
+                                    <option value="">-- Select Branch --</option>
+                                    {% for branch in branches %}
+                                        <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+                                    {% endfor %}     
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label>Delivery Time<span class="star">*</span></label>
+                                <input type="time" class="form-control" name="delivery_time" required>
+                            </div>
+                            <div class="col-6">
+                                <label>Lead Date<span class="star">*</span></label>
+                                <input type="date" name="lead_date" class="form-control" required>
+                            </div>
+                            <div class="col-6">
+                                <label>Service Date<span class="star">*</span></label>
+                                <input type="date" name="service_date" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 text-center col-12">
+                                <button type="button" class="btn btn-secondary prev-step mt-3"
+                                    style="width: 150px;">Previous</button>
+                                <button class="btn btn-info mt-3" type="submit" style="width:150px;">Submit</button>
+                            </div>
+
+                        </div>
+                        <div class="mt-4 pt-2 text-center">
+                        </div>
+
+                    </div>
+                </form>
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Change to your actual view -->
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const submenu = this.querySelector('.submenu');
+                    const arrow = this.querySelector('.arrow-down');
+
+                    // Hide all other submenus
+                    menuItems.forEach(otherItem => {
+                        if (otherItem !== this) {
+                            const otherSubmenu = otherItem.querySelector('.submenu');
+                            const otherArrow = otherItem.querySelector('.arrow-down');
+                            if (otherSubmenu) {
+                                otherSubmenu.style.display = 'none';
+                                if (otherArrow.classList.contains('arrow-up')) {
+                                    otherArrow.classList.remove('arrow-up');
+                                }
+                            }
+                        }
+                    });
+
+
+                    // Toggle current submenu
+                    if (submenu) {
+                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+                        arrow.classList.toggle('arrow-up');
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- sales contact autofill -->
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const select = document.getElementById("sales_person_select");
+    const contactInput = document.getElementById("sales_person_contact_no");
+    const emailInput = document.getElementById("sales_person_email");
+
+    if(!select) return;
+
+    select.addEventListener("change", function () {
+
+        const selectedOption = this.options[this.selectedIndex];
+
+        const contact = selectedOption.getAttribute("data-contact") || "";
+        const email = selectedOption.getAttribute("data-email") || "";
+
+        contactInput.value = contact;
+        emailInput.value = email;
+
+    });
+
+});
+</script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const contactInput = document.getElementById("customer_contact");
+            const nameInput = document.getElementById("customer_full_name");
+            const emailInput = document.getElementById("customer_email");
+            const cityInput = document.getElementById("city");
+            const stateInput = document.getElementById("state");
+            const pincodeInput = document.getElementById("pincode");
+            const addressInput = document.getElementById("address");
+
+            contactInput.addEventListener('blur', function () {
+                const contactNo = contactInput.value.trim();
+                if (!contactNo) return;
+
+                fetch(`/get_customer_details/?contact_no=${encodeURIComponent(contactNo)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Customer not found');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+
+                        if (data.customer_email) {
+                            emailInput.value = data.customer_email;
+                        }
+                        if (data.customer_full_name) {
+                            nameInput.value = data.customer_full_name;
+                        }
+                        if (data.city) {
+                            cityInput.value = data.city;
+                        }
+                        if (data.pincode) {
+                            pincodeInput.value = data.pincode;
+                        }
+                        if (data.shifttopartyaddress) {
+                            addressInput.value = data.shifttopartyaddress;
+                        }
+                        if (data.state) {
+                            stateInput.value = data.state;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+        });
+    </script>
+
+    <!-- Product section -->
+    <script>
+        // Global variables
+let selectedProducts = [];
+let gstEnabled = true;
+let counter = 1;
+let productItemsCache = {};
+
+// Function to fetch products by category
+function fetchProducts(selectElement) {
+    document.getElementById('products-container').innerHTML = '<div class="text-center p-3">Loading products...</div>';
+    
+    const selectedCategories = Array.from(selectElement.selectedOptions).map(o => o.value);
+
+    if (selectedCategories.length === 0) {
+        document.getElementById('products-container').innerHTML = '';
+        return;
+    }
+
+    fetch(`/get_products?categories=${selectedCategories.join(',')}`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('products-container').innerHTML = '';
+            
+            if (data.products.length === 0) {
+                document.getElementById('products-container').innerHTML = '<div class="alert alert-info">No products found</div>';
+                return;
+            }
+            
+            data.products.forEach(product => {
+                displayProduct(product);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('products-container').innerHTML = '<div class="alert alert-danger">Error loading products</div>';
+        });
+}
+
+// Function to display a single product with its items
+function displayProduct(product) {
+    const productDiv = document.createElement('div');
+    productDiv.className = 'product-item mb-3 p-3 border rounded';
+    productDiv.setAttribute('data-product-id', product.product_id);
+    productDiv.setAttribute('data-product-name', product.product_name.toLowerCase());
+
+    productDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <strong class="h6 mb-0">${escapeHtml(product.product_name)}</strong>
+            <button type="button" class="btn btn-sm btn-outline-primary" 
+                    onclick="toggleItemsSection(${product.product_id})">
+                Show/Hide Items
+            </button>
+        </div>
+        
+        <div class="row g-2 mb-3">
+            <div class="col-md-4">
+                <label class="small">Price (₹)</label>
+                <input type="number" class="form-control form-control-sm product-price" 
+                       value="${product.price}" step="0.01" id="price-${product.product_id}">
+            </div>
+            <div class="col-md-4">
+                <label class="small">Quantity</label>
+                <input type="number" class="form-control form-control-sm product-quantity" 
+                       value="1" step="0.01" min="0.01" id="qty-${product.product_id}">
+            </div>
+            <div class="col-md-4">
+                <label class="small">Unit</label>
+                <input type="text" class="form-control form-control-sm product-unit" 
+                       placeholder="Unit" id="unit-${product.product_id}">
+            </div>
+        </div>
+        
+        <div class="row g-2 mb-3">
+            <div class="col-md-3 product-gst-group" style="display:${gstEnabled ? 'block' : 'none'}">
+                <label class="small">GST %</label>
+                <input type="number" class="form-control form-control-sm product-gst" 
+                       value="18" step="0.01" id="gst-${product.product_id}">
+            </div>
+            <div class="col-md-9">
+                <label class="small">Description</label>
+                <textarea class="form-control form-control-sm product-description" 
+                          rows="2" id="desc-${product.product_id}"></textarea>
+            </div>
+        </div>
+        
+        <div id="items-section-${product.product_id}" style="display: none;">
+            <div class="items-section mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted fw-bold">Required Items:</small>
+                    <button type="button" class="btn btn-sm btn-link" onclick="selectAllItems(${product.product_id})">
+                        Select All
+                    </button>
+                </div>
+                <div id="items-list-${product.product_id}" class="ms-2">
+                    <div class="text-muted small">Loading items...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-end mt-3">
+            <button type="button" class="btn btn-sm btn-primary" onclick='addProductToService(${JSON.stringify(product).replace(/'/g, "\\'")})'>
+                Add to Service
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('products-container').appendChild(productDiv);
+    fetchProductItems(product.product_id);
+}
+
+// Function to fetch items for a specific product
+function fetchProductItems(productId) {
+    if (productItemsCache[productId]) {
+        displayItemsList(productId, productItemsCache[productId]);
+        return;
+    }
+    
+    fetch(`/get_product_items/?product_id=${productId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.items) {
+                productItemsCache[productId] = data.items;
+                displayItemsList(productId, data.items);
+            } else {
+                document.getElementById(`items-list-${productId}`).innerHTML = 
+                    '<div class="text-muted small">No items available</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading items:', error);
+            document.getElementById(`items-list-${productId}`).innerHTML = 
+                '<div class="text-danger small">Error loading items</div>';
+        });
+}
+
+// Function to display items list with checkboxes
+function displayItemsList(productId, items) {
+    const container = document.getElementById(`items-list-${productId}`);
+    if (!container) return;
+    
+    if (!items || items.length === 0) {
+        container.innerHTML = '<div class="text-muted small">No items required</div>';
+        return;
+    }
+    
+    let itemsHTML = '';
+    items.forEach(item => {
+        itemsHTML += `
+            <div class="form-check mb-2">
+                <input type="checkbox" class="form-check-input product-item-checkbox" 
+                       data-product-id="${productId}"
+                       data-item-id="${item.id}"
+                       data-item-name="${escapeHtml(item.item_name)}"
+                       id="item-${productId}-${item.id}"
+                       onchange="toggleItemControls(${productId}, ${item.id})">
+                <label class="form-check-label small" for="item-${productId}-${item.id}">
+                    ${escapeHtml(item.item_name)}
+                </label>
+                <div id="item-controls-${productId}-${item.id}" style="display: none;" class="mt-1 ms-4">
+                    <div class="row g-2">
+                        <div class="col-5">
+                            <input type="number" class="form-control form-control-sm item-quantity" 
+                                   placeholder="Qty" min="1" value="1" 
+                                   id="item-qty-${productId}-${item.id}">
+                        </div>
+                        <div class="col-7">
+                            <input type="text" class="form-control form-control-sm item-notes" 
+                                   placeholder="Notes" 
+                                   id="item-notes-${productId}-${item.id}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = itemsHTML;
+}
+
+function toggleItemsSection(productId) {
+    const section = document.getElementById(`items-section-${productId}`);
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function toggleItemControls(productId, itemId) {
+    const checkbox = document.getElementById(`item-${productId}-${itemId}`);
+    const controls = document.getElementById(`item-controls-${productId}-${itemId}`);
+    
+    if (checkbox && controls) {
+        controls.style.display = checkbox.checked ? 'block' : 'none';
+        if (!checkbox.checked) {
+            const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
+            const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
+            if (qtyInput) qtyInput.value = '1';
+            if (notesInput) notesInput.value = '';
+        }
+    }
+}
+
+function selectAllItems(productId) {
+    const checkboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = !allChecked;
+        const itemId = checkbox.getAttribute('data-item-id');
+        toggleItemControls(productId, itemId);
+    });
+}
+
+function addProductToService(product) {
+    console.log("=== ADDING PRODUCT TO SERVICE ===");
+    console.log("Product object:", product);
+    
+    const productId = product.product_id;
+    
+    const price = parseFloat(document.getElementById(`price-${productId}`).value) || 0;
+    const quantity = parseFloat(document.getElementById(`qty-${productId}`).value) || 0;
+    const unit = document.getElementById(`unit-${productId}`).value || '';
+    const gst = parseFloat(document.getElementById(`gst-${productId}`).value) || 0;
+    const description = document.getElementById(`desc-${productId}`).value || '';
+    
+    console.log("Product details:", {price, quantity, unit, gst, description});
+    
+    if (quantity <= 0) {
+        alert('Quantity must be greater than zero');
+        return;
+    }
+    
+    if (price <= 0) {
+        alert('Price must be greater than zero');
+        return;
+    }
+    
+    const selectedItems = [];
+    const checkboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
+    
+    console.log("Found checkboxes:", checkboxes.length);
+    
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            const itemId = checkbox.getAttribute('data-item-id');
+            const itemName = checkbox.getAttribute('data-item-name');
+            const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
+            const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
+            
+            const itemQuantity = qtyInput ? parseFloat(qtyInput.value) || 1 : 1;
+            const notes = notesInput ? notesInput.value : '';
+            
+            selectedItems.push({
+                required_item_id: parseInt(itemId),
+                item_name: itemName,
+                quantity: itemQuantity,
+                notes: notes
+            });
+        }
+    });
+    
+    console.log("Selected items:", selectedItems);
+    
+    const serviceEntry = {
+        id: counter++,
+        p_id: productId,
+        name: product.product_name,
+        price: price,
+        quantity: quantity,
+        unit: unit,
+        gst: gst,
+        description: description,
+        items: selectedItems
+    };
+    
+    selectedProducts.push(serviceEntry);
+    console.log("Total selected products array:", selectedProducts);
+    
+    updateSelectedServicesList();
+    updateTotalPrice();
+    updateHiddenInput();
+    
+    // Reset form
+    document.getElementById(`qty-${productId}`).value = '1';
+    document.getElementById(`desc-${productId}`).value = '';
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+        const itemId = checkbox.getAttribute('data-item-id');
+        const controls = document.getElementById(`item-controls-${productId}-${itemId}`);
+        if (controls) controls.style.display = 'none';
+        const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
+        const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
+        if (qtyInput) qtyInput.value = '1';
+        if (notesInput) notesInput.value = '';
+    });
+    
+    showToast(`${product.product_name} added successfully!`);
+}
+function updateSelectedServicesList() {
+    const list = document.getElementById('selected_services');
+    if (!list) return;
+    
+    list.innerHTML = '';
+    
+    if (selectedProducts.length === 0) {
+        list.innerHTML = '<li class="text-muted">No services selected</li>';
+        return;
+    }
+    
+    selectedProducts.forEach((service, index) => {
+        const gstText = gstEnabled ? ` + GST(${service.gst}%)` : '';
+        
+        let itemsText = '';
+        if (service.items && service.items.length > 0) {
+            itemsText = '<div class="small text-muted mt-1">📦 Items: ';
+            itemsText += service.items.map(item => 
+                `${escapeHtml(item.item_name)} (Qty: ${item.quantity})${item.notes ? ` - ${escapeHtml(item.notes)}` : ''}`
+            ).join('; ');
+            itemsText += '</div>';
+        }
+        
+        const li = document.createElement('li');
+        li.className = 'd-flex justify-content-between align-items-start p-2 border-bottom';
+        li.innerHTML = `
+            <div class="flex-grow-1">
+                <strong>${escapeHtml(service.name)}</strong>
+                <div class="small">
+                    Unit: ${service.unit || 'N/A'} | ₹${service.price.toFixed(2)} x ${service.quantity}${gstText}
+                </div>
+                ${itemsText}
+            </div>
+            <div class="text-end ms-3">
+                <strong>₹${(service.price * service.quantity).toFixed(2)}</strong>
+                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${index})">✕</button>
+            </div>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function removeSelectedProduct(index) {
+    if (confirm('Remove this service from the list?')) {
+        selectedProducts.splice(index, 1);
+        updateSelectedServicesList();
+        updateTotalPrice();
+        updateHiddenInput();
+    }
+}
+
+function updateTotalPrice() {
+    let total = 0, gstTotal = 0;
+    selectedProducts.forEach(service => {
+        const subtotal = service.price * service.quantity;
+        total += subtotal;
+        gstTotal += subtotal * (service.gst / 100);
+    });
+    
+    document.getElementById('total_price').value = total.toFixed(2);
+    document.getElementById('gst_price').value = gstTotal.toFixed(2);
+    document.getElementById('total_with_gst').value = (total + gstTotal).toFixed(2);
+}
+
+function updateHiddenInput() {
+    const hiddenInput = document.getElementById('selected_products_json');
+    if (hiddenInput) {
+        const dataToSave = JSON.stringify(selectedProducts);
+        console.log("Updating hidden input with:", dataToSave);
+        hiddenInput.value = dataToSave;
+    } else {
+        console.error("Hidden input with id 'selected_products_json' not found!");
+    }
+}
+
+function filterProducts() {
+    const searchValue = document.getElementById('product-search').value.toLowerCase();
+    const productItems = document.querySelectorAll('#products-container .product-item');
+    
+    productItems.forEach(item => {
+        const name = item.getAttribute('data-product-name') || '';
+        item.style.display = name.includes(searchValue) ? '' : 'none';
+    });
+}
+
+function toggleGST() {
+    gstEnabled = document.getElementById('apply_gst').checked;
+    const gstFields = document.querySelectorAll('.product-gst-group');
+    gstFields.forEach(field => {
+        field.style.display = gstEnabled ? 'block' : 'none';
+    });
+    updateTotalPrice();
+}
+
+function showToast(message) {
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+    toastContainer.style.zIndex = '9999';
+    toastContainer.innerHTML = `
+        <div class="toast show" role="alert">
+            <div class="toast-header bg-success text-white">
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                ${escapeHtml(message)}
+            </div>
+        </div>
+    `;
+    document.body.appendChild(toastContainer);
+    setTimeout(() => toastContainer.remove(), 3000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Add form validation
+// Add form validation
+document.getElementById('service-management-form').addEventListener('submit', function(e) {
+    const hiddenInput = document.getElementById('selected_products_json');
+    const data = hiddenInput.value;
+    
+    console.log("FORM SUBMIT - Hidden input value:", data);
+    
+    if (!data || data === '[]') {
+        alert('Please add at least one product before submitting!');
+        e.preventDefault();
+        return false;
+    }
+    
+    const products = JSON.parse(data);
+    console.log("FORM SUBMIT - Parsed products:", products);
+    console.log("FORM SUBMIT - Number of products:", products.length);
+    
+    if (products.length === 0) {
+        alert('Please add at least one product before submitting!');
+        e.preventDefault();
+        return false;
+    }
+    
+    console.log("FORM SUBMIT - Submitting with", products.length, "products");
+    return true;
+});
+    </script>
+
+
+
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+        <div class="row p-3">
+            <div class="col-md-12 text-center">
+                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+                    © 2025. Powered by
+                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://www.chronoanalytics.in/"
+                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                        Solution</a>
+                    All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                    © 2025. Marketed by
+                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
+                        style="height: 20px; vertical-align: middle;">
+                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+                    All Rights Reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const steps = document.querySelectorAll(".form-step");
+        const nextBtns = document.querySelectorAll(".next-step");
+        const prevBtns = document.querySelectorAll(".prev-step");
+        const indicators = document.querySelectorAll(".step-indicator"); // If you added step indicators
+
+
+            function filterProducts() {
+                const searchValue = document.getElementById('product-search').value.toLowerCase();
+                const productItems = document.querySelectorAll('#products-container .product-item');
+
+                productItems.forEach(item => {
+                    const name = item.getAttribute('data-name') || '';
+                    item.style.display = name.includes(searchValue) ? '' : 'none';
+                });
+            }
+
+
+
+
+        let currentStep = 0;
+
+        function showStep(index) {
+
+    steps.forEach((step, i) => {
+        step.classList.toggle("d-none", i !== index);
+    });
+
+    indicators.forEach((indicator, i) => {
+        indicator.classList.toggle("active", i === index);
+    });
+
+    // FIX LEAFLET MAP SIZE
+    if(index === 1){   // step where map is
+        setTimeout(function(){
+            map.invalidateSize();
+        }, 200);
+    }
+}
+
+        nextBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            });
+        });
+
+        prevBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    showStep(currentStep);
+                }
+            });
+        });
+
+        // Init on load
+        showStep(currentStep);
+
+
+
+
+        // leaflet map
+
+        var map = L.map('map').setView([20.5937, 78.9629], 5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+var marker;
+
+map.on('click', function(e) {
+
+    var lat = e.latlng.lat;
+    var lng = e.latlng.lng;
+
+    if(marker){
+        map.removeLayer(marker);
+    }
+
+    marker = L.marker([lat, lng]).addTo(map);
+
+    // ONLY store coordinates
+    document.getElementById("latitude").value = lat;
+    document.getElementById("longitude").value = lng;
+
+});
+
+
+
+function extractLatLngFromURL(url){
+
+    let patterns = [
+        /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+        /q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+        /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/
+    ];
+
+    for(let regex of patterns){
+        let match = url.match(regex);
+        if(match){
+            return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
+        }
+    }
+
+    return null;
+}
+
+
+async function searchLocation(){
+
+    let query = document.getElementById("location-search").value.trim();
+
+    if(!query){
+        alert("Enter location");
+        return;
+    }
+
+    // Check if coordinates already exist in link
+    let coords = extractLatLngFromURL(query);
+
+    if(coords){
+        placeMarker(coords.lat, coords.lng);
+        return;
+    }
+
+    try{
+
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+
+        const response = await fetch(url,{
+            headers:{
+                "Accept": "application/json"
+            }
+        });
+
+        const data = await response.json();
+
+        if(!data || data.length === 0){
+            alert("Location not found");
+            return;
+        }
+
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+
+        placeMarker(lat, lon);
+
+    }catch(error){
+        console.error(error);
+        alert("Error fetching location");
+    }
+}
+
+function placeMarker(lat, lon){
+
+    map.setView([lat, lon], 15);
+
+    if(marker){
+        map.removeLayer(marker);
+    }
+
+    marker = L.marker([lat, lon]).addTo(map);
+
+    document.getElementById("latitude").value = lat;
+    document.getElementById("longitude").value = lon;
+
+}
+    
+    </script>
+
+</body>
+
+</html>

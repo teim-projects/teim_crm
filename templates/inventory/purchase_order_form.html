@@ -1,0 +1,502 @@
+{% load static widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TEIMCRM - Create/Edit Purchase Order</title>
+
+  <!-- CSS (single copies) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+  <style>
+    .form-rowsales { margin: 110px 10px 10px 10px !important; }
+    .form-group label { margin-bottom: 5px !important; }
+
+    /* Select2 styling */
+    .select2-container .select2-selection--single { height: 38px !important; padding: 5px; }
+    .select2-selection__rendered { line-height: 28px !important; }
+    .select2-container--open { z-index: 9999999 !important; }
+    /* result rows in dropdown */
+.select2-container .select2-results__option {
+  color: #000000 !important; /* set to any color you want */
+}
+
+/* currently selected value shown in the select box */
+.select2-container .select2-selection__rendered {
+  color: #686868 !important;
+}
+
+    input[type="checkbox"][id$="-DELETE"] {
+      display: none;
+    }
+
+    /* Chrome, Edge, Safari */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+  </style>
+</head>
+<body>
+  {% include 'sidebar.html' %}
+
+  <div class="main">
+    <div class="container">
+      <div class="row form-rowsales">
+        <div class="col-md-10 offset-md-1 shadow bg-white rounded p-3">
+
+          <!-- Header / title -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="text-primary m-0">{% if ho %}Edit Purchase Order Details{% else %}Purchase Order Details{% endif %}</h4>
+            <div>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.location.href='/index'">
+                <i class="bi bi-house"></i> Home
+              </button>
+            </div>
+          </div>
+
+          <!-- Main form -->
+          <form method="POST" enctype="multipart/form-data" data-destination-url="{% url 'load_destinations' %}">
+            {% csrf_token %}
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label>Vendor</label>
+                {{ form.vendor }}
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label>Status</label>
+                {{ form.status }}
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label>Destination Type</label>
+                {{ form.destination_type }}
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label>Destination</label>
+                {{ form.destination_id }}
+              </div>
+
+             
+
+              <div class="col-md-4 mb-3">
+                <label>Gst Type</label>
+                {{ form.gst_type }}
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label>Terms of Delivery</label>
+                {{ form.terms_of_delivery }}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label>Mode Terms of Payments</label>
+                {{ form.mode_terms_of_payments }}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label>Material Supply</label>
+                {{ form.material_supply }}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label>Quotation Attachment</label>
+                {{ form.quotation_attachment }}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label>Freight Charges</label>
+                {{ form.freight_charges }}
+              </div>
+            </div>
+
+            <!-- PO Items -->
+            <h5 class="mt-4 mb-3 text-center text-primary">PO Items</h5>
+
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th style="min-width:200px">Product</th>
+                    <th style="min-width:250px">Description</th>   <!-- ✅ ADD -->
+                    <th style="min-width:100px">Qty</th>
+                    <th style="min-width:100px">Unit Rate</th>
+                    <th style="min-width:100px">GST Rate</th>
+                    <th style="min-width:100px">Discount (%)</th>
+                    <th style="min-width:100px;">Unit</th>
+                    <th style="min-width:100px">Remarks</th>
+                    <th style="min-width:40px"></th>
+                  </tr>
+                </thead>
+
+
+                <tbody id="po-items-body">
+                  {{ formset.management_form }}
+
+                  {% for f in formset %}
+                  <tr class="po-item-row">
+                    <td>{{ f.product }}</td>
+                    <td>{{ f.description }}</td>   <!-- ✅ ADD -->
+                    <td>{{ f.quantity }}</td>
+                    <td>{{ f.rate }}</td>
+                    <td>{{ f.gst_rate|add_class:"gst-rate-input" }}</td>
+                    <td>{{ f.discount }}</td>
+                    <td>{{ f.unit }}</td>
+                    <td>{{ f.remarks }}</td>
+                    <td class="text-center align-middle">
+                      <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
+                      {{ f.DELETE }}
+                    </td>
+                  </tr>
+                  {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Add item -->
+            <div class="mb-3">
+              <button type="button" id="add-item-row" class="btn btn-secondary btn-sm">+ Add Item</button>
+            </div>
+
+            <!-- Hidden empty template: Django will render __prefix__ placeholders -->
+            <table class="d-none"><tbody>
+              <tr id="empty-form-row">
+                <td>{{ formset.empty_form.product }}</td>
+                <td>{{ formset.empty_form.description }}</td>   <!-- ✅ ADD -->
+                <td>{{ formset.empty_form.quantity }}</td>
+                <td>{{ formset.empty_form.rate }}</td>
+                <td>{{ formset.empty_form.gst_rate|add_class:"gst-rate-input" }}</td>
+                <td>{{ formset.empty_form.discount }}</td>
+                <td>{{ formset.empty_form.unit }}</td>
+                <td>{{ formset.empty_form.remarks }}</td>
+                <td class="text-center align-middle">
+                  <button type="button" class="btn btn-sm btn-danger remove-row">X</button>
+                </td>
+              </tr>
+
+            </tbody></table>
+
+            <div class="mt-4">
+              <button type="submit" class="btn btn-primary">Save PO</button>
+              <a href="{% url 'purchase_order_list' %}" class="btn btn-light ms-2">Cancel</a>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+    <div class="row p-3">
+      <div class="col-md-12 text-center">
+        <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+          © 2025. Powered by
+          <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+            style="height: 20px; vertical-align: middle;">
+          <a href="http://www.chronoanalytics.in/"
+            style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+            Solution</a>
+          All Rights Reserved.
+        </p>
+      </div>
+      <div class="col-md-12 text-center">
+        <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+          © 2025. Marketed by
+          <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
+          <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+          All Rights Reserved.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Destination loader (keep your existing) -->
+  <script src="{% static 'js/destination_loader.js' %}"></script>
+
+  <!-- JS libs (single copies, correct order) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  <script>
+    const PRODUCT_DETAILS_URL =
+      "{% url 'get_product_details' 0 %}".replace("0/", "");
+  </script>
+
+
+  <!-- PO items JS: clean template, init visible selects, init+open new row select -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  const addBtn = document.getElementById('add-item-row');
+  const tableBody = document.getElementById('po-items-body');
+  const emptyRow = document.getElementById('empty-form-row');
+  const totalFormsInput = document.querySelector(
+    'input[name$="-TOTAL_FORMS"]'
+  );
+
+  /* -----------------------------------------
+     CLEAN hidden template (important)
+  ----------------------------------------- */
+  (function cleanHiddenTemplate() {
+    if (!emptyRow) return;
+    $(emptyRow).find('select').each(function () {
+      const $s = $(this);
+      if ($s.hasClass('select2-hidden-accessible')) {
+        try { $s.select2('destroy'); } catch (e) {}
+      }
+      $s.next('.select2').remove();
+      $s.removeClass('select2-hidden-accessible');
+      $s.show();
+    });
+  })();
+
+  /* -----------------------------------------
+     Select2 initializer (ONLY ONE)
+  ----------------------------------------- */
+  function activateSelect2($container) {
+    $container.find('select').each(function () {
+      const $s = $(this);
+
+      if (!$s.hasClass('select2-hidden-accessible')) {
+        const isUnit = $s.hasClass('unit-select');
+
+        $s.select2({
+          width: '100%',
+          placeholder: isUnit ? 'Select or type unit...' : 'Search product...',
+          allowClear: true,
+          tags: isUnit, // ✅ typing allowed ONLY for unit
+          dropdownParent: $(document.body)
+        });
+      }
+    });
+  }
+
+  /* -----------------------------------------
+     Remove row handler
+  ----------------------------------------- */
+  function bindRemoveButtons() {
+    $(document)
+      .off('click', '.remove-row')
+      .on('click', '.remove-row', function () {
+        const $row = $(this).closest('tr');
+        const $del = $row.find('input[type="checkbox"][name$="-DELETE"]');
+
+        if ($del.length) {
+          $del.prop('checked', true);
+          $row.hide();
+        } else {
+          $row.remove();
+        }
+      });
+  }
+
+  /* -----------------------------------------
+     Open Select2 safely
+  ----------------------------------------- */
+  function tryOpen($select, attemptsLeft = 6) {
+    if (!$select || !$select.length || attemptsLeft <= 0) return;
+    try {
+      $select.select2('open');
+    } catch {
+      setTimeout(() => tryOpen($select, attemptsLeft - 1), 80);
+    }
+  }
+
+  /* -----------------------------------------
+     Init existing rows
+  ----------------------------------------- */
+  activateSelect2($('#po-items-body'));
+  bindRemoveButtons();
+
+  /* -----------------------------------------
+   Add new formset row
+  ----------------------------------------- */
+  if (addBtn) {
+    addBtn.addEventListener('click', function () {
+
+      const index = parseInt(totalFormsInput.value, 10);
+
+      let newRowHtml = emptyRow.outerHTML.replace(/__prefix__/g, index);
+
+      const temp = document.createElement('tbody');
+      temp.innerHTML = newRowHtml.trim();
+      const newRow = temp.firstChild;
+
+      newRow.id = '';
+      newRow.classList.remove('d-none');
+      tableBody.appendChild(newRow);
+
+      totalFormsInput.value = index + 1;
+
+      const $newRow = $(newRow);
+      activateSelect2($newRow);
+      bindRemoveButtons();
+
+      const $productSelect = $newRow.find('select').first();
+      setTimeout(() => tryOpen($productSelect), 50);
+
+      newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+});   // ← THIS WAS MISSING
+
+</script>
+
+
+
+<!-- sidebar js -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+    menuItems.forEach(item => {
+      item.addEventListener('click', function () {
+        const submenu = this.querySelector('.submenu');
+        const arrow = this.querySelector('.arrow-down');
+
+        // Hide all other submenus
+        menuItems.forEach(otherItem => {
+          if (otherItem !== this) {
+            const otherSubmenu = otherItem.querySelector('.submenu');
+            const otherArrow = otherItem.querySelector('.arrow-down');
+            if (otherSubmenu) {
+              otherSubmenu.style.display = 'none';
+              if (otherArrow.classList.contains('arrow-up')) {
+                otherArrow.classList.remove('arrow-up');
+              }
+            }
+          }
+        });
+
+        // Toggle current submenu
+        if (submenu) {
+          submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
+          arrow.classList.toggle('arrow-up');
+        }
+      });
+    });
+  });
+  let deleteUrl = '';   // ✅ ADD THIS LINE
+
+  const deleteLinks = document.querySelectorAll('.delete-link');
+  const confirmationModal = document.getElementById('confirmationModal');
+  const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+  const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+
+  if (confirmationModal && confirmDeleteButton && cancelDeleteButton) {
+
+    confirmDeleteButton.addEventListener('click', function () {
+      if (deleteUrl) {
+        window.location.href = deleteUrl;
+      }
+    });
+
+    cancelDeleteButton.addEventListener('click', function () {
+      confirmationModal.style.display = 'none';
+    });
+
+  }
+
+
+  window.addEventListener('click', function (event) {
+    if (event.target == confirmationModal) {
+      confirmationModal.style.display = 'none';
+    }
+  });
+
+  function openModal(service_id) {
+    fetch(`/get_service_details/${service_id}/`)
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('modal-content').innerHTML = html;
+        document.getElementById('modal').classList.add('active');
+      });
+
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+  }
+</script>
+<script>
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const gstTypeSelect = document.getElementById("id_gst_type");
+
+    function updateGSTUI() {
+        if (!gstTypeSelect) return;
+
+        const gstType = gstTypeSelect.value.toLowerCase();
+        const gstInputs = document.querySelectorAll(".gst-rate-input");
+
+        gstInputs.forEach(input => {
+            if (gstType === "no_gst") {
+                input.value = 0;
+                input.readOnly = true;
+                input.style.backgroundColor = "#f2f2f2";
+            } else {
+                input.readOnly = false;
+                input.style.backgroundColor = "";
+            }
+        });
+    }
+
+    gstTypeSelect?.addEventListener("change", updateGSTUI);
+    updateGSTUI();
+});
+</script>
+
+<script>
+$(document).on("select2:select", ".product-select", function () {
+
+    const $select = $(this);
+    const row = $select.closest("tr");
+    const productId = $select.val();
+
+    if (!productId) return;
+
+    fetch(`${PRODUCT_DETAILS_URL}${productId}/`)
+        .then(res => res.json())
+        .then(data => {
+
+            // ✅ Description
+            const desc = row.find("textarea[name$='description']");
+            if (desc.length) {
+                desc.val(data.description || "");
+            }
+
+            // ✅ Unit (TEXT INPUT — dynamic & safe)
+            const unitField = row.find("[name$='unit']");
+            if (unitField.length && data.unit) {
+                unitField.val(data.unit);
+            }
+
+        })
+        .catch(err => console.error("Product auto-fill error:", err));
+});
+</script>
+
+
+
+</body>
+</html>

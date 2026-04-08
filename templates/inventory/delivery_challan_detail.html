@@ -1,0 +1,481 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Delivery Challan {{ dc.dc_no }}</title>
+
+  <style type="text/css">
+    @page {
+      size: A4 portrait;
+      margin: 10mm;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9.5pt;
+      color: #000;
+      background: #fff;
+      line-height: 1.45;
+    }
+
+    .challan-wrap {
+      width: 190mm;
+      min-height: 277mm;
+      margin: 0 auto;
+      border: 2px solid #000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ====================== HEADER ====================== */
+    .main-header {
+      display: table;
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 2px solid #000;
+    }
+
+    .main-header td {
+      padding: 8px 10px;
+      vertical-align: middle;
+    }
+
+    .logo-cell {
+      width: 90px;
+      text-align: center;
+      border-right: 1px solid #000;
+    }
+
+    .logo-cell img {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+    }
+
+    .company-info {
+      text-align: center;
+    }
+
+    .company-name {
+      font-size: 19pt;
+      font-weight: bold;
+    }
+
+    .company-sub {
+      font-size: 10.5pt;
+      font-weight: bold;
+    }
+
+    .company-details {
+      font-size: 8.5pt;
+      line-height: 1.5;
+    }
+
+    .status-cell {
+      width: 110px;
+      text-align: center;
+      border-left: 1px solid #000;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 10pt;
+      background: #198754;
+      color: #fff;
+    }
+
+    /* GST Row */
+    .gst-row {
+      width: 100%;
+      border-bottom: 1px solid #000;
+    }
+
+    .gst-row td {
+      padding: 5px 10px;
+      font-size: 8.2pt;
+      text-align: center;
+    }
+
+    /* Title */
+    .title-row td {
+      padding: 10px;
+      text-align: center;
+      font-size: 16pt;
+      font-weight: bold;
+      letter-spacing: 2px;
+      border-bottom: 1px solid #000;
+    }
+
+    /* Meta Table */
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 1px solid #000;
+    }
+
+    .meta-table td {
+      padding: 7px 10px;
+      font-size: 9.2pt;
+      vertical-align: top;
+    }
+
+    .meta-left  { width: 58%; border-right: 1px solid #000; }
+    .meta-right { width: 42%; }
+
+    .meta-field {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .mf-label {
+      font-weight: bold;
+      min-width: 90px;
+      white-space: nowrap;
+    }
+
+    .mf-value {
+      flex: 1;
+      border-bottom: none;
+    }
+
+    .challan-no-val {
+      font-size: 17pt;
+      font-weight: bold;
+      color: #c0392b;
+    }
+
+    /* Address Table */
+    .addr-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 1px solid #000;
+    }
+
+    .addr-table td {
+      padding: 8px 10px;
+      font-size: 9pt;
+      vertical-align: top;
+    }
+
+    .addr-left  { width: 50%; border-right: 1px solid #000; }
+    .addr-right { width: 50%; }
+
+    .addr-title {
+      font-weight: bold;
+      font-size: 9.8pt;
+      text-decoration: underline;
+      margin-bottom: 6px;
+    }
+
+    /* Items Table */
+    .items-wrap {
+      flex: 1;
+    }
+
+    table.items-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    table.items-tbl th,
+    table.items-tbl td {
+      border: 1px solid #555;
+      padding: 5px 6px;
+      font-size: 8.8pt;
+      vertical-align: middle;
+    }
+
+    table.items-tbl thead th {
+      background: #f0f0f0;
+      font-weight: bold;
+    }
+
+    .col-sr    { width: 5%; }
+    .col-prod  { width: 30%; }
+    .col-batch { width: 18%; }
+    .col-qty   { width: 8%; }
+    .col-rate  { width: 13%; }
+    .col-rs    { width: 13%; }
+    .col-ps    { width: 13%; }
+
+    .c-prod { text-align: left; padding-left: 8px; word-break: break-word; }
+
+    /* Footer */
+    .footer-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 1px solid #000;
+    }
+
+    .footer-table td {
+      padding: 9px 10px;
+      font-size: 9.5pt;
+    }
+
+    .sign-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .sign-table td {
+      width: 33.33%;
+      text-align: center;
+      padding: 12px 8px 10px 8px;
+      font-size: 9pt;
+      border-right: 1px solid #000;
+    }
+
+    .sign-table td:last-child { border-right: none; }
+
+    .sign-box {
+      height: 50px;
+      border-bottom: 1px dashed #555;
+      margin-bottom: 6px;
+    }
+
+    .no-print {
+      text-align: center;
+      padding: 15px;
+      background: #f8f9fa;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="no-print">
+  <button onclick="window.print()" 
+    style="padding:10px 30px; font-size:13pt; cursor:pointer; background:#1e3a8a; color:#fff; border:none; border-radius:6px;">
+    🖨 Print / Save as PDF
+  </button>
+</div>
+
+<div class="challan-wrap">
+
+  <!-- ==================== MAIN HEADER ==================== -->
+  <table class="main-header">
+   <td class="logo-cell">
+  <img src="{{ request.build_absolute_uri }}{% static 'images/Logo.png' %}" alt="SFS Logo">
+   </td>
+      <td class="company-info">
+        <div class="company-name">SFS Pest Control</div>
+        <div class="company-sub">Seva Facility Services Pvt. Ltd.</div>
+        <div class="company-details">
+          CIN - U74999PN2016PTC158673<br>
+          Office No. 406, 4th Floor, Biz Building, Above Axis Bank, S.No.203,<br>
+          Bhondve Chowk, Ravet, Pune - 412101 &nbsp; | &nbsp; Phone: 020 29701544<br>
+          E-mail: info@sevafacility.com &nbsp; | &nbsp; Web: www.sevafacility.com
+        </div>
+      </td>
+      <td class="status-cell">
+        <span style="font-size:8.5pt; color:#555; display:block; margin-bottom:4px;">Status</span>
+        <span class="status-badge">
+          {{ dc.status|default:"DRAFT" }}
+        </span>
+      </td>
+    </tr>
+  </table>
+
+  <!-- GST Row -->
+  <table class="gst-row">
+    <tr>
+      <td>
+        MH-GST: 27AAWCS8490D1ZM &nbsp;|&nbsp; 
+        MP-GST: 23AAWCS8490D1ZU &nbsp;|&nbsp; 
+        TS-GST: 36AAWCS8490D1ZN &nbsp;|&nbsp; 
+        KA-GST: 29AAWCS8490D1Z1
+      </td>
+    </tr>
+  </table>
+
+  <!-- DELIVERY CHALLAN Title -->
+  <table class="title-row">
+    <tr><td>DELIVERY CHALLAN</td></tr>
+  </table>
+
+  <!-- Meta Information -->
+  <table class="meta-table">
+    <tr>
+      <td class="meta-left">
+        <div class="meta-field">
+          <span class="mf-label">M/s.</span>
+          <span class="mf-value" style="font-weight:bold; color:#c0392b;">
+            {{ destination.name|default:"—" }}
+          </span>
+        </div>
+        <div class="meta-field">
+          <span class="mf-label">Address :</span>
+          <span class="mf-value">{{ destination.address|default:"—" }}</span>
+        </div>
+        <div class="meta-field">
+          <span class="mf-label">Mobile :</span>
+          <span class="mf-value">{{ destination.manager_phone|default:destination.phone|default:"—" }}</span>
+        </div>
+        <div class="meta-field">
+          <span class="mf-label">GSTIN :</span>
+          <span class="mf-value">{{ destination.gstin|default:"—" }}</span>
+        </div>
+      </td>
+      <td class="meta-right">
+        <div class="meta-field">
+          <span class="mf-label">Challan No :</span>
+          <span class="challan-no-val">{{ dc.dc_no }}</span>
+        </div>
+        <div class="meta-field">
+          <span class="mf-label">Date :</span>
+          <span class="mf-value">{{ dc.delivery_date|date:"d-M-Y" }}</span>
+        </div>
+        {% if dc.mtn and dc.mtn.mtn_no %}
+        <div class="meta-field">
+          <span class="mf-label">MTN Ref :</span>
+          <span class="mf-value">{{ dc.mtn.mtn_no }}</span>
+        </div>
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <!-- Source & Destination -->
+  <table class="addr-table">
+    <tr>
+      <td class="addr-left">
+        <div class="addr-title">► Source Details</div>
+        <div><strong>Location :</strong> {{ source.name|default:"—" }}</div>
+        <div><strong>GSTIN :</strong> {{ source.gstin|default:"—" }}</div>
+        <div><strong>Manager :</strong> {{ source.manager_name|default:"—" }}</div>
+        <div><strong>Phone :</strong> {{ source.manager_phone|default:"—" }}</div>
+        <div><strong>Address :</strong> {{ source.address|default:"—" }}</div>
+      </td>
+      <td class="addr-right">
+        <div class="addr-title">► Destination Details</div>
+        <div><strong>Location :</strong> {{ destination.name|default:"—" }}</div>
+        <div><strong>GSTIN :</strong> {{ destination.gstin|default:"—" }}</div>
+        <div><strong>Contact :</strong> {{ destination.manager_name|default:"—" }}</div>
+        <div><strong>Phone :</strong> {{ destination.manager_phone|default:"—" }}</div>
+        <div><strong>Address :</strong> {{ destination.address|default:"—" }}</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Delivery Info -->
+  <table class="meta-table" style="border-bottom: 2px solid #000;">
+    <tr>
+      <td style="padding:8px 10px; font-size:9.2pt;">
+        <strong>Source Type :</strong> {{ dc.source_type|default:"—" }} &nbsp;|&nbsp;
+        <strong>Delivery Partner :</strong> {{ dc.delivery_partner_name|default:"—" }} &nbsp;|&nbsp;
+        <strong>Delivery Person :</strong> {{ dc.delivery_person_name|default:"—" }} 
+        ({{ dc.delivery_person_phone|default:"—" }})
+      </td>
+    </tr>
+  </table>
+
+  <!-- Items Table -->
+  <div class="items-wrap">
+    <table class="items-tbl">
+      <colgroup>
+        <col class="col-sr">
+        <col class="col-prod">
+        <col class="col-batch">
+        <col class="col-qty">
+        <col class="col-rate">
+        <col class="col-rs">
+        <col class="col-ps">
+      </colgroup>
+      <thead>
+        <tr>
+          <th rowspan="2">Sr.<br>No.</th>
+          <th rowspan="2">Product / Description</th>
+          <th rowspan="2">Batch No.</th>
+          <th rowspan="2">Qty</th>
+          <th rowspan="2">Rate</th>
+          <th colspan="2">Amount</th>
+        </tr>
+        <tr>
+          <th>Rs.</th>
+          <th>Ps.</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td class="c-prod">{{ item.product.product_name|default:"—" }}</td>
+          <td>{{ item.batch.batch.batch_no|default:"—" }}</td>
+          <td>{{ item.quantity|default:"0" }}</td>
+          <td>{{ item.rate|default:"0" }}</td>
+          <td>{{ item.amount_rs|default:"0" }}</td>
+          <td>{{ item.amount_ps|default:"0" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="padding:30px; text-align:center; color:#666;">
+            No items found
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Remarks -->
+  {% if dc.remarks %}
+  <table style="width:100%; border-collapse:collapse; border-bottom:1px solid #000;">
+    <tr>
+      <td style="padding:7px 10px; width:18%; font-weight:bold; border-right:1px solid #000;">
+        Remarks :
+      </td>
+      <td style="padding:7px 10px;">{{ dc.remarks|linebreaksbr }}</td>
+    </tr>
+  </table>
+  {% endif %}
+
+  <!-- Footer Declaration -->
+  <table class="footer-table">
+    <tr>
+      <td style="width:55%; border-right:1px solid #000;">
+        Received the above Material in good condition and Order
+      </td>
+      <td style="width:45%; text-align:center; font-weight:bold;">
+        For SEVA FACILITY SERVICES PVT. LTD.
+      </td>
+    </tr>
+  </table>
+
+  <!-- Signature -->
+  <table class="sign-table">
+    <tr>
+      <td>
+        <div class="sign-box"></div>
+        Prepared By
+      </td>
+      <td>
+        <div class="sign-box"></div>
+        Verified By
+      </td>
+      <td>
+        <div class="sign-box"></div>
+        Receiver's Signature / Authorised Signatory
+      </td>
+    </tr>
+  </table>
+
+</div>
+
+</body>
+</html>

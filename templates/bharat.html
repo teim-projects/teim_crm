@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>ProService — Management Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Plus Jakarta Sans',sans-serif}
+
+        :root{
+          --p1:#7c3aed;--p2:#6366f1;--p3:#06b6d4;
+          --bg:#f8fafc;--card:#ffffff;--border:rgba(15,23,42,0.08);--border2:rgba(15,23,42,0.14);
+          --text:#0f172a;--muted:#64748b;--muted2:#94a3b8;
+          --success:#10b981;--successbg:rgba(16,185,129,0.12);
+          --approve:#8b5cf6;--approvebg:rgba(139,92,246,0.12);
+          --warn:#f59e0b;--warnbg:rgba(245,158,11,0.12);
+          --info:#3b82f6;--infobg:rgba(59,130,246,0.12);
+          --danger:#ef4444;--dangerbg:rgba(239,68,68,0.12);
+          --r1:28px;--r2:20px;--r3:14px;--r4:10px;
+          --sh:0 24px 60px rgba(148,163,184,0.18);
+          --sh2:0 8px 24px rgba(148,163,184,0.16);
+          --grad2:linear-gradient(135deg,#8b5cf6 0%,#06b6d4 100%);
+          --grad3:linear-gradient(135deg,#ffffff 0%,#eef4ff 100%);
+        }
+
+        body{min-height:100vh;background:var(--bg);color:var(--text);overflow-x:hidden}
+        body::before{
+          content:"";position:fixed;top:0;left:0;right:0;height:600px;pointer-events:none;z-index:0;
+          background:
+            radial-gradient(ellipse 60% 40% at 20% -10%,rgba(124,58,237,0.10),transparent),
+            radial-gradient(ellipse 50% 35% at 85% -5%,rgba(6,182,212,0.10),transparent),
+            radial-gradient(ellipse 40% 30% at 50% 5%,rgba(99,102,241,0.08),transparent);
+        }
+
+        .wrap{width:min(98%,1600px);margin:auto;padding:24px 0 48px;position:relative;z-index:1}
+
+        .topnav{
+          display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+          padding:18px 26px;border-radius:var(--r1);margin-bottom:24px;
+          background:rgba(255,255,255,0.92);
+          border:1px solid var(--border2);
+          backdrop-filter:blur(20px);
+          box-shadow:var(--sh2);
+        }
+
+        .logo{display:flex;align-items:center;gap:12px}
+        .logo-icon{
+          width:44px;height:44px;border-radius:14px;display:grid;place-items:center;
+          background:var(--grad2);font-size:20px;box-shadow:0 8px 24px rgba(124,58,237,0.18);
+        }
+        .logo-text{font-size:20px;font-weight:900;letter-spacing:-0.04em}
+        .logo-text span{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .nav-right{display:flex;align-items:center;gap:12px}
+        .nav-date{
+          padding:9px 16px;border-radius:10px;background:#f8fafc;
+          font-size:12px;color:var(--muted);font-weight:600;border:1px solid var(--border);
+        }
+        .nav-btn{
+          border:none;padding:10px 20px;border-radius:12px;background:var(--grad2);
+          color:#fff;font-size:13px;font-weight:700;cursor:pointer;
+          box-shadow:0 8px 20px rgba(124,58,237,0.18);transition:.25s;
+        }
+        .nav-btn:hover{transform:translateY(-2px)}
+        .nav-avatar{
+          width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+          background:#fff;font-size:18px;border:1px solid var(--border2);cursor:pointer;
+        }
+
+        .page-header{
+          display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;
+          padding:32px;border-radius:var(--r1);margin-bottom:24px;
+          background:var(--grad3);border:1px solid var(--border2);box-shadow:var(--sh);
+          position:relative;overflow:hidden;
+        }
+        .page-header::before{
+          content:"";position:absolute;right:-80px;top:-80px;
+          width:280px;height:280px;border-radius:50%;
+          background:radial-gradient(circle,rgba(124,58,237,0.12),transparent 65%);
+        }
+        .ph-left{position:relative;z-index:1}
+        .ph-badge{
+          display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:99px;
+          background:rgba(124,58,237,0.10);border:1px solid rgba(124,58,237,0.20);
+          font-size:12px;font-weight:700;color:#7c3aed;margin-bottom:16px;
+        }
+        .ph-left h1{font-size:38px;font-weight:900;letter-spacing:-0.05em;line-height:1.1;margin-bottom:12px}
+        .ph-left h1 span{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .ph-left p{color:var(--muted);font-size:14px;line-height:1.85;max-width:620px}
+        .ph-right{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+        .ph-stat-block{
+          text-align:right;padding:18px 22px;border-radius:var(--r2);
+          background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.16);
+        }
+        .ph-stat-block .num{
+          font-size:42px;font-weight:900;letter-spacing:-0.05em;line-height:1;
+          background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent
+        }
+        .ph-stat-block .lbl{font-size:12px;color:var(--muted);font-weight:600;margin-top:4px}
+
+        .stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;margin-bottom:24px}
+        .s-card{
+          padding:22px;border-radius:var(--r1);background:var(--card);
+          border:1px solid var(--border);box-shadow:var(--sh2);
+          transition:.3s;
+        }
+        .s-card:hover{transform:translateY(-3px)}
+        .sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+        .sc-icon{
+          width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
+          font-size:20px;border:1px solid var(--border2);background:rgba(124,58,237,0.10);
+        }
+        .sc-trend{
+          padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;
+          background:rgba(16,185,129,0.12);color:#10b981;
+        }
+        .sc-label{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px}
+        .sc-value{font-size:36px;font-weight:900;letter-spacing:-0.05em;line-height:1}
+        .sc-foot{margin-top:10px;font-size:11px;color:var(--muted2)}
+
+        .toolbar{
+          display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+          padding:18px 22px;border-radius:var(--r2);background:var(--card);
+          border:1px solid var(--border);box-shadow:var(--sh2);margin-bottom:22px;
+        }
+
+        .toolbar-left,
+        .toolbar-right{
+          display:flex;
+          gap:14px;
+          align-items:center;
+          flex-wrap:wrap;
+        }
+
+        .search-wrap{position:relative;min-width:260px}
+        .search-wrap svg{
+          position:absolute;left:14px;top:50%;transform:translateY(-50%);
+          width:16px;height:16px;color:var(--muted);pointer-events:none;
+        }
+        .search-wrap input{
+          width:100%;padding:13px 14px 13px 42px;border-radius:12px;
+          background:#fff;border:1px solid var(--border);color:var(--text);font-size:13px;outline:none;
+        }
+
+        .filters{display:flex;gap:8px;flex-wrap:wrap}
+        .fb{
+          border:none;padding:10px 16px;border-radius:10px;background:#fff;
+          color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;
+          border:1px solid var(--border);transition:.25s;
+        }
+        .fb:hover,.fb.active{background:rgba(124,58,237,0.10);color:#7c3aed;border-color:rgba(124,58,237,0.25)}
+
+        .type-form{
+          display:flex;
+          align-items:center;
+          gap:10px;
+        }
+
+        .type-select{
+          padding:12px 14px;
+          border-radius:12px;
+          border:1px solid var(--border);
+          background:#fff;
+          color:var(--text);
+          font-size:13px;
+          font-weight:600;
+          outline:none;
+          cursor:pointer;
+          min-width:180px;
+        }
+
+        .main{display:grid;grid-template-columns:1fr 420px;gap:22px;align-items:start}
+
+        .tpanel{
+          background:var(--card);border:1px solid var(--border);
+          border-radius:var(--r1);box-shadow:var(--sh2);overflow:hidden;
+        }
+
+        .tpanel-head{
+          display:flex;justify-content:space-between;align-items:center;gap:12px;
+          padding:22px 26px;border-bottom:1px solid var(--border);flex-wrap:wrap;
+        }
+        .tpanel-head h2{font-size:20px;font-weight:800;letter-spacing:-0.03em}
+        .tpanel-head h2 span{color:var(--muted);font-weight:500;font-size:14px;margin-left:8px}
+        .tpanel-meta{font-size:12px;color:var(--muted);font-weight:600}
+
+        .table-wrap{overflow:auto}
+        table{width:100%;border-collapse:collapse}
+        .service-table thead th{
+          background:#f8fafc;
+          padding:14px;
+          font-size:11px;
+          text-transform:uppercase;
+          letter-spacing:.06em;
+          font-weight:800;
+          color:var(--muted2);
+          border-bottom:1px solid var(--border);
+          text-align:left;
+          white-space:nowrap;
+        }
+
+        .service-table tbody.service-group{border-bottom:1px solid var(--border)}
+        .main-row{
+          cursor:pointer;
+          background:#fff;
+          transition:.2s;
+        }
+        .main-row:hover{background:rgba(124,58,237,0.03)}
+        .main-row td{
+          padding:16px 14px;
+          border-bottom:1px solid rgba(15,23,42,0.04);
+          vertical-align:top;
+        }
+
+        .toggle-cell{width:52px}
+        .toggle-arrow{
+          width:28px;height:28px;border-radius:8px;border:1px solid var(--border2);
+          background:rgba(15,23,42,0.03);display:grid;place-items:center;
+          font-size:12px;color:var(--muted);transition:.3s;
+        }
+
+        .service-no-badge{
+          display:inline-block;
+          padding:8px 12px;
+          border-radius:10px;
+          background:rgba(124,58,237,0.10);
+          border:1px solid rgba(124,58,237,0.16);
+          font-size:12px;
+          font-weight:800;
+          color:#7c3aed;
+        }
+
+        .name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+        .subtext{font-size:11px;color:var(--muted);line-height:1.6}
+        .line-list{font-size:12px;line-height:1.8;color:var(--text)}
+
+        .status-b{
+          display:inline-flex;align-items:center;gap:6px;padding:6px 11px;
+          border-radius:99px;font-size:11px;font-weight:800;white-space:nowrap;
+        }
+        .status-b::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+        .sb-completed{background:var(--successbg);color:var(--success)}
+        .sb-approved{background:var(--approvebg);color:var(--approve)}
+        .sb-pending{background:var(--warnbg);color:var(--warn)}
+        .sb-processing{background:var(--infobg);color:var(--info)}
+        .sb-rejected{background:var(--dangerbg);color:var(--danger)}
+        .sb-cancelled{background:var(--dangerbg);color:var(--danger)}
+
+        .amc-badge{
+          display:inline-block;
+          padding:6px 10px;
+          border-radius:999px;
+          background:rgba(16,185,129,0.12);
+          color:#15803d;
+          font-size:11px;
+          font-weight:800;
+          border:1px solid rgba(16,185,129,0.25);
+        }
+
+        .amc-visit-badge{
+          display:inline-block;
+          padding:4px 8px;
+          border-radius:6px;
+          background:rgba(6,182,212,0.12);
+          color:#0891b2;
+          font-size:10px;
+          font-weight:700;
+          margin-left: 6px;
+        }
+
+        .contract-text{
+          font-size:12px;
+          font-weight:700;
+          color:var(--text);
+        }
+
+        .act-btns{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+        .abtn{
+          border:none;padding:8px 12px;border-radius:9px;font-size:11px;font-weight:800;
+          cursor:pointer;transition:.2s;white-space:nowrap;
+        }
+        .abtn:hover{transform:translateY(-2px)}
+        .abtn-approve{background:var(--approvebg);color:#7c3aed;border:1px solid rgba(139,92,246,0.3)}
+        .abtn-reject{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+        .abtn-complete{background:#10b981;color:#fff;border:1px solid #34d399}
+        .abtn-view{background:var(--grad2);color:#fff}
+
+        .sub-row{display:none;background:rgba(248,250,252,0.95)}
+        .sub-row td{padding:0}
+        .sub-wrap{padding:14px 16px 18px 16px}
+        .sub-title{
+          display:flex;justify-content:space-between;align-items:center;
+          margin-bottom:12px;gap:10px;flex-wrap:wrap;
+        }
+        .sub-title .left{
+          font-size:12px;
+          font-weight:800;
+          text-transform:uppercase;
+          letter-spacing:.06em;
+          color:var(--muted);
+        }
+        .sub-title .right{
+          font-size:11px;
+          font-weight:800;
+          color:#0891b2;
+          background:rgba(6,182,212,0.10);
+          border:1px solid rgba(6,182,212,0.18);
+          padding:5px 10px;
+          border-radius:99px;
+        }
+
+        .sub-table{
+          width:100%;
+          background:#fff;
+          border:1px solid var(--border);
+          border-radius:16px;
+          overflow:hidden;
+        }
+        .sub-table th,.sub-table td{
+          padding:12px 14px;
+          border-bottom:1px solid rgba(15,23,42,0.05);
+          font-size:12px;
+          text-align:left;
+          vertical-align:top;
+        }
+        .sub-table th{
+          background:#f8fafc;
+          font-size:11px;
+          color:var(--muted2);
+          text-transform:uppercase;
+          letter-spacing:.05em;
+        }
+        .sub-item-row{
+          transition:.2s;
+        }
+        .sub-item-row:hover{background:rgba(124,58,237,0.04)}
+        .empty-note{
+          padding:18px;
+          text-align:center;
+          font-size:13px;
+          color:var(--muted);
+        }
+
+        .amc-action-btn{
+          padding:4px 8px;
+          border-radius:6px;
+          font-size:10px;
+          font-weight:600;
+          cursor:pointer;
+          border:none;
+          margin:0 2px;
+        }
+        .amc-complete-btn{
+          background:#10b981;
+          color:white;
+        }
+        .amc-reschedule-btn{
+          background:#3b82f6;
+          color:white;
+        }
+        .amc-pending-btn{
+          background:#f59e0b;
+          color:white;
+        }
+
+        .dpanel{
+          position:sticky;top:20px;border-radius:var(--r1);overflow:hidden;
+          background:var(--card);border:1px solid var(--border);box-shadow:var(--sh);
+          max-height:calc(100vh - 40px);overflow-y:auto;
+        }
+        .dp-empty{
+          min-height:500px;display:flex;align-items:center;justify-content:center;
+          text-align:center;padding:32px;
+        }
+        .dp-empty-icon{font-size:52px;margin-bottom:16px;opacity:.3}
+        .dp-empty h3{font-size:18px;font-weight:700;margin-bottom:8px;opacity:.6}
+        .dp-empty p{font-size:13px;color:var(--muted);line-height:1.8}
+
+        .dp-top{
+          padding:28px;
+          background:linear-gradient(135deg,#f5f3ff 0%,#ecfeff 100%);
+        }
+        .dp-ovl{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#7c3aed;margin-bottom:10px}
+        .dp-sno{
+          font-size:28px;font-weight:900;letter-spacing:-0.04em;margin-bottom:6px;
+          background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+        }
+        .dp-customer{font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px}
+        .dp-product{font-size:13px;color:var(--muted);margin-bottom:18px}
+        .dp-status-row{display:flex;gap:10px;flex-wrap:wrap}
+        .dp-badge{
+          padding:7px 12px;border-radius:99px;
+          background:rgba(255,255,255,0.7);border:1px solid rgba(15,23,42,0.08);
+          font-size:11px;font-weight:800;
+        }
+
+        .dp-body{padding:22px}
+        .dp-section{margin-bottom:20px}
+        .dp-section-title{
+          font-size:12px;text-transform:uppercase;letter-spacing:0.07em;
+          font-weight:800;color:var(--muted);margin-bottom:12px;
+          display:flex;align-items:center;gap:8px;
+        }
+        .dp-section-title::after{content:"";flex:1;height:1px;background:var(--border)}
+
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .info-item{
+          padding:13px 15px;border-radius:14px;
+          background:#fff;border:1px solid var(--border);
+        }
+        .info-item.full{grid-column:1/-1}
+        .i-label{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em}
+        .i-value{font-size:13px;font-weight:700;color:var(--text);line-height:1.6;word-break:break-word}
+
+        .subitem-list{display:flex;flex-direction:column;gap:8px}
+        .subitem-row{
+          display:flex;align-items:center;gap:12px;padding:12px 14px;
+          border-radius:12px;background:#fff;border:1px solid var(--border);
+        }
+        .subitem-row-vertical {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .si-dot{width:8px;height:8px;border-radius:50%;background:var(--p1);flex-shrink:0}
+        .si-name{font-size:12px;font-weight:700;color:var(--text);flex:1}
+        .si-note{font-size:11px;color:var(--muted);font-weight:600}
+        .si-date{font-size:10px;color:var(--p3);font-weight:700}
+
+        .hidden{display:none}
+
+        .footer{
+          margin-top:24px;text-align:center;padding:18px;
+          font-size:12px;color:var(--muted2);border-radius:var(--r2);
+          background:var(--card);border:1px solid var(--border);
+        }
+
+        @media(max-width:1100px){
+          .main{grid-template-columns:1fr}
+          .dpanel{position:static;max-height:none}
+        }
+        @media(max-width:900px){
+          .stats-row{grid-template-columns:repeat(3,1fr)}
+          .page-header{grid-template-columns:1fr}
+          .ph-right{align-items:flex-start}
+          .toolbar{flex-direction:column;align-items:stretch}
+          .toolbar-left,.toolbar-right{width:100%}
+          .search-wrap{width:100%}
+          .search-wrap input{width:100%}
+          .info-grid{grid-template-columns:1fr}
+        }
+        @media(max-width:640px){
+          .stats-row{grid-template-columns:1fr}
+          .service-table{min-width:1100px}
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav class="topnav">
+        <div class="logo">
+            <div class="logo-icon">🔧</div>
+            <div class="logo-text">Pro<span>Service</span></div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-date" id="navDate"></div>
+            <button class="nav-btn" onclick="location.reload()">⟳ Refresh</button>
+            <div class="nav-avatar">👤</div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="ph-left">
+            <div class="ph-badge">Live Dashboard</div>
+            <h1>Service <span>Management</span><br>Operations Center</h1>
+            <p>Track all grouped service requests, expand sub-services, filter records, and view details instantly.<br>
+            <strong>Note:</strong> AMC services automatically show all scheduled visits as sub-services with management options.</p>
+        </div>
+        <div class="ph-right">
+            <div class="ph-stat-block">
+                <div class="num" id="ph-total">{{ total_entries|default:"0" }}</div>
+                <div class="lbl">Total Service Entries</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="s-card">
+            <div class="sc-top">
+                <div class="sc-icon">📦</div>
+            </div>
+            <div class="sc-label">Service Groups</div>
+            <div class="sc-value">{{ groups|length }}</div>
+        </div>
+        <div class="s-card">
+            <div class="sc-top">
+                <div class="sc-icon">✅</div>
+            </div>
+            <div class="sc-label">Completed</div>
+            <div class="sc-value">{{ completed_count|default:"0" }}</div>
+        </div>
+        <div class="s-card">
+            <div class="sc-top">
+                <div class="sc-icon">⭐</div>
+            </div>
+            <div class="sc-label">Approved</div>
+            <div class="sc-value">{{ approved_count|default:"0" }}</div>
+        </div>
+        <div class="s-card">
+            <div class="sc-top">
+                <div class="sc-icon">⚙️</div>
+            </div>
+            <div class="sc-label">Processing</div>
+            <div class="sc-value">{{ processing_count|default:"0" }}</div>
+        </div>
+        <div class="s-card">
+            <div class="sc-top">
+                <div class="sc-icon">⏳</div>
+            </div>
+            <div class="sc-label">Pending</div>
+            <div class="sc-value">{{ pending_count|default:"0" }}</div>
+        </div>
+        <div class="s-card">
+            <div class="sc-top">
+                <div class="sc-icon">⛔</div>
+            </div>
+            <div class="sc-label">Rejected</div>
+            <div class="sc-value">{{ rejected_count|default:"0" }}</div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <form method="get" class="type-form">
+                <select name="type" class="type-select" onchange="this.form.submit()">
+                    <option value="all" {% if selected_type == "all" %}selected{% endif %}>All Services</option>
+                    <option value="amc" {% if selected_type == "amc" %}selected{% endif %}>AMC Services Only</option>
+                </select>
+            </form>
+            <div class="search-wrap">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search by service no, customer, product, mobile..." />
+            </div>
+        </div>
+        <div class="toolbar-right">
+            <div class="filters">
+                <button class="fb active" data-f="all">All</button>
+                <button class="fb" data-f="Completed">✅ Completed</button>
+                <button class="fb" data-f="Approved">⭐ Approved</button>
+                <button class="fb" data-f="Pending">⏳ Pending</button>
+                <button class="fb" data-f="Rejected">⛔ Rejected</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="tpanel">
+            <div class="tpanel-head">
+                <h2>Service Requests <span id="tbl-count"></span></h2>
+                <div class="tpanel-meta">Click main row to expand and manage AMC visits</div>
+            </div>
+            <div class="table-wrap">
+                <table class="service-table" id="serviceTable">
+                    <thead>
+                        <tr><th></th><th>Service No</th><th>Customer</th><th>Products / Required Items</th><th>Contract</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    {% for group in groups %}
+                    <tbody class="service-group" data-status="{{ group.main.status }}">
+                        <tr class="main-row" onclick="toggleRow('{{ group.main.id }}');showDetails('detail-main-{{ group.main.id }}')">
+                            <td class="toggle-cell"><div class="toggle-arrow" id="arrow-{{ group.main.id }}">▸</div></td>
+                            <td><span class="service-no-badge">{{ group.main.service_no }}</span></td>
+                            <td><div class="name">{{ group.main.customer }}</div><div class="subtext">{{ group.main.mobile|default:"-" }}</div></td>
+                            <td>
+                                <div class="line-list">
+                                    {% for product in group.main.products %}
+                                        <div style="margin-bottom: 12px; padding: 6px; background: #f8fafc; border-radius: 6px;">
+                                            {% if product.type == "AMC" %}
+                                                <div>🔄 {{ product.name }} <span class="amc-visit-badge">{{ product.service_date }}</span></div>
+                                            {% else %}
+                                                <div><strong>📦 {{ product.name }}</strong>{% if product.quantity and product.quantity > 1 %}<span class="amc-visit-badge">Qty: {{ product.quantity }}</span>{% endif %}</div>
+                                                {% if product.items %}
+                                                    <div style="margin-left: 20px; margin-top: 6px;">
+                                                        {% for item in product.items %}
+                                                            <div style="font-size: 11px; color: #64748b; padding: 2px 0;">└ 🔧 {{ item.name }}{% if item.qty and item.qty > 1 %} (x{{ item.qty }}){% endif %}{% if item.notes %} - {{ item.notes }}{% endif %}</div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    {% empty %}N/A{% endfor %}
+                                </div>
+                            </td>
+                            <td>{% if group.main.contract == "AMC" %}<span class="amc-badge">AMC Contract</span>{% else %}<span class="contract-text">{{ group.main.contract|default:"-" }}</span>{% endif %}</td>
+                            <td>{% if group.main.status == "Completed" %}<span class="status-b sb-completed">{{ group.main.status }}</span>{% elif group.main.status == "Approved" %}<span class="status-b sb-approved">{{ group.main.status }}</span>{% elif group.main.status == "Rejected" %}<span class="status-b sb-rejected">{{ group.main.status }}</span>{% else %}<span class="status-b sb-pending">{{ group.main.status }}</span>{% endif %}</td>
+                            <td onclick="event.stopPropagation()">
+                                <div class="act-btns">
+                                    <button class="abtn abtn-view" onclick="showDetails('detail-main-{{ group.main.id }}')">Details</button>
+                                    <button class="abtn abtn-approve" onclick="approveService('{{ group.main.id }}')">Approve</button>
+                                    <button class="abtn abtn-complete" onclick="completeService('{{ group.main.id }}')">Complete</button>
+                                    <button class="abtn abtn-reject" onclick="rejectService('{{ group.main.id }}')">Reject</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr id="row-{{ group.main.id }}" class="sub-row">
+                            <td colspan="7">
+                                <div class="sub-wrap">
+                                    <div class="sub-title"><div class="left">AMC Service Visits</div><div class="right">{{ group.main.sub_services|length }} scheduled visit{{ group.main.sub_services|length|pluralize }}</div></div>
+                                    <table class="sub-table">
+                                        <thead><tr><th>Contract</th><th>Service Date</th><th>Status</th><th>Actions</th></tr></thead>
+                                        <tbody>
+                                            {% for sub in group.main.sub_services %}
+                                            <tr class="sub-item-row" id="amc-row-{{ sub.schedule_id }}">
+                                                <td><strong>{{ sub.contract_number }}</strong></td>
+                                                <td class="amc-date-{{ sub.schedule_id }}">{{ sub.service_date }}</td>
+                                                <td id="amc-status-{{ sub.schedule_id }}">{% if sub.is_completed %}<span class="status-b sb-completed">Completed</span>{% else %}<span class="status-b sb-pending">Pending</span>{% endif %}</td>
+                                                <td>
+                                                    <button class="amc-action-btn amc-complete-btn" onclick="updateAmcStatus({{ sub.schedule_id }}, 'completed')">✓ Complete</button>
+                                                    <button class="amc-action-btn amc-pending-btn" onclick="updateAmcStatus({{ sub.schedule_id }}, 'pending')">⏳ Pending</button>
+                                                    <button class="amc-action-btn amc-reschedule-btn" onclick="rescheduleAmcVisit({{ sub.schedule_id }})">📅 Reschedule</button>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr><td colspan="4" class="empty-note">No scheduled AMC visits found</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    {% empty %}
+                    <tbody><tr><td colspan="7"><div class="empty-note">No services found.</div></td></tr></tbody>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="dpanel" id="detailsPanel"><div class="dp-empty"><div><div class="dp-empty-icon">📋</div><h3>No Service Selected</h3><p>Click any main service row to view details.</p></div></div></div>
+    </div>
+    <div class="footer">© 2026 ProService Management Dashboard | Manage AMC visits directly from the table</div>
+</div>
+
+<div class="hidden">
+    {% for group in groups %}
+    <div id="detail-main-{{ group.main.id }}">
+        <div class="dp-top"><div class="dp-ovl">Service Details</div><div class="dp-sno">{{ group.main.service_no }}</div><div class="dp-customer">{{ group.main.customer }}</div><div class="dp-product">{% if group.main.contract == "AMC" %}AMC Contract Service{% else %}Regular Service{% endif %}</div>
+            <div class="dp-status-row">{% if group.main.status == "Completed" %}<span class="dp-badge status-b sb-completed">{{ group.main.status }}</span>{% elif group.main.status == "Approved" %}<span class="dp-badge status-b sb-approved">{{ group.main.status }}</span>{% elif group.main.status == "Rejected" %}<span class="dp-badge status-b sb-rejected">{{ group.main.status }}</span>{% else %}<span class="dp-badge status-b sb-pending">{{ group.main.status }}</span>{% endif %}{% if group.main.contract == "AMC" %}<span class="dp-badge" style="color:#15803d;">AMC Contract</span>{% else %}<span class="dp-badge">{{ group.main.contract|default:"-" }}</span>{% endif %}</div>
+        </div>
+        <div class="dp-body">
+            <div class="dp-section"><div class="dp-section-title">Service Information</div><div class="info-grid"><div class="info-item"><div class="i-label">Service No</div><div class="i-value">{{ group.main.service_no }}</div></div><div class="info-item"><div class="i-label">Customer</div><div class="i-value">{{ group.main.customer }}</div></div><div class="info-item"><div class="i-label">Mobile</div><div class="i-value">{{ group.main.mobile|default:"-" }}</div></div><div class="info-item"><div class="i-label">Status</div><div class="i-value">{{ group.main.status }}</div></div><div class="info-item full"><div class="i-label">Service Date</div><div class="i-value">{{ group.main.date|default:"-" }}</div></div></div></div>
+            <div class="dp-section"><div class="dp-section-title">Products & Required Items</div><div class="subitem-list">{% for product in group.main.products %}<div class="subitem-row subitem-row-vertical"><div style="display: flex; align-items: center; gap: 12px; width: 100%;"><div class="si-dot"></div><div class="si-name">{% if product.type == "AMC" %}🔄 {{ product.name }}{% else %}📦 <strong>{{ product.name }}</strong>{% if product.quantity and product.quantity > 1 %}<span style="font-size: 10px; color: #0891b2;">(Qty: {{ product.quantity }})</span>{% endif %}{% endif %}</div><div class="si-note">{% if product.type == "AMC" %}<span class="si-date">📅 {{ product.service_date }}</span>{% else %}{% if product.price %}₹{{ product.price }}{% endif %}{% if product.gst_percentage %} + {{ product.gst_percentage }}% GST{% endif %}{% endif %}</div></div>{% if product.items %}<div style="margin-left: 32px; margin-top: 8px; width: 100%;">{% for item in product.items %}<div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(15,23,42,0.05);"><span style="font-size: 11px; color: #7c3aed;">▹</span><span style="font-size: 12px; font-weight: 500;">{{ item.name }}</span>{% if item.qty and item.qty > 1 %}<span style="font-size: 11px; color: #64748b;">(Qty: {{ item.qty }})</span>{% endif %}{% if item.notes %}<span style="font-size: 11px; color: #94a3b8;">- {{ item.notes }}</span>{% endif %}</div>{% endfor %}</div>{% endif %}</div>{% empty %}<div class="subitem-row"><div class="si-dot"></div><div class="si-name">No products or AMC services</div></div>{% endfor %}</div></div>
+            {% if group.main.sub_services %}<div class="dp-section"><div class="dp-section-title">Scheduled AMC Visits</div><div class="subitem-list">{% for sub in group.main.sub_services %}<div class="subitem-row"><div class="si-dot"></div><div class="si-name">AMC Visit ({{ sub.contract_number }})</div><div class="si-note">📅 {{ sub.service_date }}</div></div>{% endfor %}</div></div>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function normalizeStatus(status) {
+        if (status === "Rejected") return "Rejected";
+        if (status === "Approved") return "Approved";
+        if (status === "Completed") return "Completed";
+        return status;
+    }
+
+    function toggleRow(id) {
+        const row = document.getElementById("row-" + id);
+        const arrow = document.getElementById("arrow-" + id);
+        if (!row) return;
+        if (row.style.display === "table-row") {
+            row.style.display = "none";
+            if (arrow) arrow.textContent = "▸";
+        } else {
+            row.style.display = "table-row";
+            if (arrow) arrow.textContent = "▾";
+        }
+    }
+
+    function showDetails(templateId) {
+        const panel = document.getElementById("detailsPanel");
+        const template = document.getElementById(templateId);
+        if (panel && template) panel.innerHTML = template.innerHTML;
+    }
+
+    function approveService(id) {
+        if (confirm('Approve this service?')) {
+            fetch(`/approve/${id}/`).then(res => res.json()).then(() => { alert("Service Approved"); location.reload(); }).catch(err => { console.error(err); alert("Error approving service"); });
+        }
+    }
+
+    function completeService(id) {
+        if (confirm('Mark this service as Completed?')) {
+            fetch(`/complete/${id}/`).then(res => res.json()).then(() => { alert("Service Completed"); location.reload(); }).catch(err => { console.error(err); alert("Error completing service"); });
+        }
+    }
+
+    function rejectService(id) {
+        if (confirm('Reject this service?')) {
+            fetch(`/reject/${id}/`).then(res => res.json()).then(() => { alert("Service Rejected"); location.reload(); }).catch(err => { console.error(err); alert("Error rejecting service"); });
+        }
+    }
+
+    function updateAmcStatus(scheduleId, status) {
+        fetch(`/api/amc-visit/${scheduleId}/status/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status })
+        }).then(res => res.json()).then(() => { location.reload(); }).catch(err => { console.error(err); alert("Error updating status"); });
+    }
+
+    function rescheduleAmcVisit(scheduleId) {
+        const newDate = prompt("Enter new date (YYYY-MM-DD):");
+        if (newDate && /^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+            fetch(`/api/amc-visit/${scheduleId}/reschedule/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ new_date: newDate })
+            }).then(res => res.json()).then(() => { location.reload(); }).catch(err => { console.error(err); alert("Error rescheduling"); });
+        } else if (newDate) { alert("Invalid date format. Use YYYY-MM-DD"); }
+    }
+
+    let activeFilter = "all";
+    function applyFilters() {
+        const search = document.getElementById("searchInput").value.toLowerCase().trim();
+        const groups = document.querySelectorAll(".service-group");
+        let visibleGroups = 0;
+        groups.forEach(group => {
+            const text = group.innerText.toLowerCase();
+            const status = normalizeStatus(group.dataset.status || "");
+            const matchesSearch = !search || text.includes(search);
+            const matchesFilter = activeFilter === "all" || status === activeFilter;
+            if (matchesSearch && matchesFilter) { group.style.display = ""; visibleGroups++; } 
+            else { group.style.display = "none"; }
+        });
+        const tblCount = document.getElementById("tbl-count");
+        if (tblCount) tblCount.textContent = `(${visibleGroups} of ${groups.length} groups)`;
+    }
+
+    function setToday() {
+        const now = new Date();
+        document.getElementById("navDate").textContent = now.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        setToday(); applyFilters();
+        document.getElementById("searchInput").addEventListener("input", applyFilters);
+        document.querySelectorAll(".fb").forEach(btn => {
+            btn.addEventListener("click", function() {
+                document.querySelectorAll(".fb").forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+                activeFilter = this.dataset.f;
+                applyFilters();
+            });
+        });
+    });
+</script>
+</body>
+</html>

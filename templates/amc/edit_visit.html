@@ -1,0 +1,237 @@
+{% load static %}
+{% load widget_tweaks %}
+
+{% include 'sidebar.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEIM CRM - Edit AMC Visit</title>
+
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .main {
+            padding: 1.5rem 1rem;
+        }
+
+        .edit-card {
+            max-width: 780px;
+            margin: 100px auto 40px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #0d6efd;
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn {
+            font-size: 1.8rem;
+            color: white;
+            text-decoration: none;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .info-box {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.4rem;
+        }
+
+        .dropdown-toggle {
+            text-align: left;
+            padding: 0.65rem 1rem;
+        }
+
+        .dropdown-menu {
+            max-height: 320px;
+            overflow-y: auto;
+            width: 100%;
+            padding: 0.75rem 0;
+        }
+
+        .form-check {
+            padding: 0.5rem 1.25rem;
+        }
+
+        .form-check:hover {
+            background-color: #f0f6ff;
+        }
+
+        .alert-locked {
+            margin-top: 1.5rem;
+            font-weight: 500;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 0.65rem 2.2rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 576px) {
+            .edit-card {
+                margin: 80px 15px 30px;
+            }
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="main">
+    <div class="container">
+
+        <div class="edit-card bg-white shadow-lg">
+
+            <!-- Header -->
+            <div class="card-header">
+                <h4 class="mb-0 fw-semibold">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Edit AMC Visit
+                </h4>
+                <a href="{% url 'amc:detail' visit.amc.id %}" class="close-btn" title="Close">
+                    ×
+                </a>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+
+                <!-- AMC & Visit Info -->
+                <div class="info-box">
+                    <div class="mb-2">
+                        <strong>AMC:</strong> {{ visit.amc.contract_number }}
+                    </div>
+                    <div class="mb-1">
+                        <strong>Scheduled Date:</strong> {{ visit.service_date|date:"d M Y" }}
+                    </div>
+                    {% if visit.rescheduled_from %}
+                        <div class="text-warning fw-medium">
+                            <strong>Rescheduled from:</strong> {{ visit.rescheduled_from|date:"d M Y" }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Visit Date -->
+                    <div class="mb-4">
+                        <label class="form-label">Visit Date</label>
+                        {{ form.service_date|add_class:"form-control" }}
+                        {{ form.service_date.errors }}
+                    </div>
+
+                    <!-- Technicians Multi-Select -->
+                    <div class="mb-4">
+                        <label class="form-label">Assigned Technicians</label>
+
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                <i class="bi bi-person-gear me-2"></i>
+                                Select / Change Technicians
+                            </button>
+
+                            <ul class="dropdown-menu shadow-sm">
+                                {% for tech in form.fields.technicians.queryset %}
+                                    <li>
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   name="technicians"
+                                                   value="{{ tech.id }}"
+                                                   id="tech_{{ tech.id }}"
+                                                   {% if tech in visit.technicians.all %}checked{% endif %}>
+                                            <label class="form-check-label ms-2" for="tech_{{ tech.id }}">
+                                                {{ tech.first_name }} {{ tech.last_name }}
+                                            </label>
+                                        </div>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-center py-3 text-muted small">
+                                        No technicians available
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Remarks -->
+                    <div class="mb-4">
+                        <label class="form-label">Remarks / Work Summary</label>
+                        {{ form.remarks|add_class:"form-control" }}
+                        {{ form.remarks.errors }}
+                    </div>
+
+                    <!-- Locked Warning -->
+                    {% if visit.is_completed %}
+                        <div class="alert alert-warning alert-dismissible fade show alert-locked" role="alert">
+                            <strong>This visit is already marked as completed.</strong><br>
+                            Editing is disabled. Contact support if this needs correction.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-end gap-3 mt-5">
+                        <a href="{% url 'amc:detail' visit.amc.id %}"
+                           class="btn btn-outline-secondary px-5">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary px-5"
+                                {% if visit.is_completed %}disabled{% endif %}>
+                            <i class="bi bi-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
