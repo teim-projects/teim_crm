@@ -3857,6 +3857,18 @@ def edit_customer(request , rid):
     
 
 
+def get_product_items(request):
+    product_id = request.GET.get('product_id')
+    if product_id:
+        try:
+            product = Product.objects.get(product_id=product_id)
+            items = ProductRequiredItem.objects.filter(product=product).values('id', 'item_name')
+            return JsonResponse({'success': True, 'items': list(items)})
+        except Product.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Product not found'})
+    return JsonResponse({'success': False, 'error': 'Product ID required'})
+
+
 
 from .models import Reschedule
 from datetime import datetime
@@ -3871,6 +3883,23 @@ def edit_service_records(request, rid):
     products = Product.objects.all()
     sales_persons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
+
+    # Build a dictionary of selected items for each service product
+    selected_items_map = {}
+    for sp in selected_products:
+        selected_items = ServiceProductItem.objects.filter(service_product=sp).select_related('required_item')
+        selected_items_map[sp.product.product_id] = {
+            'service_product_id': sp.id,
+            'items': [
+                {
+                    'item_id': item.required_item.id,
+                    'item_name': item.required_item.item_name,
+                    'quantity': float(item.quantity),
+                    'notes': item.notes or ''
+                }
+                for item in selected_items
+            ]
+        }
 
     if request.method == "POST":
         try:
@@ -3896,6 +3925,47 @@ def edit_service_records(request, rid):
                 sp.total_with_gst = line_total_with_gst
                 sp.save()
 
+                # Update items for this service product
+                # First, get existing items
+                existing_items = {item.required_item_id: item for item in ServiceProductItem.objects.filter(service_product=sp)}
+                
+                # Get items from POST data
+                items_data = request.POST.get(f'items_{sp.id}', '[]')
+                try:
+                    items_list = json.loads(items_data)
+                except json.JSONDecodeError:
+                    items_list = []
+                
+                # Track which items we've processed
+                processed_item_ids = set()
+                
+                for item_data in items_list:
+                    required_item_id = item_data.get('required_item_id')
+                    item_quantity = Decimal(item_data.get('quantity', 1))
+                    item_notes = item_data.get('notes', '')
+                    
+                    if required_item_id in existing_items:
+                        # Update existing
+                        existing_items[required_item_id].quantity = item_quantity
+                        existing_items[required_item_id].notes = item_notes
+                        existing_items[required_item_id].save()
+                        processed_item_ids.add(required_item_id)
+                    else:
+                        # Create new
+                        required_item = ProductRequiredItem.objects.get(id=required_item_id)
+                        ServiceProductItem.objects.create(
+                            service_product=sp,
+                            required_item=required_item,
+                            quantity=item_quantity,
+                            notes=item_notes
+                        )
+                        processed_item_ids.add(required_item_id)
+                
+                # Delete items that were removed
+                for item_id, item_obj in existing_items.items():
+                    if item_id not in processed_item_ids:
+                        item_obj.delete()
+                
                 total_price += line_total
                 total_charges += line_total_charges
                 total_with_gst += line_total_with_gst
@@ -3903,22 +3973,20 @@ def edit_service_records(request, rid):
             # --- Add new selected products ---
             selected_products_json = (request.POST.get('selected_products_json') or '[]').strip()
             try:
-                selected_products = json.loads(selected_products_json)
+                new_products = json.loads(selected_products_json)
             except json.JSONDecodeError:
-                selected_products = []
+                new_products = []
                 print("⚠️ Warning: Invalid JSON in selected_products_json, defaulting to empty list.")
 
-            print("Selected Products:", selected_products)
-
-
-            for item in selected_products:
+            for item in new_products:
                 product_id = item.get('p_id')
                 price = item.get('price')
                 quantity = item.get('quantity')
                 gst_percentage = item.get('gst', 0)
                 description = item.get('description', '')
+                items_list = item.get('items', [])
 
-                if not price or not quantity or not gst_percentage:
+                if not price or not quantity:
                     continue
 
                 try:
@@ -3931,7 +3999,7 @@ def edit_service_records(request, rid):
                     line_total_charges = line_total * gst / Decimal('100')
                     line_total_with_gst = line_total + line_total_charges
 
-                    ServiceProduct.objects.create(
+                    service_product = ServiceProduct.objects.create(
                         service=service,
                         product=product,
                         price=price,
@@ -3940,6 +4008,24 @@ def edit_service_records(request, rid):
                         total_with_gst=line_total_with_gst,
                         description=description,
                     )
+                    
+                    # Add items for this service product
+                    for item_data in items_list:
+                        required_item_id = item_data.get('required_item_id')
+                        item_quantity = Decimal(item_data.get('quantity', 1))
+                        item_notes = item_data.get('notes', '')
+                        
+                        try:
+                            required_item = ProductRequiredItem.objects.get(id=required_item_id)
+                            ServiceProductItem.objects.create(
+                                service_product=service_product,
+                                required_item=required_item,
+                                quantity=item_quantity,
+                                notes=item_notes
+                            )
+                        except ProductRequiredItem.DoesNotExist:
+                            print(f"Required item with ID {required_item_id} does not exist.")
+                            continue
 
                     total_price += line_total
                     total_with_gst += line_total_with_gst
@@ -3967,9 +4053,12 @@ def edit_service_records(request, rid):
             service.lead_date = request.POST.get('lead_date')
             service.delivery_time = request.POST.get('delivery_time')
             service.service_date = request.POST.get('service_date')
+            # In the POST section, add these lines:
+            service.latitude = request.POST.get('latitude') or None
+            service.longitude = request.POST.get('longitude') or None
+            service.sales_person_email = request.POST.get('sales_person_email', '')
             service.save()
 
-            # messages.success(request, "Service record updated successfully.")
             return redirect('display_service_management')
 
         except Exception as e:
@@ -3985,8 +4074,11 @@ def edit_service_records(request, rid):
         'products': products,
         'sales_persons': sales_persons,
         'frequency_choices': frequency_choices,
+        'selected_items_map': json.dumps(selected_items_map),  # Pass to template
+        'branches': Branch.objects.all(),
     }
     return render(request, 'edit_service_records.html', context)
+
 
 def delete_service_records(request, rid):
     service_management.objects.get(id = rid).delete()
