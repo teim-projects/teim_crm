@@ -1376,6 +1376,8 @@ def service_management_create(request):
 
 # views.py - COMPLETE VERSION WITH ALL ACTIONS
 
+# views.py - COMPLETE VERSION WITH AMC PRODUCTS API
+
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -1418,7 +1420,6 @@ def approve_amc_visit(request, schedule_id):
         schedule.is_completed = True
         schedule.save()
         
-        # Update the visit if exists
         visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
         if visit:
             visit.allocation_status = 'ALLOCATED'
@@ -1436,7 +1437,6 @@ def reject_amc_visit(request, schedule_id):
         schedule.is_completed = False
         schedule.save()
         
-        # Update the visit if exists
         visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
         if visit:
             visit.allocation_status = 'CANCELLED'
@@ -1460,7 +1460,6 @@ def reschedule_amc_visit(request, schedule_id):
             schedule.service_date = new_date_obj
             schedule.save()
             
-            # Update the visit if exists
             visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=old_date).first()
             if visit:
                 visit.service_date = new_date_obj
@@ -1473,25 +1472,134 @@ def reschedule_amc_visit(request, schedule_id):
 @login_required
 @csrf_exempt
 def get_amc_visit_details(request, schedule_id):
-    """Get details of a specific AMC visit"""
+    """Get details of a specific AMC visit including products and required items"""
     schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
     visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
+    
+    # Get the main service (service_management) that this AMC belongs to
+    main_service = schedule.amc.service
+    
+    # Get products with their required items for this AMC
+    products = []
+    
+    # Get regular products from ServiceProduct (if any)
+    for sp in main_service.service_products.all():
+        product_data = {
+            "name": sp.product.product_name,
+            "type": "NORMAL",
+            "quantity": float(sp.quantity) if sp.quantity else 1,
+            "price": float(sp.price) if sp.price else 0,
+            "gst_percentage": float(sp.gst_percentage) if sp.gst_percentage else 0,
+            "items": []
+        }
+        
+        for item in sp.selected_items.all():
+            product_data["items"].append({
+                "name": item.required_item.item_name,
+                "qty": float(item.quantity),
+                "notes": item.notes or ""
+            })
+        
+        products.append(product_data)
+    
+    # Add AMC schedule as a product with its required items
+    # Get any required items associated with this AMC visit
+    amc_product_data = {
+        "name": f"AMC Service - {schedule.amc.contract_number}",
+        "type": "AMC",
+        "service_date": schedule.service_date.strftime('%Y-%m-%d'),
+        "schedule_id": schedule.id,
+        "is_completed": schedule.is_completed,
+        "items": []
+    }
+    
+    # You can add custom items for AMC visits here if needed
+    # For now, add the visit date as an item
+    amc_product_data["items"].append({
+        "name": f"Scheduled Visit on {schedule.service_date.strftime('%d %b, %Y')}",
+        "qty": 1,
+        "notes": "Regular AMC service visit"
+    })
+    
+    products.append(amc_product_data)
     
     data = {
         'id': schedule.id,
         'contract_number': schedule.amc.contract_number,
         'service_date': schedule.service_date.strftime('%Y-%m-%d'),
+        'service_date_display': schedule.service_date.strftime('%b %d, %Y'),
         'is_completed': schedule.is_completed,
         'amc_type': schedule.amc.amc_type,
         'customer_name': schedule.amc.customer.fullname if schedule.amc.customer else '',
-        'technicians': [t.user.first_name for t in schedule.amc.technicians.all()],
+        'customer_mobile': schedule.amc.customer.primarycontact if schedule.amc.customer else '',
+        'customer_address': schedule.amc.default_customer_address or '',
+        'technicians': [t.user.get_full_name() or t.user.username for t in schedule.amc.technicians.all()],
+        'products': products,
         'visit_details': {
             'allocation_status': visit.allocation_status if visit else 'PENDING',
             'remarks': visit.remarks if visit else '',
-            'crm_service_id': visit.crm_service.id if visit and visit.crm_service else None
-        } if visit else None
+            'crm_service_id': visit.crm_service.id if visit and visit.crm_service else None,
+            'auto_allocation_done': visit.auto_allocation_done if visit else False
+        } if visit else None,
+        'contract_details': {
+            'start_date': schedule.amc.start_date.strftime('%Y-%m-%d'),
+            'end_date': schedule.amc.end_date.strftime('%Y-%m-%d'),
+            'frequency': schedule.amc.frequency,
+            'total_amount': float(schedule.amc.total_amount) if schedule.amc.total_amount else 0,
+            'per_visit_amount': float(schedule.amc.per_visit_amount) if schedule.amc.per_visit_amount else 0,
+            'service_description': schedule.amc.service_description or '',
+            'notes': schedule.amc.notes or ''
+        }
     }
     return JsonResponse({'success': True, 'data': data})
+
+@login_required
+@csrf_exempt
+def get_amc_service_products(request, schedule_id):
+    """Get products and required items for a specific AMC schedule"""
+    schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
+    main_service = schedule.amc.service
+    
+    products = []
+    
+    # Get regular products
+    for sp in main_service.service_products.all():
+        product_data = {
+            "name": sp.product.product_name,
+            "type": "NORMAL",
+            "quantity": float(sp.quantity) if sp.quantity else 1,
+            "price": float(sp.price) if sp.price else 0,
+            "gst_percentage": float(sp.gst_percentage) if sp.gst_percentage else 0,
+            "items": []
+        }
+        
+        for item in sp.selected_items.all():
+            product_data["items"].append({
+                "name": item.required_item.item_name,
+                "qty": float(item.quantity),
+                "notes": item.notes or ""
+            })
+        
+        products.append(product_data)
+    
+    # Add AMC schedule product
+    amc_product = {
+        "name": f"AMC Visit - {schedule.amc.contract_number}",
+        "type": "AMC",
+        "service_date": schedule.service_date.strftime('%Y-%m-%d'),
+        "schedule_id": schedule.id,
+        "is_completed": schedule.is_completed,
+        "items": [
+            {
+                "name": f"Visit Date: {schedule.service_date.strftime('%d %b, %Y')}",
+                "qty": 1,
+                "notes": f"AMC Type: {schedule.amc.amc_type}"
+            }
+        ]
+    }
+    products.append(amc_product)
+    
+    return JsonResponse({'success': True, 'products': products, 'count': len(products)})
 
 def get_products_with_amc_schedules(service):
     """Get products for a service, automatically including AMC schedules"""

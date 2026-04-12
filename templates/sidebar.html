@@ -1413,19 +1413,13 @@
 
             {% endif %}
             {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' or role == 'HO_manager' or role == 'HO_operation' %}
-            <li class="has-submenu">
-                <i class="fas fa-file-alt"></i> Service <span class="arrow-down"></span>
-                <div class="submenu">
-                    <ul>
-                        <a href="{% url 'bharat_page' %}">
-                            <li data-link="">1. Add Service</li>
-                        </a>
-                        <a href="{% url 'site_list' %}">
-                            <li data-link="">2. View Service</li>
-                        </a>
-                    </ul>
-                </div>
-            </li>
+
+
+             <a href="{% url 'bharat_page' %}" style="text-decoration: none;">
+                <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Service</li>
+            </a>
+
+
 
             {% endif %}
             {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' or role == 'HO_manager' or role == 'HO_operation' %}
