@@ -37,7 +37,10 @@ urlpatterns = [
 
 
 
-     path('bharat/', views.bharat_page, name='bharat_page'),
+  # urls.py
+
+
+    path('bharat/', views.bharat_page, name='bharat_page'),
     
     # Main service actions
     path('approve/<int:id>/', views.approve_service, name='approve_service'),
@@ -49,6 +52,8 @@ urlpatterns = [
     path('api/amc-visit/<int:schedule_id>/reject/', views.reject_amc_visit, name='reject_amc_visit'),
     path('api/amc-visit/<int:schedule_id>/reschedule/', views.reschedule_amc_visit, name='reschedule_amc_visit'),
     path('api/amc-visit/<int:schedule_id>/details/', views.get_amc_visit_details, name='get_amc_visit_details'),
+    path('api/amc-visit/<int:schedule_id>/products/', views.get_amc_service_products, name='get_amc_service_products'),
+
 
 
 
