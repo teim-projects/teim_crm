@@ -290,6 +290,7 @@ class AMCServiceSchedule(models.Model):
     service_date = models.DateField()
     reminder_sent = models.BooleanField(default=False)
     is_completed = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

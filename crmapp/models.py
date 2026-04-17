@@ -594,15 +594,7 @@ class TechnicianProfile(models.Model):
 
 class service_management(models.Model):
 
-    status = models.CharField(
-    max_length=20,
-    choices=[
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected')
-    ],
-    default='pending'
-)
+    is_approved = models.BooleanField(default=False)
     SEGMENTS_CHOICES = [('Residential', 'Residential'),
         ('Industrial / Commercial', 'Industrial / Commercial'),
         ('Institutional', 'Institutional'),

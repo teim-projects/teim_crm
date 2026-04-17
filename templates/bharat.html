@@ -999,10 +999,7 @@
                     <div class="stat-label">Approved</div>
                     <div class="stat-value">{{ approved_count|default:"0" }}</div>
                 </div>
-                <div class="stat-box">
-                    <div class="stat-label">Completed</div>
-                    <div class="stat-value">{{ completed_count|default:"0" }}</div>
-                </div>
+                
             </div>
 
             <div class="control-card">
@@ -1034,9 +1031,7 @@
                     <button class="filter-btn active" data-f="all" type="button">All</button>
                     <button class="filter-btn" data-f="Pending" type="button">Pending</button>
                     <button class="filter-btn" data-f="Approved" type="button">Approved</button>
-                    <button class="filter-btn" data-f="Processing" type="button">Processing</button>
-                    <button class="filter-btn" data-f="Completed" type="button">Completed</button>
-                    <button class="filter-btn" data-f="Rejected" type="button">Rejected</button>
+                    
                 </div>
 
                 <div class="button-row">
@@ -1086,17 +1081,11 @@
                                     </div>
 
                                     <div class="service-right">
-                                        {% if group.main.status == "Completed" %}
-                                            <div class="status-badge status-completed">Completed</div>
-                                        {% elif group.main.status == "Approved" %}
-                                            <div class="status-badge status-approved">Approved</div>
-                                        {% elif group.main.status == "Rejected" %}
-                                            <div class="status-badge status-rejected">Rejected</div>
-                                        {% elif group.main.status == "Processing" %}
-                                            <div class="status-badge status-processing">Processing</div>
-                                        {% else %}
-                                            <div class="status-badge status-pending">{{ group.main.status }}</div>
-                                        {% endif %}
+                                        {% if group.main.is_approved %}
+    <div class="status-badge status-approved">Approved</div>
+{% else %}
+    <div class="status-badge status-pending">Pending</div>
+{% endif %}
 
                                         {% if group.main.contract == "AMC" %}
                                             <div class="contract-badge amc">AMC Contract</div>
@@ -1164,14 +1153,16 @@
                                             Approve
                                         </button>
 
-                                        <button class="small-btn btn-complete" type="button"
-                                                onclick="completeService('{{ group.main.id }}')">
-                                            Complete
-                                        </button>
+                                        <button class="small-btn btn-reject"
+        onclick="rejectService('{{ group.main.id }}')">
+    Mark Pending
+</button>
+
+                                        
 
                                         <button class="small-btn btn-reject" type="button"
                                                 onclick="rejectService('{{ group.main.id }}')">
-                                            Reject
+                                            pending
                                         </button>
 
                                         <button class="small-btn btn-amc" type="button"
@@ -1202,8 +1193,8 @@
                                             <div class="visit-col" id="amc-status-{{ sub.schedule_id }}">
                                                 <div class="k">Status</div>
                                                 <div class="v">
-                                                    {% if sub.is_completed %}
-                                                        <span class="status-badge status-completed">Completed</span>
+                                                    {% if sub.is_approved %}
+                                                        <span class="status-badge status-completed">Approved</span>
                                                     {% else %}
                                                         <span class="status-badge status-pending">Pending</span>
                                                     {% endif %}
@@ -1299,17 +1290,11 @@
                     </div>
 
                     <div class="detail-badges">
-                        {% if group.main.status == "Completed" %}
-                            <span class="status-badge status-completed">{{ group.main.status }}</span>
-                        {% elif group.main.status == "Approved" %}
-                            <span class="status-badge status-approved">{{ group.main.status }}</span>
-                        {% elif group.main.status == "Rejected" %}
-                            <span class="status-badge status-rejected">{{ group.main.status }}</span>
-                        {% elif group.main.status == "Processing" %}
-                            <span class="status-badge status-processing">{{ group.main.status }}</span>
-                        {% else %}
-                            <span class="status-badge status-pending">{{ group.main.status }}</span>
-                        {% endif %}
+                        {% if group.main.is_approved %}
+    <span class="status-badge status-approved">Approved</span>
+{% else %}
+    <span class="status-badge status-pending">Pending</span>
+{% endif %}
 
                         {% if group.main.contract == "AMC" %}
                             <span class="contract-badge amc">AMC Contract</span>
@@ -1334,10 +1319,13 @@
                             <div class="k">Mobile</div>
                             <div class="v">{{ group.main.mobile|default:"-" }}</div>
                         </div>
-                        <div class="detail-box">
-                            <div class="k">Status</div>
-                            <div class="v">{{ group.main.status }}</div>
-                        </div>
+                       <div class="v">
+    {% if group.main.is_approved %}
+        Approved
+    {% else %}
+        Pending
+    {% endif %}
+</div>
                         <div class="detail-box">
                             <div class="k">Contract</div>
                             <div class="v">{{ group.main.contract|default:"-" }}</div>
@@ -1497,20 +1485,7 @@
             }
         }
 
-        function completeService(id) {
-            if (confirm("Mark this service as Completed?")) {
-                fetch(`/complete/${id}/`)
-                    .then(res => res.json())
-                    .then(() => {
-                        alert("Service Completed");
-                        location.reload();
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert("Error completing service");
-                    });
-            }
-        }
+         
 
         function rejectService(id) {
             if (confirm("Reject this service?")) {

@@ -45,7 +45,7 @@ urlpatterns = [
     # Main service actions
     path('approve/<int:id>/', views.approve_service, name='approve_service'),
     path('reject/<int:id>/', views.reject_service, name='reject_service'),
-    path('complete/<int:id>/', views.complete_service, name='complete_service'),
+    # path('complete/<int:id>/', views.complete_service, name='complete_service'),
     
     # AMC visit actions
     path('api/amc-visit/<int:schedule_id>/approve/', views.approve_amc_visit, name='approve_amc_visit'),

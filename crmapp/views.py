@@ -1233,7 +1233,7 @@ def service_management_create(request):
             branch_instance = Branch.objects.get(id=branch_id) if branch_id else None
             # Create service instance
             instance = service_management.objects.create(
-                status='pending',
+                
                 customer=customer,
                 address=address,
                 total_price=total_price,
@@ -1391,7 +1391,7 @@ from datetime import datetime
 def approve_service(request, id):
     """Approve main service - sets status to Approved"""
     service = get_object_or_404(service_management, id=id)
-    service.status = 'Approved'
+    service.is_approved = True
     service.save()
     return JsonResponse({'status': 'approved', 'success': True})
 
@@ -1399,17 +1399,17 @@ def approve_service(request, id):
 def reject_service(request, id):
     """Reject main service - sets status to Rejected"""
     service = get_object_or_404(service_management, id=id)
-    service.status = 'Rejected'
+    service.is_approved = False
     service.save()
     return JsonResponse({'status': 'rejected', 'success': True})
 
-@login_required
-def complete_service(request, id):
-    """Complete main service - sets status to Completed"""
-    service = get_object_or_404(service_management, id=id)
-    service.status = 'Completed'
-    service.save()
-    return JsonResponse({'status': 'completed', 'success': True})
+
+# def complete_service(request, id):
+#     """Complete main service - sets status to Completed"""
+#     service = get_object_or_404(service_management, id=id)
+#     service.status = 'Completed'
+#     service.save()
+#     return JsonResponse({'status': 'completed', 'success': True})
 
 @login_required
 @csrf_exempt
@@ -1417,7 +1417,7 @@ def approve_amc_visit(request, schedule_id):
     """Approve individual AMC visit"""
     if request.method == 'POST':
         schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
-        schedule.is_completed = True
+        schedule.is_approved= True
         schedule.save()
         
         visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
@@ -1434,7 +1434,7 @@ def reject_amc_visit(request, schedule_id):
     """Reject individual AMC visit"""
     if request.method == 'POST':
         schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
-        schedule.is_completed = False
+        schedule.is_approved = False
         schedule.save()
         
         visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
@@ -1634,6 +1634,13 @@ def get_products_with_amc_schedules(service):
         
         for schedule in schedules:
             visit = AMCServiceVisit.objects.filter(amc=amc, service_date=schedule.service_date).first()
+
+            if schedule.is_completed:
+                status = "Completed"
+            elif schedule.is_approved:
+                status = "Approved"
+            else:
+                status = "Pending"            
             
             products.append({
                 "name": f"AMC Service - {amc.contract_number}",
@@ -1647,7 +1654,8 @@ def get_products_with_amc_schedules(service):
                     {
                         "name": f"Visit Date: {schedule.service_date}",
                         "qty": 1,
-                        "status": "Completed" if schedule.is_completed else "Pending"
+                        "status": status,
+                        "is_approved": schedule.is_approved,
                     }
                 ]
             })
@@ -1679,6 +1687,12 @@ def bharat_page(request):
         for amc in amc_contracts:
             schedules = AMCServiceSchedule.objects.filter(amc=amc).order_by('service_date')
             for schedule in schedules:
+                if schedule.is_completed:
+                    status = "Completed"
+                elif schedule.is_approved:
+                    status = "Approved"
+                else:
+                    status = "Pending"                
                 amc_sub_services.append({
                     "id": schedule.id,
                     "schedule_id": schedule.id,
@@ -1686,19 +1700,25 @@ def bharat_page(request):
                     "product": f"AMC Visit ({amc.contract_number})",
                     "service_date": schedule.service_date,
                     "service_date_display": schedule.service_date.strftime('%b %d, %Y'),
-                    "status": "Completed" if schedule.is_completed else "Pending",
+                    "status": status,
                     "contract_number": amc.contract_number,
-                    "is_completed": schedule.is_completed
+                    "is_completed": schedule.is_completed,
+                    "is_approved": schedule.is_approved,
                 })
         
         has_amc = len(amc_contracts) > 0
+        status = "Approved" if service.is_approved else "Pending"
         
         main_service_data = {
             "id": service.id,
             "service_no": f"SRV-{service.id:04d}",
             "customer": service.customer.fullname if service.customer else "",
             "mobile": service.customer.primarycontact if service.customer else "",
-            "status": service.status.capitalize() if service.status else "Pending",
+            # "status": service.status.capitalize() if service.status else "Pending",
+            "status": status,
+            "is_approved": service.is_approved,
+
+            
             "date": service.service_date,
             "contract": "AMC" if has_amc else service.contract_type,
             "products": products_with_amc,
@@ -1711,18 +1731,18 @@ def bharat_page(request):
             grouped[key]["subs"].append(main_service_data)
     
     total_services = service_management.objects.count()
-    completed_count = service_management.objects.filter(status='Completed').count()
-    approved_count = service_management.objects.filter(status='Approved').count()
-    pending_count = service_management.objects.filter(status='Pending').count()
-    rejected_count = service_management.objects.filter(status='Rejected').count()
+    # completed_count = service_management.objects.filter(status='Completed').count()
+    approved_count = service_management.objects.filter(is_approved=True).count()
+    pending_count = service_management.objects.filter(is_approved=False).count()
+    # rejected_count = service_management.objects.filter(status='Rejected').count()
     
     context = {
         "groups": grouped.values(),
         "total_entries": total_services,
-        "completed_count": completed_count,
+        
         "approved_count": approved_count,
         "pending_count": pending_count,
-        "rejected_count": rejected_count,
+        
         "selected_type": filter_type
     }
     
