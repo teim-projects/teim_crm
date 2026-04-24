@@ -1422,8 +1422,14 @@ def approve_amc_visit(request, schedule_id):
         
         visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
         if visit:
-            visit.allocation_status = 'ALLOCATED'
+            visit.allocation_status = 'APPROVED'   # ✅ F
             visit.save()
+            
+            
+                 # ✅ UPDATE SERVICE MANAGEMENT ALSO
+            if visit.crm_service:
+                visit.crm_service.is_approved = True
+                visit.crm_service.save()
         
         return JsonResponse({'success': True, 'message': 'AMC visit approved'})
     return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
@@ -5105,6 +5111,8 @@ def technician_login(request):
         password = request.POST.get('password')
         
         user = authenticate(request, username=contact_number, password=password)
+        
+
 
         if user is not None:
             try:
@@ -5881,6 +5889,16 @@ def complete_work(request, work_id):
     print('techn_work',tech_work)
     for w in tech_work.work.all():
         print(w.payment_amount)
+        
+        
+    # 🔍 Get related work
+    work_allocation = tech_work.work.first()
+
+    # ✅ 👉 YAHI ADD KIYA HAI
+    if work_allocation and work_allocation.service:
+        if not work_allocation.service.is_approved:
+            messages.error(request, "Service not approved yet.")
+            return redirect('technician_dashboard')
 
     if request.method == 'POST':
         # Get related work object (WorkAllocation)
@@ -5971,8 +5989,6 @@ def work_details(request, work_id):
         'work': work,
         'related_technicians': related_technicians,
     })
-
-
 
 def view_work_details(request, work_id):
     tech_work = get_object_or_404(TechWorkList, pk=work_id)

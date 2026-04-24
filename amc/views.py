@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from crmapp.models import TechnicianProfile
 from crmapp.models import TechWorkList
+from .models import AMCContract, AMCServiceVisit, AMCServiceSchedule
 
 
 
@@ -174,7 +175,18 @@ def amc_detail(request, pk):
 
         technicians = visit.technicians.all()
 
-        # 1️⃣ Create CRM Service
+       # 🔍 Get schedule (VERY IMPORTANT)
+        schedule = AMCServiceSchedule.objects.filter(
+            amc=amc,
+            service_date=visit.service_date
+        ).first()
+
+        # ❌ अगर approve नहीं है तो allocation रोक दो
+        if not schedule or not schedule.is_approved:
+            messages.warning(request, "AMC service is not approved.")
+            return redirect("amc:detail", amc.id)
+
+        # 🚀 Create CRM Service WITH APPROVAL
         service = service_management.objects.create(
             customer=amc.customer,
             branch=amc.branch,
@@ -182,6 +194,7 @@ def amc_detail(request, pk):
             service_date=visit.service_date,
             contract_type="AMC",
             gps_location=amc.default_gps_location,
+            is_approved=schedule.is_approved   # ✅ FIX HERE
         )
 
         # 2️⃣ Create Work Allocation
@@ -826,3 +839,7 @@ def get_amc_details(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+    
+    
+    
