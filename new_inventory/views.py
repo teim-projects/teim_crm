@@ -982,17 +982,24 @@ def grn_edit(request, pk):
 @role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def grn_detail(request, grn_id):
     grn = get_object_or_404(GoodsReceiveNote, id=grn_id)
+
     items = grn.items.select_related(
         "product",
         "batch",
         "batch__batch"
-    ).all()
+    )
+
+    # ✅ FIXED
+    sub_items = grn.sub_items.select_related(
+        "sub_item",
+        "po_sub_item"
+    )
 
     return render(request, "inventory/grn_detail.html", {
         "grn": grn,
-        "items": items
+        "items": items,
+        "sub_items": sub_items
     })
-
 
 
 def _parse_int_or_none(val):
