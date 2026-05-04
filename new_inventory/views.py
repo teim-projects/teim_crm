@@ -1,7 +1,7 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
-from crmapp.models import UserProfile, Product
+from crmapp.models import UserProfile, Product,ProductRequiredItem
 from crmapp.models import UserProfile
 from .utils import get_destination_object
 
@@ -377,6 +377,19 @@ def site_delete(request, id):
     return redirect("site_list")
 
 
+
+from django.http import JsonResponse
+from crmapp.models import ProductRequiredItem
+
+def get_required_items(request, product_id):
+    items = ProductRequiredItem.objects.filter(product_id=product_id)
+
+    data = [
+        {"id": i.id, "name": i.item_name}
+        for i in items
+    ]
+
+    return JsonResponse({"items": data})
 # ------------------ Purchase order section --------------- 
 @login_required
 @role_required(['admin',"HO_operation","HO_manager"])
@@ -399,6 +412,25 @@ def purchase_order_create(request):
                 item.purchase_order = po
                 item.save()
 
+            sub_products = request.POST.getlist("sub_product")
+            sub_item_ids = request.POST.getlist("sub_item_id")
+            sub_qtys = request.POST.getlist("sub_qty")
+            sub_rates = request.POST.getlist("sub_rate")
+            sub_units = request.POST.getlist("sub_unit")
+            sub_gsts = request.POST.getlist("sub_gst")
+            
+            for i in range(len(sub_item_ids)):
+                if sub_item_ids[i]:
+                    PurchaseOrderSubItem.objects.create(
+                        purchase_order=po,
+                        product_id=sub_products[i] or None,
+                        sub_item_id=sub_item_ids[i],
+                        quantity=sub_qtys[i] or 0,
+                        rate=sub_rates[i] or 0,
+                        unit=sub_units[i],
+                        gst_rate=sub_gsts[i] or 0,
+                    )              
+
             return redirect("purchase_order_list")
 
     else:
@@ -411,8 +443,8 @@ def purchase_order_create(request):
     return render(request, "inventory/purchase_order_form.html", {
         "form": form,
         "formset": formset,
+        "products": Product.objects.all(),
     })
-
 
 
 # ------------------ Purchase order list ---------------------
@@ -485,13 +517,40 @@ def purchase_order_edit(request, id):
     po = get_object_or_404(PurchaseOrder, id=id)
     dest_obj = get_destination_object(po.destination_type, po.destination_id)
     dest_label = str(dest_obj) if dest_obj else ""
+# GET existing sub items
+    sub_items = po.sub_items.all()
+    
     if request.method == "POST":
         form = PurchaseOrderForm(request.POST, request.FILES, instance=po)
         formset = PurchaseOrderItemFormSet(request.POST, instance=po, prefix="items")
-
+    
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
+    
+            # 🔥 DELETE OLD SUB ITEMS
+            po.sub_items.all().delete()
+    
+            # 🔥 SAVE NEW SUB ITEMS (same as create)
+            sub_products = request.POST.getlist("sub_product")
+            sub_item_ids = request.POST.getlist("sub_item_id")
+            sub_qtys = request.POST.getlist("sub_qty")
+            sub_rates = request.POST.getlist("sub_rate")
+            sub_units = request.POST.getlist("sub_unit")
+            sub_gsts = request.POST.getlist("sub_gst")
+    
+            for i in range(len(sub_item_ids)):
+                if sub_item_ids[i]:
+                    PurchaseOrderSubItem.objects.create(
+                        purchase_order=po,
+                        product_id=sub_products[i] or None,
+                        sub_item_id=sub_item_ids[i],
+                        quantity=sub_qtys[i] or 0,
+                        rate=sub_rates[i] or 0,
+                        unit=sub_units[i],
+                        gst_rate=sub_gsts[i] or 0,
+                    )
+    
             return redirect("purchase_order_list")
         
         else:
@@ -511,6 +570,8 @@ def purchase_order_edit(request, id):
         "form": form,
         "formset": formset,
         "po": po,
+        "sub_items": sub_items,
+        "products": Product.objects.all(),
         "destination_initial": {"id": po.destination_id, "label": dest_label}
     })
 
@@ -578,6 +639,9 @@ def purchase_order_pdf(request, id):
 def grn_create(request, po_id):
     po = get_object_or_404(PurchaseOrder, id=po_id)
     po_items = po.items.all()
+    
+    # 🔥 ADD THIS
+    po_sub_items = po.sub_items.all()
 
     # compute remaining for each PO item (already-received across previous GRNs)
     remaining_by_item = {}
@@ -592,6 +656,17 @@ def grn_create(request, po_id):
     for pi in po_items:
         pi.remaining = remaining_by_item.get(pi.id, Decimal("0.00"))
 
+    # 🔥 SUB ITEMS REMAINING
+    for si in po_sub_items:
+        s = GoodsReceiveNoteSubItem.objects.filter(po_sub_item=si).aggregate(total=Sum("received_qty"))["total"]
+        already = Decimal(s or 0)
+        remaining = Decimal(si.quantity or 0) - already
+    
+        if remaining < 0:
+            remaining = Decimal("0.00")
+    
+        si.remaining = remaining        
+
     # destination display values
     po_dest_type = getattr(po, "destination_type", None)
     po_dest_id = getattr(po, "destination_id", None)
@@ -603,7 +678,36 @@ def grn_create(request, po_id):
         if form.is_valid():
             errors = []
             item_inputs = []
+            sub_inputs = []
 
+            for si in po_sub_items:
+                raw = request.POST.get(f"sub_received_qty_{si.id}", "").strip()
+            
+                if raw in ("", None):
+                    continue
+            
+                try:
+                    received_qty = Decimal(raw)
+                except Exception:
+                    errors.append(f"Invalid quantity for {si.sub_item.item_name}")
+                    continue
+            
+                if received_qty <= 0:
+                    continue
+            
+                if received_qty > si.remaining:
+                    errors.append(f"{si.sub_item.item_name} exceeds remaining ({si.remaining})")
+                    continue
+            
+                sub_inputs.append({
+                    "si": si,
+                    "qty": received_qty,
+                    "batch": request.POST.get(f"sub_batch_{si.id}"),
+                    "mfg": request.POST.get(f"sub_mfg_{si.id}"),
+                    "exp": request.POST.get(f"sub_exp_{si.id}"),
+                    "remarks": request.POST.get(f"sub_remarks_{si.id}")
+                })            
+            
             # gather per-item inputs first for validations
             for pi in po_items:
                 raw = request.POST.get(f"received_qty_{pi.id}", "").strip()
@@ -698,10 +802,23 @@ def grn_create(request, po_id):
 
                             gri.save()
                             items_created += 1
-
-                        if items_created == 0:
-                            # nothing created — rollback by raising
-                            raise ValueError("No GRN items were created.")
+                        # 🔥 SAVE SUB ITEMS
+                        for sub in sub_inputs:
+                            si = sub["si"]
+                        
+                            GoodsReceiveNoteSubItem.objects.create(
+                                grn=grn,
+                                po_sub_item=si,
+                                sub_item=si.sub_item,
+                                ordered_qty=si.quantity,
+                                received_qty=sub["qty"],
+                                batch_no=sub["batch"],
+                                mfg_date=sub["mfg"] or None,
+                                exp_date=sub["exp"] or None,
+                                remarks=sub["remarks"]
+                            )
+                        if items_created == 0 and len(sub_inputs) == 0:
+                            raise ValueError("No GRN items or sub-items were created.")
 
                         # Recompute PO item remaining from DB to decide PO status
                         all_done = True
@@ -712,6 +829,10 @@ def grn_create(request, po_id):
                             if remaining2 > 0:
                                 all_done = False
                                 break
+
+                        # 🔥 PROCESS SUB ITEMS
+                        
+
 
                         po.status = "CLOSED" if all_done else "PARTIALLY_RECEIVED"
                         po.save()
@@ -732,6 +853,7 @@ def grn_create(request, po_id):
         "form": form,
         "po": po,
         "po_items": po_items,
+        "po_sub_items": po_sub_items,
         "destination_initial": {"id": po_dest_id, "label": dest_label},
         "remaining_by_item": remaining_by_item,
     })
@@ -798,19 +920,23 @@ def grn_list(request):
         "page_obj": page_obj,
         "querystring": querystring,
     })
-
+    
 @login_required
 @role_required(["admin", "HO_operation", "HO_manager"])
 def grn_edit(request, pk):
     grn = get_object_or_404(GoodsReceiveNote, pk=pk)
+
     items = grn.items.select_related("batch", "product")
+    sub_items = grn.sub_items.select_related("sub_item")   # 🔥 ADD THIS
 
     if request.method == "POST":
         try:
             with transaction.atomic():
+
+                # ✅ UPDATE MAIN ITEMS
                 for item in items:
                     if not item.batch:
-                        continue  # safety
+                        continue
 
                     mfg_str = request.POST.get(f"mfg_{item.id}")
                     exp_str = request.POST.get(f"exp_{item.id}")
@@ -825,6 +951,21 @@ def grn_edit(request, pk):
 
                     batch.save(update_fields=["manufacturing_date", "expiry_date"])
 
+
+                # 🔥 UPDATE SUB ITEMS
+                for sub in sub_items:
+                    mfg_str = request.POST.get(f"sub_mfg_{sub.id}")
+                    exp_str = request.POST.get(f"sub_exp_{sub.id}")
+
+                    if mfg_str:
+                        sub.mfg_date = datetime.date.fromisoformat(mfg_str)
+
+                    if exp_str:
+                        sub.exp_date = datetime.date.fromisoformat(exp_str)
+
+                    sub.save(update_fields=["mfg_date", "exp_date"])
+
+
                 messages.success(request, "GRN updated successfully.")
                 return redirect("grn_list")
 
@@ -834,8 +975,8 @@ def grn_edit(request, pk):
     return render(request, "inventory/grn_edit.html", {
         "grn": grn,
         "items": items,
+        "sub_items": sub_items,   # 🔥 ADD THIS
     })
-
 
 @login_required
 @role_required(['admin',"HO_operation","HO_manager","branch_manager"])
@@ -980,13 +1121,57 @@ def products_stock_list_view(request):
     params = request.GET.copy()
     params.pop('page', None)
 
+    
+    from django.db.models import Sum, Q
+    
+    sub_item_qs = GoodsReceiveNoteSubItem.objects.select_related(
+        "sub_item",
+        "grn__purchase_order"
+    )
+    
+    # -----------------------------
+    # LOCATION FILTER (SAME AS PRODUCT)
+    # -----------------------------
+    if location_type and location_id:
+        sub_item_qs = sub_item_qs.filter(
+            grn__destination_type=location_type,
+            grn__destination_id=location_id
+        )
+    
+    # -----------------------------
+    # SEARCH FILTER
+    # -----------------------------
+    if search:
+        sub_item_qs = sub_item_qs.filter(
+            sub_item__item_name__icontains=search
+        )
+    
+    # -----------------------------
+    # AGGREGATE
+    # -----------------------------
+    sub_item_qs = sub_item_qs.values(
+        "sub_item__item_name"
+    ).annotate(
+        total_received=Sum("received_qty")
+    )
+    
+    sub_item_rows = []
+    
+    for r in sub_item_qs:
+        sub_item_rows.append({
+            "name": r["sub_item__item_name"],
+            "qty": r["total_received"] or 0
+        })    
+
     context = {
         "rows": rows,
         "page_obj": products_page,
         "paginator": paginator,
         "base_qs": params.urlencode(),
+        "sub_item_rows": sub_item_rows,
         "filters": {
             "location_type": location_type,
+            
             "location_id": location_id,
             "q": search,
             "batch_no": batch_no,

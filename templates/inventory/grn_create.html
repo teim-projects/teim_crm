@@ -81,6 +81,44 @@
               </div>
             </div>
 
+            <h5 class="mt-4 text-primary">GRN Sub Items</h5>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Sub Item</th>
+      <th>Ordered Qty</th>
+      <th>Remaining</th>
+      <th>Received Qty</th>
+      <th>Batch</th>
+      <th>Mfg</th>
+      <th>Expiry</th>
+      <th>Remarks</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in po_sub_items %}
+    <tr {% if item.remaining <= 0 %}class="disabled-row"{% endif %}>
+      <td>{{ item.sub_item.item_name }}</td>
+      <td>{{ item.quantity }}</td>
+      <td>{{ item.remaining }}</td>
+
+      <td>
+        <input type="number"
+               name="sub_received_qty_{{ item.id }}"
+               class="form-control"
+               max="{{ item.remaining }}">
+      </td>
+
+      <td><input type="text" name="sub_batch_{{ item.id }}" class="form-control"></td>
+      <td><input type="date" name="sub_mfg_{{ item.id }}" class="form-control"></td>
+      <td><input type="date" name="sub_exp_{{ item.id }}" class="form-control"></td>
+      <td><input type="text" name="sub_remarks_{{ item.id }}" class="form-control"></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
             <h5 class="mt-4 text-primary">GRN Items</h5>
             <table class="table table-bordered">
               <thead>

@@ -191,6 +191,66 @@
                 </div>
               </div>
 
+
+              <h5 class="mt-4 text-primary text-center">Sub Items</h5>
+
+<table class="table table-bordered" id="sub-items-table">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Sub Item</th>
+      <th>Qty</th>
+      <th>Rate</th>
+      <th>Unit</th>
+      <th>GST</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+
+    {% for item in sub_items %}
+    <tr>
+      <td>
+        <select name="sub_product" class="form-control sub-product-select">
+          <option value="">Select Product</option>
+          {% for p in products %}
+            <option value="{{ p.product_id }}"
+              {% if item.product and item.product.product_id == p.product_id %}selected{% endif %}>
+              {{ p.product_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </td>
+
+      <td>
+        <select name="sub_item_id" class="form-control sub-item-dropdown">
+          {% if item.sub_item %}
+            <option value="{{ item.sub_item.id }}" selected>
+              {{ item.sub_item.item_name }}
+            </option>
+          {% else %}
+            <option value="">Select Sub Item</option>
+          {% endif %}
+        </select>
+      </td>
+
+      <td><input type="number" name="sub_qty" value="{{ item.quantity }}" class="form-control"></td>
+      <td><input type="number" name="sub_rate" value="{{ item.rate }}" class="form-control"></td>
+      <td><input type="text" name="sub_unit" value="{{ item.unit }}" class="form-control"></td>
+      <td><input type="number" name="sub_gst" value="{{ item.gst_rate }}" class="form-control"></td>
+      <td>
+        <button type="button" class="btn btn-danger btn-sm remove-sub">X</button>
+      </td>
+    </tr>
+    {% endfor %}
+
+  </tbody>
+</table>
+
+<button type="button" id="add-sub-item" class="btn btn-secondary btn-sm">
+  + Add Sub Item
+</button>
+
               <h4 class="text-center text-primary mt-4">PO Items</h4>
 
               <div class="table-responsive">
@@ -402,5 +462,88 @@
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+
+    $(document).on("select2:select", ".sub-product-select", function () {
+
+    const productId = $(this).val();
+    const dropdown = $(this).closest("tr").find(".sub-item-dropdown");
+
+    if (!productId) return;
+
+    fetch(`/new_inventory/get-required-items/${productId}/`)
+        .then(res => res.json())
+        .then(data => {
+
+            dropdown.select2('destroy');
+            dropdown.empty();
+
+            dropdown.append(`<option value="">Select Sub Item</option>`);
+
+            data.items.forEach(item => {
+                dropdown.append(`<option value="${item.id}">${item.name}</option>`);
+            });
+
+            dropdown.select2({
+                width: "100%",
+                dropdownParent: $(document.body)
+            });
+
+        });
+});
+  </script>
+
+  <script>
+$(document).ready(function () {
+
+    // ✅ ADD SUB ITEM ROW
+    $("#add-sub-item").click(function () {
+
+        const productOptions = `
+            <option value="">Select Product</option>
+            {% for p in products %}
+                <option value="{{ p.product_id }}">{{ p.product_name }}</option>
+            {% endfor %}
+        `;
+
+        const newRow = $(`
+            <tr>
+                <td>
+                    <select name="sub_product" class="form-control sub-product-select">
+                        ${productOptions}
+                    </select>
+                </td>
+                <td>
+                    <select name="sub_item_id" class="form-control sub-item-dropdown"></select>
+                </td>
+                <td><input type="number" name="sub_qty" class="form-control"></td>
+                <td><input type="number" name="sub_rate" class="form-control"></td>
+                <td><input type="text" name="sub_unit" class="form-control"></td>
+                <td><input type="number" name="sub_gst" class="form-control"></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm remove-sub">X</button>
+                </td>
+            </tr>
+        `);
+
+        $("#sub-items-table tbody").append(newRow);
+
+        // ✅ INIT SELECT2
+        newRow.find("select").select2({
+            width: "100%",
+            dropdownParent: $(document.body)
+        });
+
+    });
+
+
+    // ✅ REMOVE SUB ITEM ROW
+    $(document).on("click", ".remove-sub", function () {
+        $(this).closest("tr").remove();
+    });
+
+});
+</script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 from venv import logger
 from django.db import models
-from crmapp.models import Product
+from crmapp.models import Product,ProductRequiredItem
 from django.contrib.auth.models import User
 from decimal import Decimal , ROUND_HALF_UP
 import datetime
@@ -70,9 +70,20 @@ class Batch(models.Model):
 # ----------------------------- VENDOR ------------------------------
 
 class Vendor(models.Model):
+
+    VENDOR_TYPE_CHOICES = (
+        ('product', 'Product'),
+        ('sub_item', 'Sub Item'),
+        ('both', 'Both'),
+    )
     name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100, blank=True, null=True)
     mobile = models.CharField(max_length=15)
+    vendor_type = models.CharField(
+        max_length=20,
+        choices=VENDOR_TYPE_CHOICES,
+        default='product'
+    )
     website = models.URLField(blank=True, null=True)
     bank_details = models.TextField(blank=True, null=True)
     office_address = models.TextField(blank=True, null=True)
@@ -316,7 +327,35 @@ class PurchaseOrderItem(models.Model):
     def __str__(self):
         return f"{self.product} ({self.quantity})"
 
+class PurchaseOrderSubItem(models.Model):
+    purchase_order = models.ForeignKey(
+        PurchaseOrder,
+        on_delete=models.CASCADE,
+        related_name="sub_items"
+    )
 
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+
+    sub_item = models.ForeignKey(
+        ProductRequiredItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    unit = models.CharField(max_length=200, blank=True, null=True)
+    rate = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    gst_rate = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    # 🔥 SAME GST LOGIC
+    @property
+    def amount_excl_gst(self):
+        return self.quantity * self.rate
+
+    @property
+    def gst_amount(self):
+        return (self.amount_excl_gst * self.gst_rate) / 100
 # ----------------------------- GRN ------------------------------
 
 def generate_grn_no_per_po(purchase_order):
@@ -486,6 +525,38 @@ class GoodsReceiveNoteItem(models.Model):
     def __str__(self):
         return f"GRN Item - {getattr(self.product, 'product_name', str(self.product))}"
 
+
+class GoodsReceiveNoteSubItem(models.Model):
+    grn = models.ForeignKey(
+        GoodsReceiveNote,
+        on_delete=models.CASCADE,
+        related_name="sub_items"
+    )
+
+    po_sub_item = models.ForeignKey(
+        PurchaseOrderSubItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    sub_item = models.ForeignKey(
+        ProductRequiredItem,
+        on_delete=models.PROTECT
+    )
+
+    ordered_qty = models.DecimalField(max_digits=12, decimal_places=2)
+    received_qty = models.DecimalField(max_digits=12, decimal_places=2)
+    remaining_qty = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+
+    batch_no = models.CharField(max_length=100, null=True, blank=True)
+    mfg_date = models.DateField(null=True, blank=True)
+    exp_date = models.DateField(null=True, blank=True)
+
+    remarks = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.sub_item.item_name} ({self.received_qty})"
 
 
 # ------------------ MTN ---------------

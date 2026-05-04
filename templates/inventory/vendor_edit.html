@@ -75,6 +75,16 @@
                 </div>
 
                 <div class="col-6 form-group mb-0">
+  <label for="vendor_type">Vendor Type</label>
+  <select name="vendor_type" class="form-control" required>
+    <option value="">Select Type</option>
+    <option value="product" {% if vendor.vendor_type == 'product' %}selected{% endif %}>Product</option>
+    <option value="sub_item" {% if vendor.vendor_type == 'sub_item' %}selected{% endif %}>Sub Item</option>
+    <option value="both" {% if vendor.vendor_type == 'both' %}selected{% endif %}>Both</option>
+  </select>
+</div>
+
+                <div class="col-6 form-group mb-0">
                   <label for="{{ form.supplier_category.id_for_label }}">{{ form.supplier_category.label }}</label>
                   {{ form.supplier_category|add_class:"form-control" }}
                 </div>

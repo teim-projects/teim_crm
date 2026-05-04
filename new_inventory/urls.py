@@ -100,6 +100,8 @@ urlpatterns = [
         ),
 
      path("delivery-challan/<int:pk>/pdf/", dc_pdf_view, name="dc_pdf"),
+    path("get-required-items/<int:product_id>/", get_required_items, name="get_required_items"),
+    
 
 
 

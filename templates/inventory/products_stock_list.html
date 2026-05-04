@@ -280,6 +280,12 @@
       </form>
 
       <div class="table-responsive">
+
+        <div class="d-flex justify-content-end mb-3">
+  <button type="button" class="btn btn-secondary btn-sm" onclick="toggleSubItems()">
+    View Sub Item Stock
+  </button>
+</div>
         <table class="table table-sm table-bordered table-fixed">
           <thead class="thead-light">
             <tr>
@@ -328,6 +334,34 @@
             {% endif %}
           </tbody>
         </table>
+
+        <div id="subItemTable" style="display:none; margin-top:20px;">
+  
+  <h5 class="text-primary">Sub Item Stock</h5>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Sub Item</th>
+        <th>Received Qty</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for item in sub_item_rows %}
+      <tr>
+        <td>{{ item.name }}</td>
+        <td class="text-success">{{ item.qty }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="2" class="text-center">No sub item stock found</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
       </div>
 
       {% if paginator.num_pages > 1 %}
@@ -475,6 +509,18 @@
       window.location.search = urlParams.toString();
     }
   </script>
+
+  <script>
+function toggleSubItems() {
+    const table = document.getElementById("subItemTable");
+
+    if (table.style.display === "none") {
+        table.style.display = "block";
+    } else {
+        table.style.display = "none";
+    }
+}
+</script>
 
 </body>
 </html>

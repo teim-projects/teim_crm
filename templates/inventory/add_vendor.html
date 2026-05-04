@@ -85,6 +85,16 @@
                 </div>
 
                 <div class="col-6 form-group mb-0">
+  <label for="vendor_type">Vendor Type</label>
+  <select name="vendor_type" class="form-control" required>
+    <option value="">Select Type</option>
+    <option value="product">Product</option>
+    <option value="sub_item">Sub Item</option>
+    <option value="both">Both</option>
+  </select>
+</div>
+
+                <div class="col-6 form-group mb-0">
                   <label for="{{ form.gst_details.id_for_label }}">{{ form.gst_details.label }} <span class="text-danger">*</span></label>
                   {{ form.gst_details|add_class:"form-control" }}
                 </div>

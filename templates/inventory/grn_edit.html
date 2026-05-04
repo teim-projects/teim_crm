@@ -43,6 +43,55 @@
           </div>
         </div>
 
+
+        <h5 class="text-primary mt-4">Sub Items</h5>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Sub Item</th>
+      <th>Received Qty</th>
+      <th>Batch No</th>
+      <th>Mfg Date</th>
+      <th>Expiry Date</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for item in sub_items %}
+    <tr>
+      <td>{{ item.sub_item.item_name }}</td>
+
+      <td>
+        <input type="number" class="form-control"
+               value="{{ item.received_qty }}" readonly>
+      </td>
+
+      <td>
+        <input type="text" class="form-control"
+               value="{{ item.batch_no }}" readonly>
+      </td>
+
+      <!-- ✅ Editable -->
+      <td>
+        <input type="date"
+               name="sub_mfg_{{ item.id }}"
+               class="form-control"
+               value="{{ item.mfg_date|date:'Y-m-d' }}">
+      </td>
+
+      <!-- ✅ Editable -->
+      <td>
+        <input type="date"
+               name="sub_exp_{{ item.id }}"
+               class="form-control"
+               value="{{ item.exp_date|date:'Y-m-d' }}">
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
         <form method="post">
           {% csrf_token %}
 
