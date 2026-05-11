@@ -7,10 +7,11 @@ from decimal import Decimal
 import base64
 from time import time
 import traceback
+# pyrefly: ignore [missing-import]
 import matplotlib.pyplot as plt
 import openpyxl
 
-from django import contrib
+
 from django.conf import settings
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -1386,22 +1387,54 @@ from .models import service_management
 from amc.models import AMCContract, AMCServiceSchedule, AMCServiceVisit
 import json
 from datetime import datetime
+# NOTE: new_inventory imports are done lazily inside each view to avoid circular import warnings
 
 @login_required
+@csrf_exempt
 def approve_service(request, id):
-    """Approve main service - sets status to Approved"""
+    """Approve service and deduct required product stock from inventory."""
+    from new_inventory.utils import deduct_stock_for_service  # lazy import — avoids circular import linter warning
     service = get_object_or_404(service_management, id=id)
+
+    if service.is_approved:
+        return JsonResponse({
+            'status': 'already_approved',
+            'success': False,
+            'message': 'This service is already approved.',
+        })
+
+    # Deduct stock from inventory — returns list of warning strings (empty = all OK)
+    warnings = deduct_stock_for_service(service, request.user)
+
     service.is_approved = True
     service.save()
-    return JsonResponse({'status': 'approved', 'success': True})
+
+    return JsonResponse({
+        'status': 'approved',
+        'success': True,
+        'warnings': warnings,
+    })
 
 @login_required
+@csrf_exempt
 def reject_service(request, id):
-    """Reject main service - sets status to Rejected"""
+    """Reject/un-approve service and reverse any stock deductions."""
+    from new_inventory.utils import reverse_stock_for_service  # lazy import
     service = get_object_or_404(service_management, id=id)
+
+    warnings = []
+    if service.is_approved:
+        # Stock was deducted on approval — add it back
+        warnings = reverse_stock_for_service(service, request.user)
+
     service.is_approved = False
     service.save()
-    return JsonResponse({'status': 'rejected', 'success': True})
+
+    return JsonResponse({
+        'status': 'rejected',
+        'success': True,
+        'warnings': warnings,
+    })
 
 
 # def complete_service(request, id):

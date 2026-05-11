@@ -92,7 +92,7 @@
   </tbody>
 </table>
 
-        <form method="post">
+        <form method="post" id="grnEditForm" novalidate>
           {% csrf_token %}
 
           <table class="table table-bordered">
@@ -155,5 +155,49 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+
+<script>
+/* TEIM-VALIDATION: templates/inventory/grn_edit.html */
+
+(function(){
+  var form = document.getElementById('grnEditForm');
+  if (!form) return;
+  form.addEventListener('submit', function(e) {
+    var errors = [];
+    var rd = form.querySelector('[name="received_date"]');
+    if (rd && !rd.value) errors.push('Received Date is required.');
+    // Clamp quantities
+    form.querySelectorAll('input[name^="received_qty_"]').forEach(function(inp) {
+      var max = parseFloat(inp.getAttribute('max'));
+      var val = parseFloat(inp.value || 0);
+      if (!isNaN(max) && val > max) { inp.value = max; }
+      if (val < 0) inp.value = 0;
+    });
+    if (errors.length) {
+      e.preventDefault();
+      showErrors('grnEditAlertBox', errors, form);
+    }
+  });
+})();
+
+</script>
+
+<script>
+function showErrors(boxId, errors, form) {
+  var old = document.getElementById(boxId);
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.id = boxId;
+  d.className = 'alert alert-danger mt-2 mb-2';
+  d.style.cssText = 'border-left:4px solid #dc3545; background:#fff5f5; padding:12px 16px;';
+  d.innerHTML = '<strong style="color:#dc3545">&#9888; Please fix the following:</strong><ul class="mb-0 mt-1" style="padding-left:20px">' +
+    errors.map(function(m){ return '<li style="margin-top:4px">' + m + '</li>'; }).join('') + '</ul>';
+  form.insertBefore(d, form.firstChild);
+  // Scroll the alert into view regardless of scroll container
+  setTimeout(function() {
+    d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+}
+</script>
 </body>
 </html>

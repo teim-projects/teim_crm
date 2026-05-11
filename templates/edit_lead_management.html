@@ -424,5 +424,33 @@ document.addEventListener("DOMContentLoaded", () => showStep(0));
         </p></div>
     </div>
 </div>
+
+<script>
+/* TEIM-PHONE-RESTRICT */
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var phoneFields = document.querySelectorAll('[name="uprimarycontact"], [name="usecondarycontact"]');
+    phoneFields.forEach(function(inp){
+      inp.setAttribute('maxlength', '10');
+      inp.setAttribute('pattern', '[0-9]{10}');
+      inp.setAttribute('title', 'Enter exactly 10 digits');
+      inp.setAttribute('inputmode', 'numeric');
+      // Change type from number to tel to support maxlength
+      if (inp.type === 'number') inp.type = 'tel';
+      inp.addEventListener('input', function(){
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+      });
+      inp.addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key)) e.preventDefault();
+      });
+      inp.addEventListener('paste', function(e){
+        e.preventDefault();
+        var txt = (e.clipboardData || window.clipboardData).getData('text');
+        this.value = txt.replace(/[^0-9]/g, '').slice(0, 10);
+      });
+    });
+  });
+})();
+</script>
 </body>
 </html>

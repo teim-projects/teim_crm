@@ -1670,7 +1670,7 @@ def material_request_detail(request, pk):
 
         return redirect("material_request_list")
     branch = Branch.objects.get(id = mr.source_id)
-    req_user = User.objects.get(username = mr.requested_by).first_name
+    req_user = mr.requested_by.first_name if mr.requested_by else ""
     return render(request, "inventory/material_request_detail.html", {
         "mr": mr,
         "branch":branch,
@@ -1982,5 +1982,64 @@ def dc_pdf_view(request, pk):
     # Response
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="DC_{dc.dc_no}.pdf"'
-
     return response
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SERVICE STOCK RETURN
+# When some materials were taken out for a service but not fully used,
+# the unused portion can be returned to inventory here.
+# ─────────────────────────────────────────────────────────────────────────────
+@login_required
+def service_stock_return(request, service_id):
+    """
+    GET  → Show a form listing all materials deducted for this service,
+           with an editable 'return qty' column (capped at what's still returnable).
+    POST → Process the partial stock return.
+    """
+    from crmapp.models import service_management
+    from .utils import get_service_stock_out_summary, partial_return_stock_for_service
+
+    service = get_object_or_404(service_management, pk=service_id)
+
+    # Only allow return if service was approved (stock was actually deducted)
+    if not service.is_approved:
+        messages.error(request, "Stock can only be returned for approved services.")
+        return redirect("inventory_service")  # adjust to your service list URL
+
+    summary = get_service_stock_out_summary(service)
+    has_returnable = any(row["returnable"] > 0 for row in summary)
+
+    if request.method == "POST":
+        return_items = []
+        for row in summary:
+            field_name = f"return_qty_{row['ledger_id']}"
+            raw = request.POST.get(field_name, "0").strip() or "0"
+            try:
+                qty = Decimal(raw)
+            except Exception:
+                qty = Decimal("0")
+            if qty > 0:
+                return_items.append({"ledger_id": row["ledger_id"], "return_qty": qty})
+
+        if not return_items:
+            messages.warning(request, "No return quantities entered. Nothing was returned.")
+        else:
+            warnings, errors = partial_return_stock_for_service(service, return_items, request.user)
+            for w in warnings:
+                messages.warning(request, w)
+            for e in errors:
+                messages.error(request, e)
+            if not errors:
+                messages.success(request, "Stock returned to inventory successfully.")
+            return redirect("service_stock_return", service_id=service.id)
+
+        # Refresh summary after POST
+        summary = get_service_stock_out_summary(service)
+        has_returnable = any(row["returnable"] > 0 for row in summary)
+
+    return render(request, "inventory/service_stock_return.html", {
+        "service"      : service,
+        "summary"      : summary,
+        "has_returnable": has_returnable,
+    })

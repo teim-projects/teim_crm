@@ -52,7 +52,7 @@
             {% if site %} Edit Site {% else %} Add Site {% endif %}
           </h3>
 
-          <form method="POST">
+          <form method="POST" id="siteForm" novalidate>
             {% csrf_token %}
 
             <div class="row">
@@ -94,5 +94,71 @@
 
   </div>
 
+
+<script>
+/* TEIM-VALIDATION: templates/inventory/add_site.html */
+
+(function(){
+  var form = document.getElementById('siteForm');
+  if (!form) return;
+  form.addEventListener('submit', function(e) {
+    var errors = [];
+    var name = form.querySelector('[name="name"]');
+    if (name && !name.value.trim()) errors.push('Site Name is required.');
+    var phone = form.querySelector('[name="phone"]');
+    if (phone && phone.value.trim() && !/^[0-9]{10}$/.test(phone.value.trim()))
+      errors.push('Phone must be exactly 10 digits (or leave blank).');
+    if (errors.length) {
+      e.preventDefault();
+      showErrors('siteAlertBox', errors, form);
+    }
+  });
+})();
+
+</script>
+
+<script>
+function showErrors(boxId, errors, form) {
+  var old = document.getElementById(boxId);
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.id = boxId;
+  d.className = 'alert alert-danger mt-2 mb-2';
+  d.style.cssText = 'border-left:4px solid #dc3545; background:#fff5f5; padding:12px 16px;';
+  d.innerHTML = '<strong style="color:#dc3545">&#9888; Please fix the following:</strong><ul class="mb-0 mt-1" style="padding-left:20px">' +
+    errors.map(function(m){ return '<li style="margin-top:4px">' + m + '</li>'; }).join('') + '</ul>';
+  form.insertBefore(d, form.firstChild);
+  // Scroll the alert into view regardless of scroll container
+  setTimeout(function() {
+    d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+}
+</script>
+
+<script>
+/* TEIM-PHONE-RESTRICT */
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var phoneFields = document.querySelectorAll('[name="phone"]');
+    phoneFields.forEach(function(inp){
+      inp.setAttribute('maxlength', '10');
+      inp.setAttribute('pattern', '[0-9]{10}');
+      inp.setAttribute('title', 'Enter exactly 10 digits');
+      inp.setAttribute('inputmode', 'numeric');
+      inp.addEventListener('input', function(){
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+      });
+      inp.addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key)) e.preventDefault();
+      });
+      inp.addEventListener('paste', function(e){
+        e.preventDefault();
+        var txt = (e.clipboardData || window.clipboardData).getData('text');
+        this.value = txt.replace(/[^0-9]/g, '').slice(0, 10);
+      });
+    });
+  });
+})();
+</script>
 </body>
 </html>

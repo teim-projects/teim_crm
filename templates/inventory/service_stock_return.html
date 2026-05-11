@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Stock Return — Service #{{ service.id }}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    .form-row-main { margin-top: 110px !important; }
+    .table thead th { background: #2d3a4a; color: #fff; }
+    .badge-returnable { background:#198754; color:#fff; font-size:.85rem; }
+    .badge-zero       { background:#6c757d; color:#fff; font-size:.85rem; }
+    .card-header-custom {
+      background: linear-gradient(135deg,#1a73e8,#0d47a1);
+      color:#fff; border-radius: 8px 8px 0 0;
+    }
+    input.return-qty-input {
+      width: 100px; text-align: center;
+      border: 2px solid #198754; border-radius: 6px;
+      padding: 4px 8px; font-weight: 600;
+    }
+    input.return-qty-input:focus { box-shadow: 0 0 0 3px rgba(25,135,84,.25); outline:none; }
+    input.return-qty-input:disabled { background: #f8f9fa; border-color: #dee2e6; }
+    .info-row td { font-weight: 500; }
+  </style>
+</head>
+<body>
+  {% include 'sidebar.html' %}
+  <div class="main">
+    <div class="container">
+      <div class="row form-row-main">
+        <div class="col-md-10 offset-md-1">
+
+          <!-- Page header -->
+          <div class="d-flex align-items-center mb-3">
+            <span onclick="window.history.back()" style="cursor:pointer;color:#1a73e8;font-size:22px;margin-right:12px">
+              <i class="bi bi-arrow-left-circle-fill"></i>
+            </span>
+            <h4 class="mb-0 text-primary">Stock Return — Service <span class="text-primary">#{{ service.id }}</span></h4>
+          </div>
+
+          <!-- Django messages -->
+          {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+
+          <!-- Service info card -->
+          <div class="card mb-4 shadow-sm">
+            <div class="card-header card-header-custom py-2 px-3">
+              <i class="bi bi-info-circle me-2"></i> Service Information
+            </div>
+            <div class="card-body p-3">
+              <div class="row info-row">
+                <div class="col-md-4"><strong>Customer:</strong> {{ service.customer.fullname|default:"—" }}</div>
+                <div class="col-md-4"><strong>Service Date:</strong> {{ service.service_date|default:"—" }}</div>
+                <div class="col-md-4"><strong>Branch:</strong> {{ service.branch|default:"—" }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main return form -->
+          {% if not summary %}
+            <div class="alert alert-info">
+              <i class="bi bi-exclamation-circle me-2"></i>
+              No stock was deducted for this service. Nothing to return.
+            </div>
+          {% else %}
+            <div class="card shadow-sm">
+              <div class="card-header card-header-custom py-2 px-3">
+                <i class="bi bi-arrow-counterclockwise me-2"></i>
+                Return Unused Materials to Inventory
+              </div>
+              <div class="card-body p-0">
+                <form method="POST" id="stockReturnForm" novalidate>
+                  {% csrf_token %}
+                  <div class="table-responsive">
+                    <table class="table table-bordered mb-0 align-middle">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Product</th>
+                          <th>Batch</th>
+                          <th class="text-center">Deducted Qty</th>
+                          <th class="text-center">Already Returned</th>
+                          <th class="text-center">Max Returnable</th>
+                          <th class="text-center">Return Qty <span class="text-warning">★</span></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in summary %}
+                          <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><strong>{{ row.product.product_name }}</strong></td>
+                            <td>{{ row.batch.batch_no|default:"—" }}</td>
+                            <td class="text-center">{{ row.out_qty }}</td>
+                            <td class="text-center">
+                              {% if row.returned > 0 %}
+                                <span class="badge" style="background:#0d6efd">{{ row.returned }}</span>
+                              {% else %}—{% endif %}
+                            </td>
+                            <td class="text-center">
+                              {% if row.returnable > 0 %}
+                                <span class="badge badge-returnable">{{ row.returnable }}</span>
+                              {% else %}
+                                <span class="badge badge-zero">Fully Returned</span>
+                              {% endif %}
+                            </td>
+                            <td class="text-center">
+                              <input
+                                type="number"
+                                name="return_qty_{{ row.ledger_id }}"
+                                class="return-qty-input"
+                                min="0"
+                                max="{{ row.returnable }}"
+                                step="0.001"
+                                value="0"
+                                data-max="{{ row.returnable }}"
+                                {% if row.returnable == 0 %}disabled{% endif %}
+                              >
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="p-3 d-flex justify-content-between align-items-center border-top">
+                    <small class="text-muted">
+                      <i class="bi bi-info-circle me-1"></i>
+                      Enter 0 for items not being returned. Quantities are automatically clamped to max returnable.
+                    </small>
+                    <div>
+                      <button type="button" class="btn btn-outline-secondary me-2" onclick="window.history.back()">
+                        <i class="bi bi-x-lg me-1"></i>Cancel
+                      </button>
+                      {% if has_returnable %}
+                        <button type="submit" class="btn btn-success" id="submitReturnBtn">
+                          <i class="bi bi-arrow-counterclockwise me-1"></i>Return Stock
+                        </button>
+                      {% else %}
+                        <button type="button" class="btn btn-secondary" disabled>
+                          <i class="bi bi-check-all me-1"></i>All Stock Returned
+                        </button>
+                      {% endif %}
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Clamp inputs to their max on input event
+    document.querySelectorAll('.return-qty-input').forEach(function(inp) {
+      inp.addEventListener('input', function() {
+        var max = parseFloat(this.getAttribute('data-max')) || 0;
+        var val = parseFloat(this.value) || 0;
+        if (val < 0)   this.value = 0;
+        if (val > max) this.value = max;
+      });
+    });
+
+    // Validate before submit
+    var form = document.getElementById('stockReturnForm');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        var anyQty = false;
+        var hasError = false;
+        document.querySelectorAll('.return-qty-input:not([disabled])').forEach(function(inp) {
+          var max = parseFloat(inp.getAttribute('data-max')) || 0;
+          var val = parseFloat(inp.value) || 0;
+          if (val > 0) anyQty = true;
+          if (val < 0 || val > max) {
+            inp.style.borderColor = '#dc3545';
+            hasError = true;
+          } else {
+            inp.style.borderColor = '#198754';
+          }
+        });
+        if (hasError) {
+          e.preventDefault();
+          alert('One or more return quantities exceed the allowed maximum. Please correct them.');
+          return;
+        }
+        if (!anyQty) {
+          e.preventDefault();
+          alert('Please enter at least one return quantity greater than 0.');
+        }
+      });
+    }
+
+    // Sidebar JS
+    const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+    menuItems.forEach(function(item) {
+      item.addEventListener('click', function() {
+        const submenu = this.querySelector('.submenu');
+        const arrow   = this.querySelector('.arrow-down');
+        menuItems.forEach(function(other) {
+          if (other !== item) {
+            var otherSub = other.querySelector('.submenu');
+            var otherArr = other.querySelector('.arrow-down');
+            if (otherSub) { otherSub.style.display = 'none'; }
+            if (otherArr) { otherArr.classList.remove('arrow-up'); }
+          }
+        });
+        if (submenu) {
+          submenu.style.display = (submenu.style.display === 'block') ? 'none' : 'block';
+          if (arrow) arrow.classList.toggle('arrow-up');
+        }
+      });
+    });
+  });
+  </script>
+</body>
+</html>

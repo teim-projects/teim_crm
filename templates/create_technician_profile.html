@@ -131,7 +131,7 @@
                     class="mb-4">X</span>
 
                 <h3 class="mt-3 mb-4" style="  margin-top: 5px;">Create Technician</h3>
-                <form method="POST" id="multiStepForm">
+                <form method="POST" id="multiStepForm" novalidate>
                     {% csrf_token %}
                     <!-- Step 1 -->
                     <div class="step" id="step1">
@@ -366,6 +366,49 @@
             </div>
         </div>
     </div>
+
+<script>
+/* TEIM-VALIDATION: templates/create_technician_profile.html */
+
+(function(){
+  var form = document.getElementById('techForm');
+  if (!form) return;
+  form.addEventListener('submit', function(e) {
+    var errors = [];
+    var email = form.querySelector('[name="email"]');
+    if (email && email.value.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value.trim()))
+      errors.push('Please enter a valid email address.');
+    var pw  = form.querySelector('[name="password"]');
+    var cpw = form.querySelector('[name="confirm_password"]');
+    if (pw && pw.value && pw.value.length < 6) errors.push('Password must be at least 6 characters.');
+    if (pw && cpw && pw.value && cpw.value && pw.value !== cpw.value)
+      errors.push('Password and Confirm Password do not match.');
+    if (errors.length) {
+      e.preventDefault();
+      showErrors('techAlertBox', errors, form);
+    }
+  });
+})();
+
+</script>
+
+<script>
+function showErrors(boxId, errors, form) {
+  var old = document.getElementById(boxId);
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.id = boxId;
+  d.className = 'alert alert-danger mt-2 mb-2';
+  d.style.cssText = 'border-left:4px solid #dc3545; background:#fff5f5; padding:12px 16px;';
+  d.innerHTML = '<strong style="color:#dc3545">&#9888; Please fix the following:</strong><ul class="mb-0 mt-1" style="padding-left:20px">' +
+    errors.map(function(m){ return '<li style="margin-top:4px">' + m + '</li>'; }).join('') + '</ul>';
+  form.insertBefore(d, form.firstChild);
+  // Scroll the alert into view regardless of scroll container
+  setTimeout(function() {
+    d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+}
+</script>
 </body>
 
 </html>

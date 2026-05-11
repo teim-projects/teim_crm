@@ -78,6 +78,14 @@ pip-delete-this-directory.txt
 dump.rdb
 
 # ──────────────────────────────────────────
+# Database backups (contain production data - do not commit)
+# ──────────────────────────────────────────
+*.sql
+createdatabase*.sql
+*crmdb_backup*.sql
+crmdb_import_ready.sql
+
+# ──────────────────────────────────────────
 # Temporary files / uploads
 # ──────────────────────────────────────────
 temp_image.png

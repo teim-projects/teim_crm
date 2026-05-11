@@ -131,7 +131,7 @@
 
             <form method="POST" enctype="multipart/form-data"
               action="{% url 'purchase_order_edit' po.id %}"
-              data-destination-url="{% url 'load_destinations' %}">
+              data-destination-url="{% url 'load_destinations' %}" id="poEditForm" novalidate>
               {% csrf_token %}
 
               <div class="row">
@@ -544,6 +544,57 @@ $(document).ready(function () {
     });
 
 });
+</script>
+
+<script>
+/* TEIM-VALIDATION: templates/inventory/purchase_order_edit.html */
+
+(function(){
+  var form = document.getElementById('poEditForm');
+  if (!form) return;
+  form.addEventListener('submit', function(e) {
+    var errors = [];
+    var vendor = form.querySelector('[name="vendor"]');
+    if (vendor && !vendor.value) errors.push('Please select a Vendor.');
+    var destType = form.querySelector('[name="destination_type"]');
+    if (destType && !destType.value) errors.push('Please select a Destination Type.');
+    var destId = form.querySelector('[name="destination_id"]');
+    if (destId && !destId.value) errors.push('Please select a Destination.');
+    // At least one PO item with product selected
+    var rows = form.querySelectorAll('tr.po-item-row');
+    var hasItem = false;
+    rows.forEach(function(row) {
+      var delChk = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      if (delChk && delChk.checked) return;
+      var productSel = row.querySelector('select[name$="-product"]');
+      if (productSel && productSel.value) hasItem = true;
+    });
+    if (!hasItem) errors.push('Please add at least one PO item with a product selected.');
+    if (errors.length) {
+      e.preventDefault();
+      showErrors('poEditAlertBox', errors, form);
+    }
+  });
+})();
+
+</script>
+
+<script>
+function showErrors(boxId, errors, form) {
+  var old = document.getElementById(boxId);
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.id = boxId;
+  d.className = 'alert alert-danger mt-2 mb-2';
+  d.style.cssText = 'border-left:4px solid #dc3545; background:#fff5f5; padding:12px 16px;';
+  d.innerHTML = '<strong style="color:#dc3545">&#9888; Please fix the following:</strong><ul class="mb-0 mt-1" style="padding-left:20px">' +
+    errors.map(function(m){ return '<li style="margin-top:4px">' + m + '</li>'; }).join('') + '</ul>';
+  form.insertBefore(d, form.firstChild);
+  // Scroll the alert into view regardless of scroll container
+  setTimeout(function() {
+    d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+}
 </script>
 </body>
 </html>

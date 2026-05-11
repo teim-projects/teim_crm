@@ -115,6 +115,53 @@ function removeRow(el) {
         el.closest("tr").remove();
     }
 }
+
+// ─── SUBMIT VALIDATION ────────────────────────────────────
+document.querySelector("form").addEventListener("submit", function(e) {
+    const errors = [];
+    const tbody = document.getElementById("itemsTable").querySelector("tbody");
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    const seenProducts = new Set();
+
+    if (rows.length === 0) {
+        errors.push("Please add at least one product.");
+    }
+
+    rows.forEach(function(row, idx) {
+        const productSel = row.querySelector("select[name='product_id[]']");
+        const qtyInput   = row.querySelector("input[name='qty[]']");
+
+        const productVal = productSel ? productSel.value : "";
+        const qtyVal     = qtyInput   ? parseFloat(qtyInput.value || 0) : 0;
+
+        if (!productVal) {
+            errors.push("Row " + (idx + 1) + ": Please select a Product.");
+        } else {
+            if (seenProducts.has(productVal)) {
+                const productName = productSel.options[productSel.selectedIndex].text;
+                errors.push("Duplicate product detected: '" + productName + "'. Please combine quantities into one row.");
+            }
+            seenProducts.add(productVal);
+        }
+
+        if (isNaN(qtyVal) || qtyVal <= 0) {
+            errors.push("Row " + (idx + 1) + ": Requested quantity must be greater than 0.");
+        }
+    });
+
+    if (errors.length > 0) {
+        e.preventDefault();
+        var old = document.getElementById("mrValidationAlert");
+        if (old) old.remove();
+        var alertDiv = document.createElement("div");
+        alertDiv.id = "mrValidationAlert";
+        alertDiv.className = "alert alert-danger mt-3";
+        alertDiv.innerHTML = "<strong>Please fix the following:</strong><ul class='mb-0 mt-1'>" +
+            errors.map(function(m){ return "<li>" + m + "</li>"; }).join("") + "</ul>";
+        document.querySelector("form").prepend(alertDiv);
+        alertDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+});
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

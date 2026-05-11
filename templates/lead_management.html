@@ -209,7 +209,7 @@
 
               <div class="col-md-6 mb-4">
                 <label>Secondary Phone Number</label>
-                <input type="text" name="secondarycontact" class="form-control" pattern="\d{10}" />
+                <input type="text" name="secondarycontact" class="form-control" pattern="\d{10}" / maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
               </div>
               <div class="col-md-6 mb-4">
                 <label>Customer Email</label>

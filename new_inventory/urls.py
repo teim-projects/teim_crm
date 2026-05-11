@@ -15,6 +15,12 @@ urlpatterns = [
         name="get_product_details"
     ),
 
+    # ---------------- Service Stock Return ----------------
+    path(
+        "service/<int:service_id>/stock-return/",
+        service_stock_return,
+        name="service_stock_return",
+    ),
 
     # ---------------- Vendor ----------------
     path('vendor_add/', vendor_add, name="vendor_add"),

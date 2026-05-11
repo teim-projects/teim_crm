@@ -1153,22 +1153,24 @@
                                             Approve
                                         </button>
 
-                                        <button class="small-btn btn-reject"
-        onclick="rejectService('{{ group.main.id }}')">
-    Mark Pending
-</button>
-
-                                        
-
                                         <button class="small-btn btn-reject" type="button"
                                                 onclick="rejectService('{{ group.main.id }}')">
-                                            pending
+                                            Mark Pending
                                         </button>
 
                                         <button class="small-btn btn-amc" type="button"
                                                 onclick="toggleAmc('{{ group.main.id }}')">
                                             AMC Visits
                                         </button>
+
+                                        {% if group.main.is_approved %}
+                                        <a class="small-btn" type="button"
+                                           href="/new_inventory/service/{{ group.main.id }}/stock-return/"
+                                           style="background:#6f42c1;color:#fff;text-decoration:none;"
+                                           title="Return unused materials back to inventory">
+                                            ↩ Return Stock
+                                        </a>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -1399,6 +1401,25 @@
                 </div>
                 {% endif %}
 
+                {% if group.main.is_approved %}
+                <div class="detail-section" style="border-top:2px dashed #6f42c1;padding-top:16px;margin-top:8px;">
+                    <h4 style="color:#6f42c1;">↩ Stock Return</h4>
+                    <p style="font-size:13px;color:#6b7280;margin-bottom:12px;">
+                        This service is approved and stock has been deducted. If the technician
+                        returned unused materials, record the return below to add them back to inventory.
+                    </p>
+                    <a href="/new_inventory/service/{{ group.main.id }}/stock-return/"
+                       class="btn btn-sm"
+                       style="background:#6f42c1;color:#fff;border-radius:8px;padding:8px 20px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+                          <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                        </svg>
+                        Return Unused Stock to Inventory
+                    </a>
+                </div>
+                {% endif %}
+
             </div>
         </div>
         {% endfor %}
@@ -1471,33 +1492,43 @@
 
         // Main Service Actions
         function approveService(id) {
-            if (confirm("Approve this service?")) {
+            if (confirm("Approve this service? Stock will be deducted from inventory.")) {
                 fetch(`/approve/${id}/`)
                     .then(res => res.json())
-                    .then(() => {
-                        alert("Service Approved");
+                    .then(data => {
+                        if (!data.success && data.status === 'already_approved') {
+                            alert("This service is already approved.");
+                            return;
+                        }
+                        let msg = "✅ Service Approved!";
+                        if (data.warnings && data.warnings.length > 0) {
+                            msg += "\n\n⚠️ Stock Warnings:\n" + data.warnings.join("\n");
+                        }
+                        alert(msg);
                         location.reload();
                     })
                     .catch(err => {
                         console.error(err);
-                        alert("Error approving service");
+                        alert("Error approving service. Please try again.");
                     });
             }
         }
 
-         
-
         function rejectService(id) {
-            if (confirm("Reject this service?")) {
+            if (confirm("Mark this service as Pending? Stock will be returned to inventory.")) {
                 fetch(`/reject/${id}/`)
                     .then(res => res.json())
-                    .then(() => {
-                        alert("Service Rejected");
+                    .then(data => {
+                        let msg = "🔄 Service marked as Pending.";
+                        if (data.warnings && data.warnings.length > 0) {
+                            msg += "\n\n⚠️ Stock Warnings:\n" + data.warnings.join("\n");
+                        }
+                        alert(msg);
                         location.reload();
                     })
                     .catch(err => {
                         console.error(err);
-                        alert("Error rejecting service");
+                        alert("Error rejecting service. Please try again.");
                     });
             }
         }

@@ -33,6 +33,9 @@ TRANSACTION_TYPES = (
     ("MTN_OUT", "Material Transfer Out"),
     ("MTN_IN", "Material Transfer In"),
     ("ADJUST", "Stock Adjustment"),
+    ("SERVICE_OUT", "Service Deduction"),
+    ("SERVICE_REVERSAL", "Service Reversal"),
+    ("SERVICE_RETURN", "Service Stock Return"),   # partial return after service use
 )
 
 

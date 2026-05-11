@@ -191,17 +191,69 @@
   </div>
 
   <script>
-    // Client-side validation: restrict received qty to remaining
     $(function(){
+      // Clamp main item received qty to remaining
       $('.received-input').on('input', function(){
         var $this = $(this);
         var remaining = parseFloat($this.data('remaining')) || 0;
         var val = parseFloat($this.val() || 0);
         if (val > remaining) {
-          // clamp to remaining
           $this.val(remaining.toFixed(2));
         } else if (val < 0) {
           $this.val('0');
+        }
+      });
+
+      // Clamp sub item received qty to their max attribute
+      $(document).on('input', 'input[name^="sub_received_qty_"]', function(){
+        var $this = $(this);
+        var maxVal = parseFloat($this.attr('max')) || 0;
+        var val = parseFloat($this.val() || 0);
+        if (val > maxVal && maxVal > 0) {
+          $this.val(maxVal.toFixed(2));
+        } else if (val < 0) {
+          $this.val('0');
+        }
+      });
+
+      // Form submit: require received date + at least one item or sub-item entered
+      $('form').on('submit', function(e) {
+        const errors = [];
+
+        // 1. Received date required
+        const receivedDate = $('[name="received_date"]').val();
+        if (!receivedDate) {
+          errors.push('Received Date is required.');
+        }
+
+        // 2. At least one item or sub-item received
+        let anyFilled = false;
+
+        // Check main items
+        $('.received-input').each(function() {
+          const val = parseFloat($(this).val() || 0);
+          if (val > 0) anyFilled = true;
+        });
+
+        // Check sub items
+        $('input[name^="sub_received_qty_"]').each(function() {
+          const val = parseFloat($(this).val() || 0);
+          if (val > 0) anyFilled = true;
+        });
+
+        if (!anyFilled) {
+          errors.push('Please enter a received quantity for at least one item or sub-item.');
+        }
+
+        if (errors.length > 0) {
+          e.preventDefault();
+          var old = document.getElementById('grnValidationAlert');
+          if (old) old.remove();
+          var alertDiv = $('<div id="grnValidationAlert" class="alert alert-danger mt-3"><strong>Please fix the following:</strong><ul class="mb-0 mt-1">' +
+            errors.map(function(m){ return '<li>' + m + '</li>'; }).join('') +
+            '</ul></div>');
+          $('form').prepend(alertDiv);
+          alertDiv && alertDiv.scrollIntoView ? alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }) : window.scrollTo(0,0);
         }
       });
     });
