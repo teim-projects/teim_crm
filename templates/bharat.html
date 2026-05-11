@@ -1469,35 +1469,45 @@
             }
         }
 
-        // Main Service Actions
+       // Main Service Actions
         function approveService(id) {
-            if (confirm("Approve this service?")) {
+            if (confirm("Approve this service? Stock will be deducted from inventory.")) {
                 fetch(`/approve/${id}/`)
                     .then(res => res.json())
-                    .then(() => {
-                        alert("Service Approved");
+                    .then(data => {
+                        if (!data.success && data.status === 'already_approved') {
+                            alert("This service is already approved.");
+                            return;
+                        }
+                        let msg = "✅ Service Approved!";
+                        if (data.warnings && data.warnings.length > 0) {
+                            msg += "\n\n⚠️ Stock Warnings:\n" + data.warnings.join("\n");
+                        }
+                        alert(msg);
                         location.reload();
                     })
                     .catch(err => {
                         console.error(err);
-                        alert("Error approving service");
+                        alert("Error approving service. Please try again.");
                     });
             }
         }
 
-         
-
         function rejectService(id) {
-            if (confirm("Reject this service?")) {
+            if (confirm("Mark this service as Pending? Stock will be returned to inventory.")) {
                 fetch(`/reject/${id}/`)
                     .then(res => res.json())
-                    .then(() => {
-                        alert("Service Rejected");
+                    .then(data => {
+                        let msg = "🔄 Service marked as Pending.";
+                        if (data.warnings && data.warnings.length > 0) {
+                            msg += "\n\n⚠️ Stock Warnings:\n" + data.warnings.join("\n");
+                        }
+                        alert(msg);
                         location.reload();
                     })
                     .catch(err => {
                         console.error(err);
-                        alert("Error rejecting service");
+                        alert("Error rejecting service. Please try again.");
                     });
             }
         }
