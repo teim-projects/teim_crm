@@ -1018,10 +1018,10 @@ def customer_details_create(request):
                     'shifttopartycity': lead.city or '',
                     'soldtopartyaddress': lead.customeraddress or '',
                     'soldtopartycity': lead.city or '',
-                    'customer_type':lead.customer_type or '',
-                    'or_name':lead.or_name or '',
-                    'or_contact': lead.or_contact or None,
-                    'branch': lead.branch_id or None,
+                    'customer_type': lead.customer_type or 'Individual',
+                    'or_name': lead.or_name or '',
+                    'or_contact': str(lead.or_contact) if lead.or_contact else '',
+                    'branch': lead.branch.id if lead.branch else '',
                 }
                 print(data)
 
@@ -1856,7 +1856,6 @@ def quotation_management_create(request):
                     or_name = request.POST.get('or_name') or None
                     or_contact = request.POST.get('or_contact') or None
                     c_branch_id = request.POST.get('branch')
-                    # branch = Branch.objects.get(id = branch_id)
                     # Assign values to the existing instance
                     customer.fullname = customer_full_name
                     customer.secondarycontact = secondary_contact_no
@@ -1865,7 +1864,8 @@ def quotation_management_create(request):
                     customer.customer_type = customer_type
                     customer.or_name = or_name
                     customer.or_contact = or_contact
-                    customer.branch = c_branch_id
+                    if c_branch_id:
+                        customer.branch_id = int(c_branch_id)
                     
                     # Save changes
                     customer.save(update_fields=[
@@ -3142,16 +3142,33 @@ def display_customer(request):
     sort_by = request.GET.get('sort_by', 'customerid')
     customer_type = request.GET.get('customer_type')
 
-    if request.user.userprofile.role == 'admin': 
+    try:
+        user_role = request.user.userprofile.role
+    except:
+        user_role = 'admin'
+
+    try:
+        if user_role == 'admin': 
+            m = customer_details.objects.all()
+
+        elif user_role == 'sales':
+            try:
+                sales_person = SalesPerson.objects.get(mobile_no=request.user.username)
+                m = customer_details.objects.filter(contactperson__iexact=sales_person.full_name)
+            except SalesPerson.DoesNotExist:
+                m = customer_details.objects.none()
+
+        elif user_role == 'branch_manager':
+            try:
+                branch_manager = BranchManager.objects.get(mobile_no=request.user.username)
+                m = customer_details.objects.filter(branch=branch_manager.branch)
+            except BranchManager.DoesNotExist:
+                m = customer_details.objects.none()
+        else:
+            m = customer_details.objects.all()
+    except Exception as e:
+        print(f"Error in display_customer filtering: {str(e)}")
         m = customer_details.objects.all()
-
-    elif request.user.userprofile.role == 'sales':
-        sales_person_name = SalesPerson.objects.get(full_name = SalesPerson.objects.get(mobile_no = request.user.username).full_name)
-        m = customer_details.objects.filter(contactperson__iexact = sales_person_name)
-
-    elif request.user.userprofile.role == 'branch_manager':
-        branch = BranchManager.objects.get(mobile_no = request.user.username ).branch
-        m = customer_details.objects.filter(branch_id = branch)
         
     # Base queryset
 
@@ -4501,7 +4518,7 @@ def edit_quotation(request, rid):
         quotation.contact_by_no = contact_by_no
         quotation.address = address
         quotation.subject = subject
-        quotation.branch_id = branch_id
+        quotation.branch_id = int(branch_id) if branch_id else quotation.branch_id
         quotation.quotation_date = quotation_date
         quotation.product_details_json = updated_products
         quotation.total_price = total_without_gst
@@ -4541,7 +4558,7 @@ def edit_quotation(request, rid):
         all_terms = ordered_terms + remaining_terms
 
         branches = Branch.objects.all()
-        branch = Branch.objects.get(id = quotation.branch_id)
+        branch = quotation.branch
         
         try:
             product_details = json.loads(quotation.product_details_json)
@@ -6491,22 +6508,22 @@ def get_customer_details(request):
             customer = customer_details.objects.get(primarycontact=contact_no)
             data = {
                 'customer_id': customer.id,
-                'customer_full_name': customer.fullname,
-                'secondary_contact_no':customer.secondarycontact,
-                'customer_email': customer.primaryemail,
-                'secondary_email' : customer.secondaryemail,
-                'contactperson':customer.contactperson,
-                'shifttopartyaddress': customer.shifttopartyaddress,
-                'city': customer.shifttopartycity,
-                'state': customer.shifttopartystate,
-                'pincode':customer.shifttopartypostal,
-                'soldtopartyaddress': customer.soldtopartyaddress,
-                'sold_city': customer.soldtopartycity,
-                'sold_state': customer.soldtopartystate,
-                'sold_pincode':customer.soldtopartypostal,
-                'customer_type': customer.customer_type,
-                'or_name':customer.or_name,
-                'or_contact':customer.or_contact,  
+                'customer_full_name': customer.fullname or '',
+                'secondary_contact_no': customer.secondarycontact or '',
+                'customer_email': customer.primaryemail or '',
+                'secondary_email': customer.secondaryemail or '',
+                'contactperson': customer.contactperson or '',
+                'shifttopartyaddress': customer.shifttopartyaddress or '',
+                'city': customer.shifttopartycity or '',
+                'state': customer.shifttopartystate or '',
+                'pincode': customer.shifttopartypostal or '',
+                'soldtopartyaddress': customer.soldtopartyaddress or '',
+                'sold_city': customer.soldtopartycity or '',
+                'sold_state': customer.soldtopartystate or '',
+                'sold_pincode': customer.soldtopartypostal or '',
+                'customer_type': customer.customer_type or 'Individual',
+                'or_name': customer.or_name or '',
+                'or_contact': str(customer.or_contact) if customer.or_contact else '',
             }
            
             return JsonResponse(data)
@@ -6614,7 +6631,7 @@ def create_tax_invoice(request):
                 quotation_no = request.POST.get("quotation_no")
                 quotation = get_object_or_404(quotation_management, quotation_no=quotation_no)
                 customer = get_object_or_404(customer_details, primarycontact=quotation.customer.primarycontact)
-                branch = get_object_or_404(Branch, id = quotation.branch_id)
+                branch = quotation.branch
                 gst_enabled = quotation.apply_gst
                 if quotation.igst > 0:
                     gst_type = "IGST"
@@ -6835,7 +6852,9 @@ def edit_tax_invoice(request, id):
         customer.or_name = request.POST.get('or_name')
         customer.save()
 
-        invoice.branch_id = request.POST.get('branch_id')
+        branch_id = request.POST.get('branch_id')
+        if branch_id:
+            invoice.branch_id = int(branch_id)
         invoice.customer = customer
         invoice.bill_to_address = request.POST.get('bill_to_address')
         invoice.ship_to_address = request.POST.get('ship_to_address')
