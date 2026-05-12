@@ -48,7 +48,7 @@
 
           <div class="form">
 
-            <form method="POST" action="">
+            <form method="POST" action="" id="hoForm" novalidate>
               {% csrf_token %}
               <div class="row">
 
@@ -209,6 +209,89 @@
       document.getElementById('modal').classList.remove('active');
     }
   </script>
+
+<script>
+/* TEIM-VALIDATION: templates/inventory/add_ho.html */
+
+(function(){
+  var form = document.getElementById('hoForm');
+  if (!form) return;
+  form.addEventListener('submit', function(e) {
+    var errors = [];
+    // Name
+    var name = form.querySelector('[name="name"]');
+    if (name && !name.value.trim()) errors.push('Name is required.');
+    // Email
+    var email = form.querySelector('[name="email"]');
+    if (email && !email.value.trim()) errors.push('Email is required.');
+    else if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value.trim()))
+      errors.push('Please enter a valid email address.');
+    // Contact / Phone
+    var contact = form.querySelector('[name="contact"]');
+    if (contact) {
+      if (!contact.value.trim()) errors.push('Contact number is required.');
+      else if (!/^[0-9]{10}$/.test(contact.value.trim()))
+        errors.push('Contact number must be exactly 10 digits.');
+    }
+    // Password
+    var pw  = form.querySelector('[name="password"]');
+    var cpw = form.querySelector('[name="confirm_password"]');
+    if (pw && !pw.value) errors.push('Password is required.');
+    if (cpw && !cpw.value) errors.push('Confirm Password is required.');
+    if (pw && cpw && pw.value && cpw.value && pw.value !== cpw.value)
+      errors.push('Password and Confirm Password do not match.');
+    if (errors.length) {
+      e.preventDefault();
+      showErrors('hoAlertBox', errors, form);
+    }
+  });
+})();
+
+</script>
+
+<script>
+function showErrors(boxId, errors, form) {
+  var old = document.getElementById(boxId);
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.id = boxId;
+  d.className = 'alert alert-danger mt-2 mb-2';
+  d.style.cssText = 'border-left:4px solid #dc3545; background:#fff5f5; padding:12px 16px;';
+  d.innerHTML = '<strong style="color:#dc3545">&#9888; Please fix the following:</strong><ul class="mb-0 mt-1" style="padding-left:20px">' +
+    errors.map(function(m){ return '<li style="margin-top:4px">' + m + '</li>'; }).join('') + '</ul>';
+  form.insertBefore(d, form.firstChild);
+  // Scroll the alert into view regardless of scroll container
+  setTimeout(function() {
+    d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+}
+</script>
+
+<script>
+/* TEIM-PHONE-RESTRICT */
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var phoneFields = document.querySelectorAll('[name="contact"]');
+    phoneFields.forEach(function(inp){
+      inp.setAttribute('maxlength', '10');
+      inp.setAttribute('pattern', '[0-9]{10}');
+      inp.setAttribute('title', 'Enter exactly 10 digits');
+      inp.setAttribute('inputmode', 'numeric');
+      inp.addEventListener('input', function(){
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+      });
+      inp.addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key)) e.preventDefault();
+      });
+      inp.addEventListener('paste', function(e){
+        e.preventDefault();
+        var txt = (e.clipboardData || window.clipboardData).getData('text');
+        this.value = txt.replace(/[^0-9]/g, '').slice(0, 10);
+      });
+    });
+  });
+})();
+</script>
 </body>
 
 </html>

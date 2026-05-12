@@ -1138,6 +1138,10 @@
                         <a href="/products">
                             <li data-link="/products">2. All Products</li>
                         </a>
+
+                        <a href="/product-items">
+                            <li data-link="/product-items">3. Product Items</li>
+                        </a>
                     </ul>
                 </div>
             </li>
@@ -1405,6 +1409,17 @@
                     </ul>
                 </div>
             </li>
+
+
+            {% endif %}
+            {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' or role == 'HO_manager' or role == 'HO_operation' %}
+
+
+             <a href="{% url 'bharat_page' %}" style="text-decoration: none;">
+                <li data-link="/today-work"><i class="fas fa-calendar-check"></i> Service</li>
+            </a>
+
+
 
             {% endif %}
             {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' or role == 'HO_manager' or role == 'HO_operation' %}

@@ -19,8 +19,44 @@ urlpatterns = [
     path('sales-persons/export/', views.export_sales_person_csv, name='export_sales_person_csv'),
     path('customer_details_create',views.customer_details_create, name='customer_details_create'),
     path('service_management_create',views.service_management_create, name='service_management_create'),
+
+
+    # path('approve/<int:id>/', views.approve_service),
+    # path('reject/<int:id>/', views.reject_service),
+
+    # path('bharat/', views.bharat_page, name='bharat_page'),
+
+
+
+  
+    # path("bharat/", views.bharat_page, name="bharat_page"),
+    # path("approve/<int:id>/", views.approve_service, name="approve_service"),
+    # path("reject/<int:id>/", views.reject_service, name="reject_service"),
     
-    # Branch Manager
+    
+
+
+
+  # urls.py
+
+
+    path('bharat/', views.bharat_page, name='bharat_page'),
+    
+    # Main service actions
+    path('approve/<int:id>/', views.approve_service, name='approve_service'),
+    path('reject/<int:id>/', views.reject_service, name='reject_service'),
+    # path('complete/<int:id>/', views.complete_service, name='complete_service'),
+    
+    # AMC visit actions
+    path('api/amc-visit/<int:schedule_id>/approve/', views.approve_amc_visit, name='approve_amc_visit'),
+    path('api/amc-visit/<int:schedule_id>/reject/', views.reject_amc_visit, name='reject_amc_visit'),
+    path('api/amc-visit/<int:schedule_id>/reschedule/', views.reschedule_amc_visit, name='reschedule_amc_visit'),
+    path('api/amc-visit/<int:schedule_id>/details/', views.get_amc_visit_details, name='get_amc_visit_details'),
+    path('api/amc-visit/<int:schedule_id>/products/', views.get_amc_service_products, name='get_amc_service_products'),
+
+
+
+
     path('add-branch-manager/', views.add_branch_manager, name='add_branch_manager'), 
     path('branch-manager-list/', views.branch_manager_list, name='branch_manager_list'),
     path('edit-branch-manager/<int:pk>/', views.edit_branch_manager, name='edit_branch_manager'),
@@ -211,8 +247,15 @@ urlpatterns = [
     path("technician-work-list/export/", views.export_technician_work_list, name="export_technician_work_list"),
     # app/urls.py
     path("api/enquiry/", landing_page_lead_create_api),
+    path('product-items', views.add_product_items, name='product_items'),
+    path('delete-product-item/<int:item_id>/', views.delete_product_item, name='delete_product_item'),
+    path('get_product_items/', views.get_product_items, name='get_product_items'),
 
 ]
+
+
+
+
 
 
 if settings.DEBUG:

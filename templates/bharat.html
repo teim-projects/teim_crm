@@ -1,0 +1,1829 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ProService | Service Management</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Inter',sans-serif;
+        }
+
+        :root{
+            --primary:#2d61d3;
+            --primary-light:#eaf1ff;
+            --primary-border:#cfe0ff;
+            --bg:#f3fbfb;
+            --white:#ffffff;
+            --text:#1f2937;
+            --muted:#6b7280;
+            --line:#e5e7eb;
+            --success:#16a34a;
+            --success-bg:#dcfce7;
+            --warning:#d97706;
+            --warning-bg:#fef3c7;
+            --danger:#dc2626;
+            --danger-bg:#fee2e2;
+            --info:#2563eb;
+            --info-bg:#dbeafe;
+            --shadow:0 8px 24px rgba(15,23,42,.06);
+            --radius:16px;
+        }
+
+        body{
+            background:var(--bg);
+            color:var(--text);
+            min-height:100vh;
+        }
+
+        .main-content{
+            margin-left:260px;
+            transition:.3s ease;
+        }
+
+        @media (max-width:992px){
+            .main-content{margin-left:0;}
+        }
+
+        .topbar{
+            height:68px;
+            background:#fff;
+            border-bottom:1px solid #e6ebf2;
+            box-shadow:0 2px 10px rgba(0,0,0,.03);
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:0 18px;
+            position:sticky;
+            top:0;
+            z-index:100;
+        }
+
+        .topbar-left{
+            display:flex;
+            align-items:center;
+            gap:14px;
+        }
+
+        .menu-icon{
+            font-size:22px;
+            color:#111827;
+        }
+
+        .brand-box{
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .brand-logo{
+            width:38px;
+            height:38px;
+            border-radius:50%;
+            background:var(--primary-light);
+            border:1px solid var(--primary-border);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--primary);
+            font-size:18px;
+        }
+
+        .brand-text h4{
+            margin:0;
+            font-size:15px;
+            font-weight:700;
+            line-height:1.1;
+        }
+
+        .brand-text small{
+            color:var(--muted);
+            font-size:11px;
+        }
+
+        .topbar-right{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            color:#374151;
+            font-size:14px;
+            font-weight:500;
+        }
+
+        .top-icon{
+            width:34px;
+            height:34px;
+            border-radius:50%;
+            border:1px solid #e5e7eb;
+            background:#f9fafb;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .page-wrap{
+            width:min(96%, 1320px);
+            margin:24px auto 40px;
+        }
+
+        .title-card{
+            background:#fff;
+            border:1px solid var(--line);
+            border-radius:18px;
+            box-shadow:var(--shadow);
+            padding:22px 24px;
+            margin-bottom:20px;
+            text-align:center;
+        }
+
+        .title-card h2{
+            margin:0 0 8px;
+            color:var(--primary);
+            font-size:28px;
+            font-weight:700;
+        }
+
+        .title-card p{
+            margin:0;
+            color:var(--muted);
+            font-size:14px;
+        }
+
+        .stats-row{
+            display:grid;
+            grid-template-columns:repeat(5,1fr);
+            gap:14px;
+            margin-bottom:20px;
+        }
+
+        .stat-box{
+            background:#fff;
+            border:1px solid var(--line);
+            border-radius:14px;
+            box-shadow:var(--shadow);
+            padding:18px;
+        }
+
+        .stat-label{
+            color:var(--muted);
+            font-size:12px;
+            margin-bottom:8px;
+            font-weight:600;
+        }
+
+        .stat-value{
+            font-size:26px;
+            font-weight:800;
+            color:var(--text);
+            line-height:1;
+        }
+
+        .control-card{
+            background:#fff;
+            border:1px solid var(--line);
+            border-radius:18px;
+            box-shadow:var(--shadow);
+            padding:24px;
+            margin-bottom:20px;
+        }
+
+        .card-heading{
+            text-align:center;
+            color:var(--primary);
+            font-size:22px;
+            font-weight:700;
+            margin-bottom:18px;
+        }
+
+        .form-label{
+            color:#4c7fe0;
+            font-size:13px;
+            font-weight:600;
+            margin-bottom:6px;
+        }
+
+        .form-label .req{
+            color:#dc2626;
+        }
+
+        .form-control,
+        .form-select{
+            min-height:44px;
+            border-radius:8px;
+            border:1px solid #d9e2ec;
+            box-shadow:none !important;
+            font-size:14px;
+        }
+
+        .form-control:focus,
+        .form-select:focus{
+            border-color:#a9c4ff;
+        }
+
+        .button-row{
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            gap:10px;
+            margin-top:18px;
+        }
+
+        .btn-main{
+            min-width:160px;
+            background:var(--primary);
+            color:#fff;
+            border:none;
+            border-radius:8px;
+            font-weight:600;
+            padding:10px 20px;
+        }
+
+        .btn-main:hover{
+            background:#214fae;
+            color:#fff;
+        }
+
+        .btn-outline-main{
+            min-width:200px;
+            background:#fff;
+            color:var(--primary);
+            border:1px solid #a8c6ff;
+            border-radius:8px;
+            font-weight:600;
+            padding:9px 18px;
+        }
+
+        .btn-outline-main:hover{
+            background:var(--primary-light);
+            color:var(--primary);
+        }
+
+        .filter-pills{
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            justify-content:center;
+            margin-top:16px;
+        }
+
+        .filter-btn{
+            border:1px solid #d9e4ef;
+            background:#fff;
+            color:#4b5563;
+            border-radius:999px;
+            padding:8px 14px;
+            font-size:13px;
+            font-weight:600;
+            cursor:pointer;
+            transition:.2s ease;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover{
+            background:var(--primary-light);
+            color:var(--primary);
+            border-color:#bfd2ff;
+        }
+
+        .service-section{
+            display:grid;
+            grid-template-columns:1.2fr .9fr;
+            gap:20px;
+            align-items:start;
+        }
+
+        .panel{
+            background:#fff;
+            border:1px solid var(--line);
+            border-radius:18px;
+            box-shadow:var(--shadow);
+            overflow:hidden;
+        }
+
+        .panel-head{
+            padding:18px 20px;
+            border-bottom:1px solid var(--line);
+            background:#fbfdff;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            flex-wrap:wrap;
+        }
+
+        .panel-head h3{
+            margin:0;
+            font-size:18px;
+            font-weight:700;
+            color:#111827;
+        }
+
+        .panel-head p{
+            margin:4px 0 0;
+            font-size:13px;
+            color:var(--muted);
+        }
+
+        .service-list{
+            padding:18px;
+            display:grid;
+            gap:14px;
+        }
+
+        .service-card{
+            border:1px solid #e6edf5;
+            border-radius:14px;
+            background:#fff;
+            transition:.2s ease;
+            overflow:hidden;
+        }
+
+        .service-card:hover{
+            box-shadow:0 6px 18px rgba(15,23,42,.05);
+            border-color:#d8e6ff;
+        }
+
+        .service-card.active-card{
+            border-color:#b8d0ff;
+            background:#f9fbff;
+        }
+
+        .service-main{
+            padding:16px;
+            cursor:pointer;
+        }
+
+        .service-top{
+            display:flex;
+            justify-content:space-between;
+            gap:14px;
+            flex-wrap:wrap;
+            margin-bottom:12px;
+        }
+
+        .service-left{
+            display:flex;
+            gap:12px;
+            flex:1;
+            min-width:0;
+        }
+
+        .service-icon{
+            width:46px;
+            height:46px;
+            border-radius:12px;
+            background:var(--primary-light);
+            color:var(--primary);
+            border:1px solid var(--primary-border);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:18px;
+            flex-shrink:0;
+        }
+
+        .service-info{
+            min-width:0;
+        }
+
+        .service-no{
+            color:var(--primary);
+            font-size:14px;
+            font-weight:700;
+            margin-bottom:4px;
+        }
+
+        .service-customer{
+            font-size:18px;
+            font-weight:700;
+            color:#111827;
+            margin-bottom:4px;
+        }
+
+        .service-meta{
+            display:flex;
+            gap:14px;
+            flex-wrap:wrap;
+            font-size:13px;
+            color:var(--muted);
+        }
+
+        .service-right{
+            text-align:right;
+        }
+
+        .status-badge{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:6px 10px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:700;
+            white-space:nowrap;
+            margin-bottom:6px;
+        }
+
+        .status-completed{
+            background:var(--success-bg);
+            color:var(--success);
+        }
+
+        .status-approved{
+            background:var(--info-bg);
+            color:var(--info);
+        }
+
+        .status-pending{
+            background:var(--warning-bg);
+            color:var(--warning);
+        }
+
+        .status-rejected{
+            background:var(--danger-bg);
+            color:var(--danger);
+        }
+
+        .status-processing{
+            background:#e0f2fe;
+            color:#0369a1;
+        }
+
+        .contract-badge{
+            display:inline-block;
+            padding:6px 10px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:700;
+            background:#f3f4f6;
+            border:1px solid #e5e7eb;
+            color:#374151;
+        }
+
+        .contract-badge.amc{
+            background:#dcfce7;
+            color:#15803d;
+            border-color:#bbf7d0;
+        }
+
+        .service-grid{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:10px;
+            margin-bottom:14px;
+        }
+
+        .mini-box{
+            background:#f9fbfd;
+            border:1px solid #e8eef5;
+            border-radius:12px;
+            padding:12px;
+        }
+
+        .mini-box .k{
+            font-size:11px;
+            color:var(--muted);
+            margin-bottom:4px;
+            font-weight:600;
+        }
+
+        .mini-box .v{
+            font-size:13px;
+            color:#111827;
+            font-weight:700;
+            word-break:break-word;
+        }
+
+        .product-preview{
+            background:#fbfdff;
+            border:1px solid #e9eef4;
+            border-radius:12px;
+            padding:12px;
+            margin-bottom:14px;
+        }
+
+        .product-preview h6{
+            margin:0 0 8px;
+            font-size:13px;
+            font-weight:700;
+            color:#374151;
+        }
+
+        .product-preview ul{
+            padding-left:18px;
+            margin:0;
+        }
+
+        .product-preview li{
+            font-size:13px;
+            color:#4b5563;
+            margin-bottom:4px;
+        }
+
+        .action-row{
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            flex-wrap:wrap;
+            align-items:center;
+        }
+
+        .visit-note{
+            font-size:13px;
+            color:var(--muted);
+            font-weight:600;
+        }
+
+        .btn-group-wrap{
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+
+        .small-btn{
+            border:none;
+            border-radius:8px;
+            padding:8px 12px;
+            font-size:12px;
+            font-weight:600;
+            cursor:pointer;
+        }
+
+        .btn-view{background:#eaf1ff;color:var(--primary);}
+        .btn-approve{background:#e0f2fe;color:#1d4ed8;}
+        .btn-complete{background:#dcfce7;color:#15803d;}
+        .btn-reject{background:#fee2e2;color:#b91c1c;}
+        .btn-amc{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
+
+        .sub-panel{
+            display:none;
+            padding:0 16px 16px;
+        }
+
+        .sub-box{
+            border:1px solid #e7edf5;
+            background:#fbfdff;
+            border-radius:12px;
+            padding:14px;
+        }
+
+        .sub-box h5{
+            margin:0 0 12px;
+            font-size:14px;
+            font-weight:700;
+            color:#111827;
+        }
+
+        .visit-list{
+            display:grid;
+            gap:10px;
+        }
+
+        .visit-item{
+            background:#fff;
+            border:1px solid #e5ebf2;
+            border-radius:10px;
+            padding:12px;
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr auto;
+            gap:12px;
+            align-items:center;
+        }
+
+        .visit-col .k{
+            font-size:11px;
+            color:var(--muted);
+            margin-bottom:4px;
+            font-weight:600;
+        }
+
+        .visit-col .v{
+            font-size:13px;
+            font-weight:700;
+            color:#111827;
+        }
+
+        .visit-actions{
+            display:flex;
+            gap:6px;
+            flex-wrap:wrap;
+            justify-content:flex-end;
+        }
+
+        .details-panel{
+            min-height:400px;
+        }
+
+        .details-empty{
+            padding:40px 24px;
+            text-align:center;
+            color:var(--muted);
+        }
+
+        .details-empty i{
+            font-size:36px;
+            color:#9ca3af;
+            margin-bottom:10px;
+        }
+
+        .detail-wrap{
+            padding:20px;
+        }
+
+        .detail-top{
+            padding-bottom:16px;
+            margin-bottom:18px;
+            border-bottom:1px solid #edf2f7;
+        }
+
+        .detail-service-no{
+            color:var(--primary);
+            font-size:15px;
+            font-weight:700;
+            margin-bottom:4px;
+        }
+
+        .detail-customer{
+            font-size:22px;
+            font-weight:700;
+            color:#111827;
+            margin-bottom:6px;
+        }
+
+        .detail-sub{
+            color:var(--muted);
+            font-size:14px;
+        }
+
+        .detail-badges{
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            margin-top:12px;
+        }
+
+        .detail-section{
+            margin-bottom:20px;
+        }
+
+        .detail-section:last-child{
+            margin-bottom:0;
+        }
+
+        .detail-section h4{
+            font-size:15px;
+            font-weight:700;
+            color:var(--primary);
+            margin-bottom:12px;
+        }
+
+        .detail-grid{
+            display:grid;
+            grid-template-columns:repeat(2,1fr);
+            gap:12px;
+        }
+
+        .detail-box{
+            border:1px solid #e7edf5;
+            border-radius:12px;
+            background:#fff;
+            padding:14px;
+        }
+
+        .detail-box.full{
+            grid-column:1/-1;
+        }
+
+        .detail-box .k{
+            font-size:11px;
+            color:var(--muted);
+            margin-bottom:4px;
+            font-weight:600;
+        }
+
+        .detail-box .v{
+            font-size:14px;
+            color:#111827;
+            font-weight:700;
+            word-break:break-word;
+        }
+
+        .detail-item{
+            border:1px solid #e7edf5;
+            border-radius:12px;
+            background:#fff;
+            padding:14px;
+            margin-bottom:10px;
+        }
+
+        .detail-item:last-child{
+            margin-bottom:0;
+        }
+
+        .detail-item-top{
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-bottom:8px;
+        }
+
+        .detail-item .name{
+            font-size:14px;
+            font-weight:700;
+            color:#111827;
+        }
+
+        .detail-item .meta{
+            font-size:13px;
+            color:var(--primary);
+            font-weight:600;
+        }
+
+        .detail-subitems{
+            padding-left:16px;
+        }
+
+        .detail-subitems div{
+            font-size:13px;
+            color:#4b5563;
+            margin-bottom:4px;
+        }
+
+        .footer-note{
+            margin-top:20px;
+            text-align:center;
+            color:var(--muted);
+            font-size:12px;
+        }
+
+        .hidden-template{
+            display:none;
+        }
+
+        /* Modal Styles */
+        .amc-modal .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .amc-modal .modal-header {
+            background: linear-gradient(135deg, #f5f3ff 0%, #ecfeff 100%);
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 20px 20px 0 0;
+            padding: 20px 24px;
+        }
+        .amc-modal .modal-header h5 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1f2937;
+        }
+        .amc-modal .modal-body {
+            padding: 24px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .amc-modal .modal-footer {
+            border-top: 1px solid #e5e7eb;
+            padding: 16px 24px;
+        }
+        .amc-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .amc-detail-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .amc-detail-card.full-width {
+            grid-column: 1/-1;
+        }
+        .amc-detail-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        .amc-detail-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            word-break: break-word;
+        }
+        .amc-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .amc-status-completed {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .amc-status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .tech-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .tech-tag {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .product-item-modal {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: white;
+        }
+        .product-item-modal:last-child {
+            margin-bottom: 0;
+        }
+        .product-name-modal {
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .required-items-list {
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+        .required-item-modal {
+            font-size: 13px;
+            color: #4b5563;
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .item-dot-modal {
+            width: 4px;
+            height: 4px;
+            background: #7c3aed;
+            border-radius: 50%;
+        }
+
+        @media (max-width:1200px){
+            .service-section{
+                grid-template-columns:1fr;
+            }
+            .stats-row{
+                grid-template-columns:repeat(3,1fr);
+            }
+        }
+
+        @media (max-width:900px){
+            .stats-row{
+                grid-template-columns:repeat(2,1fr);
+            }
+            .service-grid{
+                grid-template-columns:repeat(2,1fr);
+            }
+            .visit-item{
+                grid-template-columns:1fr;
+            }
+            .visit-actions{
+                justify-content:flex-start;
+            }
+            .detail-grid{
+                grid-template-columns:1fr;
+            }
+            .amc-detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width:576px){
+            .page-wrap{
+                width:min(94%,1320px);
+            }
+            .stats-row{
+                grid-template-columns:1fr;
+            }
+            .service-grid{
+                grid-template-columns:1fr;
+            }
+            .service-top{
+                flex-direction:column;
+            }
+            .service-right{
+                text-align:left;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'sidebar.html' %}
+
+    <div class="main-content">
+
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="menu-icon">
+                    <i class="bi bi-list"></i>
+                </div>
+
+                <div class="brand-box">
+                    <div class="brand-logo">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h4>ProService</h4>
+                        <small>Service Management System</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <span>Welcome, <span id="navDate"></span></span>
+                <div class="top-icon"><i class="bi bi-bell"></i></div>
+                <div class="top-icon"><i class="bi bi-person"></i></div>
+            </div>
+        </div>
+
+        <div class="page-wrap">
+
+            <div class="title-card">
+                <h2>Service Management</h2>
+                <p>Clean, normal page for managing services, products, approvals and AMC visit schedules.</p>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-label">Total Entries</div>
+                    <div class="stat-value">{{ total_entries|default:"0" }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Service Groups</div>
+                    <div class="stat-value">{{ groups|length }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value">{{ pending_count|default:"0" }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Approved</div>
+                    <div class="stat-value">{{ approved_count|default:"0" }}</div>
+                </div>
+                
+            </div>
+
+            <div class="control-card">
+                <div class="card-heading">Filter Services</div>
+
+                <div class="row g-3">
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label">Service Type <span class="req">*</span></label>
+                        <form method="get" id="typeForm">
+                            <select name="type" class="form-select" onchange="this.form.submit()">
+                                <option value="all" {% if selected_type == "all" %}selected{% endif %}>All Services</option>
+                                <option value="amc" {% if selected_type == "amc" %}selected{% endif %}>AMC Services Only</option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label">Search</label>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search service no, customer, mobile, product..." />
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label">Visible Records</label>
+                        <input type="text" id="recordInfo" class="form-control" readonly value="0 records visible" />
+                    </div>
+                </div>
+
+                <div class="filter-pills">
+                    <button class="filter-btn active" data-f="all" type="button">All</button>
+                    <button class="filter-btn" data-f="Pending" type="button">Pending</button>
+                    <button class="filter-btn" data-f="Approved" type="button">Approved</button>
+                    
+                </div>
+
+                <div class="button-row">
+                    <button type="button" class="btn btn-main" onclick="location.reload()">Refresh Page</button>
+                    <button type="button" class="btn btn-outline-main" onclick="scrollToDetails()">View Selected Details</button>
+                </div>
+            </div>
+
+            <div class="service-section">
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Service Requests</h3>
+                            <p>Click any card to open details on the right side</p>
+                        </div>
+                        <div class="text-muted small" id="cardCount">0 records visible</div>
+                    </div>
+
+                    <div class="service-list" id="serviceList">
+
+                        {% for group in groups %}
+                        <div class="service-card service-group"
+                             id="service-card-{{ group.main.id }}"
+                             data-status="{{ group.main.status }}"
+                             onclick="selectCard('{{ group.main.id }}','detail-main-{{ group.main.id }}')">
+
+                            <div class="service-main">
+                                <div class="service-top">
+                                    <div class="service-left">
+                                        <div class="service-icon">
+                                            {% if group.main.contract == "AMC" %}
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            {% else %}
+                                                <i class="bi bi-box-seam"></i>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="service-info">
+                                            <div class="service-no">{{ group.main.service_no }}</div>
+                                            <div class="service-customer">{{ group.main.customer }}</div>
+                                            <div class="service-meta">
+                                                <span><i class="bi bi-telephone"></i> {{ group.main.mobile|default:"-" }}</span>
+                                                <span><i class="bi bi-calendar-event"></i> {{ group.main.date|default:"-" }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="service-right">
+                                        {% if group.main.is_approved %}
+    <div class="status-badge status-approved">Approved</div>
+{% else %}
+    <div class="status-badge status-pending">Pending</div>
+{% endif %}
+
+                                        {% if group.main.contract == "AMC" %}
+                                            <div class="contract-badge amc">AMC Contract</div>
+                                        {% else %}
+                                            <div class="contract-badge">{{ group.main.contract|default:"-" }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="service-grid">
+                                    <div class="mini-box">
+                                        <div class="k">Products</div>
+                                        <div class="v">{{ group.main.products|length }}</div>
+                                    </div>
+                                    <div class="mini-box">
+                                        <div class="k">AMC Visits</div>
+                                        <div class="v">{{ group.main.sub_services|length }}</div>
+                                    </div>
+                                    <div class="mini-box">
+                                        <div class="k">Customer</div>
+                                        <div class="v">{{ group.main.customer }}</div>
+                                    </div>
+                                    <div class="mini-box">
+                                        <div class="k">Service Date</div>
+                                        <div class="v">{{ group.main.date|default:"-" }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="product-preview">
+                                    <h6>Products / Required Items</h6>
+                                    <ul>
+                                        {% for product in group.main.products|slice:":3" %}
+                                            <li>
+                                                {% if product.type == "AMC" %}
+                                                    🔄 {{ product.name }}
+                                                {% else %}
+                                                    📦 {{ product.name }}
+                                                    {% if product.quantity and product.quantity > 1 %}
+                                                        (Qty: {{ product.quantity }})
+                                                    {% endif %}
+                                                {% endif %}
+                                            </li>
+                                        {% empty %}
+                                            <li>No products found</li>
+                                        {% endfor %}
+                                        {% if group.main.products|length > 3 %}
+                                            <li>+ {{ group.main.products|length|add:"-3" }} more items</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+
+                                <div class="action-row" onclick="event.stopPropagation()">
+                                    <div class="visit-note">
+                                        {{ group.main.sub_services|length }} AMC visit{{ group.main.sub_services|length|pluralize }} scheduled
+                                    </div>
+
+                                    <div class="btn-group-wrap">
+                                        <button class="small-btn btn-view" type="button"
+                                                onclick="showDetails('detail-main-{{ group.main.id }}'); setActiveCard('{{ group.main.id }}'); scrollToDetails();">
+                                            Details
+                                        </button>
+
+                                        <button class="small-btn btn-approve" type="button"
+                                                onclick="approveService('{{ group.main.id }}')">
+                                            Approve
+                                        </button>
+
+                                        <button class="small-btn btn-reject" type="button"
+                                                onclick="rejectService('{{ group.main.id }}')">
+                                            Mark Pending
+                                        </button>
+
+                                        <button class="small-btn btn-amc" type="button"
+                                                onclick="toggleAmc('{{ group.main.id }}')">
+                                            AMC Visits
+                                        </button>
+
+                                        {% if group.main.is_approved %}
+                                        <a class="small-btn" type="button"
+                                           href="/new_inventory/service/{{ group.main.id }}/stock-return/"
+                                           style="background:#6f42c1;color:#fff;text-decoration:none;"
+                                           title="Return unused materials back to inventory">
+                                            ↩ Return Stock
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="sub-panel" id="sub-panel-{{ group.main.id }}" onclick="event.stopPropagation()">
+                                <div class="sub-box">
+                                    <h5>AMC Visit Schedule</h5>
+
+                                    <div class="visit-list">
+                                        {% for sub in group.main.sub_services %}
+                                        <div class="visit-item" id="amc-row-{{ sub.schedule_id }}">
+                                            <div class="visit-col">
+                                                <div class="k">Contract No</div>
+                                                <div class="v">{{ sub.contract_number }}</div>
+                                            </div>
+
+                                            <div class="visit-col">
+                                                <div class="k">Service Date</div>
+                                                <div class="v amc-date-{{ sub.schedule_id }}">{{ sub.service_date }}</div>
+                                            </div>
+
+                                            <div class="visit-col" id="amc-status-{{ sub.schedule_id }}">
+                                                <div class="k">Status</div>
+                                                <div class="v">
+                                                    {% if sub.is_approved %}
+                                                        <span class="status-badge status-completed">Approved</span>
+                                                    {% else %}
+                                                        <span class="status-badge status-pending">Pending</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <div class="visit-actions">
+                                                <button class="small-btn btn-complete" type="button" onclick="approveAmcVisit({{ sub.schedule_id }})">Approve</button>
+                                                <button class="small-btn btn-reject" type="button" onclick="rejectAmcVisit({{ sub.schedule_id }})">Reject</button>
+                                                <button class="small-btn btn-view" type="button" onclick="showAmcDetailsModal({{ sub.schedule_id }})">Details</button>
+                                                <button class="small-btn btn-approve" type="button" onclick="rescheduleAmcVisit({{ sub.schedule_id }})">Reschedule</button>
+                                            </div>
+                                        </div>
+                                        {% empty %}
+                                        <div class="text-muted">No scheduled AMC visits found.</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-4">No services found.</div>
+                        {% endfor %}
+
+                    </div>
+                </div>
+
+                <div class="panel details-panel" id="detailsSection">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Service Details</h3>
+                            <p>Selected service information will appear here</p>
+                        </div>
+                    </div>
+
+                    <div id="detailsPanel">
+                        <div class="details-empty">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <div>No service selected. Click any service card to view full details.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="footer-note">
+                © 2026 ProService Management Dashboard
+            </div>
+        </div>
+    </div>
+
+    <!-- AMC DETAILS MODAL -->
+    <div class="modal fade amc-modal" id="amcDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-calendar-check me-2"></i> AMC Visit Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="amcDetailsBody">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading AMC visit details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="location.reload()">Refresh</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HIDDEN DETAIL TEMPLATES -->
+    <div class="hidden-template">
+        {% for group in groups %}
+        <div id="detail-main-{{ group.main.id }}">
+            <div class="detail-wrap">
+
+                <div class="detail-top">
+                    <div class="detail-service-no">{{ group.main.service_no }}</div>
+                    <div class="detail-customer">{{ group.main.customer }}</div>
+                    <div class="detail-sub">
+                        {% if group.main.contract == "AMC" %}
+                            AMC Contract Service
+                        {% else %}
+                            Regular Service Request
+                        {% endif %}
+                    </div>
+
+                    <div class="detail-badges">
+                        {% if group.main.is_approved %}
+    <span class="status-badge status-approved">Approved</span>
+{% else %}
+    <span class="status-badge status-pending">Pending</span>
+{% endif %}
+
+                        {% if group.main.contract == "AMC" %}
+                            <span class="contract-badge amc">AMC Contract</span>
+                        {% else %}
+                            <span class="contract-badge">{{ group.main.contract|default:"-" }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>Basic Information</h4>
+                    <div class="detail-grid">
+                        <div class="detail-box">
+                            <div class="k">Service No</div>
+                            <div class="v">{{ group.main.service_no }}</div>
+                        </div>
+                        <div class="detail-box">
+                            <div class="k">Customer</div>
+                            <div class="v">{{ group.main.customer }}</div>
+                        </div>
+                        <div class="detail-box">
+                            <div class="k">Mobile</div>
+                            <div class="v">{{ group.main.mobile|default:"-" }}</div>
+                        </div>
+                       <div class="v">
+    {% if group.main.is_approved %}
+        Approved
+    {% else %}
+        Pending
+    {% endif %}
+</div>
+                        <div class="detail-box">
+                            <div class="k">Contract</div>
+                            <div class="v">{{ group.main.contract|default:"-" }}</div>
+                        </div>
+                        <div class="detail-box">
+                            <div class="k">Service Date</div>
+                            <div class="v">{{ group.main.date|default:"-" }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>Products & Required Items</h4>
+                    {% for product in group.main.products %}
+                    <div class="detail-item">
+                        <div class="detail-item-top">
+                            <div class="name">
+                                {% if product.type == "AMC" %}
+                                    🔄 {{ product.name }}
+                                {% else %}
+                                    📦 {{ product.name }}
+                                    {% if product.quantity and product.quantity > 1 %}
+                                        <span style="font-size:12px;color:#2563eb;">(Qty: {{ product.quantity }})</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+
+                            <div class="meta">
+                                {% if product.type == "AMC" %}
+                                    {{ product.service_date }}
+                                {% else %}
+                                    {% if product.price %}₹{{ product.price }}{% endif %}
+                                    {% if product.gst_percentage %} + {{ product.gst_percentage }}% GST{% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if product.items %}
+                        <div class="detail-subitems">
+                            {% for item in product.items %}
+                            <div>
+                                └ 🔧 {{ item.name }}
+                                {% if item.qty and item.qty > 1 %}(Qty: {{ item.qty }}){% endif %}
+                                {% if item.notes %} - {{ item.notes }}{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="detail-item">
+                        <div class="name">No products or AMC services found.</div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if group.main.sub_services %}
+                <div class="detail-section">
+                    <h4>Scheduled AMC Visits</h4>
+                    {% for sub in group.main.sub_services %}
+                    <div class="detail-item">
+                        <div class="detail-item-top">
+                            <div class="name">AMC Visit ({{ sub.contract_number }})</div>
+                            <div class="meta">📅 {{ sub.service_date }}</div>
+                        </div>
+                        <div class="detail-subitems">
+                            <div>Status: {% if sub.is_completed %}Completed{% else %}Pending{% endif %}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if group.main.is_approved %}
+                <div class="detail-section" style="border-top:2px dashed #6f42c1;padding-top:16px;margin-top:8px;">
+                    <h4 style="color:#6f42c1;">↩ Stock Return</h4>
+                    <p style="font-size:13px;color:#6b7280;margin-bottom:12px;">
+                        This service is approved and stock has been deducted. If the technician
+                        returned unused materials, record the return below to add them back to inventory.
+                    </p>
+                    <a href="/new_inventory/service/{{ group.main.id }}/stock-return/"
+                       class="btn btn-sm"
+                       style="background:#6f42c1;color:#fff;border-radius:8px;padding:8px 20px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+                          <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                        </svg>
+                        Return Unused Stock to Inventory
+                    </a>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let activeFilter = "all";
+
+        function normalizeStatus(status) {
+            return (status || "").trim();
+        }
+
+        function setToday() {
+            const now = new Date();
+            const navDate = document.getElementById("navDate");
+            if (navDate) {
+                navDate.textContent = now.toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                });
+            }
+        }
+
+        function showDetails(templateId) {
+            const panel = document.getElementById("detailsPanel");
+            const template = document.getElementById(templateId);
+            if (panel && template) {
+                panel.innerHTML = template.innerHTML;
+            }
+        }
+
+        function setActiveCard(id) {
+            document.querySelectorAll(".service-card").forEach(card => {
+                card.classList.remove("active-card");
+            });
+
+            const selected = document.getElementById("service-card-" + id);
+            if (selected) {
+                selected.classList.add("active-card");
+            }
+        }
+
+        function selectCard(id, templateId) {
+            setActiveCard(id);
+            showDetails(templateId);
+        }
+
+        function scrollToDetails() {
+            const details = document.getElementById("detailsSection");
+            if (details) {
+                details.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+
+        function toggleAmc(id) {
+            const panel = document.getElementById("sub-panel-" + id);
+            if (!panel) return;
+
+            if (panel.style.display === "block") {
+                panel.style.display = "none";
+            } else {
+                panel.style.display = "block";
+            }
+        }
+
+       // Main Service Actions
+        function approveService(id) {
+            if (confirm("Approve this service? Stock will be deducted from inventory.")) {
+                fetch(`/approve/${id}/`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success && data.status === 'already_approved') {
+                            alert("This service is already approved.");
+                            return;
+                        }
+                        let msg = "✅ Service Approved!";
+                        if (data.warnings && data.warnings.length > 0) {
+                            msg += "\n\n⚠️ Stock Warnings:\n" + data.warnings.join("\n");
+                        }
+                        alert(msg);
+                        location.reload();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("Error approving service. Please try again.");
+                    });
+            }
+        }
+
+        function rejectService(id) {
+            if (confirm("Mark this service as Pending? Stock will be returned to inventory.")) {
+                fetch(`/reject/${id}/`)
+                    .then(res => res.json())
+                    .then(data => {
+                        let msg = "🔄 Service marked as Pending.";
+                        if (data.warnings && data.warnings.length > 0) {
+                            msg += "\n\n⚠️ Stock Warnings:\n" + data.warnings.join("\n");
+                        }
+                        alert(msg);
+                        location.reload();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("Error rejecting service. Please try again.");
+                    });
+            }
+        }
+
+        // AMC Visit Actions
+        function approveAmcVisit(scheduleId) {
+            if (confirm("Approve this AMC visit?")) {
+                fetch(`/api/amc-visit/${scheduleId}/approve/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("AMC visit approved!");
+                        location.reload();
+                    } else {
+                        alert("Error: " + (data.error || "Unknown error"));
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error approving AMC visit");
+                });
+            }
+        }
+
+        function rejectAmcVisit(scheduleId) {
+            if (confirm("Reject this AMC visit?")) {
+                fetch(`/api/amc-visit/${scheduleId}/reject/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("AMC visit rejected!");
+                        location.reload();
+                    } else {
+                        alert("Error: " + (data.error || "Unknown error"));
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error rejecting AMC visit");
+                });
+            }
+        }
+
+        function rescheduleAmcVisit(scheduleId) {
+            const newDate = prompt("Enter new date (YYYY-MM-DD):");
+            if (newDate && /^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+                fetch(`/api/amc-visit/${scheduleId}/reschedule/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ new_date: newDate })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Visit rescheduled to " + data.new_date);
+                        location.reload();
+                    } else {
+                        alert("Error rescheduling");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error rescheduling");
+                });
+            } else if (newDate) {
+                alert("Invalid date format. Use YYYY-MM-DD");
+            }
+        }
+
+        // Show AMC Details in Modal with Products and Required Items
+        async function showAmcDetailsModal(scheduleId) {
+            const modal = new bootstrap.Modal(document.getElementById('amcDetailsModal'));
+            const body = document.getElementById('amcDetailsBody');
+            
+            body.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading AMC visit details...</p>
+                </div>
+            `;
+            
+            modal.show();
+            
+            try {
+                const response = await fetch(`/api/amc-visit/${scheduleId}/details/`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const details = data.data;
+                    const visitDetails = details.visit_details || {};
+                    const contractDetails = details.contract_details || {};
+                    
+                    // Build products HTML
+                    let productsHtml = '';
+                    if (details.products && details.products.length > 0) {
+                        for (const product of details.products) {
+                            productsHtml += `
+                                <div class="product-item-modal">
+                                    <div class="product-name-modal">
+                                        <span>${product.type === 'AMC' ? '🔄' : '📦'} ${product.name}</span>
+                                        ${product.service_date ? `<span class="text-muted small">📅 ${product.service_date}</span>` : ''}
+                                        ${product.quantity > 1 ? `<span class="text-muted small">Qty: ${product.quantity}</span>` : ''}
+                                    </div>
+                                    ${product.items && product.items.length > 0 ? `
+                                        <div class="required-items-list">
+                                            <div class="small text-muted mb-1">Required Items:</div>
+                                            ${product.items.map(item => `
+                                                <div class="required-item-modal">
+                                                    <span class="item-dot-modal"></span>
+                                                    <span>🔧 ${item.name}</span>
+                                                    ${item.qty > 1 ? `<span class="text-muted">(x${item.qty})</span>` : ''}
+                                                    ${item.notes ? `<span class="text-muted">- ${item.notes}</span>` : ''}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    ` : '<div class="text-muted small mt-1" style="padding-left: 20px;">No required items</div>'}
+                                </div>
+                            `;
+                        }
+                    } else {
+                        productsHtml = '<div class="text-muted text-center py-3">No product details available for this AMC visit</div>';
+                    }
+                    
+                    body.innerHTML = `
+                        <div class="amc-detail-grid">
+                            <div class="amc-detail-card">
+                                <div class="amc-detail-label">Contract Number</div>
+                                <div class="amc-detail-value">
+                                    <i class="bi bi-file-text"></i> ${details.contract_number}
+                                </div>
+                            </div>
+                            <div class="amc-detail-card">
+                                <div class="amc-detail-label">Service Date</div>
+                                <div class="amc-detail-value">
+                                    <i class="bi bi-calendar-event"></i> ${details.service_date_display || details.service_date}
+                                </div>
+                            </div>
+                            <div class="amc-detail-card">
+                                <div class="amc-detail-label">Status</div>
+                                <div class="amc-detail-value">
+                                    <span class="amc-status-badge ${details.is_completed ? 'amc-status-completed' : 'amc-status-pending'}">
+                                        <i class="bi ${details.is_completed ? 'bi-check-circle' : 'bi-clock-history'}"></i>
+                                        ${details.is_completed ? 'Completed' : 'Pending'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="amc-detail-card">
+                                <div class="amc-detail-label">AMC Type</div>
+                                <div class="amc-detail-value">
+                                    <i class="bi bi-tag"></i> ${details.amc_type || 'Standard'}
+                                </div>
+                            </div>
+                            <div class="amc-detail-card full-width">
+                                <div class="amc-detail-label">Customer Information</div>
+                                <div class="amc-detail-value">
+                                    <div><i class="bi bi-person"></i> ${details.customer_name || 'N/A'}</div>
+                                    ${details.customer_mobile ? `<div class="mt-1"><i class="bi bi-telephone"></i> ${details.customer_mobile}</div>` : ''}
+                                    ${details.customer_address ? `<div class="mt-1"><i class="bi bi-geo-alt"></i> ${details.customer_address}</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="amc-detail-card full-width">
+                                <div class="amc-detail-label">Assigned Technicians</div>
+                                <div class="amc-detail-value">
+                                    <div class="tech-list">
+                                        ${details.technicians && details.technicians.length > 0 
+                                            ? details.technicians.map(tech => `<span class="tech-tag"><i class="bi bi-person-badge"></i> ${tech}</span>`).join('') 
+                                            : '<span class="text-muted">No technicians assigned</span>'}
+                                    </div>
+                                </div>
+                            </div>
+                            ${Object.keys(contractDetails).length > 0 ? `
+                                <div class="amc-detail-card full-width">
+                                    <div class="amc-detail-label">Contract Details</div>
+                                    <div class="amc-detail-value">
+                                        <div>📅 Start: ${contractDetails.start_date || 'N/A'} | End: ${contractDetails.end_date || 'N/A'}</div>
+                                        <div class="mt-1">🔄 Frequency: ${contractDetails.frequency || 'N/A'}</div>
+                                        <div class="mt-1">💰 Total Amount: ₹${contractDetails.total_amount || 0} | Per Visit: ₹${contractDetails.per_visit_amount || 0}</div>
+                                        ${contractDetails.service_description ? `<div class="mt-1">📝 ${contractDetails.service_description}</div>` : ''}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${visitDetails ? `
+                                <div class="amc-detail-card full-width">
+                                    <div class="amc-detail-label">Visit Allocation</div>
+                                    <div class="amc-detail-value">
+                                        <div><i class="bi bi-diagram-3"></i> Status: ${visitDetails.allocation_status || 'PENDING'}</div>
+                                        <div class="mt-2"><i class="bi bi-chat-text"></i> Remarks: ${visitDetails.remarks || 'No remarks'}</div>
+                                        ${visitDetails.crm_service_id ? `<div class="mt-2"><i class="bi bi-link-45deg"></i> CRM Service ID: ${visitDetails.crm_service_id}</div>` : ''}
+                                        ${visitDetails.auto_allocation_done ? `<div class="mt-2"><i class="bi bi-robot"></i> Auto-allocated: Yes</div>` : ''}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="mt-3">
+                            <h6 class="fw-bold mb-2"><i class="bi bi-box-seam me-1"></i> Products & Required Items</h6>
+                            <div class="products-container">
+                                ${productsHtml}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    body.innerHTML = `
+                        <div class="text-center py-4 text-danger">
+                            <i class="bi bi-exclamation-triangle fs-1"></i>
+                            <p class="mt-2">Error loading AMC visit details</p>
+                            <p class="small">${data.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error(error);
+                body.innerHTML = `
+                    <div class="text-center py-4 text-danger">
+                        <i class="bi bi-wifi-off fs-1"></i>
+                        <p class="mt-2">Network error. Please try again.</p>
+                        <p class="small">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function applyFilters() {
+            const search = document.getElementById("searchInput").value.toLowerCase().trim();
+            const groups = document.querySelectorAll(".service-group");
+            let visible = 0;
+
+            groups.forEach(group => {
+                const text = group.innerText.toLowerCase();
+                const status = normalizeStatus(group.dataset.status || "");
+                const matchesSearch = !search || text.includes(search);
+                const matchesFilter = activeFilter === "all" || status === activeFilter;
+
+                const groupId = group.id.replace("service-card-", "");
+                const subPanel = document.getElementById("sub-panel-" + groupId);
+
+                if (matchesSearch && matchesFilter) {
+                    group.style.display = "";
+                    visible++;
+                } else {
+                    group.style.display = "none";
+                    if (subPanel) subPanel.style.display = "none";
+                }
+            });
+
+            const text = `${visible} of ${groups.length} service group${groups.length !== 1 ? "s" : ""} visible`;
+            const countBox = document.getElementById("cardCount");
+            const recordInfo = document.getElementById("recordInfo");
+
+            if (countBox) countBox.textContent = text;
+            if (recordInfo) recordInfo.value = text;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            setToday();
+            applyFilters();
+
+            const firstCard = document.querySelector(".service-card");
+            if (firstCard) {
+                const firstId = firstCard.id.replace("service-card-", "");
+                setActiveCard(firstId);
+                const template = document.getElementById("detail-main-" + firstId);
+                if (template) {
+                    showDetails("detail-main-" + firstId);
+                }
+            }
+
+            const searchInput = document.getElementById("searchInput");
+            if (searchInput) {
+                searchInput.addEventListener("input", applyFilters);
+            }
+
+            document.querySelectorAll(".filter-btn").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                    this.classList.add("active");
+                    activeFilter = this.dataset.f;
+                    applyFilters();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

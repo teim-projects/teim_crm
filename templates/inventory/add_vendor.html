@@ -46,7 +46,7 @@
           <h3 class="text-center">Add Vendor</h3>
           <div class="form">
 
-            <form method="POST" action="">
+            <form method="POST" action="" id="vendorForm" novalidate>
               {% csrf_token %}
               <div class="row">
 
@@ -63,7 +63,7 @@
                 <div class="col-6 form-group mb-0">
                   <label for="{{ form.mobile.id_for_label }}">{{ form.mobile.label }}</label> <span
                     class="text-danger">*</span>
-                  {{ form.mobile|add_class:"form-control" | attr:"required:true" }}
+                  {{ form.mobile|add_class:"form-control" | attr:"required:true" | attr:"pattern:[0-9]{10}" | attr:"title:Enter a valid 10-digit mobile number" }}
                 </div>
                 <div class="col-6 form-group mb-0">
                   <label for="{{ form.company_type.id_for_label }}">{{ form.company_type.label }}</label>
@@ -83,6 +83,16 @@
                   <label for="{{ form.supplier_category.id_for_label }}">{{ form.supplier_category.label }}</label>
                   {{ form.supplier_category|add_class:"form-control" }}
                 </div>
+
+                <div class="col-6 form-group mb-0">
+  <label for="vendor_type">Vendor Type</label>
+  <select name="vendor_type" class="form-control" required>
+    <option value="">Select Type</option>
+    <option value="product">Product</option>
+    <option value="sub_item">Sub Item</option>
+    <option value="both">Both</option>
+  </select>
+</div>
 
                 <div class="col-6 form-group mb-0">
                   <label for="{{ form.gst_details.id_for_label }}">{{ form.gst_details.label }} <span class="text-danger">*</span></label>
@@ -119,7 +129,7 @@
                 </div>
                 <div class="col-6 form-group mb-0">
                   <label for="{{ form.office_poc_phone.id_for_label }}">{{ form.office_poc_phone.label }} <span class="text-danger">*</span></label>
-                  {{ form.office_poc_phone|add_class:"form-control" }}
+                  {{ form.office_poc_phone|add_class:"form-control" | attr:"pattern:[0-9]{10}" | attr:"title:Enter a valid 10-digit phone number" }}
                 </div>
 
                 <div class="col-6 form-group mb-0">
@@ -142,10 +152,50 @@
                   {{ form.bank_details|add_class:"form-control"|attr:"rows:2" }}
                 </div>
               </div>
+              <div id="vendorValidationAlert"></div>
               <div class="text-center mt-2">
                 <button type="submit" class="btn btn-primary">Add Vendor</button>
               </div>
             </form>
+            <script>
+            document.getElementById('vendorForm').addEventListener('submit', function(e) {
+              const errors = [];
+
+              // Name required
+              const name = document.querySelector('[name="name"]');
+              if (name && !name.value.trim()) errors.push('Vendor Name is required.');
+
+              // Mobile: 10-digit
+              const mobile = document.querySelector('[name="mobile"]');
+              if (mobile) {
+                const mval = mobile.value.trim();
+                if (!mval) {
+                  errors.push('Mobile number is required.');
+                } else if (!/^[0-9]{10}$/.test(mval)) {
+                  errors.push('Mobile number must be exactly 10 digits.');
+                }
+              }
+
+              // Office POC phone: 10-digit if filled
+              const pocPhone = document.querySelector('[name="office_poc_phone"]');
+              if (pocPhone && pocPhone.value.trim() && !/^[0-9]{10}$/.test(pocPhone.value.trim())) {
+                errors.push('Office POC phone must be exactly 10 digits.');
+              }
+
+              // Vendor type required
+              const vendorType = document.querySelector('[name="vendor_type"]');
+              if (vendorType && !vendorType.value) errors.push('Please select a Vendor Type.');
+
+              if (errors.length > 0) {
+                e.preventDefault();
+                const alertDiv = document.getElementById('vendorValidationAlert');
+                alertDiv.className = 'alert alert-danger mt-2';
+                alertDiv.innerHTML = '<strong>Please fix the following:</strong><ul class="mb-0 mt-1">' +
+                  errors.map(function(m){ return '<li>' + m + '</li>'; }).join('') + '</ul>';
+                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            });
+            </script>
           </div>
         </div>
       </div>
@@ -279,6 +329,32 @@
   });
 </script>
 
+
+<script>
+/* TEIM-PHONE-RESTRICT */
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var phoneFields = document.querySelectorAll('[name="mobile"], [name="office_poc_phone"], [name="store_poc_phone"]');
+    phoneFields.forEach(function(inp){
+      inp.setAttribute('maxlength', '10');
+      inp.setAttribute('pattern', '[0-9]{10}');
+      inp.setAttribute('title', 'Enter exactly 10 digits');
+      inp.setAttribute('inputmode', 'numeric');
+      inp.addEventListener('input', function(){
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+      });
+      inp.addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key)) e.preventDefault();
+      });
+      inp.addEventListener('paste', function(e){
+        e.preventDefault();
+        var txt = (e.clipboardData || window.clipboardData).getData('text');
+        this.value = txt.replace(/[^0-9]/g, '').slice(0, 10);
+      });
+    });
+  });
+})();
+</script>
 </body>
 
 </html>

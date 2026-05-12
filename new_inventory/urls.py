@@ -15,6 +15,12 @@ urlpatterns = [
         name="get_product_details"
     ),
 
+    # ---------------- Service Stock Return ----------------
+    path(
+        "service/<int:service_id>/stock-return/",
+        service_stock_return,
+        name="service_stock_return",
+    ),
 
     # ---------------- Vendor ----------------
     path('vendor_add/', vendor_add, name="vendor_add"),
@@ -100,6 +106,8 @@ urlpatterns = [
         ),
 
      path("delivery-challan/<int:pk>/pdf/", dc_pdf_view, name="dc_pdf"),
+    path("get-required-items/<int:product_id>/", get_required_items, name="get_required_items"),
+    
 
 
 

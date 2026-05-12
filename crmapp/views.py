@@ -7,10 +7,11 @@ from decimal import Decimal
 import base64
 from time import time
 import traceback
+# pyrefly: ignore [missing-import]
 import matplotlib.pyplot as plt
 import openpyxl
 
-from django import contrib
+
 from django.conf import settings
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -23,6 +24,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
+
+from amc.models import AMCContract, AMCServiceSchedule
 
 from .forms import (
     InventoryServiceForm,
@@ -41,6 +44,7 @@ from .models import (
     Product,
     Inventory_summary,
     Inventory_add,
+    
     UserProfile,
     SalesPerson,
     TechnicianProfile,
@@ -50,11 +54,16 @@ from .models import (
     thirdfollowup,
     finalfollowup,
     BranchManager,
-    OperationPerson
+    OperationPerson,
+    ProductRequiredItem,
+    ServiceProductItem,
 )
 
 from .decorators import role_required
 from schedule_meetings.models import Meeting
+
+from django.shortcuts import render, redirect
+
 
 
 state_map = {
@@ -1166,6 +1175,27 @@ def delete_product(request, product_id):
     return redirect('/products')
 
 
+# views.py - Add this function
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import ProductRequiredItem
+
+@login_required
+def get_product_items(request):
+    """API to get items for a specific product"""
+    product_id = request.GET.get('product_id')
+    
+    if not product_id:
+        return JsonResponse({'error': 'Product ID required', 'success': False}, status=400)
+    
+    try:
+        items = ProductRequiredItem.objects.filter(product_id=product_id).values('id', 'item_name')
+        return JsonResponse({
+            'items': list(items),
+            'success': True
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e), 'success': False}, status=500)
 
 @login_required
 @role_required(['admin','sales', 'branch_manager'])
@@ -1204,6 +1234,7 @@ def service_management_create(request):
             branch_instance = Branch.objects.get(id=branch_id) if branch_id else None
             # Create service instance
             instance = service_management.objects.create(
+                
                 customer=customer,
                 address=address,
                 total_price=total_price,
@@ -1235,25 +1266,52 @@ def service_management_create(request):
             )
 
             # Get products from JSON string
+            # Get products from JSON string
+            # Get products from JSON string
             selected_products_json = request.POST.get('selected_products_json', '[]')
-            selected_products = json.loads(selected_products_json)
-
-            print("Selected Products:", selected_products)
-
-            # Loop through product entries (allowing duplicates)
-            for item in selected_products:
+            print("=" * 50)
+            print("RAW selected_products_json:", selected_products_json)
+            print("Type of selected_products_json:", type(selected_products_json))
+            
+            try:
+                selected_products = json.loads(selected_products_json)
+                print("Parsed selected_products:", selected_products)
+                print("Number of products:", len(selected_products))
+                print("Type of selected_products:", type(selected_products))
+            except json.JSONDecodeError as e:
+                print(f"JSON Decode Error: {e}")
+                selected_products = []
+            
+            # Loop through product entries
+            for idx, item in enumerate(selected_products):
+                print(f"\n--- Processing Product {idx + 1} ---")
+                print(f"Item data: {item}")
+                
                 product_id = item.get('p_id')
                 price = item.get('price')
                 quantity = item.get('quantity')
                 gst_percentage = item.get('gst', 0)
                 description = item.get('description', '')
-
+                
+                print(f"Product ID: {product_id}")
+                print(f"Price: {price}")
+                print(f"Quantity: {quantity}")
+                print(f"GST: {gst_percentage}")
+                print(f"Description: {description}")
+                
                 if not product_id or price is None or quantity is None:
-                    continue  # Skip invalid entries
-
-                product = Product.objects.get(product_id=product_id)
-
-                ServiceProduct.objects.create(
+                    print(f"Skipping - Missing data: product_id={product_id}, price={price}, quantity={quantity}")
+                    continue
+                
+                try:
+                    product = Product.objects.get(product_id=product_id)
+                    print(f"Found product: {product.product_name}")
+                except Product.DoesNotExist:
+                    print(f"Product with ID {product_id} not found!")
+                    continue
+                
+                # Create ServiceProduct
+                service_product = ServiceProduct.objects.create(
                     service=instance,
                     product=product,
                     price=Decimal(price),
@@ -1261,7 +1319,37 @@ def service_management_create(request):
                     gst_percentage=Decimal(gst_percentage) or Decimal('0.00'),
                     description=description,
                 )
-
+                print(f"Created ServiceProduct with ID: {service_product.id}")
+                
+                # Save selected items for this service product
+                selected_items = item.get('items', [])
+                print(f"Number of selected items: {len(selected_items)}")
+                
+                for s_idx, selected_item in enumerate(selected_items):
+                    print(f"  Item {s_idx + 1}: {selected_item}")
+                    required_item_id = selected_item.get('required_item_id')
+                    if required_item_id:
+                        try:
+                            required_item = ProductRequiredItem.objects.get(id=required_item_id)
+                            print(f"    Found required item: {required_item.item_name}")
+                            item_obj = ServiceProductItem.objects.create(
+                                service_product=service_product,
+                                required_item=required_item,
+                                quantity=Decimal(selected_item.get('quantity', 1)),
+                                notes=selected_item.get('notes', '')
+                            )
+                            print(f"    Created ServiceProductItem with ID: {item_obj.id}")
+                        except ProductRequiredItem.DoesNotExist:
+                            print(f"    Item with ID {required_item_id} not found")
+                            continue
+                        except Exception as e:
+                            print(f"    Error creating ServiceProductItem: {e}")
+                            continue
+            
+            print("\n" + "=" * 50)
+            print("All products processed successfully")
+            print("=" * 50)
+            
             return redirect('/display_service_management')
 
         except Exception as e:
@@ -1283,6 +1371,427 @@ def service_management_create(request):
         'segments':segments,
         'branches':branch
     })
+
+
+
+
+# views.py - COMPLETE VERSION WITH ALL ACTIONS
+
+# views.py - COMPLETE VERSION WITH AMC PRODUCTS API
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from .models import service_management
+from amc.models import AMCContract, AMCServiceSchedule, AMCServiceVisit
+import json
+from datetime import datetime
+# NOTE: new_inventory imports are done lazily inside each view to avoid circular import warnings
+
+@login_required
+@csrf_exempt
+def approve_service(request, id):
+    """Approve service and deduct required product stock from inventory."""
+    from new_inventory.utils import deduct_stock_for_service  # lazy import — avoids circular import linter warning
+    service = get_object_or_404(service_management, id=id)
+
+    if service.is_approved:
+        return JsonResponse({
+            'status': 'already_approved',
+            'success': False,
+            'message': 'This service is already approved.',
+        })
+
+    # Deduct stock from inventory — returns list of warning strings (empty = all OK)
+    warnings = deduct_stock_for_service(service, request.user)
+
+    service.is_approved = True
+    service.save()
+
+    return JsonResponse({
+        'status': 'approved',
+        'success': True,
+        'warnings': warnings,
+    })
+
+@login_required
+@csrf_exempt
+def reject_service(request, id):
+    """Reject/un-approve service and reverse any stock deductions."""
+    from new_inventory.utils import reverse_stock_for_service  # lazy import
+    service = get_object_or_404(service_management, id=id)
+
+    warnings = []
+    if service.is_approved:
+        # Stock was deducted on approval — add it back
+        warnings = reverse_stock_for_service(service, request.user)
+
+    service.is_approved = False
+    service.save()
+
+    return JsonResponse({
+        'status': 'rejected',
+        'success': True,
+        'warnings': warnings,
+    })
+
+
+# def complete_service(request, id):
+#     """Complete main service - sets status to Completed"""
+#     service = get_object_or_404(service_management, id=id)
+#     service.status = 'Completed'
+#     service.save()
+#     return JsonResponse({'status': 'completed', 'success': True})
+
+@login_required
+@csrf_exempt
+def approve_amc_visit(request, schedule_id):
+    """Approve individual AMC visit"""
+    if request.method == 'POST':
+        schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
+        schedule.is_approved= True
+        schedule.save()
+        
+        visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
+        if visit:
+            visit.allocation_status = 'APPROVED'   # ✅ F
+            visit.save()
+            
+            
+                 # ✅ UPDATE SERVICE MANAGEMENT ALSO
+            if visit.crm_service:
+                visit.crm_service.is_approved = True
+                visit.crm_service.save()
+        
+        return JsonResponse({'success': True, 'message': 'AMC visit approved'})
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
+
+@login_required
+@csrf_exempt
+def reject_amc_visit(request, schedule_id):
+    """Reject individual AMC visit"""
+    if request.method == 'POST':
+        schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
+        schedule.is_approved = False
+        schedule.save()
+        
+        visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
+        if visit:
+            visit.allocation_status = 'CANCELLED'
+            visit.save()
+        
+        return JsonResponse({'success': True, 'message': 'AMC visit rejected'})
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
+
+@login_required
+@csrf_exempt
+def reschedule_amc_visit(request, schedule_id):
+    """Reschedule an AMC visit to a new date"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        new_date = data.get('new_date')
+        
+        if new_date:
+            new_date_obj = datetime.strptime(new_date, '%Y-%m-%d').date()
+            schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
+            old_date = schedule.service_date
+            schedule.service_date = new_date_obj
+            schedule.save()
+            
+            visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=old_date).first()
+            if visit:
+                visit.service_date = new_date_obj
+                visit.rescheduled_from = old_date
+                visit.save()
+            
+            return JsonResponse({'success': True, 'new_date': str(new_date_obj)})
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+@login_required
+@csrf_exempt
+def get_amc_visit_details(request, schedule_id):
+    """Get details of a specific AMC visit including products and required items"""
+    schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
+    visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
+    
+    # Get the main service (service_management) that this AMC belongs to
+    main_service = schedule.amc.service
+    
+    # Get products with their required items for this AMC
+    products = []
+    
+    # Get regular products from ServiceProduct (if any)
+    for sp in main_service.service_products.all():
+        product_data = {
+            "name": sp.product.product_name,
+            "type": "NORMAL",
+            "quantity": float(sp.quantity) if sp.quantity else 1,
+            "price": float(sp.price) if sp.price else 0,
+            "gst_percentage": float(sp.gst_percentage) if sp.gst_percentage else 0,
+            "items": []
+        }
+        
+        for item in sp.selected_items.all():
+            product_data["items"].append({
+                "name": item.required_item.item_name,
+                "qty": float(item.quantity),
+                "notes": item.notes or ""
+            })
+        
+        products.append(product_data)
+    
+    # Add AMC schedule as a product with its required items
+    # Get any required items associated with this AMC visit
+    amc_product_data = {
+        "name": f"AMC Service - {schedule.amc.contract_number}",
+        "type": "AMC",
+        "service_date": schedule.service_date.strftime('%Y-%m-%d'),
+        "schedule_id": schedule.id,
+        "is_completed": schedule.is_completed,
+        "items": []
+    }
+    
+    # You can add custom items for AMC visits here if needed
+    # For now, add the visit date as an item
+    amc_product_data["items"].append({
+        "name": f"Scheduled Visit on {schedule.service_date.strftime('%d %b, %Y')}",
+        "qty": 1,
+        "notes": "Regular AMC service visit"
+    })
+    
+    products.append(amc_product_data)
+    
+    data = {
+        'id': schedule.id,
+        'contract_number': schedule.amc.contract_number,
+        'service_date': schedule.service_date.strftime('%Y-%m-%d'),
+        'service_date_display': schedule.service_date.strftime('%b %d, %Y'),
+        'is_completed': schedule.is_completed,
+        'amc_type': schedule.amc.amc_type,
+        'customer_name': schedule.amc.customer.fullname if schedule.amc.customer else '',
+        'customer_mobile': schedule.amc.customer.primarycontact if schedule.amc.customer else '',
+        'customer_address': schedule.amc.default_customer_address or '',
+        'technicians': [t.user.get_full_name() or t.user.username for t in schedule.amc.technicians.all()],
+        'products': products,
+        'visit_details': {
+            'allocation_status': visit.allocation_status if visit else 'PENDING',
+            'remarks': visit.remarks if visit else '',
+            'crm_service_id': visit.crm_service.id if visit and visit.crm_service else None,
+            'auto_allocation_done': visit.auto_allocation_done if visit else False
+        } if visit else None,
+        'contract_details': {
+            'start_date': schedule.amc.start_date.strftime('%Y-%m-%d'),
+            'end_date': schedule.amc.end_date.strftime('%Y-%m-%d'),
+            'frequency': schedule.amc.frequency,
+            'total_amount': float(schedule.amc.total_amount) if schedule.amc.total_amount else 0,
+            'per_visit_amount': float(schedule.amc.per_visit_amount) if schedule.amc.per_visit_amount else 0,
+            'service_description': schedule.amc.service_description or '',
+            'notes': schedule.amc.notes or ''
+        }
+    }
+    return JsonResponse({'success': True, 'data': data})
+
+@login_required
+@csrf_exempt
+def get_amc_service_products(request, schedule_id):
+    """Get products and required items for a specific AMC schedule"""
+    schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
+    main_service = schedule.amc.service
+    
+    products = []
+    
+    # Get regular products
+    for sp in main_service.service_products.all():
+        product_data = {
+            "name": sp.product.product_name,
+            "type": "NORMAL",
+            "quantity": float(sp.quantity) if sp.quantity else 1,
+            "price": float(sp.price) if sp.price else 0,
+            "gst_percentage": float(sp.gst_percentage) if sp.gst_percentage else 0,
+            "items": []
+        }
+        
+        for item in sp.selected_items.all():
+            product_data["items"].append({
+                "name": item.required_item.item_name,
+                "qty": float(item.quantity),
+                "notes": item.notes or ""
+            })
+        
+        products.append(product_data)
+    
+    # Add AMC schedule product
+    amc_product = {
+        "name": f"AMC Visit - {schedule.amc.contract_number}",
+        "type": "AMC",
+        "service_date": schedule.service_date.strftime('%Y-%m-%d'),
+        "schedule_id": schedule.id,
+        "is_completed": schedule.is_completed,
+        "items": [
+            {
+                "name": f"Visit Date: {schedule.service_date.strftime('%d %b, %Y')}",
+                "qty": 1,
+                "notes": f"AMC Type: {schedule.amc.amc_type}"
+            }
+        ]
+    }
+    products.append(amc_product)
+    
+    return JsonResponse({'success': True, 'products': products, 'count': len(products)})
+
+def get_products_with_amc_schedules(service):
+    """Get products for a service, automatically including AMC schedules"""
+    products = []
+    
+    # First, add regular products from ServiceProduct
+    for sp in service.service_products.all():
+        product_data = {
+            "name": sp.product.product_name,
+            "type": "NORMAL",
+            "quantity": float(sp.quantity),
+            "price": float(sp.price),
+            "gst_percentage": float(sp.gst_percentage),
+            "total_with_gst": float(sp.total_with_gst) if sp.total_with_gst else None,
+            "items": []
+        }
+        
+        for item in sp.selected_items.all():
+            product_data["items"].append({
+                "name": item.required_item.item_name,
+                "qty": float(item.quantity),
+                "notes": item.notes or ""
+            })
+        
+        products.append(product_data)
+    
+    # Check if this service has any AMC contracts
+    amc_contracts = AMCContract.objects.filter(service=service)
+    
+    for amc in amc_contracts:
+        schedules = AMCServiceSchedule.objects.filter(amc=amc).order_by('service_date')
+        
+        for schedule in schedules:
+            visit = AMCServiceVisit.objects.filter(amc=amc, service_date=schedule.service_date).first()
+
+            if schedule.is_completed:
+                status = "Completed"
+            elif schedule.is_approved:
+                status = "Approved"
+            else:
+                status = "Pending"            
+            
+            products.append({
+                "name": f"AMC Service - {amc.contract_number}",
+                "type": "AMC",
+                "service_date": schedule.service_date,
+                "schedule_id": schedule.id,
+                "visit_id": visit.id if visit else None,
+                "is_completed": schedule.is_completed,
+                "amc_contract": amc.contract_number,
+                "items": [
+                    {
+                        "name": f"Visit Date: {schedule.service_date}",
+                        "qty": 1,
+                        "status": status,
+                        "is_approved": schedule.is_approved,
+                    }
+                ]
+            })
+    
+    return products
+
+def bharat_page(request):
+    filter_type = request.GET.get("type", "all")
+    
+    services = service_management.objects.select_related('customer').prefetch_related(
+        'service_products__product',
+        'service_products__selected_items__required_item'
+    ).order_by("-id")
+    
+    if filter_type == "amc":
+        service_ids_with_amc = AMCContract.objects.values_list('service_id', flat=True).distinct()
+        services = services.filter(id__in=service_ids_with_amc)
+    
+    grouped = {}
+    
+    for service in services:
+        key = service.customer.primarycontact if service.customer else f"no_{service.id}"
+        
+        products_with_amc = get_products_with_amc_schedules(service)
+        
+        amc_sub_services = []
+        amc_contracts = AMCContract.objects.filter(service=service)
+        
+        for amc in amc_contracts:
+            schedules = AMCServiceSchedule.objects.filter(amc=amc).order_by('service_date')
+            for schedule in schedules:
+                if schedule.is_completed:
+                    status = "Completed"
+                elif schedule.is_approved:
+                    status = "Approved"
+                else:
+                    status = "Pending"                
+                amc_sub_services.append({
+                    "id": schedule.id,
+                    "schedule_id": schedule.id,
+                    "type": "AMC",
+                    "product": f"AMC Visit ({amc.contract_number})",
+                    "service_date": schedule.service_date,
+                    "service_date_display": schedule.service_date.strftime('%b %d, %Y'),
+                    "status": status,
+                    "contract_number": amc.contract_number,
+                    "is_completed": schedule.is_completed,
+                    "is_approved": schedule.is_approved,
+                })
+        
+        has_amc = len(amc_contracts) > 0
+        status = "Approved" if service.is_approved else "Pending"
+        
+        main_service_data = {
+            "id": service.id,
+            "service_no": f"SRV-{service.id:04d}",
+            "customer": service.customer.fullname if service.customer else "",
+            "mobile": service.customer.primarycontact if service.customer else "",
+            # "status": service.status.capitalize() if service.status else "Pending",
+            "status": status,
+            "is_approved": service.is_approved,
+
+            
+            "date": service.service_date,
+            "contract": "AMC" if has_amc else service.contract_type,
+            "products": products_with_amc,
+            "sub_services": amc_sub_services
+        }
+        
+        if key not in grouped:
+            grouped[key] = {"main": main_service_data, "subs": []}
+        else:
+            grouped[key]["subs"].append(main_service_data)
+    
+    total_services = service_management.objects.count()
+    # completed_count = service_management.objects.filter(status='Completed').count()
+    approved_count = service_management.objects.filter(is_approved=True).count()
+    pending_count = service_management.objects.filter(is_approved=False).count()
+    # rejected_count = service_management.objects.filter(status='Rejected').count()
+    
+    context = {
+        "groups": grouped.values(),
+        "total_entries": total_services,
+        
+        "approved_count": approved_count,
+        "pending_count": pending_count,
+        
+        "selected_type": filter_type
+    }
+    
+    return render(request, 'bharat.html', context)
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import service_management
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -3515,6 +4024,18 @@ def edit_customer(request , rid):
     
 
 
+def get_product_items(request):
+    product_id = request.GET.get('product_id')
+    if product_id:
+        try:
+            product = Product.objects.get(product_id=product_id)
+            items = ProductRequiredItem.objects.filter(product=product).values('id', 'item_name')
+            return JsonResponse({'success': True, 'items': list(items)})
+        except Product.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Product not found'})
+    return JsonResponse({'success': False, 'error': 'Product ID required'})
+
+
 
 from .models import Reschedule
 from datetime import datetime
@@ -3529,6 +4050,23 @@ def edit_service_records(request, rid):
     products = Product.objects.all()
     sales_persons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
+
+    # Build a dictionary of selected items for each service product
+    selected_items_map = {}
+    for sp in selected_products:
+        selected_items = ServiceProductItem.objects.filter(service_product=sp).select_related('required_item')
+        selected_items_map[sp.product.product_id] = {
+            'service_product_id': sp.id,
+            'items': [
+                {
+                    'item_id': item.required_item.id,
+                    'item_name': item.required_item.item_name,
+                    'quantity': float(item.quantity),
+                    'notes': item.notes or ''
+                }
+                for item in selected_items
+            ]
+        }
 
     if request.method == "POST":
         try:
@@ -3554,6 +4092,47 @@ def edit_service_records(request, rid):
                 sp.total_with_gst = line_total_with_gst
                 sp.save()
 
+                # Update items for this service product
+                # First, get existing items
+                existing_items = {item.required_item_id: item for item in ServiceProductItem.objects.filter(service_product=sp)}
+                
+                # Get items from POST data
+                items_data = request.POST.get(f'items_{sp.id}', '[]')
+                try:
+                    items_list = json.loads(items_data)
+                except json.JSONDecodeError:
+                    items_list = []
+                
+                # Track which items we've processed
+                processed_item_ids = set()
+                
+                for item_data in items_list:
+                    required_item_id = item_data.get('required_item_id')
+                    item_quantity = Decimal(item_data.get('quantity', 1))
+                    item_notes = item_data.get('notes', '')
+                    
+                    if required_item_id in existing_items:
+                        # Update existing
+                        existing_items[required_item_id].quantity = item_quantity
+                        existing_items[required_item_id].notes = item_notes
+                        existing_items[required_item_id].save()
+                        processed_item_ids.add(required_item_id)
+                    else:
+                        # Create new
+                        required_item = ProductRequiredItem.objects.get(id=required_item_id)
+                        ServiceProductItem.objects.create(
+                            service_product=sp,
+                            required_item=required_item,
+                            quantity=item_quantity,
+                            notes=item_notes
+                        )
+                        processed_item_ids.add(required_item_id)
+                
+                # Delete items that were removed
+                for item_id, item_obj in existing_items.items():
+                    if item_id not in processed_item_ids:
+                        item_obj.delete()
+                
                 total_price += line_total
                 total_charges += line_total_charges
                 total_with_gst += line_total_with_gst
@@ -3561,22 +4140,20 @@ def edit_service_records(request, rid):
             # --- Add new selected products ---
             selected_products_json = (request.POST.get('selected_products_json') or '[]').strip()
             try:
-                selected_products = json.loads(selected_products_json)
+                new_products = json.loads(selected_products_json)
             except json.JSONDecodeError:
-                selected_products = []
+                new_products = []
                 print("⚠️ Warning: Invalid JSON in selected_products_json, defaulting to empty list.")
 
-            print("Selected Products:", selected_products)
-
-
-            for item in selected_products:
+            for item in new_products:
                 product_id = item.get('p_id')
                 price = item.get('price')
                 quantity = item.get('quantity')
                 gst_percentage = item.get('gst', 0)
                 description = item.get('description', '')
+                items_list = item.get('items', [])
 
-                if not price or not quantity or not gst_percentage:
+                if not price or not quantity:
                     continue
 
                 try:
@@ -3589,7 +4166,7 @@ def edit_service_records(request, rid):
                     line_total_charges = line_total * gst / Decimal('100')
                     line_total_with_gst = line_total + line_total_charges
 
-                    ServiceProduct.objects.create(
+                    service_product = ServiceProduct.objects.create(
                         service=service,
                         product=product,
                         price=price,
@@ -3598,6 +4175,24 @@ def edit_service_records(request, rid):
                         total_with_gst=line_total_with_gst,
                         description=description,
                     )
+                    
+                    # Add items for this service product
+                    for item_data in items_list:
+                        required_item_id = item_data.get('required_item_id')
+                        item_quantity = Decimal(item_data.get('quantity', 1))
+                        item_notes = item_data.get('notes', '')
+                        
+                        try:
+                            required_item = ProductRequiredItem.objects.get(id=required_item_id)
+                            ServiceProductItem.objects.create(
+                                service_product=service_product,
+                                required_item=required_item,
+                                quantity=item_quantity,
+                                notes=item_notes
+                            )
+                        except ProductRequiredItem.DoesNotExist:
+                            print(f"Required item with ID {required_item_id} does not exist.")
+                            continue
 
                     total_price += line_total
                     total_with_gst += line_total_with_gst
@@ -3625,9 +4220,12 @@ def edit_service_records(request, rid):
             service.lead_date = request.POST.get('lead_date')
             service.delivery_time = request.POST.get('delivery_time')
             service.service_date = request.POST.get('service_date')
+            # In the POST section, add these lines:
+            service.latitude = request.POST.get('latitude') or None
+            service.longitude = request.POST.get('longitude') or None
+            service.sales_person_email = request.POST.get('sales_person_email', '')
             service.save()
 
-            # messages.success(request, "Service record updated successfully.")
             return redirect('display_service_management')
 
         except Exception as e:
@@ -3643,8 +4241,11 @@ def edit_service_records(request, rid):
         'products': products,
         'sales_persons': sales_persons,
         'frequency_choices': frequency_choices,
+        'selected_items_map': json.dumps(selected_items_map),  # Pass to template
+        'branches': Branch.objects.all(),
     }
     return render(request, 'edit_service_records.html', context)
+
 
 def delete_service_records(request, rid):
     service_management.objects.get(id = rid).delete()
@@ -4543,6 +5144,8 @@ def technician_login(request):
         password = request.POST.get('password')
         
         user = authenticate(request, username=contact_number, password=password)
+        
+
 
         if user is not None:
             try:
@@ -4781,6 +5384,7 @@ def technician_dashboard(request):
         "notifications": notifications,
         "notifications_count": notifications_count,
     }
+    
 
     return render(request, 'technician_dashboard.html', context)
 
@@ -5318,6 +5922,16 @@ def complete_work(request, work_id):
     print('techn_work',tech_work)
     for w in tech_work.work.all():
         print(w.payment_amount)
+        
+        
+    # 🔍 Get related work
+    work_allocation = tech_work.work.first()
+
+    # ✅ 👉 YAHI ADD KIYA HAI
+    if work_allocation and work_allocation.service:
+        if not work_allocation.service.is_approved:
+            messages.error(request, "Service not approved yet.")
+            return redirect('technician_dashboard')
 
     if request.method == 'POST':
         # Get related work object (WorkAllocation)
@@ -5408,8 +6022,6 @@ def work_details(request, work_id):
         'work': work,
         'related_technicians': related_technicians,
     })
-
-
 
 def view_work_details(request, work_id):
     tech_work = get_object_or_404(TechWorkList, pk=work_id)
@@ -7517,3 +8129,157 @@ def send_invoice_pdf_on_whatsapp(request, id):
 
     return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice")) 
 
+
+
+
+
+
+
+def add_product_items(request):
+    categories = Product.CATEGORY_CHOICES
+    products = None
+    selected_category = request.GET.get('category')
+    selected_product = request.GET.get('product')
+    selected_product_items = None
+
+    # Filter products by category
+    if selected_category:
+        products = Product.objects.filter(category=selected_category)
+
+    # Show existing items
+    if selected_product:
+        selected_product_items = ProductRequiredItem.objects.filter(product_id=selected_product)
+
+    # Save items
+    if request.method == "POST":
+        product_id = request.POST.get('product')
+        item_names = request.POST.getlist('item_name[]')
+
+        for name in item_names:
+            if name.strip():
+                ProductRequiredItem.objects.create(
+                    product_id=product_id,
+                    item_name=name.strip()
+                )
+
+        return redirect(f"/product-items?category={selected_category}&product={product_id}")
+
+    context = {
+        'categories': categories,
+        'products': products,
+        'selected_category': selected_category,
+        'selected_product': selected_product,
+        'selected_product_items': selected_product_items
+    }
+
+    return render(request, 'product_items.html', context)
+
+
+from django.shortcuts import get_object_or_404
+
+def delete_product_item(request, item_id):
+    item = get_object_or_404(ProductRequiredItem, id=item_id)
+
+    product_id = item.product_id
+    category = item.product.category
+
+    item.delete()
+
+    return redirect(f"/product-items?category={category}&product={product_id}")   
+
+
+
+
+
+def get_amc_or_normal_services(service):
+
+    # ❌ if not AMC → normal service
+    if service.contract_type != "AMC":
+        return [
+            {
+                "name": sp.product.product_name,
+                "items": [
+                    {
+                        "name": sp.product.product_name,
+                        "qty": sp.quantity
+                    }
+                ]
+            }
+            for sp in service.service_products.all()
+        ]
+
+    # ✅ AMC SERVICE → get AMC of this customer
+    amc = AMCContract.objects.filter(
+        customer=service.customer
+    ).order_by('-id').first()
+
+    if not amc:
+        return []
+
+    schedules = AMCServiceSchedule.objects.filter(
+        amc=amc
+    ).order_by("service_date")
+
+    return [
+        {
+            "name": "AMC Visit",
+            "items": [
+                {
+                    "name": sch.service_date,
+                    "qty": "Completed" if sch.is_completed else "Pending"
+                }
+            ]
+        }
+        for sch in schedules
+    ]
+
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Prefetch
+
+from crmapp.models import service_management
+from amc.models import AMCContract, AMCServiceSchedule
+
+
+@login_required
+def service_list_with_amc(request):
+
+    services = service_management.objects.all().prefetch_related(
+        Prefetch(
+            "amccontract_set__service_schedules",
+            queryset=AMCServiceSchedule.objects.all().order_by("service_date")
+        )
+    )
+
+    final_data = []
+
+    for service in services:
+
+        # 🔹 Get AMC (if exists)
+        amc = service.amccontract_set.first()
+
+        if amc:
+            schedules = amc.service_schedules.all()
+
+            sub_services = [
+                {
+                    "date": s.service_date,
+                    "status": "Completed" if s.is_completed else "Pending",
+                }
+                for s in schedules
+            ]
+        else:
+            sub_services = []
+
+        final_data.append({
+            "service": service,
+            "amc": amc,
+            "sub_services": sub_services
+        })
+
+    return render(request, "bharat.html", {
+        "final_data": final_data
+    })

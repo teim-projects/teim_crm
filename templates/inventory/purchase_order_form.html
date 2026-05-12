@@ -67,13 +67,14 @@ input[type=number] {
           </div>
 
           <!-- Main form -->
-          <form method="POST" enctype="multipart/form-data" data-destination-url="{% url 'load_destinations' %}">
+          <form method="POST" enctype="multipart/form-data" data-destination-url="{% url 'load_destinations' %}" id="poMainForm" novalidate>
             {% csrf_token %}
 
             <div class="row">
               <div class="col-md-4 mb-3">
-                <label>Vendor</label>
+                <label>Vendor <span class="text-danger">*</span></label>
                 {{ form.vendor }}
+                <div class="invalid-feedback">Please select a vendor.</div>
               </div>
 
               <div class="col-md-4 mb-3">
@@ -82,13 +83,15 @@ input[type=number] {
               </div>
 
               <div class="col-md-4 mb-3">
-                <label>Destination Type</label>
+                <label>Destination Type <span class="text-danger">*</span></label>
                 {{ form.destination_type }}
+                <div class="invalid-feedback">Please select destination type.</div>
               </div>
 
               <div class="col-md-4 mb-3">
-                <label>Destination</label>
+                <label>Destination <span class="text-danger">*</span></label>
                 {{ form.destination_id }}
+                <div class="invalid-feedback">Please select a destination.</div>
               </div>
 
              
@@ -124,8 +127,30 @@ input[type=number] {
               </div>
             </div>
 
+
+            <h5 class="mt-4 text-primary text-center">Sub Items</h5>
+
+<table class="table table-bordered" id="sub-items-table">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Sub Item <span class="text-danger">*</span></th>
+      <th>Qty <span class="text-danger">*</span></th>
+      <th>Rate</th>
+      <th>Unit</th>
+      <th>GST</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<button type="button" id="add-sub-item" class="btn btn-secondary btn-sm">
+  + Add Sub Item
+</button>
+
             <!-- PO Items -->
-            <h5 class="mt-4 mb-3 text-center text-primary">PO Items</h5>
+            <h5 class="mt-4 mb-3 text-center text-primary">PO Items <span class="text-danger">*</span></h5>
 
             <div class="table-responsive">
               <table class="table table-bordered">
@@ -133,7 +158,7 @@ input[type=number] {
                   <tr>
                     <th style="min-width:200px">Product</th>
                     <th style="min-width:250px">Description</th>   <!-- ✅ ADD -->
-                    <th style="min-width:100px">Qty</th>
+                    <th style="min-width:100px">Qty <span class="text-danger">*</span></th>
                     <th style="min-width:100px">Unit Rate</th>
                     <th style="min-width:100px">GST Rate</th>
                     <th style="min-width:100px">Discount (%)</th>
@@ -192,10 +217,102 @@ input[type=number] {
             </tbody></table>
 
             <div class="mt-4">
-              <button type="submit" class="btn btn-primary">Save PO</button>
+              <button type="submit" class="btn btn-primary" id="poSubmitBtn">Save PO</button>
               <a href="{% url 'purchase_order_list' %}" class="btn btn-light ms-2">Cancel</a>
             </div>
           </form>
+
+          <!-- PO Form Frontend Validation Script -->
+          <script>
+          document.getElementById('poMainForm').addEventListener('submit', function(e) {
+            let valid = true;
+            const errors = [];
+
+            // 1. Vendor required
+            const vendorSelect = document.querySelector('[name="vendor"]');
+            if (vendorSelect && !vendorSelect.value) {
+              errors.push('Please select a Vendor.');
+              valid = false;
+            }
+
+            // 2. Destination type required
+            const destType = document.querySelector('[name="destination_type"]');
+            if (destType && !destType.value) {
+              errors.push('Please select a Destination Type.');
+              valid = false;
+            }
+
+            // 3. Destination ID required
+            const destId = document.querySelector('[name="destination_id"]');
+            if (destId && !destId.value) {
+              errors.push('Please select a Destination.');
+              valid = false;
+            }
+
+            // 4. At least one visible PO item
+            const visibleRows = document.querySelectorAll('#po-items-body tr.po-item-row:not([style*="display: none"])');
+            let hasItem = false;
+            visibleRows.forEach(function(row) {
+              const delChk = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+              if (delChk && delChk.checked) return;
+              const productSel = row.querySelector('select[name$="-product"]');
+              if (productSel && productSel.value) hasItem = true;
+            });
+            if (!hasItem) {
+              errors.push('Please add at least one PO item with a product selected.');
+              valid = false;
+            }
+
+            // 5. Validate qty > 0 for visible PO items
+            visibleRows.forEach(function(row) {
+              const delChk = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+              if (delChk && delChk.checked) return;
+              const productSel = row.querySelector('select[name$="-product"]');
+              if (!productSel || !productSel.value) return; // skip empty rows
+              const qtyInput = row.querySelector('input[name$="-quantity"]');
+              if (qtyInput) {
+                const qty = parseFloat(qtyInput.value);
+                if (isNaN(qty) || qty <= 0) {
+                  errors.push('PO item quantity must be greater than 0.');
+                  valid = false;
+                }
+              }
+            });
+
+            // 6. Sub item validation: if rows exist, sub_item_id must be set
+            const subRows = document.querySelectorAll('#sub-items-table tbody tr');
+            subRows.forEach(function(row) {
+              const subItemSel = row.querySelector('select[name="sub_item_id"]');
+              const qtyInput   = row.querySelector('input[name="sub_qty"]');
+              if (subItemSel && !subItemSel.value) {
+                errors.push('Please select a Sub Item for each sub-item row, or remove the row.');
+                valid = false;
+              }
+              if (qtyInput && subItemSel && subItemSel.value) {
+                const qty = parseFloat(qtyInput.value);
+                if (isNaN(qty) || qty <= 0) {
+                  errors.push('Sub item quantity must be greater than 0.');
+                  valid = false;
+                }
+              }
+            });
+
+            if (!valid) {
+              e.preventDefault();
+              // Remove old alert if any
+              const old = document.getElementById('poValidationAlert');
+              if (old) old.remove();
+              const alert = document.createElement('div');
+              alert.id = 'poValidationAlert';
+              alert.className = 'alert alert-danger mt-3';
+              alert.innerHTML = '<strong>Please fix the following errors:</strong><ul class="mb-0 mt-1">' +
+                errors.map(function(m){ return '<li>' + m + '</li>'; }).join('') + '</ul>';
+              document.getElementById('poMainForm').prepend(alert);
+              alertDiv && alertDiv.scrollIntoView ? alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }) : window.scrollTo(0,0);
+            }
+          });
+          </script>
+
 
         </div>
       </div>
@@ -496,6 +613,75 @@ $(document).on("select2:select", ".product-select", function () {
 });
 </script>
 
+
+<script>
+$(document).on("select2:select", ".sub-product-select", function () {
+
+    const productId = $(this).val();
+    const dropdown = $(this).closest("tr").find(".sub-item-dropdown");
+
+    if (!productId) return;
+
+    fetch(`/new_inventory/get-required-items/${productId}/`)
+        .then(res => res.json())
+        .then(data => {
+
+            console.log("DATA:", data);
+
+            dropdown.select2('destroy');
+            dropdown.empty();
+
+            dropdown.append(`<option value="">Select Sub Item</option>`);
+
+            data.items.forEach(item => {
+                dropdown.append(`<option value="${item.id}">${item.name}</option>`);
+            });
+
+            dropdown.select2({
+                width: "100%",
+                dropdownParent: $(document.body)
+            });
+
+        });
+});
+$("#add-sub-item").click(function () {
+
+    const productOptions = `
+        <option value="">Select Product</option>
+        {% for p in products %}
+            <option value="{{ p.product_id }}">{{ p.product_name }}</option>
+        {% endfor %}
+    `;
+
+    const newRow = $(`
+        <tr>
+            <td>
+                <select name="sub_product" class="form-control sub-product-select">
+                    ${productOptions}
+                </select>
+            </td>
+            <td>
+                <select name="sub_item_id" class="form-control sub-item-dropdown"></select>
+            </td>
+            <td><input type="number" name="sub_qty" class="form-control"></td>
+            <td><input type="number" name="sub_rate" class="form-control"></td>
+            <td><input type="text" name="sub_unit" class="form-control"></td>
+            <td><input type="number" name="sub_gst" class="form-control"></td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm remove-sub">X</button>
+            </td>
+        </tr>
+    `);
+
+    $("#sub-items-table tbody").append(newRow);
+
+    // ✅ INIT SELECT2 HERE
+    newRow.find("select").select2({
+        width: "100%"
+    });
+
+});
+</script>
 
 
 </body>

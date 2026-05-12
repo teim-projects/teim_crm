@@ -81,6 +81,44 @@
               </div>
             </div>
 
+            <h5 class="mt-4 text-primary">GRN Sub Items</h5>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Sub Item</th>
+      <th>Ordered Qty</th>
+      <th>Remaining</th>
+      <th>Received Qty</th>
+      <th>Batch</th>
+      <th>Mfg</th>
+      <th>Expiry</th>
+      <th>Remarks</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in po_sub_items %}
+    <tr {% if item.remaining <= 0 %}class="disabled-row"{% endif %}>
+      <td>{{ item.sub_item.item_name }}</td>
+      <td>{{ item.quantity }}</td>
+      <td>{{ item.remaining }}</td>
+
+      <td>
+        <input type="number"
+               name="sub_received_qty_{{ item.id }}"
+               class="form-control"
+               max="{{ item.remaining }}">
+      </td>
+
+      <td><input type="text" name="sub_batch_{{ item.id }}" class="form-control"></td>
+      <td><input type="date" name="sub_mfg_{{ item.id }}" class="form-control"></td>
+      <td><input type="date" name="sub_exp_{{ item.id }}" class="form-control"></td>
+      <td><input type="text" name="sub_remarks_{{ item.id }}" class="form-control"></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
             <h5 class="mt-4 text-primary">GRN Items</h5>
             <table class="table table-bordered">
               <thead>
@@ -153,17 +191,69 @@
   </div>
 
   <script>
-    // Client-side validation: restrict received qty to remaining
     $(function(){
+      // Clamp main item received qty to remaining
       $('.received-input').on('input', function(){
         var $this = $(this);
         var remaining = parseFloat($this.data('remaining')) || 0;
         var val = parseFloat($this.val() || 0);
         if (val > remaining) {
-          // clamp to remaining
           $this.val(remaining.toFixed(2));
         } else if (val < 0) {
           $this.val('0');
+        }
+      });
+
+      // Clamp sub item received qty to their max attribute
+      $(document).on('input', 'input[name^="sub_received_qty_"]', function(){
+        var $this = $(this);
+        var maxVal = parseFloat($this.attr('max')) || 0;
+        var val = parseFloat($this.val() || 0);
+        if (val > maxVal && maxVal > 0) {
+          $this.val(maxVal.toFixed(2));
+        } else if (val < 0) {
+          $this.val('0');
+        }
+      });
+
+      // Form submit: require received date + at least one item or sub-item entered
+      $('form').on('submit', function(e) {
+        const errors = [];
+
+        // 1. Received date required
+        const receivedDate = $('[name="received_date"]').val();
+        if (!receivedDate) {
+          errors.push('Received Date is required.');
+        }
+
+        // 2. At least one item or sub-item received
+        let anyFilled = false;
+
+        // Check main items
+        $('.received-input').each(function() {
+          const val = parseFloat($(this).val() || 0);
+          if (val > 0) anyFilled = true;
+        });
+
+        // Check sub items
+        $('input[name^="sub_received_qty_"]').each(function() {
+          const val = parseFloat($(this).val() || 0);
+          if (val > 0) anyFilled = true;
+        });
+
+        if (!anyFilled) {
+          errors.push('Please enter a received quantity for at least one item or sub-item.');
+        }
+
+        if (errors.length > 0) {
+          e.preventDefault();
+          var old = document.getElementById('grnValidationAlert');
+          if (old) old.remove();
+          var alertDiv = $('<div id="grnValidationAlert" class="alert alert-danger mt-3"><strong>Please fix the following:</strong><ul class="mb-0 mt-1">' +
+            errors.map(function(m){ return '<li>' + m + '</li>'; }).join('') +
+            '</ul></div>');
+          $('form').prepend(alertDiv);
+          alertDiv && alertDiv.scrollIntoView ? alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }) : window.scrollTo(0,0);
         }
       });
     });

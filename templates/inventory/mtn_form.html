@@ -439,6 +439,64 @@
         }
       });
 
+
+      // ─── FORM VALIDATION ──────────────────────────────
+      document.querySelector("form[data-destination-url]").addEventListener("submit", function(e) {
+        var errors = [];
+
+        var srcType = document.querySelector('[name="source_type"]').value;
+        if (!srcType) errors.push("Please select a Source Type.");
+
+        var srcId = document.querySelector('[name="source"]').value;
+        if (!srcId) errors.push("Please select a Source location.");
+
+        var destType = document.querySelector('[name="destination_type"]').value;
+        if (!destType) errors.push("Please select a Destination Type.");
+
+        var destId = document.querySelector('[name="destination"]').value;
+        if (!destId) errors.push("Please select a Destination location.");
+
+        if (srcType && destType && srcId && destId && srcType === destType && srcId === destId) {
+          errors.push("Source and Destination cannot be the same location.");
+        }
+
+        var dateVal = document.querySelector('[name="date"]').value;
+        if (!dateVal) errors.push("Please select a Transfer Date.");
+
+        var itemRows = document.querySelectorAll(".mtn-item-row");
+        if (itemRows.length === 0) {
+          errors.push("Please add at least one MTN item.");
+        }
+
+        itemRows.forEach(function(row, idx) {
+          var product = row.querySelector('[name="product[]"]').value;
+          var batch   = row.querySelector('[name="batch[]"]').value;
+          var qty     = parseFloat(row.querySelector('[name="qty[]"]').value || 0);
+          var avail   = parseFloat(row.querySelector(".available-qty").innerText || 0);
+
+          if (!product) errors.push("Row " + (idx+1) + ": Please select a Product.");
+          if (!batch)   errors.push("Row " + (idx+1) + ": Please select a Batch.");
+          if (isNaN(qty) || qty <= 0) {
+            errors.push("Row " + (idx+1) + ": Transfer quantity must be greater than 0.");
+          } else if (avail > 0 && qty > avail) {
+            errors.push("Row " + (idx+1) + ": Qty (" + qty + ") exceeds available stock (" + avail + ").");
+          }
+        });
+
+        if (errors.length > 0) {
+          e.preventDefault();
+          var old = document.getElementById("mtnValidationAlert");
+          if (old) old.remove();
+          var alertDiv = document.createElement("div");
+          alertDiv.id = "mtnValidationAlert";
+          alertDiv.className = "alert alert-danger mt-3 mb-3";
+          alertDiv.innerHTML = "<strong>Please fix the following errors:</strong><ul class='mb-0 mt-1'>" +
+            errors.map(function(m){ return "<li>" + m + "</li>"; }).join("") + "</ul>";
+          document.querySelector("form[data-destination-url]").prepend(alertDiv);
+          alertDiv && alertDiv.scrollIntoView ? alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }) : window.scrollTo(0,0);
+        }
+      });
+
     });
   </script>
 

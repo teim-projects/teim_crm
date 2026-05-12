@@ -36,7 +36,7 @@
                         class="fas fa-house-chimney ml-2 mt-1"></i></span>
                 <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;"
                     class="mb-4 mr-2 mt-1">X</span>
-      <form method="post" class="p-3">
+      <form method="post" class="p-3" id="editSpForm" novalidate>
         {% csrf_token %}
         
         <div class="row">
@@ -50,7 +50,7 @@
           
           <div class="col-md-6 mb-3">
             <label class="form-label">Mobile No <span class="star">*</span></label>
-            <input type="text" name="mobile_no" class="form-control" value="{{ person.mobile_no }}" required>
+            <input type="text" name="mobile_no" class="form-control" value="{{ person.mobile_no }}" required maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Email <span class="star">*</span></label>
@@ -216,6 +216,46 @@
             document.getElementById('modal').classList.remove('active');
         }
     </script>
+
+<script>
+function showErrors(boxId, errors, form) {
+  var old = document.getElementById(boxId);
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.id = boxId;
+  d.className = 'alert alert-danger mt-2 mb-2';
+  d.style.cssText = 'border-left:4px solid #dc3545;background:#fff5f5;padding:12px 16px;';
+  d.innerHTML = '<strong style="color:#dc3545">&#9888; Please fix the following:</strong>' +
+    '<ul class="mb-0 mt-1" style="padding-left:20px">' +
+    errors.map(function(m){ return '<li style="margin-top:4px">'+m+'</li>'; }).join('') + '</ul>';
+  form.insertBefore(d, form.firstChild);
+  setTimeout(function(){ d.scrollIntoView({behavior:'smooth',block:'start'}); }, 50);
+}
+</script>
+<script>
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var form = document.getElementById('editSpForm');
+    if (!form) return;
+    form.addEventListener('submit', function(e) {
+      var errors = [];
+      var fn = form.querySelector('[name="full_name"]');
+      if (fn && !fn.value.trim()) errors.push('Full Name is required.');
+      var mob = form.querySelector('[name="mobile_no"]');
+      if (mob) {
+        if (!mob.value.trim()) errors.push('Mobile No is required.');
+        else if (!/^[0-9]{10}$/.test(mob.value.trim())) errors.push('Mobile No must be exactly 10 digits.');
+      }
+      var email = form.querySelector('[name="email"]');
+      if (email && email.value.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value.trim()))
+        errors.push('Please enter a valid email address.');
+      var branch = form.querySelector('[name="branch"]');
+      if (branch && !branch.value) errors.push('Please select a Branch.');
+      if (errors.length) { e.preventDefault(); showErrors('editSpAlertBox', errors, form); }
+    });
+  });
+})();
+</script>
 </body>
 
 </html>

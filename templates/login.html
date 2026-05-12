@@ -480,5 +480,29 @@
 
 
 
+
+<script>
+/*  TEIM-VALIDATION: templates/login.html */ 
+
+(function(){
+  document.querySelectorAll('form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      var errors = [];
+      var user = form.querySelector('[name="uname"], [name="username"]');
+      if (user && !user.value.trim()) errors.push('Username / Mobile is required.');
+      var pw = form.querySelector('[name="upass"], [name="password"]');
+      if (pw && !pw.value) errors.push('Password is required.');
+      if (errors.length) {
+        e.preventDefault();
+        var box = form.querySelector('.login-alert') || document.createElement('div');
+        box.className = 'login-alert alert alert-danger mt-2';
+        box.innerHTML = errors.join('<br>');
+        if (!form.querySelector('.login-alert')) form.prepend(box);
+      }
+    });
+  });
+})();
+
+</script>
 </body>
 </html>

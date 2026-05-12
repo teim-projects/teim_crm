@@ -78,7 +78,7 @@
                    name="delivery_person_phone"
                    class="form-control"
                    value="{{ dc.delivery_person_phone|default:'' }}"
-                   placeholder="10-digit mobile number">
+                   placeholder="10-digit mobile number" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
           </div>
 
           <div class="col-md-12">

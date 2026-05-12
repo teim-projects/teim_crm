@@ -174,7 +174,7 @@
                             <div class="col-md-5 mb-3">
                                 <label>Primary Contact No <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="primarycontact"
-                                    placeholder="Primary Contact No" pattern="\d{10}" required>
+                                    placeholder="Primary Contact No" pattern="\d{10}" required maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                             </div>
                             <div class="col-md-5 mb-3">
                                 <label>Branch <span class="text-danger">*</span></label>
@@ -208,7 +208,7 @@
                             <div class="col-md-6 mb-3">
                                 <label>Secondary Contact No</label>
                                 <input type="text" class="form-control" name="secondarycontact"
-                                    placeholder="Secondary Contact No" pattern="\d{10}">
+                                    placeholder="Secondary Contact No" pattern="\d{10}" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                             </div>
                             <div class="row">
                                 <div class="col-md-4 mb-4">
