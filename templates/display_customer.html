@@ -467,10 +467,8 @@
                                         <select class="form-control " name="customer_type" id="customer_type"
                                             onchange="this.form.submit()">
                                             <option value="">All Customers</option>
-                                            <option value="Individual" {% if request.GET.customer_type=='Individual' %}
-                                                selected {% endif %}>Individual</option>
-                                            <option value="Organization" {% if request.GET.customer_type=='Organization'
-                                                %} selected {% endif %}>Organization</option>
+                                            <option value="Individual" {% if request.GET.customer_type == 'Individual' %} selected {% endif %}>Individual</option>
+                                            <option value="Organization" {% if request.GET.customer_type == 'Organization' %} selected {% endif %}>Organization</option>
                                         </select>
                                     </div>
                                 </form>
