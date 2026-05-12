@@ -153,12 +153,11 @@
               </div>
               <div class="col-md-4 mb-3">
                 <label>Branch <span class="text-danger">*</span></label>
-                <select name="branch" id="" class="form-control" required>
-                  <option value="" disabled selected>Select Branch</option>
-                  {% for branch in branches %}
-                  <option value="{{ branch.id }}" {% if branch.id==x.branch.id %}selected{% endif %}>{{
-                    branch.branch_name }}</option>
-                  {% endfor %}
+                  <select name="branch" id="" class="form-control" required>
+                    <option value="" disabled selected>Select Branch</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.id }}" {% if branch.id == x.branch.id %}selected{% endif %}>{{ branch.branch_name }}</option>
+                    {% endfor %}
                 </select>
               </div>
               <div class="col-md-4 mb-3">
@@ -190,9 +189,9 @@
                 <label>Customer Type<span class="star">*</span></label>
                 <select name="ucustomer_type" class="form-control" id="customer_type_select"
                   onchange="toggleOrganizationFields()">
-                  <option value="Individual" {% if x.customer_type=="Individual" %}selected{% endif %}>Individual
+                  <option value="Individual" {% if x.customer_type == "Individual" %}selected{% endif %}>Individual
                   </option>
-                  <option value="Organization" {% if x.customer_type=="Organization" %}selected{% endif %}>Organization
+                  <option value="Organization" {% if x.customer_type == "Organization" %}selected{% endif %}>Organization
                   </option>
                 </select>
               </div>
