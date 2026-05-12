@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/customer.css' %}">
     <script src="{% static 'js/script.js' %}"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -20,12 +20,11 @@
         }
 
         #map {
-    width: 100%;
-    height: 400px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
-
+            width: 100%;
+            height: 400px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
 
         .main-container {
             display: flex;
@@ -33,10 +32,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-
-
         }
-
 
         .card-registration {
             border-radius: 15px;
@@ -44,10 +40,8 @@
             box-shadow: 0 4px 20px rgba(3, 174, 210, 0.2);
             width: 100%;
             max-width: 700px;
-
             margin-top: 70px;
         }
-
 
         h3 {
             text-align: center;
@@ -64,13 +58,11 @@
             height: 26px;
         }
 
-
         .switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
-
 
         .slider {
             position: absolute;
@@ -84,7 +76,6 @@
             border-radius: 34px;
         }
 
-
         .slider:before {
             position: absolute;
             content: "";
@@ -97,16 +88,13 @@
             border-radius: 50%;
         }
 
-
         input:checked+.slider {
             background-color: #4caf50;
         }
 
-
         input:checked+.slider:before {
             transform: translateX(26px);
         }
-
 
         .gst-toggle-label {
             display: inline-block;
@@ -115,24 +103,19 @@
             margin-bottom: 35px;
         }
 
-
         .form-check {
             margin-bottom: 10px;
         }
-
 
         .form-check-input {
             margin-right: 10px;
         }
 
-
         #gst-price-container,
         #gst-number-container {
             display: none;
-            /* Initially hidden, will show only when GST is checked */
         }
 
-        /* Style for all form labels */
         label {
             font-family: 'Playfair Display', serif;
             display: block;
@@ -142,9 +125,6 @@
             color: #333;
         }
 
-
-        /* General style for all input fields, select boxes, textareas */
-
         input[type="number"],
         input[type="password"],
         input[type="url"],
@@ -152,17 +132,12 @@
         textarea {
             width: 100%;
             padding: 10px;
-
             margin-bottom: 15px;
-
             border: 1px solid #ffffff;
             font-size: 14px;
             box-sizing: border-box;
             background-color: #ffffff;
         }
-
-
-
 
         input[type="number"],
         input[type="password"],
@@ -174,27 +149,11 @@
             box-shadow: 0 0 8px rgba(237, 237, 237, 0.2);
         }
 
-
-        /* Style for select dropdowns */
         select {
             height: 40px;
             background-color: #fff;
-
         }
 
-
-        /* Style for textarea to allow resizing vertically */
-
-
-
-
-
-
-
-
-
-
-        /* Style for form wrapper to center form and add padding */
         form {
             justify-content: center;
             max-width: 600px;
@@ -203,27 +162,16 @@
             background-color: #ffffff;
         }
 
-
-        /* Style for error messages */
         .error-message {
             color: red;
             font-size: 12px;
             margin-bottom: 10px;
         }
 
-
-
-
-
-        /* Style for checkbox label */
         .form-check-label {
             margin-left: 5px;
             font-size: 14px;
         }
-
-
-
-
 
         .btn-info {
             background-color: #03AED2;
@@ -245,19 +193,13 @@
 
             .card {
                 margin-left: 0;
-
                 max-width: 100%;
-                /* Add some padding for better appearance */
             }
 
             .open-sidebar .card {
-
                 margin-left: 300px;
-                /* Adjust content when sidebar is open */
             }
-
         }
-
 
         .form-step {
             display: none;
@@ -272,7 +214,6 @@
             color: #0d6efd;
         }
 
-        /* Toggle switch styling */
         .switch {
             position: relative;
             display: inline-block;
@@ -323,7 +264,6 @@
             padding-left: 6px;
         }
 
-        /* Apply GST Toggle Alignment Fix */
         .gst-toggle-container {
             display: flex;
             align-items: center;
@@ -344,37 +284,68 @@
             }
         }
 
-        /* Custom col-12 spacing for form fields */
         .col-12 {
             margin-bottom: -15px;
+        }
+
+        /* Frequency input styling */
+        .product-frequency-group {
+            margin-top: 10px;
+        }
+        
+        .product-frequency-group label {
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+        
+        .product-frequency-group input {
+            font-size: 14px;
+            padding: 5px;
+        }
+
+        .quick-add-section {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        /* Selected items styling */
+        .selected-products-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            list-style: none;
+        }
+
+        .selected-products-list li {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 
-
 <body>
     {% include 'sidebar.html' %}
-
 
     <div class="main-container">
         <div class="card shadow-2-strong card-registration">
             <div class="card-body">
-
                 <span onclick="window.location.href='/index'"
-                    style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4"><i
-                        class="fas fa-house-chimney"></i></span>
+                    style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4">
+                    <i class="fas fa-house-chimney"></i>
+                </span>
                 <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;"
                     class="mb-4">X</span>
 
-                <h3 style="  font-weight: 600; margin: 10px;" class="mt-5">Service Management Record</h3>
+                <h3 style="font-weight: 600; margin: 10px;" class="mt-5">Service Management Record</h3>
                 <form method="POST" id="service-management-form">
                     {% csrf_token %}
 
                     <!-- STEP 1: Customer & Services -->
                     <div class="form-step">
-                        <!-- Customer Selection -->
-
-
                         <div class="row">
                             <div class="col-md-4">
                                 <label>Customer Contact<span class="star">*</span></label>
@@ -397,20 +368,19 @@
                             <input type="text" name="subject" value="" class="form-control"><br>
                         </div>
 
-                    <div class="row">
-                        <div class="col-12 col-md-4 gst-toggle-container">
-                            <label>Apply GST</label>
-                            <label class="switch">
-                                <input type="checkbox" id="apply_gst" name="apply_gst" onchange="toggleGST()">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-4 gst-toggle-container">
+                                <label>Apply GST</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="apply_gst" name="apply_gst" onchange="toggleGST()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
 
-                        <!-- Service Type -->
-                        <div class="col-12 col-md-8 " style="margin-top: 30px;">
-                            <label>Service Type<span class="star">*</span></label>
-                            <select id="servicetype" name="servicetype" class="form-control"
-                                onchange="fetchProducts(this)">
+                            <div class="col-12 col-md-8" style="margin-top: 30px;">
+                                <label>Service Type<span class="star">*</span></label>
+                                <select id="servicetype" name="servicetype" class="form-control"
+                                    onchange="fetchProducts(this)">
                                     <option value="">Select service types</option>
                                     {% for category, display_name in category_choices %}
                                     <option value="{{ category }}">{{ display_name }}</option>
@@ -418,39 +388,30 @@
                                 </select>
                             </div>
                         </div>
-                        <!-- Product Selection -->
+                        
                         <div class="row" style="margin-top:30px">
                             <label>Select Products</label>
-
-                            <!-- ✅ Added Search Bar -->
                             <div class="search mb-2">
                                 <input type="search" id="product-search" class="form-control" 
                                     placeholder="Search products..." oninput="filterProducts()">
                             </div>
-
                             <div id="products-container" style="max-height: 300px; overflow-y: auto;">
                                 <!-- Dynamically loaded -->
                             </div>
                         </div>
 
-
-                        <!-- Selected Services List -->
-
                         <label>Selected Services</label>
-<ul id="selected_services" class="selected-products-list"></ul>
-<input type="hidden" id="selected_services_names" name="selected_services_names">
-<input type="hidden" id="selected_products_json" name="selected_products_json" value="">  <!-- ✅ ADD THIS -->
-<div class="row">
-    <div class="col-5">
-        <!-- Price Fields -->
-        <label>Total Price (without GST)<span class="star">*</span></label>
-        <input type="number" id="total_price" name="total_price" step="0.01" readonly
-            class="form-control">
-    </div>
+                        <ul id="selected_services" class="selected-products-list"></ul>
+                        <input type="hidden" id="selected_services_names" name="selected_services_names">
+                        <input type="hidden" id="selected_products_json" name="selected_products_json" value="">
+                        
+                        <div class="row">
+                            <div class="col-5">
+                                <label>Total Price (without GST)<span class="star">*</span></label>
+                                <input type="number" id="total_price" name="total_price" step="0.01" readonly
+                                    class="form-control">
+                            </div>
 
-
-
-                            <!-- GST Details -->
                             <div id="gst_fields" style="display: none;">
                                 <input type="text" name="gst_number" placeholder="Enter GST Number"
                                     class="form-control">
@@ -468,13 +429,22 @@
                             </div>
                         </div>
 
+                        <!-- Fortnight Visits Input -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label>Fortnight Visits</label>
+                                <input type="number" name="fortnight_count" id="fortnight_count" class="form-control" 
+                                       placeholder="Enter number of fortnight visits" min="0" step="1" value="0">
+                                <small class="text-muted">Number of visits required per fortnight period</small>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
                                 <button type="button" class="btn btn-primary next-step mt-3"
                                     style="width: 150px;">Next</button>
                                 <a href="/display_customer" class="btn btn-info mt-3" style="width: 150px;">View
                                     Records</a>
-
                             </div>
                         </div>
                     </div>
@@ -508,9 +478,6 @@
                                     {% endfor %}
                                 </select>
                             </div>
-
-
-
                         </div>
                         <div class="row">
                             <div class="col-6">
@@ -523,12 +490,10 @@
                             </div>
                         </div>
                         <div class="row">
-
                             <div class="col-4">
                                 <label for="state">State<span class="star">*</span></label>
                                 <input type="text" id="state" name="state" required class="form-control">
                             </div>
-
                             <div class="col-4">
                                 <label>City<span class="star">*</span></label>
                                 <input type="text" id="city" name="city" class="form-control" required><br>
@@ -543,39 +508,30 @@
                         <label>Address<span class="star">*</span></label>
                         <textarea name="address" id="address" class="form-control" required></textarea>
 
-                        
+                        <label>Search Address or Paste Google Map Link</label>
+                        <div class="input-group mb-2">
+                            <input type="text" id="location-search" class="form-control"
+                                   placeholder="Enter address OR paste Google Maps link">
+                            <button type="button" class="btn btn-primary" onclick="searchLocation()">Search</button>
+                        </div>
 
-<label>Search Address or Paste Google Map Link</label>
-<div class="input-group mb-2">
-    <input type="text" id="location-search" class="form-control"
-           placeholder="Enter address OR paste Google Maps link">
-    <button type="button" class="btn btn-primary" onclick="searchLocation()">Search</button>
-</div>
-
-
-
-<input type="hidden" name="latitude" id="latitude">
-<input type="hidden" name="longitude" id="longitude">
+                        <input type="hidden" name="latitude" id="latitude">
+                        <input type="hidden" name="longitude" id="longitude">
 
                         <label>Select Location on Map</label>
+                        <div id="map"></div>
 
-<div id="map" ></div>
-
-
-
-<label>GPS Location (For Technician Navigation)</label>
-<input type="url" id="gps_location" name="gps_location"
-class="form-control"
-placeholder="Paste Google Maps location link for technician">
+                        <label>GPS Location (For Technician Navigation)</label>
+                        <input type="url" id="gps_location" name="gps_location"
+                            class="form-control"
+                            placeholder="Paste Google Maps location link for technician">
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
                                 <button type="button" class="btn btn-secondary prev-step mt-3"
                                     style="width: 150px;">Previous</button>
-
                                 <button type="button" class="btn btn-primary next-step mt-3"
                                     style="width: 150px;">Next</button>
-
                             </div>
                         </div>
                     </div>
@@ -583,14 +539,7 @@ placeholder="Paste Google Maps location link for technician">
                     <!-- STEP 3: Sales & Delivery -->
                     <div class="form-step d-none">
                         <div class="row">
-                            <div class="col-6">
-                                <label>Select Frequency Count</label>
-                                <select name="frequency_count" class="form-control">
-                                    {% for freq in frequency_choices %}
-                                    <option value="{{ freq }}">{{ freq }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                           
                             <div class="col-6">
                                 <label>Payment Terms<span class="star">*</span></label>
                                 <input class="form-control" type="text" name="payment_terms"
@@ -604,7 +553,8 @@ placeholder="Paste Google Maps location link for technician">
                                     <option value="">-- Select Sales Person --</option>
                                     {% for person in sales_persons %}
                                     <option value="{{ person.full_name }}" data-contact="{{ person.mobile_no }}" data-email="{{ person.email }}">
-                                        {{ person.full_name }}</option>
+                                        {{ person.full_name }}
+                                    </option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -615,13 +565,10 @@ placeholder="Paste Google Maps location link for technician">
                                     title="Please enter a valid 10-digit phone number" required readonly>
                             </div>
                             <div class="col-6">
-    <label>Sales Person Email <span class="star">*</span></label>
-    <input type="email"
-           id="sales_person_email"
-           name="sales_person_email"
-           class="form-control"
-           readonly>
-</div>
+                                <label>Sales Person Email <span class="star">*</span></label>
+                                <input type="email" id="sales_person_email" name="sales_person_email"
+                                    class="form-control" readonly>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-6">
@@ -653,30 +600,18 @@ placeholder="Paste Google Maps location link for technician">
                                     style="width: 150px;">Previous</button>
                                 <button class="btn btn-info mt-3" type="submit" style="width:150px;">Submit</button>
                             </div>
-
                         </div>
                         <div class="mt-4 pt-2 text-center">
                         </div>
-
                     </div>
                 </form>
-
-
-
             </div>
         </div>
     </div>
 
-
-
-    <!-- Change to your actual view -->
-
-
-
-
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -686,7 +621,6 @@ placeholder="Paste Google Maps location link for technician">
                     const submenu = this.querySelector('.submenu');
                     const arrow = this.querySelector('.arrow-down');
 
-                    // Hide all other submenus
                     menuItems.forEach(otherItem => {
                         if (otherItem !== this) {
                             const otherSubmenu = otherItem.querySelector('.submenu');
@@ -700,8 +634,6 @@ placeholder="Paste Google Maps location link for technician">
                         }
                     });
 
-
-                    // Toggle current submenu
                     if (submenu) {
                         submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
                         arrow.classList.toggle('arrow-up');
@@ -711,31 +643,23 @@ placeholder="Paste Google Maps location link for technician">
         });
     </script>
 
-    <!-- sales contact autofill -->
     <script>
-document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function () {
+            const select = document.getElementById("sales_person_select");
+            const contactInput = document.getElementById("sales_person_contact_no");
+            const emailInput = document.getElementById("sales_person_email");
 
-    const select = document.getElementById("sales_person_select");
-    const contactInput = document.getElementById("sales_person_contact_no");
-    const emailInput = document.getElementById("sales_person_email");
+            if(!select) return;
 
-    if(!select) return;
-
-    select.addEventListener("change", function () {
-
-        const selectedOption = this.options[this.selectedIndex];
-
-        const contact = selectedOption.getAttribute("data-contact") || "";
-        const email = selectedOption.getAttribute("data-email") || "";
-
-        contactInput.value = contact;
-        emailInput.value = email;
-
-    });
-
-});
-</script>
-
+            select.addEventListener("change", function () {
+                const selectedOption = this.options[this.selectedIndex];
+                const contact = selectedOption.getAttribute("data-contact") || "";
+                const email = selectedOption.getAttribute("data-email") || "";
+                contactInput.value = contact;
+                emailInput.value = email;
+            });
+        });
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -763,7 +687,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             alert(data.error);
                             return;
                         }
-
                         if (data.customer_email) {
                             emailInput.value = data.customer_email;
                         }
@@ -790,458 +713,679 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     </script>
 
-    <!-- Product section -->
+    <!-- Product section with Frequency and Checkbox Integration -->
     <script>
         // Global variables
-let selectedProducts = [];
-let gstEnabled = true;
-let counter = 1;
-let productItemsCache = {};
+        let selectedProducts = [];
+        let gstEnabled = true;
+        let counter = 1;
+        let productItemsCache = {};
 
-// Function to fetch products by category
-function fetchProducts(selectElement) {
-    document.getElementById('products-container').innerHTML = '<div class="text-center p-3">Loading products...</div>';
-    
-    const selectedCategories = Array.from(selectElement.selectedOptions).map(o => o.value);
-
-    if (selectedCategories.length === 0) {
-        document.getElementById('products-container').innerHTML = '';
-        return;
-    }
-
-    fetch(`/get_products?categories=${selectedCategories.join(',')}`)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('products-container').innerHTML = '';
+        // Function to fetch products by category
+        function fetchProducts(selectElement) {
+            document.getElementById('products-container').innerHTML = '<div class="text-center p-3">Loading products...</div>';
             
-            if (data.products.length === 0) {
-                document.getElementById('products-container').innerHTML = '<div class="alert alert-info">No products found</div>';
+            const selectedCategories = Array.from(selectElement.selectedOptions).map(o => o.value);
+
+            if (selectedCategories.length === 0) {
+                document.getElementById('products-container').innerHTML = '';
                 return;
             }
-            
-            data.products.forEach(product => {
-                displayProduct(product);
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('products-container').innerHTML = '<div class="alert alert-danger">Error loading products</div>';
-        });
-}
 
-// Function to display a single product with its items
-function displayProduct(product) {
-    const productDiv = document.createElement('div');
-    productDiv.className = 'product-item mb-3 p-3 border rounded';
-    productDiv.setAttribute('data-product-id', product.product_id);
-    productDiv.setAttribute('data-product-name', product.product_name.toLowerCase());
+            fetch(`/get_products?categories=${selectedCategories.join(',')}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('products-container').innerHTML = '';
+                    
+                    if (data.products.length === 0) {
+                        document.getElementById('products-container').innerHTML = '<div class="alert alert-info">No products found</div>';
+                        return;
+                    }
+                    
+                    data.products.forEach(product => {
+                        displayProduct(product);
+                    });
+                    
+                    // Add checkboxes after products are loaded
+                    setTimeout(addCheckboxesToProducts, 100);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('products-container').innerHTML = '<div class="alert alert-danger">Error loading products</div>';
+                });
+        }
 
-    productDiv.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <strong class="h6 mb-0">${escapeHtml(product.product_name)}</strong>
-            <button type="button" class="btn btn-sm btn-outline-primary" 
-                    onclick="toggleItemsSection(${product.product_id})">
-                Show/Hide Items
-            </button>
-        </div>
-        
-        <div class="row g-2 mb-3">
-            <div class="col-md-4">
-                <label class="small">Price (₹)</label>
-                <input type="number" class="form-control form-control-sm product-price" 
-                       value="${product.price}" step="0.01" id="price-${product.product_id}">
-            </div>
-            <div class="col-md-4">
-                <label class="small">Quantity</label>
-                <input type="number" class="form-control form-control-sm product-quantity" 
-                       value="1" step="0.01" min="0.01" id="qty-${product.product_id}">
-            </div>
-            <div class="col-md-4">
-                <label class="small">Unit</label>
-                <input type="text" class="form-control form-control-sm product-unit" 
-                       placeholder="Unit" id="unit-${product.product_id}">
-            </div>
-        </div>
-        
-        <div class="row g-2 mb-3">
-            <div class="col-md-3 product-gst-group" style="display:${gstEnabled ? 'block' : 'none'}">
-                <label class="small">GST %</label>
-                <input type="number" class="form-control form-control-sm product-gst" 
-                       value="18" step="0.01" id="gst-${product.product_id}">
-            </div>
-            <div class="col-md-9">
-                <label class="small">Description</label>
-                <textarea class="form-control form-control-sm product-description" 
-                          rows="2" id="desc-${product.product_id}"></textarea>
-            </div>
-        </div>
-        
-        <div id="items-section-${product.product_id}" style="display: none;">
-            <div class="items-section mt-2">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <small class="text-muted fw-bold">Required Items:</small>
-                    <button type="button" class="btn btn-sm btn-link" onclick="selectAllItems(${product.product_id})">
-                        Select All
+        // Function to display a single product with its items and frequency
+        function displayProduct(product) {
+            const productDiv = document.createElement('div');
+            productDiv.className = 'product-item mb-3 p-3 border rounded';
+            productDiv.setAttribute('data-product-id', product.product_id);
+            productDiv.setAttribute('data-product-name', product.product_name.toLowerCase());
+            productDiv.setAttribute('data-product-price', product.price);
+
+            productDiv.innerHTML = `
+                <div class="quick-add-section">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input product-checkbox" 
+                               id="quick-checkbox-${product.product_id}"
+                               data-product-id="${product.product_id}"
+                               data-product-name="${escapeHtml(product.product_name)}"
+                               data-product-price="${product.price}"
+                               onchange="addProductViaCheckbox(this)">
+                        <label class="form-check-label" for="quick-checkbox-${product.product_id}">
+                            <strong>Quick Add (with frequency)</strong> - Click to add this service with frequency selection
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <strong class="h6 mb-0">${escapeHtml(product.product_name)}</strong>
+                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                            onclick="toggleItemsSection(${product.product_id})">
+                        Show/Hide Items
                     </button>
                 </div>
-                <div id="items-list-${product.product_id}" class="ms-2">
-                    <div class="text-muted small">Loading items...</div>
+                
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <label class="small">Price (₹)</label>
+                        <input type="number" class="form-control form-control-sm product-price" 
+                               value="${product.price}" step="0.01" id="price-${product.product_id}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small">Quantity</label>
+                        <input type="number" class="form-control form-control-sm product-quantity" 
+                               value="1" step="0.01" min="0.01" id="qty-${product.product_id}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small">Unit</label>
+                        <input type="text" class="form-control form-control-sm product-unit" 
+                               placeholder="Unit" id="unit-${product.product_id}">
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <div class="text-end mt-3">
-            <button type="button" class="btn btn-sm btn-primary" onclick='addProductToService(${JSON.stringify(product).replace(/'/g, "\\'")})'>
-                Add to Service
-            </button>
-        </div>
-    `;
-    
-    document.getElementById('products-container').appendChild(productDiv);
-    fetchProductItems(product.product_id);
-}
-
-// Function to fetch items for a specific product
-function fetchProductItems(productId) {
-    if (productItemsCache[productId]) {
-        displayItemsList(productId, productItemsCache[productId]);
-        return;
-    }
-    
-    fetch(`/get_product_items/?product_id=${productId}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.success && data.items) {
-                productItemsCache[productId] = data.items;
-                displayItemsList(productId, data.items);
-            } else {
-                document.getElementById(`items-list-${productId}`).innerHTML = 
-                    '<div class="text-muted small">No items available</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Error loading items:', error);
-            document.getElementById(`items-list-${productId}`).innerHTML = 
-                '<div class="text-danger small">Error loading items</div>';
-        });
-}
-
-// Function to display items list with checkboxes
-function displayItemsList(productId, items) {
-    const container = document.getElementById(`items-list-${productId}`);
-    if (!container) return;
-    
-    if (!items || items.length === 0) {
-        container.innerHTML = '<div class="text-muted small">No items required</div>';
-        return;
-    }
-    
-    let itemsHTML = '';
-    items.forEach(item => {
-        itemsHTML += `
-            <div class="form-check mb-2">
-                <input type="checkbox" class="form-check-input product-item-checkbox" 
-                       data-product-id="${productId}"
-                       data-item-id="${item.id}"
-                       data-item-name="${escapeHtml(item.item_name)}"
-                       id="item-${productId}-${item.id}"
-                       onchange="toggleItemControls(${productId}, ${item.id})">
-                <label class="form-check-label small" for="item-${productId}-${item.id}">
-                    ${escapeHtml(item.item_name)}
-                </label>
-                <div id="item-controls-${productId}-${item.id}" style="display: none;" class="mt-1 ms-4">
-                    <div class="row g-2">
-                        <div class="col-5">
-                            <input type="number" class="form-control form-control-sm item-quantity" 
-                                   placeholder="Qty" min="1" value="1" 
-                                   id="item-qty-${productId}-${item.id}">
+                
+                <div class="row g-2 mb-3">
+                    <div class="col-md-3 product-gst-group" style="display:${gstEnabled ? 'block' : 'none'}">
+                        <label class="small">GST %</label>
+                        <input type="number" class="form-control form-control-sm product-gst" 
+                               value="18" step="0.01" id="gst-${product.product_id}">
+                    </div>
+                    <div class="col-md-9">
+                        <label class="small">Description</label>
+                        <textarea class="form-control form-control-sm product-description" 
+                                  rows="2" id="desc-${product.product_id}"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Frequency Field -->
+                <div class="row g-2 mb-3 product-frequency-group">
+                    <div class="col-md-12">
+                        <label class="small fw-bold">Service Frequency</label>
+                        <select class="form-control form-control-sm product-frequency" id="frequency-${product.product_id}">
+                            <option value="NOT SELECTED">-- Select Frequency --</option>
+                            <option value="1">1 Month</option>
+                            <option value="2">2 Months</option>
+                            <option value="3">3 Months</option>
+                            <option value="4">4 Months</option>
+                            <option value="5">5 Months</option>
+                            <option value="6">6 Months</option>
+                            <option value="7">7 Months</option>
+                            <option value="8">8 Months</option>
+                            <option value="9">9 Months</option>
+                            <option value="10">10 Months</option>
+                            <option value="11">11 Months</option>
+                            <option value="12">12 Months</option>
+                            <option value="Fortnight">Fortnight</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Daily">Daily</option>
+                        </select>
+                        <small class="text-muted">How often should this service be performed?</small>
+                    </div>
+                </div>
+                
+                <div id="items-section-${product.product_id}" style="display: none;">
+                    <div class="items-section mt-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted fw-bold">Required Items:</small>
+                            <button type="button" class="btn btn-sm btn-link" onclick="selectAllItems(${product.product_id})">
+                                Select All
+                            </button>
                         </div>
-                        <div class="col-7">
-                            <input type="text" class="form-control form-control-sm item-notes" 
-                                   placeholder="Notes" 
-                                   id="item-notes-${productId}-${item.id}">
+                        <div id="items-list-${product.product_id}" class="ms-2">
+                            <div class="text-muted small">Loading items...</div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = itemsHTML;
-}
-
-function toggleItemsSection(productId) {
-    const section = document.getElementById(`items-section-${productId}`);
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-    } else {
-        section.style.display = 'none';
-    }
-}
-
-function toggleItemControls(productId, itemId) {
-    const checkbox = document.getElementById(`item-${productId}-${itemId}`);
-    const controls = document.getElementById(`item-controls-${productId}-${itemId}`);
-    
-    if (checkbox && controls) {
-        controls.style.display = checkbox.checked ? 'block' : 'none';
-        if (!checkbox.checked) {
-            const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
-            const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
-            if (qtyInput) qtyInput.value = '1';
-            if (notesInput) notesInput.value = '';
+                
+                <div class="text-end mt-3">
+                    <button type="button" class="btn btn-sm btn-primary" onclick='addProductToService(${JSON.stringify(product).replace(/'/g, "\\'")})'>
+                        Add to Service (Detailed)
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('products-container').appendChild(productDiv);
+            fetchProductItems(product.product_id);
         }
-    }
-}
 
-function selectAllItems(productId) {
-    const checkboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
-    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = !allChecked;
-        const itemId = checkbox.getAttribute('data-item-id');
-        toggleItemControls(productId, itemId);
-    });
-}
-
-function addProductToService(product) {
-    console.log("=== ADDING PRODUCT TO SERVICE ===");
-    console.log("Product object:", product);
-    
-    const productId = product.product_id;
-    
-    const price = parseFloat(document.getElementById(`price-${productId}`).value) || 0;
-    const quantity = parseFloat(document.getElementById(`qty-${productId}`).value) || 0;
-    const unit = document.getElementById(`unit-${productId}`).value || '';
-    const gst = parseFloat(document.getElementById(`gst-${productId}`).value) || 0;
-    const description = document.getElementById(`desc-${productId}`).value || '';
-    
-    console.log("Product details:", {price, quantity, unit, gst, description});
-    
-    if (quantity <= 0) {
-        alert('Quantity must be greater than zero');
-        return;
-    }
-    
-    if (price <= 0) {
-        alert('Price must be greater than zero');
-        return;
-    }
-    
-    const selectedItems = [];
-    const checkboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
-    
-    console.log("Found checkboxes:", checkboxes.length);
-    
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            const itemId = checkbox.getAttribute('data-item-id');
-            const itemName = checkbox.getAttribute('data-item-name');
-            const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
-            const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
-            
-            const itemQuantity = qtyInput ? parseFloat(qtyInput.value) || 1 : 1;
-            const notes = notesInput ? notesInput.value : '';
-            
-            selectedItems.push({
-                required_item_id: parseInt(itemId),
-                item_name: itemName,
-                quantity: itemQuantity,
-                notes: notes
+        // Add checkboxes to existing products
+        function addCheckboxesToProducts() {
+            const products = document.querySelectorAll('.product-item');
+            products.forEach(product => {
+                const productId = product.getAttribute('data-product-id');
+                if (productId && !product.querySelector('.quick-add-section')) {
+                    const productName = product.querySelector('.h6')?.innerText || '';
+                    const productPrice = product.getAttribute('data-product-price') || 0;
+                    const quickAddDiv = document.createElement('div');
+                    quickAddDiv.className = 'quick-add-section mb-2';
+                    quickAddDiv.innerHTML = `
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input product-checkbox" 
+                                   id="quick-checkbox-${productId}"
+                                   data-product-id="${productId}"
+                                   data-product-name="${escapeHtml(productName)}"
+                                   data-product-price="${productPrice}"
+                                   onchange="addProductViaCheckbox(this)">
+                            <label class="form-check-label" for="quick-checkbox-${productId}">
+                                <strong>Quick Add (with frequency)</strong> - Click to add this service with frequency selection
+                            </label>
+                        </div>
+                    `;
+                    product.insertBefore(quickAddDiv, product.firstChild);
+                }
             });
         }
-    });
-    
-    console.log("Selected items:", selectedItems);
-    
-    const serviceEntry = {
-        id: counter++,
-        p_id: productId,
-        name: product.product_name,
-        price: price,
-        quantity: quantity,
-        unit: unit,
-        gst: gst,
-        description: description,
-        items: selectedItems
-    };
-    
-    selectedProducts.push(serviceEntry);
-    console.log("Total selected products array:", selectedProducts);
-    
-    updateSelectedServicesList();
-    updateTotalPrice();
-    updateHiddenInput();
-    
-    // Reset form
-    document.getElementById(`qty-${productId}`).value = '1';
-    document.getElementById(`desc-${productId}`).value = '';
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = false;
-        const itemId = checkbox.getAttribute('data-item-id');
-        const controls = document.getElementById(`item-controls-${productId}-${itemId}`);
-        if (controls) controls.style.display = 'none';
-        const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
-        const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
-        if (qtyInput) qtyInput.value = '1';
-        if (notesInput) notesInput.value = '';
-    });
-    
-    showToast(`${product.product_name} added successfully!`);
-}
-function updateSelectedServicesList() {
-    const list = document.getElementById('selected_services');
-    if (!list) return;
-    
-    list.innerHTML = '';
-    
-    if (selectedProducts.length === 0) {
-        list.innerHTML = '<li class="text-muted">No services selected</li>';
-        return;
-    }
-    
-    selectedProducts.forEach((service, index) => {
-        const gstText = gstEnabled ? ` + GST(${service.gst}%)` : '';
-        
-        let itemsText = '';
-        if (service.items && service.items.length > 0) {
-            itemsText = '<div class="small text-muted mt-1">📦 Items: ';
-            itemsText += service.items.map(item => 
-                `${escapeHtml(item.item_name)} (Qty: ${item.quantity})${item.notes ? ` - ${escapeHtml(item.notes)}` : ''}`
-            ).join('; ');
-            itemsText += '</div>';
-        }
-        
-        const li = document.createElement('li');
-        li.className = 'd-flex justify-content-between align-items-start p-2 border-bottom';
-        li.innerHTML = `
-            <div class="flex-grow-1">
-                <strong>${escapeHtml(service.name)}</strong>
-                <div class="small">
-                    Unit: ${service.unit || 'N/A'} | ₹${service.price.toFixed(2)} x ${service.quantity}${gstText}
+
+        // Add product via checkbox (quick method)
+        function addProductViaCheckbox(checkbox) {
+            if (!checkbox.checked) {
+                // Remove the product if unchecked
+                const productId = checkbox.getAttribute('data-product-id');
+                removeCheckboxProduct(productId);
+                return;
+            }
+            
+            const productId = checkbox.getAttribute('data-product-id');
+            const productName = checkbox.getAttribute('data-product-name');
+            const productPrice = parseFloat(checkbox.getAttribute('data-product-price')) || 0;
+            
+            // Check if product already added via checkbox
+            let existing = document.querySelector(`#selected_services li[data-product-id='${productId}'][data-added-via='checkbox']`);
+            if (existing) {
+                alert('Product already added via Quick Add!');
+                checkbox.checked = false;
+                return;
+            }
+            
+            // Check if product already added via detailed method
+            const existingDetailed = selectedProducts.find(p => p.p_id == productId && !p.added_via);
+            if (existingDetailed) {
+                if (confirm('This product is already added via detailed method. Do you want to add it again via Quick Add?')) {
+                    // Allow adding
+                } else {
+                    checkbox.checked = false;
+                    return;
+                }
+            }
+            
+            let list = document.getElementById("selected_services");
+            
+            let li = document.createElement("li");
+            li.setAttribute("data-product-id", productId);
+            li.setAttribute("data-added-via", "checkbox");
+            li.setAttribute("data-product-price", productPrice);
+            li.setAttribute("data-product-name", productName);
+            li.className = 'd-flex justify-content-between align-items-start p-2 border-bottom';
+            
+            li.innerHTML = `
+                <div class="flex-grow-1">
+                    <strong>${escapeHtml(productName)}</strong>
+                    <div class="small text-muted">Price: ₹${productPrice.toFixed(2)}</div>
+                    <div class="mt-2">
+                        <label class="small fw-bold">Service Frequency:</label>
+                        <select class="form-control form-control-sm frequency-select" style="width: auto; display: inline-block; margin-left: 10px;" onchange="updateCheckboxProductFrequency(this)">
+                            <option value="NOT SELECTED">-- Select Frequency --</option>
+                            <option value="1">1 Month</option>
+                            <option value="2">2 Months</option>
+                            <option value="3">3 Months</option>
+                            <option value="4">4 Months</option>
+                            <option value="5">5 Months</option>
+                            <option value="6">6 Months</option>
+                            <option value="7">7 Months</option>
+                            <option value="8">8 Months</option>
+                            <option value="9">9 Months</option>
+                            <option value="10">10 Months</option>
+                            <option value="11">11 Months</option>
+                            <option value="12">12 Months</option>
+                            <option value="Fortnight">Fortnight</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Daily">Daily</option>
+                        </select>
+                    </div>
                 </div>
-                ${itemsText}
-            </div>
-            <div class="text-end ms-3">
-                <strong>₹${(service.price * service.quantity).toFixed(2)}</strong>
-                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${index})">✕</button>
-            </div>
-        `;
-        list.appendChild(li);
-    });
-}
+                <div class="text-end ms-3">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeCheckboxProduct(${productId})">✕</button>
+                </div>
+            `;
+            
+            list.appendChild(li);
+            
+            // Add to selectedProducts array
+            selectedProducts.push({
+                id: counter++,
+                p_id: parseInt(productId),
+                name: productName,
+                price: productPrice,
+                quantity: 1,
+                unit: '',
+                gst: 18,
+                description: '',
+                frequency: 'NOT SELECTED',
+                items: [],
+                added_via: 'checkbox'
+            });
+            
+            updateTotalPrice();
+            updateHiddenInput();
+            showToast(`${productName} added via Quick Add! Please select frequency.`);
+        }
 
-function removeSelectedProduct(index) {
-    if (confirm('Remove this service from the list?')) {
-        selectedProducts.splice(index, 1);
-        updateSelectedServicesList();
-        updateTotalPrice();
-        updateHiddenInput();
-    }
-}
+        // Update checkbox product frequency
+        function updateCheckboxProductFrequency(selectElement) {
+            const li = selectElement.closest('li');
+            const productId = li.getAttribute('data-product-id');
+            const frequency = selectElement.value;
+            
+            // Update in selectedProducts array
+            const productIndex = selectedProducts.findIndex(p => p.p_id == productId && p.added_via === 'checkbox');
+            if (productIndex !== -1) {
+                selectedProducts[productIndex].frequency = frequency;
+                updateHiddenInput();
+            }
+        }
 
-function updateTotalPrice() {
-    let total = 0, gstTotal = 0;
-    selectedProducts.forEach(service => {
-        const subtotal = service.price * service.quantity;
-        total += subtotal;
-        gstTotal += subtotal * (service.gst / 100);
-    });
-    
-    document.getElementById('total_price').value = total.toFixed(2);
-    document.getElementById('gst_price').value = gstTotal.toFixed(2);
-    document.getElementById('total_with_gst').value = (total + gstTotal).toFixed(2);
-}
+        // Remove checkbox product
+        function removeCheckboxProduct(productId) {
+            // Remove from UI
+            const item = document.querySelector(`#selected_services li[data-product-id='${productId}'][data-added-via='checkbox']`);
+            if (item) {
+                item.remove();
+            }
+            
+            // Remove from selectedProducts array
+            selectedProducts = selectedProducts.filter(p => !(p.p_id == productId && p.added_via === 'checkbox'));
+            
+            // Uncheck the checkbox if it exists
+            const checkbox = document.querySelector(`.product-checkbox[data-product-id='${productId}']`);
+            if (checkbox) checkbox.checked = false;
+            
+            updateTotalPrice();
+            updateHiddenInput();
+            showToast('Product removed');
+        }
 
-function updateHiddenInput() {
-    const hiddenInput = document.getElementById('selected_products_json');
-    if (hiddenInput) {
-        const dataToSave = JSON.stringify(selectedProducts);
-        console.log("Updating hidden input with:", dataToSave);
-        hiddenInput.value = dataToSave;
-    } else {
-        console.error("Hidden input with id 'selected_products_json' not found!");
-    }
-}
+        // Function to fetch items for a specific product
+        function fetchProductItems(productId) {
+            if (productItemsCache[productId]) {
+                displayItemsList(productId, productItemsCache[productId]);
+                return;
+            }
+            
+            fetch(`/get_product_items/?product_id=${productId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.items) {
+                        productItemsCache[productId] = data.items;
+                        displayItemsList(productId, data.items);
+                    } else {
+                        const container = document.getElementById(`items-list-${productId}`);
+                        if (container) {
+                            container.innerHTML = '<div class="text-muted small">No items available</div>';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading items:', error);
+                    const container = document.getElementById(`items-list-${productId}`);
+                    if (container) {
+                        container.innerHTML = '<div class="text-danger small">Error loading items</div>';
+                    }
+                });
+        }
 
-function filterProducts() {
-    const searchValue = document.getElementById('product-search').value.toLowerCase();
-    const productItems = document.querySelectorAll('#products-container .product-item');
-    
-    productItems.forEach(item => {
-        const name = item.getAttribute('data-product-name') || '';
-        item.style.display = name.includes(searchValue) ? '' : 'none';
-    });
-}
+        // Function to display items list with checkboxes
+        function displayItemsList(productId, items) {
+            const container = document.getElementById(`items-list-${productId}`);
+            if (!container) return;
+            
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="text-muted small">No items required</div>';
+                return;
+            }
+            
+            let itemsHTML = '';
+            items.forEach(item => {
+                itemsHTML += `
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input product-item-checkbox" 
+                               data-product-id="${productId}"
+                               data-item-id="${item.id}"
+                               data-item-name="${escapeHtml(item.item_name)}"
+                               id="item-${productId}-${item.id}"
+                               onchange="toggleItemControls(${productId}, ${item.id})">
+                        <label class="form-check-label small" for="item-${productId}-${item.id}">
+                            ${escapeHtml(item.item_name)}
+                        </label>
+                        <div id="item-controls-${productId}-${item.id}" style="display: none;" class="mt-1 ms-4">
+                            <div class="row g-2">
+                                <div class="col-5">
+                                    <input type="number" class="form-control form-control-sm item-quantity" 
+                                           placeholder="Qty" min="1" value="1" 
+                                           id="item-qty-${productId}-${item.id}">
+                                </div>
+                                <div class="col-7">
+                                    <input type="text" class="form-control form-control-sm item-notes" 
+                                           placeholder="Notes" 
+                                           id="item-notes-${productId}-${item.id}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = itemsHTML;
+        }
 
-function toggleGST() {
-    gstEnabled = document.getElementById('apply_gst').checked;
-    const gstFields = document.querySelectorAll('.product-gst-group');
-    gstFields.forEach(field => {
-        field.style.display = gstEnabled ? 'block' : 'none';
-    });
-    updateTotalPrice();
-}
+        function toggleItemsSection(productId) {
+            const section = document.getElementById(`items-section-${productId}`);
+            if (section) {
+                if (section.style.display === 'none') {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            }
+        }
 
-function showToast(message) {
-    const toastContainer = document.createElement('div');
-    toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
-    toastContainer.style.zIndex = '9999';
-    toastContainer.innerHTML = `
-        <div class="toast show" role="alert">
-            <div class="toast-header bg-success text-white">
-                <strong class="me-auto">Success</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body">
-                ${escapeHtml(message)}
-            </div>
-        </div>
-    `;
-    document.body.appendChild(toastContainer);
-    setTimeout(() => toastContainer.remove(), 3000);
-}
+        function toggleItemControls(productId, itemId) {
+            const checkbox = document.getElementById(`item-${productId}-${itemId}`);
+            const controls = document.getElementById(`item-controls-${productId}-${itemId}`);
+            
+            if (checkbox && controls) {
+                controls.style.display = checkbox.checked ? 'block' : 'none';
+                if (!checkbox.checked) {
+                    const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
+                    const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
+                    if (qtyInput) qtyInput.value = '1';
+                    if (notesInput) notesInput.value = '';
+                }
+            }
+        }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+        function selectAllItems(productId) {
+            const checkboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+                const itemId = checkbox.getAttribute('data-item-id');
+                toggleItemControls(productId, itemId);
+            });
+        }
 
-// Add form validation
-// Add form validation
-document.getElementById('service-management-form').addEventListener('submit', function(e) {
-    const hiddenInput = document.getElementById('selected_products_json');
-    const data = hiddenInput.value;
-    
-    console.log("FORM SUBMIT - Hidden input value:", data);
-    
-    if (!data || data === '[]') {
-        alert('Please add at least one product before submitting!');
-        e.preventDefault();
-        return false;
-    }
-    
-    const products = JSON.parse(data);
-    console.log("FORM SUBMIT - Parsed products:", products);
-    console.log("FORM SUBMIT - Number of products:", products.length);
-    
-    if (products.length === 0) {
-        alert('Please add at least one product before submitting!');
-        e.preventDefault();
-        return false;
-    }
-    
-    console.log("FORM SUBMIT - Submitting with", products.length, "products");
-    return true;
-});
+        function addProductToService(product) {
+            console.log("=== ADDING PRODUCT TO SERVICE ===");
+            
+            const productId = product.product_id;
+            
+            const price = parseFloat(document.getElementById(`price-${productId}`).value) || 0;
+            const quantity = parseFloat(document.getElementById(`qty-${productId}`).value) || 0;
+            const unit = document.getElementById(`unit-${productId}`).value || '';
+            const gst = parseFloat(document.getElementById(`gst-${productId}`).value) || 0;
+            const description = document.getElementById(`desc-${productId}`).value || '';
+            const frequency = document.getElementById(`frequency-${productId}`).value || 'NOT SELECTED';
+            
+            if (quantity <= 0) {
+                alert('Quantity must be greater than zero');
+                return;
+            }
+            
+            if (price <= 0) {
+                alert('Price must be greater than zero');
+                return;
+            }
+            
+            // Check if already added via checkbox
+            const existingCheckbox = selectedProducts.find(p => p.p_id == productId && p.added_via === 'checkbox');
+            if (existingCheckbox) {
+                if (confirm('This product is already added via Quick Add. Do you want to replace it with detailed version?')) {
+                    // Remove checkbox version
+                    removeCheckboxProduct(productId);
+                } else {
+                    return;
+                }
+            }
+            
+            const selectedItems = [];
+            const checkboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
+            
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const itemId = checkbox.getAttribute('data-item-id');
+                    const itemName = checkbox.getAttribute('data-item-name');
+                    const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
+                    const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
+                    
+                    const itemQuantity = qtyInput ? parseFloat(qtyInput.value) || 1 : 1;
+                    const notes = notesInput ? notesInput.value : '';
+                    
+                    selectedItems.push({
+                        required_item_id: parseInt(itemId),
+                        item_name: itemName,
+                        quantity: itemQuantity,
+                        notes: notes
+                    });
+                }
+            });
+            
+            const serviceEntry = {
+                id: counter++,
+                p_id: productId,
+                name: product.product_name,
+                price: price,
+                quantity: quantity,
+                unit: unit,
+                gst: gst,
+                description: description,
+                frequency: frequency,
+                items: selectedItems
+            };
+            
+            // Remove any existing detailed version of same product
+            selectedProducts = selectedProducts.filter(p => !(p.p_id == productId && !p.added_via));
+            
+            selectedProducts.push(serviceEntry);
+            updateSelectedServicesList();
+            updateTotalPrice();
+            updateHiddenInput();
+            
+            // Reset form
+            document.getElementById(`qty-${productId}`).value = '1';
+            document.getElementById(`desc-${productId}`).value = '';
+            document.getElementById(`frequency-${productId}`).value = 'NOT SELECTED';
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                const itemId = checkbox.getAttribute('data-item-id');
+                const controls = document.getElementById(`item-controls-${productId}-${itemId}`);
+                if (controls) controls.style.display = 'none';
+                const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
+                const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
+                if (qtyInput) qtyInput.value = '1';
+                if (notesInput) notesInput.value = '';
+            });
+            
+            showToast(`${product.product_name} added successfully!`);
+        }
+
+        function updateSelectedServicesList() {
+            const list = document.getElementById('selected_services');
+            if (!list) return;
+            
+            // Clear only detailed items, keep checkbox items
+            const detailedItems = document.querySelectorAll('#selected_services li:not([data-added-via="checkbox"])');
+            detailedItems.forEach(item => item.remove());
+            
+            // Re-add detailed items from selectedProducts array
+            const detailedProducts = selectedProducts.filter(p => !p.added_via);
+            
+            detailedProducts.forEach((service, index) => {
+                const gstText = gstEnabled ? ` + GST(${service.gst}%)` : '';
+                const freqText = service.frequency && service.frequency !== 'NOT SELECTED' ? 
+                    ` | Freq: ${service.frequency}` : '';
+                
+                let itemsText = '';
+                if (service.items && service.items.length > 0) {
+                    itemsText = '<div class="small text-muted mt-1">📦 Required Items: ';
+                    itemsText += service.items.map(item => 
+                        `${escapeHtml(item.item_name)} (Qty: ${item.quantity})${item.notes ? ` - ${escapeHtml(item.notes)}` : ''}`
+                    ).join('; ');
+                    itemsText += '</div>';
+                }
+                
+                const li = document.createElement('li');
+                li.className = 'd-flex justify-content-between align-items-start p-2 border-bottom';
+                li.innerHTML = `
+                    <div class="flex-grow-1">
+                        <strong>${escapeHtml(service.name)}</strong>
+                        <div class="small">
+                            Unit: ${service.unit || 'N/A'} | ₹${service.price.toFixed(2)} x ${service.quantity}${gstText}${freqText}
+                        </div>
+                        ${itemsText}
+                    </div>
+                    <div class="text-end ms-3">
+                        <strong>₹${(service.price * service.quantity).toFixed(2)}</strong>
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${index})">✕</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function removeSelectedProduct(index) {
+            if (confirm('Remove this service from the list?')) {
+                selectedProducts.splice(index, 1);
+                updateSelectedServicesList();
+                updateTotalPrice();
+                updateHiddenInput();
+            }
+        }
+
+        function updateTotalPrice() {
+            let total = 0, gstTotal = 0;
+            selectedProducts.forEach(service => {
+                const subtotal = service.price * service.quantity;
+                total += subtotal;
+                gstTotal += subtotal * (service.gst / 100);
+            });
+            
+            document.getElementById('total_price').value = total.toFixed(2);
+            document.getElementById('gst_price').value = gstTotal.toFixed(2);
+            document.getElementById('total_with_gst').value = (total + gstTotal).toFixed(2);
+        }
+
+        function updateHiddenInput() {
+            const hiddenInput = document.getElementById('selected_products_json');
+            if (hiddenInput) {
+                // Prepare data for submission
+                const dataToSave = selectedProducts.map(product => ({
+                    p_id: product.p_id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: product.quantity,
+                    unit: product.unit || '',
+                    gst: product.gst || 18,
+                    description: product.description || '',
+                    frequency: product.frequency || 'NOT SELECTED',
+                    items: product.items || [],
+                    added_via: product.added_via || 'detailed'
+                }));
+                hiddenInput.value = JSON.stringify(dataToSave);
+                console.log('Saved to hidden input:', hiddenInput.value);
+            }
+        }
+
+        function filterProducts() {
+            const searchValue = document.getElementById('product-search').value.toLowerCase();
+            const productItems = document.querySelectorAll('#products-container .product-item');
+            
+            productItems.forEach(item => {
+                const name = item.getAttribute('data-product-name') || '';
+                item.style.display = name.includes(searchValue) ? '' : 'none';
+            });
+        }
+
+        function toggleGST() {
+            gstEnabled = document.getElementById('apply_gst').checked;
+            const gstFields = document.querySelectorAll('.product-gst-group');
+            gstFields.forEach(field => {
+                field.style.display = gstEnabled ? 'block' : 'none';
+            });
+            updateTotalPrice();
+        }
+
+        function showToast(message) {
+            const toastContainer = document.createElement('div');
+            toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+            toastContainer.style.zIndex = '9999';
+            toastContainer.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-header bg-success text-white">
+                        <strong class="me-auto">Success</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${escapeHtml(message)}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toastContainer);
+            setTimeout(() => toastContainer.remove(), 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Form validation
+        document.getElementById('service-management-form').addEventListener('submit', function(e) {
+            // Validate at least one product is selected
+            if (selectedProducts.length === 0) {
+                alert('Please add at least one product before submitting!');
+                e.preventDefault();
+                return false;
+            }
+            
+            // Check if all checkbox products have frequency selected
+            const checkboxProducts = selectedProducts.filter(p => p.added_via === 'checkbox');
+            const missingFrequency = checkboxProducts.filter(p => !p.frequency || p.frequency === 'NOT SELECTED');
+            
+            if (missingFrequency.length > 0) {
+                alert(`Please select frequency for: ${missingFrequency.map(p => p.name).join(', ')}`);
+                e.preventDefault();
+                return false;
+            }
+            
+            updateHiddenInput();
+            console.log('Submitting with products:', selectedProducts);
+            return true;
+        });
     </script>
 
-
-
-    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+    <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:200px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">
                 <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
@@ -1249,19 +1393,17 @@ document.getElementById('service-management-form').addEventListener('submit', fu
                     <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
                         style="height: 20px; vertical-align: middle;">
                     <a href="http://www.chronoanalytics.in/"
-                        style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
+                        style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
                         Solution</a>
                     All Rights Reserved.
                 </p>
             </div>
             <div class="col-md-12 text-center">
-                <p style="font-weight: 600; word-wrap: break-word;color:#000000 ">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000">
                     © 2025. Marketed by
                     <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
                         style="height: 20px; vertical-align: middle;">
-                    <a href="http://teim.in/" style="text-decoration: none;  background: linear-gradient(to right, #2575fc, #6a11cb); /* Gradient definition */
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
+                    <a href="http://teim.in/" style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
                     All Rights Reserved.
                 </p>
             </div>
@@ -1272,41 +1414,20 @@ document.getElementById('service-management-form').addEventListener('submit', fu
         const steps = document.querySelectorAll(".form-step");
         const nextBtns = document.querySelectorAll(".next-step");
         const prevBtns = document.querySelectorAll(".prev-step");
-        const indicators = document.querySelectorAll(".step-indicator"); // If you added step indicators
-
-
-            function filterProducts() {
-                const searchValue = document.getElementById('product-search').value.toLowerCase();
-                const productItems = document.querySelectorAll('#products-container .product-item');
-
-                productItems.forEach(item => {
-                    const name = item.getAttribute('data-name') || '';
-                    item.style.display = name.includes(searchValue) ? '' : 'none';
-                });
-            }
-
-
-
 
         let currentStep = 0;
 
         function showStep(index) {
+            steps.forEach((step, i) => {
+                step.classList.toggle("d-none", i !== index);
+            });
 
-    steps.forEach((step, i) => {
-        step.classList.toggle("d-none", i !== index);
-    });
-
-    indicators.forEach((indicator, i) => {
-        indicator.classList.toggle("active", i === index);
-    });
-
-    // FIX LEAFLET MAP SIZE
-    if(index === 1){   // step where map is
-        setTimeout(function(){
-            map.invalidateSize();
-        }, 200);
-    }
-}
+            if(index === 1) {
+                setTimeout(function() {
+                    if(map) map.invalidateSize();
+                }, 200);
+            }
+        }
 
         nextBtns.forEach(btn => {
             btn.addEventListener("click", () => {
@@ -1326,123 +1447,99 @@ document.getElementById('service-management-form').addEventListener('submit', fu
             });
         });
 
-        // Init on load
         showStep(currentStep);
 
-
-
-
         // leaflet map
-
         var map = L.map('map').setView([20.5937, 78.9629], 5);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
-var marker;
+        var marker;
 
-map.on('click', function(e) {
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
 
-    var lat = e.latlng.lat;
-    var lng = e.latlng.lng;
-
-    if(marker){
-        map.removeLayer(marker);
-    }
-
-    marker = L.marker([lat, lng]).addTo(map);
-
-    // ONLY store coordinates
-    document.getElementById("latitude").value = lat;
-    document.getElementById("longitude").value = lng;
-
-});
-
-
-
-function extractLatLngFromURL(url){
-
-    let patterns = [
-        /@(-?\d+\.\d+),(-?\d+\.\d+)/,
-        /q=(-?\d+\.\d+),(-?\d+\.\d+)/,
-        /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/
-    ];
-
-    for(let regex of patterns){
-        let match = url.match(regex);
-        if(match){
-            return {
-                lat: parseFloat(match[1]),
-                lng: parseFloat(match[2])
-            };
-        }
-    }
-
-    return null;
-}
-
-
-async function searchLocation(){
-
-    let query = document.getElementById("location-search").value.trim();
-
-    if(!query){
-        alert("Enter location");
-        return;
-    }
-
-    // Check if coordinates already exist in link
-    let coords = extractLatLngFromURL(query);
-
-    if(coords){
-        placeMarker(coords.lat, coords.lng);
-        return;
-    }
-
-    try{
-
-        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
-
-        const response = await fetch(url,{
-            headers:{
-                "Accept": "application/json"
+            if(marker){
+                map.removeLayer(marker);
             }
+
+            marker = L.marker([lat, lng]).addTo(map);
+            document.getElementById("latitude").value = lat;
+            document.getElementById("longitude").value = lng;
         });
 
-        const data = await response.json();
+        function extractLatLngFromURL(url){
+            let patterns = [
+                /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/
+            ];
 
-        if(!data || data.length === 0){
-            alert("Location not found");
-            return;
+            for(let regex of patterns){
+                let match = url.match(regex);
+                if(match){
+                    return {
+                        lat: parseFloat(match[1]),
+                        lng: parseFloat(match[2])
+                    };
+                }
+            }
+            return null;
         }
 
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
+        async function searchLocation(){
+            let query = document.getElementById("location-search").value.trim();
 
-        placeMarker(lat, lon);
+            if(!query){
+                alert("Enter location");
+                return;
+            }
 
-    }catch(error){
-        console.error(error);
-        alert("Error fetching location");
-    }
-}
+            let coords = extractLatLngFromURL(query);
 
-function placeMarker(lat, lon){
+            if(coords){
+                placeMarker(coords.lat, coords.lng);
+                return;
+            }
 
-    map.setView([lat, lon], 15);
+            try{
+                const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+                const response = await fetch(url,{
+                    headers:{"Accept": "application/json"}
+                });
+                const data = await response.json();
 
-    if(marker){
-        map.removeLayer(marker);
-    }
+                if(!data || data.length === 0){
+                    alert("Location not found");
+                    return;
+                }
 
-    marker = L.marker([lat, lon]).addTo(map);
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                placeMarker(lat, lon);
 
-    document.getElementById("latitude").value = lat;
-    document.getElementById("longitude").value = lon;
+            }catch(error){
+                console.error(error);
+                alert("Error fetching location");
+            }
+        }
 
-}
-    
+        function placeMarker(lat, lon){
+            map.setView([lat, lon], 15);
+            if(marker){
+                map.removeLayer(marker);
+            }
+            marker = L.marker([lat, lon]).addTo(map);
+            document.getElementById("latitude").value = lat;
+            document.getElementById("longitude").value = lon;
+        }
+
+        function goBackAndRefresh() {
+            window.location.href = '/display_service_management';
+        }
     </script>
 
 
@@ -1456,7 +1553,6 @@ function placeMarker(lat, lon){
       inp.setAttribute('pattern', '[0-9]{10}');
       inp.setAttribute('title', 'Enter exactly 10 digits');
       inp.setAttribute('inputmode', 'numeric');
-      // Change type from number to tel to support maxlength
       if (inp.type === 'number') inp.type = 'tel';
       inp.addEventListener('input', function(){
         this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
@@ -1474,5 +1570,4 @@ function placeMarker(lat, lon){
 })();
 </script>
 </body>
-
 </html>

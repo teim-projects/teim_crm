@@ -40,6 +40,7 @@ TRANSACTION_TYPES = (
 
 
 
+
 # ----------------------------- BATCH ------------------------------
 
 def generate_batch_no():

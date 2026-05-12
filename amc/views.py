@@ -56,6 +56,13 @@ def load_services(request):
 # -------------------------------------------------------------------
 # AJAX — LOAD SERVICE DETAILS (TECHNICIANS FROM WORK ALLOCATION)
 # -------------------------------------------------------------------
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+
+from crmapp.models import service_management, ServiceProductFrequency, WorkAllocation
+
+
 @login_required
 def load_service_details(request):
     service_id = request.GET.get("service_id")
@@ -65,32 +72,28 @@ def load_service_details(request):
 
     service = get_object_or_404(service_management, id=service_id)
 
-    # 🔹 Fetch technicians from Work Allocation
+    # 🔹 technicians
     techs = set()
     for w in WorkAllocation.objects.filter(service=service):
         techs.update(w.technician.all())
 
+    # 🔥 PRODUCT FREQUENCY
+    product_data = []
+    frequencies = ServiceProductFrequency.objects.filter(service=service)
+
+    for f in frequencies:
+        product_data.append({
+            "product_id": f.product.pk,   # ✅ UNIVERSAL FIX
+            "product_name": f.product.product_name,
+            "frequency": f.frequency
+        })
+
     return JsonResponse({
-        # Auto branch from service
         "branch_id": service.branch.id if service.branch else None,
-
-        # Default technicians
-        "technicians": [
-            {"id": t.id, "name": str(t)} for t in techs
-        ],
-
-        # First service date → AMC start date
-        "start_candidate": (
-            service.service_date.isoformat()
-            if service.service_date else None
-        ),
-
-        # ✅ DEFAULT FREQUENCY FROM CRM (services per year)
-        # AMC form will auto-fill this but admin can change it
-        "frequency": service.frequency_count,
+        "technicians": [{"id": t.id, "name": str(t)} for t in techs],
+        "start_candidate": service.service_date.isoformat() if service.service_date else None,
+        "products": product_data
     })
-
-
 # -------------------------------------------------------------------
 # CREATE AMC CONTRACT
 # -------------------------------------------------------------------
@@ -138,24 +141,7 @@ def amc_create(request):
 # -------------------------------------------------------------------
 from django.core.paginator import Paginator
 from datetime import date
-@login_required
-def amc_list(request):
-    amc_qs = AMCContract.objects.all().order_by("-created_at")
-    
-
-    paginator = Paginator(amc_qs, 10)  # 👈 10 records per page
-    page_number = request.GET.get("page")
-    contracts = paginator.get_page(page_number)
-
-    return render(request, "amc/list.html", {
-        "contracts": contracts,
-        "today": date.today(),
-    })
-
-
-# -------------------------------------------------------------------
-# AMC DETAILS PAGE
-# -------------------------------------------------------------------
+from crmapp.models import ServiceProductFrequency   # ✅ ADD THIS
 
 @login_required
 def amc_detail(request, pk):
@@ -168,25 +154,21 @@ def amc_detail(request, pk):
         visit_id = request.POST.get("allocate_visit_id")
         visit = get_object_or_404(AMCServiceVisit, id=visit_id, amc=amc)
 
-        # 🚫 Prevent double allocation
         if visit.allocation_status == "ALLOCATED":
             messages.warning(request, "Work already allocated.")
             return redirect("amc:detail", amc.id)
 
         technicians = visit.technicians.all()
 
-       # 🔍 Get schedule (VERY IMPORTANT)
         schedule = AMCServiceSchedule.objects.filter(
             amc=amc,
             service_date=visit.service_date
         ).first()
 
-        # ❌ अगर approve नहीं है तो allocation रोक दो
         if not schedule or not schedule.is_approved:
             messages.warning(request, "AMC service is not approved.")
             return redirect("amc:detail", amc.id)
 
-        # 🚀 Create CRM Service WITH APPROVAL
         service = service_management.objects.create(
             customer=amc.customer,
             branch=amc.branch,
@@ -194,45 +176,36 @@ def amc_detail(request, pk):
             service_date=visit.service_date,
             contract_type="AMC",
             gps_location=amc.default_gps_location,
-            is_approved=schedule.is_approved   # ✅ FIX HERE
+            is_approved=schedule.is_approved
         )
 
-        # 2️⃣ Create Work Allocation
         work = WorkAllocation.objects.create(
-        service=service,
+            service=service,
+            customer_contact=(
+                amc.default_customer_contact
+                or amc.customer.primarycontact
+            ),
+            customer_address=(
+                amc.default_customer_address
+                or amc.customer.shifttopartyaddress
+            ),
+            payment_amount=(
+                amc.default_payment_amount
+                or amc.per_visit_amount
+                or 0
+            ),
+            customer_payment_status=(
+                amc.default_payment_status
+                or "Pending"
+            ),
+            work_description=(
+                amc.default_work_description
+                or "AMC Scheduled Service"
+            ),
+        )
 
-        customer_contact=(
-            amc.default_customer_contact
-            or amc.customer.primarycontact
-        ),
-
-        customer_address=(
-            amc.default_customer_address
-            or amc.customer.shifttopartyaddress
-        ),
-
-        payment_amount=(
-            amc.default_payment_amount
-            or amc.per_visit_amount
-            or 0
-        ),
-
-        customer_payment_status=(
-            amc.default_payment_status
-            or "Pending"
-        ),
-
-        work_description=(
-            amc.default_work_description
-            or "AMC Scheduled Service"
-        ),
-    )
-
-
-        # 3️⃣ Assign technicians
         work.technician.set(technicians)
 
-        # 4️⃣ Technician dashboard entries
         for tech in technicians:
             tech_work = TechWorkList.objects.create(
                 technician=tech.user,
@@ -241,7 +214,6 @@ def amc_detail(request, pk):
             )
             tech_work.work.add(work)
 
-        # 5️⃣ Link visit → CRM service
         visit.crm_service = service
         visit.crm_service_created_at = timezone.now()
         visit.allocation_status = "ALLOCATED"
@@ -250,8 +222,6 @@ def amc_detail(request, pk):
             "crm_service_created_at",
             "allocation_status"
         ])
-
-
 
         messages.success(request, "Work allocated successfully.")
         return redirect("amc:detail", amc.id)
@@ -266,6 +236,11 @@ def amc_detail(request, pk):
         .prefetch_related("technicians")
     )
 
+    # 🔥 NEW: PRODUCT FREQUENCY FETCH
+    product_freq = ServiceProductFrequency.objects.filter(
+        service=amc.service
+    )
+
     allocated_services = set(
         WorkAllocation.objects.values_list("service_id", flat=True)
     )
@@ -274,9 +249,8 @@ def amc_detail(request, pk):
         "amc": amc,
         "visits": visits,
         "allocated_services": allocated_services,
+        "product_freq": product_freq   # ✅ ADD THIS
     })
-
-
 
 # -------------------------------------------------------------------
 # EDIT AMC
@@ -580,9 +554,16 @@ from .forms import AMCServiceVisitForm
 
 @login_required
 def edit_amc_visit(request, visit_id):
+
     visit = get_object_or_404(AMCServiceVisit, id=visit_id)
 
-    if visit.is_completed:
+    # ✅ CHECK FROM SCHEDULE MODEL
+    schedule = AMCServiceSchedule.objects.filter(
+        amc=visit.amc,
+        service_date=visit.service_date
+    ).first()
+
+    if schedule and schedule.is_completed:
         messages.error(
             request,
             "This visit is already completed and cannot be edited."
@@ -590,7 +571,9 @@ def edit_amc_visit(request, visit_id):
         return redirect("amc:detail", visit.amc.id)
 
     if request.method == "POST":
+
         form = AMCServiceVisitForm(request.POST, instance=visit)
+
         if form.is_valid():
 
             old_service = visit.crm_service
@@ -600,8 +583,14 @@ def edit_amc_visit(request, visit_id):
 
             # 🔥 CLEAN OLD CRM DATA IF ALREADY ALLOCATED
             if was_allocated and old_service:
-                TechWorkList.objects.filter(service=old_service).delete()
-                WorkAllocation.objects.filter(service=old_service).delete()
+
+                TechWorkList.objects.filter(
+                    service=old_service
+                ).delete()
+
+                WorkAllocation.objects.filter(
+                    service=old_service
+                ).delete()
 
                 updated_visit.crm_service = None
                 updated_visit.crm_service_created_at = None
@@ -611,11 +600,14 @@ def edit_amc_visit(request, visit_id):
 
             updated_visit.save()
 
-            # ✅ THIS IS THE MISSING LINE
+            # ✅ SAVE MANY TO MANY
             form.save_m2m()
 
+            messages.success(
+                request,
+                "Visit updated successfully."
+            )
 
-            messages.success(request, "Visit updated successfully.")
             return redirect("amc:detail", visit.amc.id)
 
     else:
@@ -626,7 +618,6 @@ def edit_amc_visit(request, visit_id):
         "visit": visit,
         "amc": visit.amc,
     })
-
 
 
 
@@ -747,6 +738,11 @@ from django.contrib.auth.decorators import login_required
 from crmapp.models import customer_details
 from amc.models import AMCContract
 
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from crmapp.models import customer_details
+from .models import AMCContract
+
 
 @login_required
 def find_customer_by_phone(request):
@@ -762,16 +758,27 @@ def find_customer_by_phone(request):
     if not customer:
         return JsonResponse({"found": False})
 
-    # 🔹 get old AMC contracts
-    amcs = AMCContract.objects.filter(customer=customer).order_by("-start_date")
+    # 🔹 AMC contracts
+    amcs = AMCContract.objects.filter(
+        customer=customer
+    ).select_related("service").order_by("-start_date")
 
     amc_list = []
 
     for amc in amcs:
+        # ✅ SAFE SERVICE ACCESS
+        service_name = ""
+
+        try:
+            if amc.service:
+                service_name = amc.service.service_subject or f"Service #{amc.service.id}"
+        except Exception:
+            service_name = "Service Deleted"
+
         amc_list.append({
             "contract_number": amc.contract_number,
-            "service": amc.service.service_subject if amc.service else "",
-            "start_date": amc.start_date.strftime("%d-%m-%Y"),
+            "service": service_name,
+            "start_date": amc.start_date.strftime("%d-%m-%Y") if amc.start_date else "",
             "end_date": amc.end_date.strftime("%d-%m-%Y") if amc.end_date else "",
             "amc_type": amc.amc_type,
             "status": amc.status
@@ -841,5 +848,21 @@ def get_amc_details(request):
         return JsonResponse({"error": str(e)}, status=500)
     
     
-    
+
+
+from django.core.paginator import Paginator
+from datetime import date
+
+@login_required
+def amc_list(request):
+    amc_qs = AMCContract.objects.all().order_by("-created_at")
+
+    paginator = Paginator(amc_qs, 10)
+    page_number = request.GET.get("page")
+    contracts = paginator.get_page(page_number)
+
+    return render(request, "amc/list.html", {
+        "contracts": contracts,
+        "today": date.today(),
+    })
     

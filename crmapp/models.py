@@ -591,6 +591,7 @@ class TechnicianProfile(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+from django.utils import timezone
 
 class service_management(models.Model):
 
@@ -637,11 +638,18 @@ class service_management(models.Model):
     )
 
     def __str__(self):
-        selected_services = ', '.join([str(service) for service in self.selected_services.all()])
-        return f'Service Management - {self.customer} ({selected_services})'
+        return (
+            self.service_subject
+            or f"{self.customer if self.customer else 'No Customer'} - {self.service_date or self.id}"
+        )
+
 
 class ServiceProduct(models.Model):
-    service = models.ForeignKey('service_management', on_delete=models.CASCADE, related_name='service_products')
+    service = models.ForeignKey(
+        'service_management',  # or 'crmapp.service_management' depending on your app name
+        on_delete=models.CASCADE,
+        related_name='service_products'
+    )
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1.0)
@@ -649,6 +657,9 @@ class ServiceProduct(models.Model):
     total_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     
+    # ADDED FIELD
+    created_at = models.DateTimeField(default=timezone.now)
+
     def __str__(self):
         return f"{self.product.product_name} ({self.quantity} @ ₹{self.price} + GST {self.gst_percentage}%)"
 
@@ -766,24 +777,114 @@ class Reschedule(models.Model):
 class UploadedFile(models.Model):
     file = models.FileField(upload_to='uploads/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
-
 class TechWorkList(models.Model):
     technician = models.ForeignKey(User, on_delete=models.CASCADE)
-    work = models.ManyToManyField(WorkAllocation, related_name='work')
-    service = models.ForeignKey(service_management, on_delete=models.CASCADE, default=None, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Completed', 'Completed')], default='Pending')
-    photos_before_service = models.ManyToManyField(UploadedFile, related_name='photos_before_service', blank=True)
-    photos_after_service = models.ManyToManyField(UploadedFile, related_name='photos_after_service', blank=True)
-    customer_signature_photo = models.ImageField(upload_to='photos/signatures/', blank=True, null=True)
-    payment_photos = models.ManyToManyField(UploadedFile, related_name='payment_photos', blank=True)
+
+    work = models.ManyToManyField(
+        WorkAllocation,
+        related_name='work'
+    )
+
+    service = models.ForeignKey(
+        service_management,
+        on_delete=models.CASCADE,
+        default=None,
+        null=True,
+        blank=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('Pending', 'Pending'),
+            ('Completed', 'Completed')
+        ],
+        default='Pending'
+    )
+
+    photos_before_service = models.ManyToManyField(
+        UploadedFile,
+        related_name='photos_before_service',
+        blank=True
+    )
+
+    photos_after_service = models.ManyToManyField(
+        UploadedFile,
+        related_name='photos_after_service',
+        blank=True
+    )
+
+    customer_signature_photo = models.ImageField(
+        upload_to='photos/signatures/',
+        blank=True,
+        null=True
+    )
+
+    payment_photos = models.ManyToManyField(
+        UploadedFile,
+        related_name='payment_photos',
+        blank=True
+    )
+
     completion_datetime = models.DateTimeField(default=timezone.now)
-    payment_mode = models.CharField(max_length=20, choices=[('UPI','UPI'),('Cash','Cash'),('UPI+Cash','UPI Cash')], blank=True, null=True)
-    payment_type = models.CharField(max_length=20, choices=[('Full Payment','Full Payment'),('Half Payment','Half Payment')], blank=True, null=True)
-    remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    payment_mode = models.CharField(
+        max_length=20,
+        choices=[
+            ('UPI', 'UPI'),
+            ('Cash', 'Cash'),
+            ('UPI+Cash', 'UPI Cash')
+        ],
+        blank=True,
+        null=True
+    )
+
+    payment_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('Full Payment', 'Full Payment'),
+            ('Half Payment', 'Half Payment')
+        ],
+        blank=True,
+        null=True
+    )
+
+    remaining_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+
     next_due_date = models.DateField(blank=True, null=True)
+
     is_notified = models.BooleanField(default=False)
 
-    
+    # -------------------------------------------------
+    # 🔥 MAIN LOGIC: AUTO STOP AMC VISITS ON COMPLETE
+    # -------------------------------------------------
+    def save(self, *args, **kwargs):
+
+        is_completed_now = self.status == "Completed"
+        super().save(*args, **kwargs)
+
+        # 🔥 RUN ONLY WHEN COMPLETED
+        if is_completed_now and self.service:
+
+            try:
+                from amc.models import AMCServiceVisit
+
+                # 🔥 MULTIPLE VISITS HANDLE
+                visits = AMCServiceVisit.objects.filter(
+                    crm_service=self.service
+                )
+
+                for visit in visits:
+                    visit.stop_future_visits_for_product()
+
+            except Exception as e:
+                print("AMC STOP ERROR:", e)
+
     def __str__(self):
         return f"Work by {self.technician.username}"
 
@@ -1059,3 +1160,23 @@ from .models import service_management
 def bharat_page(request):
     services = service_management.objects.all()
     return render(request, 'bharat.html', {'services': services})
+
+
+
+
+# models.py
+
+from django.utils import timezone
+
+class ServiceProductFrequency(models.Model):
+    service = models.ForeignKey(
+        'crmapp.service_management',
+        on_delete=models.CASCADE,
+        related_name="service_frequencies"
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    frequency = models.IntegerField()
+    remarks = models.CharField(max_length=255, blank=True, null=True)
+
+    created_at = models.DateTimeField(default=timezone.now)

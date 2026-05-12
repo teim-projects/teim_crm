@@ -1,5 +1,5 @@
 from django import forms
-from .models import AMCContract, AMCServiceVisit
+from .models import AMCContract, AMCServiceVisit, AMCServiceSchedule
 from crmapp.models import (
     customer_details,
     service_management,
@@ -108,7 +108,7 @@ class AMCContractForm(forms.ModelForm):
 
 
 from django import forms
-from .models import AMCServiceVisit
+from .models import AMCServiceVisit, AMCServiceSchedule
 from crmapp.models import TechnicianProfile
 
 
@@ -158,9 +158,16 @@ class AMCServiceVisitForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # 🚫 Lock editing if visit already completed
-        if self.instance and self.instance.pk and self.instance.is_completed:
-            for field in self.fields.values():
-                field.disabled = True
+        if self.instance and self.instance.pk:
+            
+            schedule = AMCServiceSchedule.objects.filter(
+                amc=self.instance.amc,
+                service_date=self.instance.service_date
+            ).first()
+            
+            if schedule and schedule.is_completed:
+                for field in self.fields.values():
+                    field.disabled = True
 
     def save(self, commit=True):
         visit = super().save(commit=False)
