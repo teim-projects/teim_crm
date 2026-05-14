@@ -85,8 +85,8 @@ def grn_item_post_save(sender, instance, created, **kwargs):
             )
             if cs_old_qs.exists():
                 cs_old = cs_old_qs.first()
-                cs_old.in_qty = (cs_old.in_qty or Decimal('0')) - Decimal(old_qty)
-                cs_old.closing_qty = (cs_old.opening_qty or Decimal('0')) + (cs_old.in_qty or Decimal('0')) - (cs_old.out_qty or Decimal('0')) - (cs_old.reserved_qty or Decimal('0'))
+                cs_old.in_qty = max(Decimal('0.000'), (cs_old.in_qty or Decimal('0')) - Decimal(old_qty))
+                cs_old.closing_qty = max(Decimal('0.000'), (cs_old.opening_qty or Decimal('0')) + (cs_old.in_qty or Decimal('0')) - (cs_old.out_qty or Decimal('0')))
                 cs_old.last_updated = timezone.now()
                 cs_old.save()
 
@@ -98,8 +98,7 @@ def grn_item_post_save(sender, instance, created, **kwargs):
             )
             if ps_old_qs.exists():
                 ps_old = ps_old_qs.first()
-                # moving old received -> treat as reducing total_in_qty (we assume it was previously added as IN)
-                ps_old.total_in_qty = (ps_old.total_in_qty or Decimal('0')) - Decimal(old_qty)
+                ps_old.total_in_qty = max(Decimal('0.000'), (ps_old.total_in_qty or Decimal('0')) - Decimal(old_qty))
                 ps_old.save()
 
             # remove / create reversal ledger entries if your ledger strategy requires
@@ -128,9 +127,9 @@ def grn_item_post_save(sender, instance, created, **kwargs):
                     closing_qty=Decimal('0.000')
                 )
 
-            # apply delta to CurrentStock in_qty
-            cs.in_qty = (cs.in_qty or Decimal('0')) + Decimal(delta)
-            cs.closing_qty = (cs.opening_qty or Decimal('0')) + (cs.in_qty or Decimal('0')) - (cs.out_qty or Decimal('0')) - (cs.reserved_qty or Decimal('0'))
+            # apply delta to CurrentStock in_qty (floored at 0)
+            cs.in_qty = max(Decimal('0.000'), (cs.in_qty or Decimal('0')) + Decimal(delta))
+            cs.closing_qty = max(Decimal('0.000'), (cs.opening_qty or Decimal('0')) + (cs.in_qty or Decimal('0')) - (cs.out_qty or Decimal('0')))
             cs.last_updated = timezone.now()
             cs.save()
 
@@ -152,11 +151,11 @@ def grn_item_post_save(sender, instance, created, **kwargs):
                     total_reserved_qty=Decimal('0.000')
                 )
 
-            # If delta > 0 treat as additional IN, else treat as additional OUT
+            # If delta > 0 treat as additional IN, else treat as additional OUT (floored at 0)
             if delta > 0:
-                ps.total_in_qty = (ps.total_in_qty or Decimal('0')) + Decimal(delta)
+                ps.total_in_qty = max(Decimal('0.000'), (ps.total_in_qty or Decimal('0')) + Decimal(delta))
             else:
-                ps.total_out_qty = (ps.total_out_qty or Decimal('0')) + (-Decimal(delta))
+                ps.total_out_qty = max(Decimal('0.000'), (ps.total_out_qty or Decimal('0')) + (-Decimal(delta)))
 
             ps.save()
 
@@ -209,8 +208,8 @@ def grn_item_post_delete(sender, instance, **kwargs):
         )
         if cs_qs.exists():
             cs = cs_qs.first()
-            cs.in_qty = (cs.in_qty or Decimal('0')) - Decimal(old_qty)
-            cs.closing_qty = (cs.opening_qty or Decimal('0')) + (cs.in_qty or Decimal('0')) - (cs.out_qty or Decimal('0')) - (cs.reserved_qty or Decimal('0'))
+            cs.in_qty = max(Decimal('0.000'), (cs.in_qty or Decimal('0')) - Decimal(old_qty))
+            cs.closing_qty = max(Decimal('0.000'), (cs.opening_qty or Decimal('0')) + (cs.in_qty or Decimal('0')) - (cs.out_qty or Decimal('0')))
             cs.last_updated = timezone.now()
             cs.save()
 
@@ -222,8 +221,8 @@ def grn_item_post_delete(sender, instance, **kwargs):
         )
         if ps_qs.exists():
             ps = ps_qs.first()
-            # assume previously it was counted as in; subtract from total_in_qty
-            ps.total_in_qty = (ps.total_in_qty or Decimal('0')) - Decimal(old_qty)
+            # assume previously it was counted as in; subtract from total_in_qty (floored at 0)
+            ps.total_in_qty = max(Decimal('0.000'), (ps.total_in_qty or Decimal('0')) - Decimal(old_qty))
             ps.save()
 
         # delete ledger entries for this GRN item
@@ -339,24 +338,31 @@ def handle_mtn_item_reservation(sender, instance, created, **kwargs):
 
     with transaction.atomic():
         # ----- CurrentStock (Batch level) -----
-        cs = CurrentStock.objects.select_for_update().get(
+        cs = CurrentStock.objects.select_for_update().filter(
             product=instance.product,
             batch=instance.batch,
             location_type=mtn.source_type,
             location_id=mtn.source_id
-        )
+        ).first()
 
-        cs.reserved_qty += delta
+        if cs is None:
+            # No stock row yet — can't reserve what isn't there
+            return
+
+        cs.reserved_qty = max(Decimal('0'), (cs.reserved_qty or Decimal('0')) + delta)
         cs.recompute_closing()
 
         # ----- ProductStock (Aggregate level) -----
-        ps = ProductStock.objects.select_for_update().get(
+        ps = ProductStock.objects.select_for_update().filter(
             product=instance.product,
             location_type=mtn.source_type,
             location_id=mtn.source_id
-        )
+        ).first()
 
-        ps.total_reserved_qty += delta
+        if ps is None:
+            return
+
+        ps.total_reserved_qty = max(Decimal('0'), (ps.total_reserved_qty or Decimal('0')) + delta)
         ps.save()
 
 @receiver(pre_save, sender=MaterialTransferNote)

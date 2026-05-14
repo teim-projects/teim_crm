@@ -1392,8 +1392,13 @@ from datetime import datetime
 @login_required
 @csrf_exempt
 def approve_service(request, id):
-    """Approve service and deduct required product stock from inventory."""
-    from new_inventory.utils import deduct_stock_for_service  # lazy import — avoids circular import linter warning
+    """Approve service and deduct required product stock from inventory.
+    
+    BLOCKS approval if any product has zero/insufficient stock at the HO location.
+    Only marks is_approved=True when all products have adequate stock.
+    """
+    from new_inventory.utils import deduct_stock_for_service, reverse_stock_for_service
+
     service = get_object_or_404(service_management, id=id)
 
     if service.is_approved:
@@ -1403,17 +1408,47 @@ def approve_service(request, id):
             'message': 'This service is already approved.',
         })
 
-    # Deduct stock from inventory — returns list of warning strings (empty = all OK)
+    # Deduct stock — returns list of warning strings (empty = all OK)
     warnings = deduct_stock_for_service(service, request.user)
 
+    # Check if any product had NO stock at all (hard block)
+    no_stock_warnings = [w for w in warnings if 'No stock' in w]
+
+    if no_stock_warnings:
+        # Reverse any partial deductions that did happen
+        reverse_stock_for_service(service, request.user)
+        return JsonResponse({
+            'status': 'insufficient_stock',
+            'success': False,
+            'stock_deducted': False,
+            'warnings': warnings,
+            'message': '⚠️ Cannot approve: No stock available for one or more products. Please add GRN stock first.',
+        })
+
+    # Partial low-stock warning (some stock deducted but less than needed)
+    low_stock_warnings = [w for w in warnings if 'Low stock' in w]
+
+    # Mark approved — stock fully or partially deducted
     service.is_approved = True
     service.save()
+
+    if low_stock_warnings:
+        return JsonResponse({
+            'status': 'approved_with_warnings',
+            'success': True,
+            'stock_deducted': False,
+            'warnings': warnings,
+            'message': '✅ Service approved with low-stock warning. Stock partially deducted.',
+        })
 
     return JsonResponse({
         'status': 'approved',
         'success': True,
-        'warnings': warnings,
+        'stock_deducted': True,
+        'warnings': [],
+        'message': '✅ Service approved and stock deducted successfully.',
     })
+
 
 @login_required
 @csrf_exempt
@@ -1833,13 +1868,36 @@ def quotation_management_create(request):
         customer = None
         data = request.POST.copy()
         data['terms_and_conditions'] = request.POST.getlist('terms_and_conditions')
-        customer_id = request.POST.get('customer_id')
         if customer_id:
             data['customer_id'] = customer_id
 
         request.session['quotation_form_data'] = data
-        print("Session stored terms:", request.session['quotation_form_data'].get('product_json_data'))
         request.session.modified = True
+
+        # ── Backend Validation ──────────────────────────────────────────
+        validation_errors = []
+        if not customer_id or not customer_id.strip():
+            validation_errors.append('Customer is required. Please enter a valid contact number and wait for auto-fill.')
+        contact_by_check = request.POST.get('sales_person_list')
+        if not contact_by_check or not contact_by_check.strip():
+            validation_errors.append('Sales Person is required. Please select a sales person.')
+        product_details_check = request.POST.get('product_details_json', '').strip()
+        if not product_details_check or product_details_check in ('[]', ''):
+            validation_errors.append('At least one product must be added to the quotation.')
+        if validation_errors:
+            messages.error(request, ' | '.join(validation_errors))
+            return render(request, 'quotation_create_new.html', {
+                'branches': branches,
+                'products': products,
+                'sales_person_list': sales_person_list,
+                'form_data': data,
+                'thank_notes': thank_notes,
+                'terms': terms,
+                'category_choices': category_choices,
+                'product_details_json': product_details_check,
+            })
+        # ── End Validation ──────────────────────────────────────────────
+
         if customer_id:
             try:
                 customer = customer_details.objects.get(id=customer_id)

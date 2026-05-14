@@ -145,19 +145,19 @@
                 <label>Source of Lead<span class="star">*</span></label>
                 <select name="usourceoflead" class="form-control form-control-lg" required>
                   <option disabled {% if not x.usourceoflead %}selected{% endif %}>Source of Lead</option>
-                  <option value="Google" {% if x.sourceoflead=="Google" %}selected{% endif %}>Google</option>
-                  <option value="Justdial" {% if x.sourceoflead=="Justdial" %}selected{% endif %}>Justdial</option>
-                  <option value="Indiamart" {% if x.sourceoflead=="Indiamart" %}selected{% endif %}>Indiamart</option>
-                  <option value="TradeIndia" {% if x.sourceoflead=="TradeIndia" %}selected{% endif %}>TradeIndia
+                  <option value="Google" {% if x.sourceoflead == "Google" %}selected{% endif %}>Google</option>
+                  <option value="Justdial" {% if x.sourceoflead == "Justdial" %}selected{% endif %}>Justdial</option>
+                  <option value="Indiamart" {% if x.sourceoflead == "Indiamart" %}selected{% endif %}>Indiamart</option>
+                  <option value="TradeIndia" {% if x.sourceoflead == "TradeIndia" %}selected{% endif %}>TradeIndia
                   </option>
-                  <option value="Customer Reference" {% if x.sourceoflead=="Customer Reference" %}selected{% endif %}>
+                  <option value="Customer Reference" {% if x.sourceoflead == "Customer Reference" %}selected{% endif %}>
                     Customer Reference
                   <option>
-                  <option value="BNI" {% if x.sourceoflead=="BNI" %}selected{% endif %}>BNI</option>
-                  <option value="Lionsclub" {% if x.sourceoflead=="Lionsclub" %}selected{% endif %}>Lions Club</option>
-                  <option value="Employee Reference" {% if x.sourceoflead=="Employee Reference" %}selected{% endif %}>
+                  <option value="BNI" {% if x.sourceoflead == "BNI" %}selected{% endif %}>BNI</option>
+                  <option value="Lionsclub" {% if x.sourceoflead == "Lionsclub" %}selected{% endif %}>Lions Club</option>
+                  <option value="Employee Reference" {% if x.sourceoflead == "Employee Reference" %}selected{% endif %}>
                     Employee Reference</option>
-                  <option value="Others" {% if x.sourceoflead=="Others" %}selected{% endif %}>Others</option>
+                  <option value="Others" {% if x.sourceoflead == "Others" %}selected{% endif %}>Others</option>
                 </select>
               </div>
               <div class="col-md-4 mb-4">
@@ -170,13 +170,12 @@
                 <label>Enter Customer Segment<span class="star">*</span></label>
                 <select name="ucustomersegment" class="form-control form-control-lg" required>
                   <option disabled {% if not x.customersegment %}selected{% endif %}>Customer Segment</option>
-                  <option value="Residential" {% if x.customersegment=="Residential" %}selected{% endif %}>Residential
+                  <option value="Residential" {% if x.customersegment == "Residential" %}selected{% endif %}>Residential
                   </option>
-                  <option value="Industrial / Commercial" {% if x.customersegment=="Industrial / Commercial"
-                    %}selected{% endif %}>Industrial / Commercial</option>
-                  <option value="Institutional" {% if x.customersegment=="Institutional" %}selected{% endif %}>
+                  <option value="Industrial / Commercial" {% if x.customersegment == "Industrial / Commercial" %}selected{% endif %}>Industrial / Commercial</option>
+                  <option value="Institutional" {% if x.customersegment == "Institutional" %}selected{% endif %}>
                     Institutional</option>
-                  <option value="Irrelevant Lead" {% if x.customersegment=="Irrelevant Lead" %}selected{% endif %}>
+                  <option value="Irrelevant Lead" {% if x.customersegment == "Irrelevant Lead" %}selected{% endif %}>
                     Irrelevant Lead</option>
                 </select>
               </div>
@@ -184,12 +183,12 @@
                 <label>Type of Lead<span class="star">*</span></label>
                 <select name="utypeoflead" class="form-control form-control-lg">
                   <option disabled {% if not x.typeoflead %}selected{% endif %}>Type of Lead</option>
-                  <option value="Hot" {% if x.typeoflead=="Hot" %}selected{% endif %}>Hot</option>
-                  <option value="Warm" {% if x.typeoflead=="Warm" %}selected{% endif %}>Warm</option>
-                  <option value="Cold" {% if x.typeoflead=="Cold" %}selected{% endif %}>Cold</option>
-                  <option value="NotInterested" {% if x.typeoflead=="NotInterested" %}selected{% endif %}>Not Interested
+                  <option value="Hot" {% if x.typeoflead == "Hot" %}selected{% endif %}>Hot</option>
+                  <option value="Warm" {% if x.typeoflead == "Warm" %}selected{% endif %}>Warm</option>
+                  <option value="Cold" {% if x.typeoflead == "Cold" %}selected{% endif %}>Cold</option>
+                  <option value="NotInterested" {% if x.typeoflead == "NotInterested" %}selected{% endif %}>Not Interested
                   </option>
-                  <option value="LossOfOrder" {% if x.typeoflead=="LossOfOrder" %}selected{% endif %}>Loss Of Order
+                  <option value="LossOfOrder" {% if x.typeoflead == "LossOfOrder" %}selected{% endif %}>Loss Of Order
                   </option>
                 </select>
               </div>
@@ -220,9 +219,9 @@
                 <label>Customer Type<span class="star">*</span></label>
                 <select name="ucustomer_type" class="form-control" id="customer_type_select"
                   onchange="toggleOrganizationFields()">
-                  <option value="Individual" {% if x.customer_type=="Individual" %}selected{% endif %}>Individual
+                  <option value="Individual" {% if x.customer_type == "Individual" %}selected{% endif %}>Individual
                   </option>
-                  <option value="Organization" {% if x.customer_type=="Organization" %}selected{% endif %}>Organization
+                  <option value="Organization" {% if x.customer_type == "Organization" %}selected{% endif %}>Organization
                   </option>
                 </select>
               </div>
@@ -240,7 +239,7 @@
                 <label>Select Salesperson<span class="star">*</span></label>
                 <select name="usalesperson" class="form-control form-control-lg" required>
                   {% for sp in salespersons %}
-                  <option value="{{ sp.id }}" {% if x.salesperson.id==sp.id %}selected{% endif %}>
+                  <option value="{{ sp.id }}" {% if x.salesperson.id == sp.id %}selected{% endif %}>
                     {{ sp.full_name }}
                   </option>
                   {% endfor %}

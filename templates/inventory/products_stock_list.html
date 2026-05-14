@@ -264,42 +264,9 @@
           <div style="min-width: 160px">
             <select name="location_type" id="location_type" class="form-select">
               <option value="">All locations</option>
-              <option
-                value="BRANCH"
-                {%
-                if
-                filters.location_type=""
-                ="BRANCH"
-                %}selected{%
-                endif
-                %}
-              >
-                Branch
-              </option>
-              <option
-                value="HO"
-                {%
-                if
-                filters.location_type=""
-                ="HO"
-                %}selected{%
-                endif
-                %}
-              >
-                HO
-              </option>
-              <option
-                value="SITE"
-                {%
-                if
-                filters.location_type=""
-                ="SITE"
-                %}selected{%
-                endif
-                %}
-              >
-                Site
-              </option>
+              <option value="BRANCH" {% if filters.location_type == "BRANCH" %}selected{% endif %}>Branch</option>
+              <option value="HO" {% if filters.location_type == "HO" %}selected{% endif %}>HO</option>
+              <option value="SITE" {% if filters.location_type == "SITE" %}selected{% endif %}>Site</option>
             </select>
           </div>
 
@@ -347,13 +314,12 @@
             <button class="btn btn-primary btn-sm px-4" type="submit">
               <i class="fa fa-filter me-1"></i> Filter
             </button>
-            <button
-              type="button"
+            <a
+              href="{% url 'products_stock_list' %}"
               class="btn btn-secondary btn-sm px-4"
-              onclick="window.location='{% url 'products_stock_list' %}'"
             >
               Reset
-            </button>
+            </a>
           </div>
         </form>
 
@@ -377,9 +343,10 @@
                 >
                   Product
                 </th>
-                <th style="width: 120px">In Qty</th>
-                <th style="width: 120px">Out Qty</th>
-                <th style="width: 120px">Reserved</th>
+                <th style="width: 110px">In Qty</th>
+                <th style="width: 110px">Out Qty</th>
+                <th style="width: 120px">Approved</th>
+                <th style="width: 110px">Reserved</th>
                 <th
                   class="sortable {% if filters.sort == 'avail_asc' %}asc{% elif filters.sort == 'avail_desc' %}desc{% endif %}"
                   onclick="toggleSort('avail')"
@@ -389,18 +356,19 @@
               </tr>
             </thead>
             <tbody>
-              {% for r in rows %} {% if r.closing_qty != 0 %}
+              {% for r in rows %} 
               <tr>
                 <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
                 <td>{{ r.name }}</td>
                 <td>{{ r.in_qty }}</td>
                 <td>{{ r.out_qty }}</td>
+                <td>{{ r.approved_qty }}</td>
                 <td>{{ r.reserved_qty }}</td>
-                <td class="text-success">{{ r.closing_qty }}</td>
+                <td class="text-success">{{ r.available_qty }}</td>
               </tr>
-              {% endif %} {% empty %}
+            {% empty %}
               <tr>
-                <td colspan="6" class="text-center py-5 small-muted">
+                <td colspan="7" class="text-center py-5 small-muted">
                   <i
                     class="fa fa-cubes"
                     style="font-size: 3.5rem; opacity: 0.4"
@@ -411,7 +379,7 @@
               </tr>
               {% endfor %} {% if not rows %}
               <tr>
-                <td colspan="6" class="text-center py-5 small-muted">
+                <td colspan="7" class="text-center py-5 small-muted">
                   <i
                     class="fa fa-cubes"
                     style="font-size: 3.5rem; opacity: 0.4"
@@ -425,39 +393,33 @@
           </table>
 
           <div id="subItemTable" style="display: none; margin-top: 20px">
-            <h5 class="text-primary">Sub Item Stock</h5>
+            <h5 class="text-primary mb-3">Sub Item Stock</h5>
 
-            <table class="table table-bordered">
-              <thead>
+            <table class="table table-sm table-bordered table-fixed">
+              <thead class="thead-light">
                 <tr>
+                  <th style="width: 50px"></th>
                   <th>Sub Item</th>
-                  <th style="width: 120px">In Qty</th>
-                  <th style="width: 120px">Out Qty</th>
-                  <th style="width: 120px">Reserved</th>
-                  <th
-                    class="sortable {% if filters.sort == 'avail_asc' %}asc{% elif filters.sort == 'avail_desc' %}desc{% endif %}"
-                    onclick="toggleSort('avail')"
-                  >
-                    Available
-                  </th>
+                  <th style="width: 110px">In Qty</th>
+                  <th style="width: 120px">Approved</th>
+                  <th>Available</th>
                 </tr>
               </thead>
 
               <tbody>
                 {% for item in sub_item_rows %}
                 <tr>
+                  <td></td>
                   <td>{{ item.name }}</td>
-                  <td class="text-success">{{ item.qty }}</td>
                   <td>{{ item.in_qty }}</td>
-                  <td>{{ item.out_qty }}</td>
-                  <td>{{ item.reserved_qty }}</td>
-                  <td class="text-success">{{ item.closing_qty }}</td>
+                  
+                  <td>{{ item.approved_qty }}</td>
+                  
+                  <td class="text-success">{{ item.available_qty }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="6" class="text-center">
-                    No sub item stock found
-                  </td>
+                  <td colspan="7" class="text-center">No sub item stock found</td>
                 </tr>
                 {% endfor %}
               </tbody>

@@ -303,6 +303,40 @@ def annotated_product_stock_qs(ProductModel, location_type=None, location_id=Non
         reserved_qty=Coalesce(DJSum('productstock__total_reserved_qty', filter=ps_filter), Decimal('0.000')),
     )
 
+    # ── Annotate approved_qty from StockLedger (SERVICE_OUT net of SERVICE_RETURN/REVERSAL) ──
+    # This avoids any new DB column — computed directly from existing ledger data.
+    from .models import StockLedger
+
+    # Build StockLedger filter for SERVICE_OUT per product
+    sl_out_filter = Q(product_id=OuterRef('pk'), transaction_type='SERVICE_OUT')
+    sl_ret_filter = Q(product_id=OuterRef('pk'), transaction_type__in=['SERVICE_RETURN', 'SERVICE_REVERSAL'])
+    if location_type:
+        sl_out_filter &= Q(location_type=location_type)
+        sl_ret_filter &= Q(location_type=location_type)
+    if location_id is not None:
+        sl_out_filter &= Q(location_id=location_id)
+        sl_ret_filter &= Q(location_id=location_id)
+
+    service_out_subq = (
+        StockLedger.objects.filter(sl_out_filter)
+        .values('product_id')
+        .annotate(total=DJSum('out_qty'))
+        .values('total')
+    )
+    service_ret_subq = (
+        StockLedger.objects.filter(sl_ret_filter)
+        .values('product_id')
+        .annotate(total=DJSum('in_qty'))
+        .values('total')
+    )
+
+    qs = qs.annotate(
+        approved_qty=(
+            Coalesce(Subquery(service_out_subq), Decimal('0.000')) -
+            Coalesce(Subquery(service_ret_subq), Decimal('0.000'))
+        )
+    )
+
     # If batch filters were provided, optionally restrict which products appear:
     # - If you want only products that have matching CurrentStock (matching batch/expiry), filter by that existence:
     if use_batch_annotation:
@@ -328,28 +362,100 @@ def annotated_product_stock_qs(ProductModel, location_type=None, location_id=Non
 
 def _get_service_location(service):
     """
-    Returns (location_type, location_id) for stock deduction.
+    Returns (location_type, location_id) for stock deduction based on the
+    branch/location that the service is assigned to.
 
-    All physical stock is held at HO. Services are done by branches, but
-    chemicals/materials come from the central HO store.
-    Always returns the HO location so deductions reflect reality.
+    Rules:
+      - If the service has a branch and that branch IS the Head Office  → ("HO",   branch.id)
+      - If the service has a branch and that branch is NOT Head Office  → ("BRANCH", branch.id)
+      - If no branch is set on the service                              → fallback to HO
     """
     from crmapp.models import Branch
+
+    branch = getattr(service, "branch", None)
+
+    if branch is not None:
+        # The service has an assigned branch — use it directly.
+        if branch.is_head_office:
+            return "HO", branch.id
+        else:
+            return "BRANCH", branch.id
+
+    # No branch linked to this service — fall back to HO as a safe default.
     ho = Branch.objects.filter(is_head_office=True).first()
     if ho:
         return "HO", ho.id
+
+    # Last resort — should never reach here in a properly seeded DB.
     return "HO", 1
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SUB-ITEM HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _sub_item_ref(service_id, required_item_id):
+    """Unique ledger transaction_ref for a sub-item deduction."""
+    return f"SERVICE_{service_id}_SUBITEM_{required_item_id}"
+
+
+def _get_sub_item_available_qty(required_item_id, location_type, location_id):
+    """
+    Compute how much of a sub-item (ProductRequiredItem) is available at a
+    given location.
+
+    Available = total received via GRN at this location
+               - total already consumed (SERVICE_OUT ledger entries for this sub-item)
+
+    Sub-items don't have a CurrentStock row, so we compute live from:
+      - GoodsReceiveNoteSubItem  (IN stock)
+      - StockLedger entries with transaction_ref ending in SUBITEM_{id}  (OUT)
+    """
+    from .models import GoodsReceiveNoteSubItem, StockLedger
+    from django.db.models import Sum as DSum
+
+    total_in = (
+        GoodsReceiveNoteSubItem.objects.filter(
+            sub_item_id=required_item_id,
+            grn__destination_type=location_type,
+            grn__destination_id=location_id,
+        ).aggregate(total=DSum("received_qty"))["total"]
+        or Decimal("0.000")
+    )
+
+    # All SERVICE_OUT ledger rows for this sub-item at this location
+    ref_suffix = f"SUBITEM_{required_item_id}"
+    total_out = (
+        StockLedger.objects.filter(
+            transaction_type="SERVICE_OUT",
+            transaction_ref__endswith=ref_suffix,
+            location_type=location_type,
+            location_id=location_id,
+        ).aggregate(total=DSum("out_qty"))["total"]
+        or Decimal("0.000")
+    )
+
+    # Also subtract SERVICE_RETURN (stock returned back after a service)
+    total_returned = (
+        StockLedger.objects.filter(
+            transaction_type="SERVICE_RETURN",
+            transaction_ref__endswith=ref_suffix,
+            location_type=location_type,
+            location_id=location_id,
+        ).aggregate(total=DSum("in_qty"))["total"]
+        or Decimal("0.000")
+    )
+
+    return max(Decimal("0.000"), Decimal(str(total_in)) - Decimal(str(total_out)) + Decimal(str(total_returned)))
 
 
 def deduct_stock_for_service(service, user):
     """
-    Deducts inventory stock for every product linked to the service on approval.
+    Deducts inventory stock for every product AND sub-item linked to the service
+    on approval.
 
-    Strategy — FIFO across batches:
-      - Gets all CurrentStock records for the product at the service location
-      - Deducts from each batch in FIFO order (oldest batch first) until qty met
-      - Updates ProductStock aggregate
-      - Writes a StockLedger entry (SERVICE_OUT) per batch consumed
+    Products  → FIFO CurrentStock deduction, StockLedger ref=SERVICE_{id}
+    Sub-items → GRN-based availability, StockLedger ref=SERVICE_{id}_SUBITEM_{ri_id}
 
     Returns:
         list[str] — warning messages (empty = everything deducted successfully)
@@ -363,6 +469,7 @@ def deduct_stock_for_service(service, user):
         service_products = (
             service.service_products
             .select_related('product')
+            .prefetch_related('selected_items__required_item')
             .all()
         )
 
@@ -374,50 +481,107 @@ def deduct_stock_for_service(service, user):
             product    = sp.product
             qty_needed = Decimal(str(sp.quantity))
 
-            # ── 1. Find all CurrentStock rows for this product at this location ──
-            # Order by id (FIFO — oldest batch entered first)
+            # ── PART A: Deduct parent PRODUCT from CurrentStock ───────────────
             stock_rows = CurrentStock.objects.select_for_update().filter(
                 product=product,
                 location_type=location_type,
                 location_id=location_id,
-            ).order_by('id')
+            ).order_by('id')  # FIFO
 
             if not stock_rows.exists():
                 warnings.append(
                     f"'{product.product_name}': No stock at {location_type} "
                     f"(id={location_id}). Deduction skipped."
                 )
-                continue
+            else:
+                total_available = sum(cs.available_qty for cs in stock_rows)
+                if total_available < qty_needed:
+                    warnings.append(
+                        f"'{product.product_name}': Low stock — need {qty_needed}, "
+                        f"available {total_available}. Deducting what is available."
+                    )
 
-            # ── 2. Calculate total available across all batches ───────────────
-            total_available = sum(cs.available_qty for cs in stock_rows)
-            if total_available < qty_needed:
-                warnings.append(
-                    f"'{product.product_name}': Low stock — need {qty_needed}, "
-                    f"total available {total_available}. Deducting what is available."
+                remaining = qty_needed
+                for stock in stock_rows:
+                    if remaining <= Decimal('0'):
+                        break
+                    can_take = min(stock.available_qty, remaining)
+                    if can_take <= Decimal('0'):
+                        continue
+
+                    stock.out_qty = (stock.out_qty or Decimal('0')) + can_take
+                    stock.recompute_closing()
+
+                    StockLedger.objects.create(
+                        product=product,
+                        batch=stock.batch,
+                        location_type=location_type,
+                        location_id=location_id,
+                        transaction_type="SERVICE_OUT",
+                        transaction_ref=f"SERVICE_{service.id}",
+                        document_id=service.id,
+                        in_qty=Decimal('0.000'),
+                        out_qty=can_take,
+                        balance_qty=stock.closing_qty,
+                        created_by=user,
+                        remarks=(
+                            f"Service #{service.id} approval — "
+                            f"{product.product_name} x{can_take}"
+                            + (f" [batch: {stock.batch}]" if stock.batch else "")
+                        ),
+                    )
+                    remaining -= can_take
+
+                ps, _ = ProductStock.objects.select_for_update().get_or_create(
+                    product=product,
+                    location_type=location_type,
+                    location_id=location_id,
+                    defaults={
+                        'total_in_qty': Decimal('0.000'),
+                        'total_out_qty': Decimal('0.000'),
+                        'total_reserved_qty': Decimal('0.000'),
+                    },
+                )
+                actually_deducted = qty_needed - remaining
+                ps.total_out_qty = max(
+                    Decimal('0.000'),
+                    (ps.total_out_qty or Decimal('0')) + actually_deducted
+                )
+                ps.save(update_fields=['total_out_qty', 'updated_at'])
+
+            # ── PART B: Deduct each SUB-ITEM linked to this ServiceProduct ────
+            for spi in sp.selected_items.all():
+                required_item  = spi.required_item
+                sub_qty_needed = Decimal(str(spi.quantity))
+                ref            = _sub_item_ref(service.id, required_item.id)
+
+                available = _get_sub_item_available_qty(
+                    required_item.id, location_type, location_id
                 )
 
-            # ── 3. FIFO deduction across batches ─────────────────────────────
-            remaining = qty_needed
-            for stock in stock_rows:
-                if remaining <= Decimal('0'):
-                    break
-
-                can_take = min(stock.available_qty, remaining)
-                if can_take <= Decimal('0'):
+                if available <= Decimal('0'):
+                    warnings.append(
+                        f"Sub-item '{required_item.item_name}' "
+                        f"(for {product.product_name}): "
+                        f"No stock at {location_type} (id={location_id}). Skipped."
+                    )
                     continue
 
-                stock.out_qty = (stock.out_qty or Decimal('0')) + can_take
-                stock.recompute_closing()   # saves the record
+                can_take = min(available, sub_qty_needed)
+                if can_take < sub_qty_needed:
+                    warnings.append(
+                        f"Sub-item '{required_item.item_name}' "
+                        f"(for {product.product_name}): "
+                        f"Low stock — need {sub_qty_needed}, available {available}."
+                    )
 
-                # ── 4. Write per-batch StockLedger entry ─────────────────────
                 StockLedger.objects.create(
-                    product=product,
-                    batch=stock.batch,              # actual batch (not None)
+                    product=product,         # parent product FK (non-nullable)
+                    batch=None,              # sub-items are not batch-tracked
                     location_type=location_type,
                     location_id=location_id,
                     transaction_type="SERVICE_OUT",
-                    transaction_ref=f"SERVICE_{service.id}",
+                    transaction_ref=ref,     # SERVICE_{id}_SUBITEM_{ri_id}
                     document_id=service.id,
                     in_qty=Decimal('0.000'),
                     out_qty=can_take,
@@ -443,7 +607,10 @@ def deduct_stock_for_service(service, user):
                 },
             )
             actually_deducted = qty_needed - remaining   # what we actually took
-            ps.total_out_qty = (ps.total_out_qty or Decimal('0')) + actually_deducted
+            ps.total_out_qty = max(
+                Decimal('0.000'),
+                (ps.total_out_qty or Decimal('0')) + actually_deducted
+            )
             ps.save(update_fields=['total_out_qty', 'updated_at'])
 
     return warnings
@@ -453,8 +620,7 @@ def reverse_stock_for_service(service, user):
     """
     Reverses stock deductions when a service is rejected / un-approved.
 
-    Finds the SERVICE_OUT ledger entries for this service and adds the
-    stock back to the same batch/location it was taken from.
+    Handles both product (CurrentStock) and sub-item (ledger-only) entries.
 
     Returns:
         list[str] — warning messages
@@ -462,30 +628,33 @@ def reverse_stock_for_service(service, user):
     from .models import CurrentStock, ProductStock, StockLedger
 
     warnings = []
-    location_type, location_id = _get_service_location(service)
 
     with transaction.atomic():
-        # Find every SERVICE_OUT ledger entry for this service
-        ledger_entries = StockLedger.objects.select_for_update().filter(
+        # ── PART A: Reverse PRODUCT entries (exact ref match) ─────────────────
+        product_entries = StockLedger.objects.select_for_update().filter(
             transaction_ref=f"SERVICE_{service.id}",
             transaction_type="SERVICE_OUT",
         )
 
-        if not ledger_entries.exists():
+        sub_item_entries = StockLedger.objects.select_for_update().filter(
+            transaction_ref__startswith=f"SERVICE_{service.id}_SUBITEM_",
+            transaction_type="SERVICE_OUT",
+        )
+
+        if not product_entries.exists() and not sub_item_entries.exists():
             warnings.append(
                 f"No SERVICE_OUT ledger entries found for service #{service.id}. "
                 "Nothing to reverse."
             )
             return warnings
 
-        for entry in ledger_entries:
+        for entry in product_entries:
             qty_to_return = entry.out_qty
             product       = entry.product
 
-            # ── 1. Find the exact CurrentStock row (same batch + location) ────
             stock_qs = CurrentStock.objects.select_for_update().filter(
                 product=product,
-                batch=entry.batch,              # same batch we deducted from
+                batch=entry.batch,
                 location_type=entry.location_type,
                 location_id=entry.location_id,
             )
@@ -497,18 +666,18 @@ def reverse_stock_for_service(service, user):
                     (stock.out_qty or Decimal('0')) - qty_to_return
                 )
                 stock.recompute_closing()
+                closing_for_ledger = stock.closing_qty
             else:
                 warnings.append(
                     f"'{product.product_name}': Original stock record not found "
-                    f"(batch={entry.batch}). Reversal skipped for this batch."
+                    f"(batch={entry.batch}). Reversal skipped."
                 )
                 continue
 
-            # ── 2. Update ProductStock aggregate ──────────────────────────────
             ps_qs = ProductStock.objects.select_for_update().filter(
                 product=product,
-                location_type=location_type,
-                location_id=location_id,
+                location_type=entry.location_type,
+                location_id=entry.location_id,
             )
             if ps_qs.exists():
                 ps = ps_qs.first()
@@ -518,7 +687,6 @@ def reverse_stock_for_service(service, user):
                 )
                 ps.save(update_fields=['total_out_qty', 'updated_at'])
 
-            # ── 3. Write reversal ledger entry ────────────────────────────────
             StockLedger.objects.create(
                 product=product,
                 batch=entry.batch,
@@ -527,18 +695,40 @@ def reverse_stock_for_service(service, user):
                 transaction_type="SERVICE_REVERSAL",
                 transaction_ref=f"SERVICE_{service.id}",
                 document_id=service.id,
-                in_qty=qty_to_return,       # stock coming back IN
+                in_qty=qty_to_return,
                 out_qty=Decimal('0.000'),
-                balance_qty=stock.closing_qty,
+                balance_qty=closing_for_ledger,
                 created_by=user,
                 remarks=(
-                    f"Reversal for service #{service.id} rejection — "
+                    f"Reversal for service #{service.id} — "
                     f"{product.product_name} x{qty_to_return} returned"
                 ),
             )
 
+        # ── PART B: Reverse SUB-ITEM entries (ledger-only, no CurrentStock) ──
+        for entry in sub_item_entries:
+            qty_to_return = entry.out_qty
+            product       = entry.product
 
-    return warnings,
+            StockLedger.objects.create(
+                product=product,
+                batch=None,
+                location_type=entry.location_type,
+                location_id=entry.location_id,
+                transaction_type="SERVICE_REVERSAL",
+                transaction_ref=entry.transaction_ref,   # keep SUBITEM ref
+                document_id=service.id,
+                in_qty=qty_to_return,
+                out_qty=Decimal('0.000'),
+                balance_qty=Decimal('0.000'),
+                created_by=user,
+                remarks=(
+                    f"Reversal for service #{service.id} — "
+                    f"sub-item x{qty_to_return} returned (ref: {entry.transaction_ref})"
+                ),
+            )
+
+    return warnings
 
 
 def get_service_stock_out_summary(service):
@@ -593,17 +783,23 @@ def get_service_stock_out_summary(service):
     return rows
 
 
+
 def partial_return_stock_for_service(service, return_items, user):
     """
-    Returns a SUBSET of stock that was deducted for a service back to inventory.
+    Returns a SUBSET of deducted stock back to inventory after a service.
 
-    Called after a service is completed and the technician returns unused materials.
+    Business rule:
+      - If 5 was approved and technician returns 1 → approved becomes 4, available +1
+      - Sub-items use spi_id (ServiceProductItem.pk) as the form key; they have no
+        CurrentStock row so only a SERVICE_RETURN ledger entry is written.
+      - Products use ledger_id; CurrentStock.out_qty is reduced and ProductStock updated.
 
     Args:
-        service     : ServiceManagement instance
-        return_items: list of dicts:
-                        [{ 'ledger_id': int, 'return_qty': Decimal }, ...]
-        user        : User instance (who is performing the return)
+        service      : ServiceManagement instance
+        return_items : list of dicts — either
+                         { 'spi_id': int,    'return_qty': Decimal }  ← sub-item
+                         { 'ledger_id': int, 'return_qty': Decimal }  ← product
+        user         : User instance
 
     Returns:
         (list[str] warnings, list[str] errors)
@@ -612,22 +808,79 @@ def partial_return_stock_for_service(service, return_items, user):
 
     warnings = []
     errors   = []
-    location_type, location_id = _get_service_location(service)
 
     with transaction.atomic():
         for item in return_items:
-            ledger_id  = item.get("ledger_id")
             return_qty = Decimal(str(item.get("return_qty", 0)))
-
             if return_qty <= Decimal("0"):
-                continue  # skip zero-qty rows silently
+                continue
 
-            # ── 1. Load the original SERVICE_OUT ledger entry ─────────────
+            spi_id    = item.get("spi_id")
+            ledger_id = item.get("ledger_id")
+
+            # ── PATH A: Sub-item return (keyed by ServiceProductItem.id) ──────────
+            if spi_id:
+                from crmapp.models import ServiceProductItem
+                try:
+                    spi = ServiceProductItem.objects.select_related(
+                        "required_item", "service_product__product"
+                    ).get(pk=spi_id, service_product__service=service)
+                except ServiceProductItem.DoesNotExist:
+                    errors.append(f"Sub-item #{spi_id} not found for this service.")
+                    continue
+
+                ri      = spi.required_item
+                ref     = _sub_item_ref(service.id, ri.id)
+                out_qty = Decimal(str(spi.quantity))
+
+                already_returned = (
+                    StockLedger.objects.filter(
+                        transaction_ref=ref,
+                        transaction_type="SERVICE_RETURN",
+                    ).aggregate(total=Sum("in_qty"))["total"]
+                    or Decimal("0")
+                )
+                max_returnable = max(Decimal("0"), out_qty - already_returned)
+                if return_qty > max_returnable:
+                    warnings.append(
+                        f"\'{ri.item_name}\': return qty {return_qty} exceeds "
+                        f"returnable {max_returnable}. Clamping."
+                    )
+                    return_qty = max_returnable
+
+                if return_qty <= Decimal("0"):
+                    continue
+
+                location_type, location_id = _get_service_location(service)
+                StockLedger.objects.create(
+                    product=spi.service_product.product,
+                    batch=None,
+                    location_type=location_type,
+                    location_id=location_id,
+                    transaction_type="SERVICE_RETURN",
+                    transaction_ref=ref,
+                    document_id=service.id,
+                    in_qty=return_qty,
+                    out_qty=Decimal("0.000"),
+                    balance_qty=Decimal("0.000"),
+                    created_by=user,
+                    remarks=(
+                        f"Partial return service #{service.id} — "
+                        f"sub-item \'{ri.item_name}\' x{return_qty} returned"
+                    ),
+                )
+                continue  # sub-item done
+
+            # ── PATH B: Product return (keyed by ledger_id) ───────────────────────
+            if not ledger_id:
+                errors.append("Row has neither ledger_id nor spi_id — skipped.")
+                continue
+
             try:
                 out_entry = StockLedger.objects.select_for_update().get(
                     pk=ledger_id,
-                    transaction_ref=f"SERVICE_{service.id}",
                     transaction_type="SERVICE_OUT",
+                    document_id=service.id,
                 )
             except StockLedger.DoesNotExist:
                 errors.append(f"Ledger entry #{ledger_id} not found for this service.")
@@ -636,26 +889,26 @@ def partial_return_stock_for_service(service, return_items, user):
             product = out_entry.product
             batch   = out_entry.batch
 
-            # ── 2. Guard: cannot return more than (deducted − already returned) ──
-            already_returned = StockLedger.objects.filter(
-                transaction_ref=f"SERVICE_{service.id}",
-                transaction_type="SERVICE_RETURN",
-                product=product,
-                batch=batch,
-            ).aggregate(total=Sum("in_qty"))["total"] or Decimal("0")
+            already_returned = (
+                StockLedger.objects.filter(
+                    transaction_ref=out_entry.transaction_ref,
+                    transaction_type="SERVICE_RETURN",
+                    product=product,
+                ).aggregate(total=Sum("in_qty"))["total"]
+                or Decimal("0")
+            )
 
             max_returnable = out_entry.out_qty - already_returned
             if return_qty > max_returnable:
                 warnings.append(
-                    f"'{product.product_name}': return qty {return_qty} exceeds "
-                    f"returnable {max_returnable}. Clamping to {max_returnable}."
+                    f"Return qty {return_qty} exceeds returnable {max_returnable}. Clamping."
                 )
                 return_qty = max_returnable
 
             if return_qty <= Decimal("0"):
                 continue
 
-            # ── 3. Add stock back to CurrentStock (same batch + location) ──
+            # Reduce CurrentStock.out_qty → available_qty rises
             stock_qs = CurrentStock.objects.select_for_update().filter(
                 product=product,
                 batch=batch,
@@ -670,7 +923,6 @@ def partial_return_stock_for_service(service, return_items, user):
                 )
                 stock.recompute_closing()
             else:
-                # Stock row vanished — recreate with in_qty so it shows positive
                 stock = CurrentStock.objects.create(
                     product=product,
                     batch=batch,
@@ -681,44 +933,98 @@ def partial_return_stock_for_service(service, return_items, user):
                 )
                 stock.recompute_closing()
                 warnings.append(
-                    f"'{product.product_name}': original stock row not found; "
+                    f"\'{product.product_name}\': original stock row not found; "
                     "re-created with returned quantity."
                 )
 
-            # ── 4. Update ProductStock aggregate ──────────────────────────
-            ps, _ = ProductStock.objects.select_for_update().get_or_create(
+            # Reduce ProductStock aggregate
+            ps_qs = ProductStock.objects.select_for_update().filter(
                 product=product,
-                location_type=location_type,
-                location_id=location_id,
-                defaults={
-                    "total_in_qty"  : Decimal("0.000"),
-                    "total_out_qty" : Decimal("0.000"),
-                    "total_reserved_qty": Decimal("0.000"),
-                },
+                location_type=out_entry.location_type,
+                location_id=out_entry.location_id,
             )
-            ps.total_out_qty = max(
-                Decimal("0.000"),
-                (ps.total_out_qty or Decimal("0")) - return_qty,
-            )
-            ps.save(update_fields=["total_out_qty", "updated_at"])
+            if ps_qs.exists():
+                ps = ps_qs.first()
+                ps.total_out_qty = max(
+                    Decimal("0.000"),
+                    (ps.total_out_qty or Decimal("0")) - return_qty,
+                )
+                ps.save(update_fields=["total_out_qty", "updated_at"])
 
-            # ── 5. Write SERVICE_RETURN ledger entry ──────────────────────
             StockLedger.objects.create(
                 product=product,
                 batch=batch,
                 location_type=out_entry.location_type,
                 location_id=out_entry.location_id,
                 transaction_type="SERVICE_RETURN",
-                transaction_ref=f"SERVICE_{service.id}",
+                transaction_ref=out_entry.transaction_ref,
                 document_id=service.id,
                 in_qty=return_qty,
                 out_qty=Decimal("0.000"),
                 balance_qty=stock.closing_qty,
                 created_by=user,
                 remarks=(
-                    f"Partial return after service #{service.id} — "
-                    f"{product.product_name} x{return_qty} returned to inventory"
+                    f"Partial return service #{service.id} — "
+                    f"{product.product_name} x{return_qty} returned to available stock"
                 ),
             )
 
     return warnings, errors
+
+
+
+
+def get_service_sub_item_stock_out_summary(service):
+    """
+    Returns a list of dicts for sub-items linked to a service.
+    Used to pre-fill the partial-return form.
+
+    Reads directly from ServiceProductItem records so this works for services
+    approved before sub-item ledger tracking was added.
+
+    Each dict:
+      {
+        'spi_id'        : int   (ServiceProductItem PK - used as form key),
+        'item_name'     : str,
+        'parent_product': str,
+        'out_qty'       : Decimal  (quantity used in the service),
+        'returned'      : Decimal  (already returned via SERVICE_RETURN ledger),
+        'returnable'    : Decimal,
+        'location_type' : str,
+        'location_id'   : int,
+      }
+    """
+    from .models import StockLedger
+
+    location_type, location_id = _get_service_location(service)
+
+    rows = []
+    for sp in service.service_products.select_related('product').prefetch_related(
+        'selected_items__required_item'
+    ).all():
+        for spi in sp.selected_items.all():
+            ri      = spi.required_item
+            ref     = _sub_item_ref(service.id, ri.id)
+            out_qty = Decimal(str(spi.quantity))
+
+            already_returned = (
+                StockLedger.objects.filter(
+                    transaction_ref=ref,
+                    transaction_type="SERVICE_RETURN",
+                ).aggregate(total=Sum("in_qty"))["total"]
+                or Decimal("0.000")
+            )
+
+            returnable = max(Decimal("0.000"), out_qty - already_returned)
+
+            rows.append({
+                "spi_id"        : spi.id,
+                "item_name"     : ri.item_name,
+                "parent_product": sp.product.product_name,
+                "out_qty"       : out_qty,
+                "returned"      : already_returned,
+                "returnable"    : returnable,
+                "location_type" : location_type,
+                "location_id"   : location_id,
+            })
+    return rows
