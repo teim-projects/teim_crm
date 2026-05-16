@@ -551,9 +551,10 @@ def deduct_stock_for_service(service, user):
 
             # ── PART B: Deduct each SUB-ITEM linked to this ServiceProduct ────
             for spi in sp.selected_items.all():
-                required_item  = spi.required_item
-                sub_qty_needed = Decimal(str(spi.quantity))
-                ref            = _sub_item_ref(service.id, required_item.id)
+                required_item    = spi.required_item
+                sub_qty_needed   = Decimal(str(spi.quantity))
+                sub_remaining    = sub_qty_needed          # own variable — never touches product's 'remaining'
+                ref              = _sub_item_ref(service.id, required_item.id)
 
                 available = _get_sub_item_available_qty(
                     required_item.id, location_type, location_id
@@ -567,8 +568,8 @@ def deduct_stock_for_service(service, user):
                     )
                     continue
 
-                can_take = min(available, sub_qty_needed)
-                if can_take < sub_qty_needed:
+                sub_can_take = min(available, sub_qty_needed)
+                if sub_can_take < sub_qty_needed:
                     warnings.append(
                         f"Sub-item '{required_item.item_name}' "
                         f"(for {product.product_name}): "
@@ -584,34 +585,16 @@ def deduct_stock_for_service(service, user):
                     transaction_ref=ref,     # SERVICE_{id}_SUBITEM_{ri_id}
                     document_id=service.id,
                     in_qty=Decimal('0.000'),
-                    out_qty=can_take,
-                    balance_qty=stock.closing_qty,
+                    out_qty=sub_can_take,
+                    balance_qty=Decimal('0.000'),  # sub-items have no CurrentStock row
                     created_by=user,
                     remarks=(
                         f"Service #{service.id} approval — "
-                        f"{product.product_name} x{can_take}"
-                        + (f" [batch: {stock.batch}]" if stock.batch else "")
+                        f"sub-item '{required_item.item_name}' x{sub_can_take} "
+                        f"(for {product.product_name})"
                     ),
                 )
-                remaining -= can_take
-
-            # ── 5. Update ProductStock aggregate (once per product) ───────────
-            ps, _ = ProductStock.objects.select_for_update().get_or_create(
-                product=product,
-                location_type=location_type,
-                location_id=location_id,
-                defaults={
-                    'total_in_qty': Decimal('0.000'),
-                    'total_out_qty': Decimal('0.000'),
-                    'total_reserved_qty': Decimal('0.000'),
-                },
-            )
-            actually_deducted = qty_needed - remaining   # what we actually took
-            ps.total_out_qty = max(
-                Decimal('0.000'),
-                (ps.total_out_qty or Decimal('0')) + actually_deducted
-            )
-            ps.save(update_fields=['total_out_qty', 'updated_at'])
+                sub_remaining -= sub_can_take  # track sub-item's own remaining (for future use)
 
     return warnings
 
