@@ -635,6 +635,35 @@
             });
         });
 
+        // Restore date range label and hidden inputs from current URL params on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            const fromDate = "{{ from_date }}";
+            const toDate = "{{ to_date }}";
+            if (fromDate && toDate) {
+                document.getElementById("selectedRange").innerText = fromDate + " → " + toDate;
+                document.getElementById("fromDate").value = fromDate;
+                document.getElementById("toDate").value = toDate;
+                // Ensure hidden inputs exist in the main form
+                const form = document.getElementById("mainFilterForm");
+                let fromInput = form.querySelector('input[name="from_date"]');
+                if (!fromInput) {
+                    fromInput = document.createElement("input");
+                    fromInput.type = "hidden";
+                    fromInput.name = "from_date";
+                    form.appendChild(fromInput);
+                }
+                fromInput.value = fromDate;
+                let toInput = form.querySelector('input[name="to_date"]');
+                if (!toInput) {
+                    toInput = document.createElement("input");
+                    toInput.type = "hidden";
+                    toInput.name = "to_date";
+                    form.appendChild(toInput);
+                }
+                toInput.value = toDate;
+            }
+        });
+
         function openModal(quotation_id) {
             fetch(`/get_quotation_details/${quotation_id}/`)
                 .then(response => response.text())
@@ -650,7 +679,12 @@
 
         // Date Filter Functions
         function formatDate(date) {
-            return date.toISOString().split('T')[0];
+            // Use local date parts to avoid UTC timezone shift (toISOString uses UTC,
+            // which shifts IST dates back by one day since IST = UTC+5:30)
+            const year  = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day   = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         function setRange(range) {
@@ -667,7 +701,7 @@
                 selectedRange.innerText = "Yesterday";
             } else if (range === 'this_month') {
                 start = new Date(today.getFullYear(), today.getMonth(), 1);
-                end = today;
+                end = new Date(today.getFullYear(), today.getMonth() + 1, 0); // last day of current month
                 selectedRange.innerText = "This Month";
             } else if (range === 'last_month') {
                 start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
@@ -692,7 +726,7 @@
 
                 const form = document.getElementById("mainFilterForm");
 
-                // Add or update from_date
+                // Add or update from_date hidden input in main form
                 let fromInput = form.querySelector('input[name="from_date"]');
                 if (!fromInput) {
                     fromInput = document.createElement("input");
@@ -702,7 +736,7 @@
                 }
                 fromInput.value = from;
 
-                // Add or update to_date
+                // Add or update to_date hidden input in main form
                 let toInput = form.querySelector('input[name="to_date"]');
                 if (!toInput) {
                     toInput = document.createElement("input");
@@ -712,8 +746,8 @@
                 }
                 toInput.value = to;
 
-                // Submit the main form (applies ALL filters)
-                form.submit();
+                // Do NOT auto-submit: user clicks "Apply Filters" button
+                // so ALL filters (branch, date, representative) are sent together.
             }
         }
     </script>

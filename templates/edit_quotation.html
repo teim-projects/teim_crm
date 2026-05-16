@@ -471,9 +471,10 @@
                                                 <td>{{ x.id }}</td>
 
                                                 <td>{{ x.name }}</td>
-                                                 <td >
+                                                <td style="min-width: 130px;">
                                                     <input type="number" name="product_price_{{ x.id }}" class="form-control"
                                                         value="{{ x.price }}" step="0.01" min="0" 
+                                                        style="min-width: 120px;"
                                                         onchange="calculateQuotationSummary()" />
                                                 </td>
                                                 <td>
@@ -677,15 +678,12 @@
                                                 readonly>{{ branch.full_address }}</textarea>
                                         </div>
                                     </div>
-                                    <form id="quotation-management-form" method="post"
-                                        action="{% url 'edit_quotation' quotation.id %} ">
-                                        <div class="text-center mt-3">
-                                            <button type="button" class="btn btn-secondary prev-step mt-2"
-                                                style="width: 150px;">Previous</button>
-                                            <button class="btn btn-info mt-2" type="submit"
-                                                style="width: 150px;">Submit</button>
-                                        </div>
-                                    </form>
+                                    <div class="text-center mt-3">
+                                        <button type="button" class="btn btn-secondary prev-step mt-2"
+                                            style="width: 150px;">Previous</button>
+                                        <button class="btn btn-info mt-2" type="submit"
+                                            style="width: 150px;">Submit</button>
+                                    </div>
 
                                 </div>
 
@@ -1000,6 +998,16 @@ function showCombinedGrandTotal() {
 
         showStep(currentStep); // Initialize first step
 
+        // Prevent Enter key from submitting the form on Steps 2 and 3 (page 2+)
+        document.getElementById('quotation-management-form').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && currentStep > 0) {
+                // Only block Enter if the focused element is not a textarea or submit button
+                const tag = e.target.tagName.toLowerCase();
+                if (tag !== 'textarea' && tag !== 'button' && e.target.type !== 'submit') {
+                    e.preventDefault();
+                }
+            }
+        });
 
     </script>
 
@@ -1226,7 +1234,7 @@ function showCombinedGrandTotal() {
                                     </div>
                                     <div class="col-md-3">
                                             <label>HSN Code</label>
-                                            <input type="text" class="form-control product-hsn" placeholder="HSN Code" value="">
+                                            <input type="text" class="form-control product-hsn" placeholder="HSN Code" value="${product.hsn_code || ''}">
                                                 
                                         </div>
                                 

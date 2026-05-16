@@ -7730,6 +7730,13 @@ def reportlab_quotation_pdf(request, id):
 
     elements.append(terms_table)
 
+    # Fixed last term: validity clause
+    validity_idx = idx  # continues numbering after ordered_terms and custom_terms
+    elements.append(Paragraph(
+        f"{validity_idx}. Quotation is valid for 30 days from the date of quotation sent by mail.",
+        small
+    ))
+
     if quotation.apply_gst:
         elements.append(Paragraph(
             "All above material and services will be attracted to GST extra as per product or service applicable.",

@@ -716,7 +716,7 @@
     <script>
         // Global variables
         let selectedProducts = [];
-        let gstEnabled = true;
+        let gstEnabled = false;  // starts disabled, toggled by the Apply GST switch
         let counter = 1;
         let productItemsCache = {};
 
@@ -1286,7 +1286,10 @@
             selectedProducts.forEach(service => {
                 const subtotal = service.price * service.quantity;
                 total += subtotal;
-                gstTotal += subtotal * (service.gst / 100);
+                // Apply GST only when the toggle is enabled
+                if (gstEnabled) {
+                    gstTotal += subtotal * (service.gst / 100);
+                }
             });
             
             document.getElementById('total_price').value = total.toFixed(2);
