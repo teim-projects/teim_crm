@@ -672,59 +672,11 @@ class MTNItem(models.Model):
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
-        
             super().save(*args, **kwargs)
-    
-            source_type = self.mtn.source_type
-            source_id = self.mtn.source_id
-            dest_type = self.mtn.destination_type
-            dest_id = self.mtn.destination_id
-    
-            # 🔑 Always force Decimal conversion safely
-            transfer_qty = Decimal(str(self.transfer_qty or 0))
-    
-            # ===============================
-            # DRAFT → Reserve stock
-            # ===============================
-            if self.mtn.status == "DRAFT":
-            
-                stock, _ = CurrentStock.objects.get_or_create(
-                    product=self.product,
-                    batch=self.batch,
-                    location_type=source_type,
-                    location_id=source_id,
-                    defaults={"opening_qty": Decimal("0")}
-                )
-    
-                stock.reserved_qty = Decimal(stock.reserved_qty or 0) + transfer_qty
-                stock.recompute_closing()
-    
-            # ===============================
-            # APPROVED → Move stock
-            # ===============================
-            if self.mtn.status == "APPROVED":
-            
-                source_stock = CurrentStock.objects.get(
-                    product=self.product,
-                    batch=self.batch,
-                    location_type=source_type,
-                    location_id=source_id
-                )
-    
-                source_stock.reserved_qty = Decimal(source_stock.reserved_qty or 0) - transfer_qty
-                source_stock.out_qty = Decimal(source_stock.out_qty or 0) + transfer_qty
-                source_stock.recompute_closing()
-    
-                dest_stock, _ = CurrentStock.objects.get_or_create(
-                    product=self.product,
-                    batch=self.batch,
-                    location_type=dest_type,
-                    location_id=dest_id,
-                    defaults={"opening_qty": Decimal("0")}
-                )
-    
-                dest_stock.in_qty = Decimal(dest_stock.in_qty or 0) + transfer_qty
-                dest_stock.recompute_closing()
+            # ⚠️ NOTE: Reservation (DRAFT) is handled exclusively by the
+            # handle_mtn_item_reservation post_save signal in signals.py.
+            # DO NOT add any reserved_qty logic here — it would double-count.
+            # APPROVED transition is also handled solely in handle_mtn_status_change signal.
     def __str__(self):
         return f"{self.product.product_name} - {self.transfer_qty}"
 
@@ -740,8 +692,8 @@ class CurrentStock(models.Model):
     location_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
     location_id = models.BigIntegerField()
     opening_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
-    in_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))   # cumulative in
-    out_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))  # cumulative out
+    in_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))   # cumulative GRN/MTN-IN
+    out_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))  # cumulative MTN-OUT + Service-OUT
     reserved_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
     closing_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
     last_updated = models.DateTimeField(auto_now=True)
@@ -753,18 +705,21 @@ class CurrentStock(models.Model):
             models.Index(fields=['batch']),
             models.Index(fields=['location_type', 'location_id']),
         ]
-    
+
     @property
     def available_qty(self):
-        """Quantity actually available for use (closing - reserved)."""
-        return (self.closing_qty or Decimal('0')) - (self.reserved_qty or Decimal('0'))
+        """Quantity actually available for use (closing minus reserved)."""
+        avail = (self.closing_qty or Decimal('0')) - (self.reserved_qty or Decimal('0'))
+        return max(Decimal('0.000'), avail)
 
     def recompute_closing(self):
         """
         Closing = Opening + In - Out
-        (Reserved is NOT part of physical stock)
+        out_qty includes both MTN-OUT and SERVICE_OUT deductions.
+        Reserved is a hold on available stock, not yet physically moved.
         """
-        self.closing_qty = (
+        self.closing_qty = max(
+            Decimal('0.000'),
             (self.opening_qty or Decimal('0')) +
             (self.in_qty or Decimal('0')) -
             (self.out_qty or Decimal('0'))
@@ -805,16 +760,16 @@ class StockLedger(models.Model):
 class ProductStock(models.Model):
     """
     Denormalized table for product-level stock per location.
-    Updated by signals when GRN/MTN/DC events occur.
+    Updated by signals when GRN/MTN/DC/Service events occur.
     """
     product = models.ForeignKey('crmapp.Product', on_delete=models.CASCADE)
     location_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
     location_id = models.BigIntegerField()
 
     # aggregated totals
-    total_in_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
-    total_out_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
-    total_reserved_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))
+    total_in_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))       # GRN + MTN-IN
+    total_out_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000'))      # MTN-OUT + SERVICE_OUT combined
+    total_reserved_qty = models.DecimalField(max_digits=18, decimal_places=3, default=Decimal('0.000')) # MTN DRAFT reservations
 
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -830,7 +785,13 @@ class ProductStock(models.Model):
 
     @property
     def closing_qty(self):
-        return (self.total_in_qty or Decimal('0')) - (self.total_out_qty or Decimal('0')) - (self.total_reserved_qty or Decimal('0')) 
+        """Available physical stock = In - Out - Reserved"""
+        return max(
+            Decimal('0.000'),
+            (self.total_in_qty or Decimal('0'))
+            - (self.total_out_qty or Decimal('0'))
+            - (self.total_reserved_qty or Decimal('0'))
+        ) 
     
 
 

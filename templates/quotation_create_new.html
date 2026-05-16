@@ -345,6 +345,17 @@ input:checked + .slider:before {
                             <form method="POST" id="quotation-management-form" action="{% url 'create_quotation' %}">
                                 {% csrf_token %}
 
+                                {% if messages %}
+                                <div class="mb-3">
+                                    {% for message in messages %}
+                                    <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                                        <strong>⚠️</strong> {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
                                 <!-- STEP 1 -->
                                 <div class="form-step active">
                                     <div class="row">
@@ -1039,12 +1050,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
         nextBtns.forEach(btn => {
             btn.addEventListener('click', () => {
+                // ✅ Validate all required fields in the CURRENT step before advancing
+                const currentStepEl = steps[currentStep];
+                const requiredFields = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+                
+                let valid = true;
+                for (let field of requiredFields) {
+                    // Skip hidden fields (display:none parent)
+                    if (field.closest('[style*="display: none"]') || field.type === 'hidden') continue;
+                    if (!field.value || !field.value.trim()) {
+                        field.reportValidity(); // Shows native browser tooltip on the empty field
+                        field.focus();
+                        valid = false;
+                        break;
+                    }
+                }
+
+                // Special check: customer_id hidden field must have a value
+                if (valid && currentStep === 0) {
+                    const customerIdField = document.getElementById('customer_id');
+                    if (customerIdField && !customerIdField.value.trim()) {
+                        alert('⚠️ Please select a valid customer by entering their contact number and waiting for auto-fill.');
+                        document.getElementById('customer_contact').focus();
+                        valid = false;
+                    }
+                }
+
+                if (!valid) return; // Block step advance
+
                 if (currentStep < steps.length - 1) {
                     currentStep++;
                     showStep(currentStep);
                 }
             });
         });
+
 
         prevBtns.forEach(btn => {
             btn.addEventListener('click', () => {

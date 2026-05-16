@@ -65,7 +65,7 @@
           </div>
 
           <!-- Main return form -->
-          {% if not summary %}
+          {% if not summary and not sub_item_summary %}
             <div class="alert alert-info">
               <i class="bi bi-exclamation-circle me-2"></i>
               No stock was deducted for this service. Nothing to return.
@@ -79,6 +79,12 @@
               <div class="card-body p-0">
                 <form method="POST" id="stockReturnForm" novalidate>
                   {% csrf_token %}
+
+                  {% if summary %}
+                  {# ── PRODUCTS TABLE ── #}
+                  <div class="px-3 pt-3 pb-1">
+                    <h6 class="text-muted mb-2"><i class="bi bi-box-seam me-1"></i> Products</h6>
+                  </div>
                   <div class="table-responsive">
                     <table class="table table-bordered mb-0 align-middle">
                       <thead>
@@ -129,6 +135,64 @@
                       </tbody>
                     </table>
                   </div>
+                  {% endif %}
+
+                  {% if sub_item_summary %}
+                  {# ── SUB-ITEMS TABLE ── #}
+                  <div class="px-3 pt-3 pb-1 {% if summary %}border-top mt-2{% endif %}">
+                    <h6 class="text-muted mb-2"><i class="bi bi-tools me-1"></i> Sub-Items / Consumables</h6>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-bordered mb-0 align-middle">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Sub-Item</th>
+                          <th>Parent Product</th>
+                          <th class="text-center">Deducted Qty</th>
+                          <th class="text-center">Already Returned</th>
+                          <th class="text-center">Max Returnable</th>
+                          <th class="text-center">Return Qty <span class="text-warning">★</span></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in sub_item_summary %}
+                          <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><strong>{{ row.item_name }}</strong></td>
+                            <td class="text-muted">{{ row.parent_product }}</td>
+                            <td class="text-center">{{ row.out_qty }}</td>
+                            <td class="text-center">
+                              {% if row.returned > 0 %}
+                                <span class="badge" style="background:#0d6efd">{{ row.returned }}</span>
+                              {% else %}—{% endif %}
+                            </td>
+                            <td class="text-center">
+                              {% if row.returnable > 0 %}
+                                <span class="badge badge-returnable">{{ row.returnable }}</span>
+                              {% else %}
+                                <span class="badge badge-zero">Fully Returned</span>
+                              {% endif %}
+                            </td>
+                            <td class="text-center">
+                              <input
+                                type="number"
+                                name="return_qty_spi_{{ row.spi_id }}"
+                                class="return-qty-input"
+                                min="0"
+                                max="{{ row.returnable }}"
+                                step="0.001"
+                                value="0"
+                                data-max="{{ row.returnable }}"
+                                {% if row.returnable == 0 %}disabled{% endif %}
+                              >
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% endif %}
 
                   <div class="p-3 d-flex justify-content-between align-items-center border-top">
                     <small class="text-muted">
@@ -154,6 +218,7 @@
               </div>
             </div>
           {% endif %}
+
 
         </div>
       </div>

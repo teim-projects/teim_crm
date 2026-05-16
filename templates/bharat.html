@@ -1492,19 +1492,38 @@
 
        // Main Service Actions
         function approveService(id) {
-            if (confirm("Approve this service? Stock will be deducted from inventory.")) {
+            if (confirm("Approve this service? Stock will be checked and deducted from inventory.")) {
                 fetch(`/approve/${id}/`)
                     .then(res => res.json())
                     .then(data => {
-                        if (!data.success && data.status === 'already_approved') {
-                            alert("This service is already approved.");
+                        if (data.status === 'already_approved') {
+                            alert("ℹ️ This service is already approved.");
                             return;
                         }
-                        let msg = "✅ Service Approved!";
-                        if (data.warnings && data.warnings.length > 0) {
-                            msg += "\n\n⚠️ Stock Warnings:\n" + data.warnings.join("\n");
+
+                        if (data.status === 'insufficient_stock') {
+                            // ❌ BLOCKED — no stock, service NOT approved
+                            alert(
+                                "❌ APPROVAL BLOCKED — Insufficient Stock!\n\n" +
+                                (data.warnings || []).join("\n") +
+                                "\n\nPlease add GRN stock for the missing products first, then retry."
+                            );
+                            return; // Don't reload — no change was made
                         }
-                        alert(msg);
+
+                        if (data.status === 'approved_with_warnings') {
+                            // ✅ Approved but partial/low stock warning
+                            alert(
+                                "✅ Service Approved!\n\n⚠️ Low Stock Warnings:\n" +
+                                (data.warnings || []).join("\n") +
+                                "\n\nStock partially deducted."
+                            );
+                            location.reload();
+                            return;
+                        }
+
+                        // ✅ Full success
+                        alert("✅ Service Approved! Full stock deducted from inventory.");
                         location.reload();
                     })
                     .catch(err => {
@@ -1513,6 +1532,7 @@
                     });
             }
         }
+
 
         function rejectService(id) {
             if (confirm("Mark this service as Pending? Stock will be returned to inventory.")) {

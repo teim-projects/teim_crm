@@ -1,4 +1,4 @@
-{% load static%}
+{% load static %}
 {% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="en">
@@ -55,17 +55,17 @@
                 <div class="col-6 form-group mb-0">
                   <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
                   <span class="text-danger">*</span>
-                  {{ form.name|add_class:"form-control"| attr:"required:true"}}
+                  {{ form.name|add_class:"form-control"|attr:"required:true"}}
                 </div>
                 <div class="col-6 form-group mb-0">
                   <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
                   <span class="text-danger">*</span>
-                  {{ form.email|add_class:"form-control" | attr:"required:true" }}
+                  {{ form.email|add_class:"form-control" |attr:"required:true" }}
                 </div>
                 <div class="col-6 form-group mb-0">
                   <label for="{{ form.contact.id_for_label }}">{{ form.contact.label }}</label>
                   <span class="text-danger">*</span>
-                  {{ form.contact|add_class:"form-control" | attr:"required:true" }}
+                  {{ form.contact|add_class:"form-control" |attr:"required:true" }}
                   {% for error in form.contact.errors %}
                     <small class="text-danger">{{ error }}</small>
                   {% endfor %}

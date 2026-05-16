@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static '\css\bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static '\images' %}">
+
     <link rel="stylesheet" href="{% static 'css\customer.css' %}">
     <script src="{% static 'js/script.js' %}"></script>
 
@@ -19,9 +19,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="icon" href="{% static 'images/crono.png' %}" type="image/png">
 
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,8 +116,7 @@
             background-color: #cbcaca;
         }
 
-        Button Styling
-        .btn-like {
+        Button Styling .btn-like {
             display: inline-block;
             padding: 0.5rem 1rem;
             font-size: 0.9rem;
@@ -449,7 +448,7 @@
                     <div class="table-wrapper addnewshadow">
                         <h1>Customer Details</h1>
 
-                       <div class="row align-items-center mb-3">
+                        <div class="row align-items-center mb-3">
 
                             <!-- Search Form -->
                             <div class="col-md-3">
@@ -463,18 +462,20 @@
 
                             <div class="col-md-2">
                                 <form method="get">
+                                    <input type="hidden" name="search" value="{{ request.GET.search }}">
                                     <div class="input-group ">
-                                          <select class="form-control " name="customer_type" id="customer_type" onchange="this.form.submit()">
+                                        <select class="form-control " name="customer_type" id="customer_type"
+                                            onchange="this.form.submit()">
                                             <option value="">All Customers</option>
-                                            <option value="Individual" {% if request.GET.customer_type == 'Individual' %} selected {% endif %} >Individual</option>
+                                            <option value="Individual" {% if request.GET.customer_type == 'Individual' %} selected {% endif %}>Individual</option>
                                             <option value="Organization" {% if request.GET.customer_type == 'Organization' %} selected {% endif %}>Organization</option>
-                                          </select>
+                                        </select>
                                     </div>
                                 </form>
                             </div>
 
                             <div class="col-md-1"></div>
-                        
+
                             <!-- Export & Import Buttons -->
                             <div class="col-md-6">
                                 <div class="d-flex justify-content-end gap-2 flex-wrap mt-2">
@@ -482,11 +483,12 @@
                                         <button type="button" class="btn btn-primary">📤 &nbsp;Export Excel</button>
                                     </a>
                                     <a href="{% url 'import_customers' %}">
-                                        <button type="button" class="btn btn-secondary">📥 &nbsp;Import Customers</button>
+                                        <button type="button" class="btn btn-secondary">📥 &nbsp;Import
+                                            Customers</button>
                                     </a>
                                 </div>
                             </div>
-                        
+
                         </div>
 
 
@@ -502,15 +504,15 @@
                                         <!-- <th>Quotation <br> History</th> -->
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
-                                            href="?sort_by=customerid&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                                            Customer ID
-                                            {% if current_order == 'asc' %}
-                                            ▲
-                                            {% else %}
-                                            ▼
-                                            {% endif %}
-                                        </a>
-                                    </th>
+                                                href="?sort_by=customerid&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
+                                                Customer ID
+                                                {% if current_order == 'asc' %}
+                                                ▲
+                                                {% else %}
+                                                ▼
+                                                {% endif %}
+                                            </a>
+                                        </th>
                                         <th>
                                             <a style="text-decoration: none;color: #000000;"
                                                 href="?sort_by=fullname&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}">
@@ -532,18 +534,21 @@
                                     {% for x in page_obj %}
                                     <tr>
                                         <td>{{ forloop.counter|add:start_index }}</td>
-                                       <td>
-                                            <a href="/edit_customer/{{ x.id }}" class="btn btn-outline-success" role="button">
+                                        <td>
+                                            <a href="/edit_customer/{{ x.id }}" class="btn btn-outline-success"
+                                                role="button">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
 
-                                            <a href="/delete_customer/{{ x.id }}" class="btn btn-outline-danger delete-link" role="button" >
+                                            <a href="/delete_customer/{{ x.id }}"
+                                                class="btn btn-outline-danger delete-link" role="button">
                                                 <i class="fa-solid fa-trash"></i>
                                             </a>
 
                                             <a href="/quotation_history/{{ x.id }}/" id="linarbtn" class="btn linarbtn "
                                                 role="button"
-                                                style=" background: linear-gradient(to right, #2575fc, #6a11cb); color:white;  border-radius:20px;"><i class="fa-solid fa-clock-rotate-left"></i></a>
+                                                style=" background: linear-gradient(to right, #2575fc, #6a11cb); color:white;  border-radius:20px;"><i
+                                                    class="fa-solid fa-clock-rotate-left"></i></a>
                                         </td>
                                         <!-- <td></td> -->
 
@@ -560,8 +565,8 @@
                                         <td>{{ x.fullname }}</td>
                                         <td>{{ x.primaryemail }}</td>
                                         <td>{{ x.primarycontact }}</td>
-                                        
-                                        
+
+
                                     </tr>
                                     {% endfor %}
                                 </tbody>

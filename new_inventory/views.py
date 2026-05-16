@@ -1067,7 +1067,7 @@ def products_stock_list_view(request):
         expiry_to=expiry_to
     )
 
-    # ────────────── FIX: Annotate closing_qty so we can sort on it ──────────────
+    # ────────────── Annotate closing_qty so we can sort on it ──────────────
     from django.db.models import F, ExpressionWrapper, DecimalField
 
     qs = qs.annotate(
@@ -1076,7 +1076,7 @@ def products_stock_list_view(request):
             output_field=DecimalField(max_digits=15, decimal_places=3, null=True)
         )
     )
-    # ───────────────────────────────────────────────────────────────────────────────
+    # ────────────────────────────────────────────────────────────────────────
 
     # Dynamic sorting based on ?sort= parameter
     if sort == 'desc':
@@ -1103,23 +1103,31 @@ def products_stock_list_view(request):
 
     for p in products_page:
         if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
-            in_qty = getattr(p, 'batch_in_qty', Decimal('0'))
-            out_qty = Decimal('0')
+            in_qty   = Decimal(str(getattr(p, 'batch_in_qty', 0) or 0))
+            out_qty  = Decimal('0')
+            approved = Decimal('0')
             reserved = Decimal('0')
         else:
-            in_qty = getattr(p, 'in_qty', Decimal('0'))
-            out_qty = getattr(p, 'out_qty', Decimal('0'))
-            reserved = getattr(p, 'reserved_qty', Decimal('0'))
+            in_qty   = Decimal(str(getattr(p, 'in_qty',       0) or 0))
+            out_qty  = Decimal(str(getattr(p, 'out_qty',      0) or 0))
+            approved = Decimal(str(getattr(p, 'approved_qty', 0) or 0))
+            reserved = Decimal(str(getattr(p, 'reserved_qty', 0) or 0))
 
-        closing = in_qty - out_qty - reserved
+        # closing = in - out (out already includes service deductions via total_out_qty)
+        # approved_qty is purely display-only: shows what portion of out went to services
+        closing   = max(Decimal('0'), in_qty - out_qty)
+        available = max(Decimal('0'), closing - reserved)
+        mtn_only  = max(Decimal('0'), out_qty - approved)
 
         rows.append({
-            "id": p.pk,
-            "name": getattr(p, 'product_name', str(p)),
-            "in_qty": str(in_qty),
-            "out_qty": str(out_qty),
-            "reserved_qty": str(reserved),
-            "closing_qty": str(closing),
+            "id"           : p.pk,
+            "name"         : getattr(p, 'product_name', str(p)),
+            "in_qty"       : f"{in_qty:.3f}",
+            "out_qty"      : f"{mtn_only:.3f}",
+            "approved_qty" : f"{approved:.3f}",
+            "reserved_qty" : f"{reserved:.3f}",
+            "closing_qty"  : f"{closing:.3f}",
+            "available_qty": f"{available:.3f}",
         })
 
     # -----------------------------
@@ -1130,6 +1138,7 @@ def products_stock_list_view(request):
 
     
     from django.db.models import Sum, Q
+    from crmapp.models import ServiceProductItem
     
     sub_item_qs = GoodsReceiveNoteSubItem.objects.select_related(
         "sub_item",
@@ -1139,11 +1148,16 @@ def products_stock_list_view(request):
     # -----------------------------
     # LOCATION FILTER (SAME AS PRODUCT)
     # -----------------------------
+    service_item_filter = Q(service_product__service__is_approved=True)
     if location_type and location_id:
         sub_item_qs = sub_item_qs.filter(
             grn__destination_type=location_type,
             grn__destination_id=location_id
         )
+        if location_type == 'BRANCH':
+            service_item_filter &= Q(service_product__service__branch_id=location_id)
+        elif location_type == 'HO':
+            service_item_filter &= Q(service_product__service__branch__is_head_office=True)
     
     # -----------------------------
     # SEARCH FILTER
@@ -1152,23 +1166,84 @@ def products_stock_list_view(request):
         sub_item_qs = sub_item_qs.filter(
             sub_item__item_name__icontains=search
         )
+        service_item_filter &= Q(required_item__item_name__icontains=search)
     
     # -----------------------------
     # AGGREGATE
     # -----------------------------
-    sub_item_qs = sub_item_qs.values(
-        "sub_item__item_name"
+    grn_totals = sub_item_qs.values(
+        "sub_item__item_name", "sub_item_id"
     ).annotate(
-        total_received=Sum("received_qty")
+        total_in=Sum("received_qty")
     )
     
-    sub_item_rows = []
-    
-    for r in sub_item_qs:
-        sub_item_rows.append({
+    service_totals = ServiceProductItem.objects.filter(service_item_filter).values(
+        "required_item__item_name", "required_item_id"
+    ).annotate(
+        total_out=Sum("quantity")
+    )
+
+    # Compute total returned per sub-item from StockLedger SERVICE_RETURN entries.
+    # transaction_ref pattern: SERVICE_{id}_SUBITEM_{required_item_id}
+    # We extract required_item_id by matching the suffix SUBITEM_{id}.
+    from new_inventory.models import StockLedger
+    from django.db.models import Sum as LSum
+
+    # Build a map: required_item_id → total returned qty (all services at this location)
+    return_ledger_qs = StockLedger.objects.filter(
+        transaction_type="SERVICE_RETURN",
+        transaction_ref__contains="_SUBITEM_",
+    )
+    if location_type and location_id:
+        return_ledger_qs = return_ledger_qs.filter(
+            location_type=location_type,
+            location_id=location_id,
+        )
+
+    returned_map = {}  # required_item_id → Decimal
+    for entry in return_ledger_qs.values("transaction_ref", "in_qty"):
+        ref = entry["transaction_ref"]  # e.g. SERVICE_307_SUBITEM_3
+        try:
+            ri_id = int(ref.split("_SUBITEM_")[1])
+        except (IndexError, ValueError):
+            continue
+        returned_map[ri_id] = returned_map.get(ri_id, Decimal("0.000")) + Decimal(str(entry["in_qty"] or 0))
+
+    sub_item_dict = {}
+    for r in grn_totals:
+        sub_item_dict[r["sub_item_id"]] = {
             "name": r["sub_item__item_name"],
-            "qty": r["total_received"] or 0
-        })    
+            "in_qty": Decimal(str(r["total_in"] or '0.0')),
+            "approved_qty": Decimal('0.0'),
+        }
+
+    for r in service_totals:
+        item_id = r["required_item_id"]
+        if item_id not in sub_item_dict:
+            sub_item_dict[item_id] = {
+                "name": r["required_item__item_name"],
+                "in_qty": Decimal('0.0'),
+                "approved_qty": Decimal('0.0'),
+            }
+        planned = Decimal(str(r["total_out"] or '0.0'))
+        returned = returned_map.get(item_id, Decimal("0.000"))
+        # Net approved = planned usage − returned to stock
+        net_consumed = max(Decimal("0.000"), planned - returned)
+        sub_item_dict[item_id]["approved_qty"] += net_consumed
+
+    sub_item_rows = []
+    for data in sub_item_dict.values():
+        available = max(Decimal('0.0'), data["in_qty"] - data["approved_qty"])
+        if available > 0 or data["in_qty"] > 0 or data["approved_qty"] > 0:
+            sub_item_rows.append({
+                "name": data["name"],
+                "in_qty": str(data["in_qty"]),
+                "approved_qty": str(data["approved_qty"]),
+                "available_qty": str(available)
+            })
+
+    sub_item_rows.sort(key=lambda x: x["name"])
+
 
     context = {
         "rows": rows,
@@ -1998,7 +2073,11 @@ def service_stock_return(request, service_id):
     POST → Process the partial stock return.
     """
     from crmapp.models import service_management
-    from .utils import get_service_stock_out_summary, partial_return_stock_for_service
+    from .utils import (
+        get_service_stock_out_summary,
+        get_service_sub_item_stock_out_summary,
+        partial_return_stock_for_service,
+    )
 
     service = get_object_or_404(service_management, pk=service_id)
 
@@ -2007,11 +2086,16 @@ def service_stock_return(request, service_id):
         messages.error(request, "Stock can only be returned for approved services.")
         return redirect("inventory_service")  # adjust to your service list URL
 
-    summary = get_service_stock_out_summary(service)
-    has_returnable = any(row["returnable"] > 0 for row in summary)
+    summary          = get_service_stock_out_summary(service)
+    sub_item_summary = get_service_sub_item_stock_out_summary(service)
+    has_returnable = (
+        any(row["returnable"] > 0 for row in summary)
+        or any(row["returnable"] > 0 for row in sub_item_summary)
+    )
 
     if request.method == "POST":
         return_items = []
+        # Collect product return quantities
         for row in summary:
             field_name = f"return_qty_{row['ledger_id']}"
             raw = request.POST.get(field_name, "0").strip() or "0"
@@ -2021,6 +2105,16 @@ def service_stock_return(request, service_id):
                 qty = Decimal("0")
             if qty > 0:
                 return_items.append({"ledger_id": row["ledger_id"], "return_qty": qty})
+        # Collect sub-item return quantities (keyed by spi_id)
+        for row in sub_item_summary:
+            field_name = f"return_qty_spi_{row['spi_id']}"
+            raw = request.POST.get(field_name, "0").strip() or "0"
+            try:
+                qty = Decimal(raw)
+            except Exception:
+                qty = Decimal("0")
+            if qty > 0:
+                return_items.append({"spi_id": row["spi_id"], "return_qty": qty})
 
         if not return_items:
             messages.warning(request, "No return quantities entered. Nothing was returned.")
@@ -2034,12 +2128,17 @@ def service_stock_return(request, service_id):
                 messages.success(request, "Stock returned to inventory successfully.")
             return redirect("service_stock_return", service_id=service.id)
 
-        # Refresh summary after POST
-        summary = get_service_stock_out_summary(service)
-        has_returnable = any(row["returnable"] > 0 for row in summary)
+        # Refresh both summaries after POST
+        summary          = get_service_stock_out_summary(service)
+        sub_item_summary = get_service_sub_item_stock_out_summary(service)
+        has_returnable = (
+            any(row["returnable"] > 0 for row in summary)
+            or any(row["returnable"] > 0 for row in sub_item_summary)
+        )
 
     return render(request, "inventory/service_stock_return.html", {
-        "service"      : service,
-        "summary"      : summary,
-        "has_returnable": has_returnable,
+        "service"         : service,
+        "summary"         : summary,
+        "sub_item_summary": sub_item_summary,
+        "has_returnable"  : has_returnable,
     })

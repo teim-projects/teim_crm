@@ -6,15 +6,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{% static '\css\bootstrap.min.css' %}">
-  <link rel="stylesheet" href="{% static '\images' %}">
+
   <link rel="stylesheet" href="{% static 'css\customer.css' %}">
   <script src="{% static 'js/script.js' %}"></script>
 
 
   <title>Customer Details</title>
-  <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
@@ -153,13 +153,13 @@
               </div>
               <div class="col-md-4 mb-3">
                 <label>Branch <span class="text-danger">*</span></label>
-                <select name="branch" id="" class="form-control" required>
+                  <select name="branch" id="" class="form-control" required>
                     <option value="" disabled selected>Select Branch</option>
                     {% for branch in branches %}
                     <option value="{{ branch.id }}" {% if branch.id == x.branch.id %}selected{% endif %}>{{ branch.branch_name }}</option>
                     {% endfor %}
                 </select>
-            </div>
+              </div>
               <div class="col-md-4 mb-3">
                 <label>Secondary Email </label>
                 <input type="email" class="form-control" name="usecondaryemail" value="{{ x.secondaryemail }}"
@@ -186,24 +186,27 @@
                   placeholder="Designation" />
               </div>
               <div class="col-md-3 mb-4">
-                  <label>Customer Type<span class="star">*</span></label>
-                  <select name="ucustomer_type" class="form-control" id="customer_type_select" onchange="toggleOrganizationFields()">
-                    <option value="Individual" {% if x.customer_type == "Individual" %}selected{% endif %}>Individual</option>
-                    <option value="Organization" {% if x.customer_type == "Organization" %}selected{% endif %}>Organization</option>
-                  </select>
-                </div>
-                <div class="or_name col-md-3 mb-4" style="display: none;">
-                  <label>Name <span class="star">*</span></label>
-                  <input type="text" name="uor_name"  class="form-control" value="{{ x.or_name }}">
-                
-                </div>
-                <div class="or_contact col-md-3 mb-4" style="display: none;">
-                  <label>Contact <span class="star">*</span></label>
-                  <input type="number" name="uor_contact" class="form-control" value="{{ x.or_contact }}">
-                </div>
+                <label>Customer Type<span class="star">*</span></label>
+                <select name="ucustomer_type" class="form-control" id="customer_type_select"
+                  onchange="toggleOrganizationFields()">
+                  <option value="Individual" {% if x.customer_type == "Individual" %}selected{% endif %}>Individual
+                  </option>
+                  <option value="Organization" {% if x.customer_type == "Organization" %}selected{% endif %}>Organization
+                  </option>
+                </select>
               </div>
+              <div class="or_name col-md-3 mb-4" style="display: none;">
+                <label>Name <span class="star">*</span></label>
+                <input type="text" name="uor_name" class="form-control" value="{{ x.or_name }}">
 
-         
+              </div>
+              <div class="or_contact col-md-3 mb-4" style="display: none;">
+                <label>Contact <span class="star">*</span></label>
+                <input type="number" name="uor_contact" class="form-control" value="{{ x.or_contact }}">
+              </div>
+            </div>
+
+
             <div class="text-center">
               <button type="button" class="btn btn-primary" onclick="nextStep()" style="width: 200px;">Next</button>
             </div>
@@ -324,7 +327,7 @@
   </div>
 
 
-<!-- Individual and organization  -->
+  <!-- Individual and organization  -->
   <script>
     function toggleOrganizationFields() {
       const selectValue = document.getElementById('customer_type_select').value;
@@ -373,7 +376,7 @@
     });
   </script>
 
-  
+
   <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
     <div class="row p-3">
       <div class="col-md-12 text-center">
@@ -401,33 +404,33 @@
   </div>
 
 
-<script>
-/* TEIM-PHONE-RESTRICT */
-(function(){
-  document.addEventListener('DOMContentLoaded', function(){
-    var phoneFields = document.querySelectorAll('[name="uprimarycontact"], [name="usecondarycontact"]');
-    phoneFields.forEach(function(inp){
-      inp.setAttribute('maxlength', '10');
-      inp.setAttribute('pattern', '[0-9]{10}');
-      inp.setAttribute('title', 'Enter exactly 10 digits');
-      inp.setAttribute('inputmode', 'numeric');
-      // Change type from number to tel to support maxlength
-      if (inp.type === 'number') inp.type = 'tel';
-      inp.addEventListener('input', function(){
-        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+  <script>
+    /* TEIM-PHONE-RESTRICT */
+    (function () {
+      document.addEventListener('DOMContentLoaded', function () {
+        var phoneFields = document.querySelectorAll('[name="uprimarycontact"], [name="usecondarycontact"]');
+        phoneFields.forEach(function (inp) {
+          inp.setAttribute('maxlength', '10');
+          inp.setAttribute('pattern', '[0-9]{10}');
+          inp.setAttribute('title', 'Enter exactly 10 digits');
+          inp.setAttribute('inputmode', 'numeric');
+          // Change type from number to tel to support maxlength
+          if (inp.type === 'number') inp.type = 'tel';
+          inp.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+          });
+          inp.addEventListener('keypress', function (e) {
+            if (!/[0-9]/.test(e.key)) e.preventDefault();
+          });
+          inp.addEventListener('paste', function (e) {
+            e.preventDefault();
+            var txt = (e.clipboardData || window.clipboardData).getData('text');
+            this.value = txt.replace(/[^0-9]/g, '').slice(0, 10);
+          });
+        });
       });
-      inp.addEventListener('keypress', function(e){
-        if (!/[0-9]/.test(e.key)) e.preventDefault();
-      });
-      inp.addEventListener('paste', function(e){
-        e.preventDefault();
-        var txt = (e.clipboardData || window.clipboardData).getData('text');
-        this.value = txt.replace(/[^0-9]/g, '').slice(0, 10);
-      });
-    });
-  });
-})();
-</script>
+    })();
+  </script>
 </body>
 
 </html>
