@@ -343,15 +343,12 @@
                 >
                   Product
                 </th>
-                <th style="width: 110px">In Qty</th>
-                <th style="width: 110px">Out Qty</th>
+                <th style="width: 110px">Receipt</th>
+                <th style="width: 110px">Sent</th>
                 <th style="width: 120px">Approved</th>
                 <th style="width: 110px">Reserved</th>
-                <th
-                  class="sortable {% if filters.sort == 'avail_asc' %}asc{% elif filters.sort == 'avail_desc' %}desc{% endif %}"
-                  onclick="toggleSort('avail')"
-                >
-                  Available
+                <th>
+                  Closing
                 </th>
               </tr>
             </thead>
@@ -400,9 +397,9 @@
                 <tr>
                   <th style="width: 50px"></th>
                   <th>Sub Item</th>
-                  <th style="width: 110px">In Qty</th>
+                  <th style="width: 110px">Receipt</th>
                   <th style="width: 120px">Approved</th>
-                  <th>Available</th>
+                  <th>Closing</th>
                 </tr>
               </thead>
 
