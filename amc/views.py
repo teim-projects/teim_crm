@@ -83,9 +83,9 @@ def load_service_details(request):
 
     for f in frequencies:
         product_data.append({
-            "product_id": f.product.pk,   # ✅ UNIVERSAL FIX
+            "product_id": f.product.pk,
             "product_name": f.product.product_name,
-            "frequency": f.frequency
+            "frequency": f.remarks if f.remarks else str(f.frequency),
         })
 
     return JsonResponse({
@@ -111,22 +111,30 @@ def amc_create(request):
                 service_subject__startswith="AMC Visit"
             )
 
-
-
         if form.is_valid():
             amc = form.save(commit=False)
             service_obj = form.cleaned_data["service"]
 
-            # Start date = first service date
-            amc.start_date = service_obj.service_date
+            # FIX 1: Pull frequency from cleaned form data and set explicitly
+            amc.frequency = form.cleaned_data.get("frequency") or None
+
+            # FIX 2: Guard against service having no service_date (avoids crash in generate_schedule)
+            from datetime import date as _date
+            amc.start_date = service_obj.service_date or _date.today()
+
             amc.branch = service_obj.branch
             amc.created_by = request.user
             amc.save()
 
-            
-
             messages.success(request, "AMC created successfully")
             return redirect("amc:list")
+
+        else:
+            # Re-render form with validation errors
+            return render(request, "amc/form.html", {
+                "form": form,
+                "title": "Create AMC"
+            })
 
     else:
         form = AMCContractForm()

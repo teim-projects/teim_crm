@@ -356,14 +356,8 @@
                         `;
 
                         data.products.forEach(p => {
-                            // Handle different possible field names from your backend
                             let productName = p.product_name || p.name || '—';
-                            let freqValue = (p.frequency !== undefined && p.frequency !== null) ? p.frequency : '—';
-                            
-                            // Add unit if it's a number
-                            if (typeof freqValue === 'number' && !isNaN(freqValue)) {
-                                freqValue = freqValue + ' services';
-                            }
+                            let freqValue = (p.frequency !== undefined && p.frequency !== null && p.frequency !== '') ? p.frequency : '—';
                             
                             html += `
                                 <tr>
@@ -373,7 +367,7 @@
                             `;
                         });
 
-                        html += `</tbody>}<tr>`;
+                        html += `</tbody></table>`;
                         box.html(html);
                     } else {
                         // No products found for this service
@@ -580,7 +574,7 @@
                             `;
                         });
 
-                        html += `</tbody>}倍</div>`;
+                        html += `</tbody></table></div>`;
                     } else {
                         html += `<p class="text-muted text-center py-4 fst-italic">No products defined for this contract.</p>`;
                     }

@@ -1321,6 +1321,36 @@ def service_management_create(request):
                 )
                 print(f"Created ServiceProduct with ID: {service_product.id}")
                 
+                # ── Save ServiceProductFrequency ──────────────────────────────
+                from .models import ServiceProductFrequency
+                frequency_val = item.get('frequency', 'NOT SELECTED')
+                if frequency_val and frequency_val != 'NOT SELECTED':
+                    # Convert to integer if it's a numeric string (e.g. "3")
+                    try:
+                        freq_int = int(frequency_val)
+                    except (ValueError, TypeError):
+                        # Store text frequencies (Weekly/Fortnight/Daily) as-is via remarks
+                        freq_int = None
+                    
+                    if freq_int is not None:
+                        ServiceProductFrequency.objects.update_or_create(
+                            service=instance,
+                            product=product,
+                            defaults={'frequency': freq_int, 'remarks': str(frequency_val)}
+                        )
+                    else:
+                        # For non-integer frequencies (Weekly/Fortnight/Daily),
+                        # map to a sensible integer: Weekly=52, Fortnight=26, Daily=365
+                        freq_map = {'Weekly': 52, 'Fortnight': 26, 'Daily': 365}
+                        mapped = freq_map.get(str(frequency_val), 12)
+                        ServiceProductFrequency.objects.update_or_create(
+                            service=instance,
+                            product=product,
+                            defaults={'frequency': mapped, 'remarks': str(frequency_val)}
+                        )
+                    print(f"    Saved ServiceProductFrequency: {frequency_val}")
+                # ─────────────────────────────────────────────────────────────
+
                 # Save selected items for this service product
                 selected_items = item.get('items', [])
                 print(f"Number of selected items: {len(selected_items)}")
@@ -4251,6 +4281,30 @@ def edit_service_records(request, rid):
                         description=description,
                     )
                     
+                    # ── Save ServiceProductFrequency ──────────────────────────
+                    from .models import ServiceProductFrequency
+                    frequency_val = item.get('frequency', 'NOT SELECTED')
+                    if frequency_val and frequency_val != 'NOT SELECTED':
+                        try:
+                            freq_int = int(frequency_val)
+                        except (ValueError, TypeError):
+                            freq_int = None
+                        if freq_int is not None:
+                            ServiceProductFrequency.objects.update_or_create(
+                                service=service,
+                                product=product,
+                                defaults={'frequency': freq_int, 'remarks': str(frequency_val)}
+                            )
+                        else:
+                            freq_map = {'Weekly': 52, 'Fortnight': 26, 'Daily': 365}
+                            mapped = freq_map.get(str(frequency_val), 12)
+                            ServiceProductFrequency.objects.update_or_create(
+                                service=service,
+                                product=product,
+                                defaults={'frequency': mapped, 'remarks': str(frequency_val)}
+                            )
+                    # ─────────────────────────────────────────────────────────
+
                     # Add items for this service product
                     for item_data in items_list:
                         required_item_id = item_data.get('required_item_id')
