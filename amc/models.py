@@ -458,6 +458,12 @@ class AMCServiceVisit(models.Model):
         blank=True,
         related_name="amc_service_visits"
     )
+    
+    crm_service_created_at = models.DateTimeField(
+    null=True,
+    blank=True
+    
+    )
 
     remarks = models.TextField(blank=True, null=True)
 
@@ -470,6 +476,8 @@ class AMCServiceVisit(models.Model):
         ],
         default="PENDING"
     )
+    
+    auto_allocation_done = models.BooleanField(default=False)
 
     allocation_cancelled_reason = models.TextField(blank=True, null=True)
 
