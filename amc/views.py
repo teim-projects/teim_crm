@@ -873,4 +873,3 @@ def amc_list(request):
         "contracts": contracts,
         "today": date.today(),
     })
-    
