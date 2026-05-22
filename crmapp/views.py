@@ -7,11 +7,10 @@ from decimal import Decimal
 import base64
 from time import time
 import traceback
-# pyrefly: ignore [missing-import]
 import matplotlib.pyplot as plt
 import openpyxl
 
-
+from django import contrib
 from django.conf import settings
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -26,6 +25,16 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 
 from amc.models import AMCContract, AMCServiceSchedule
+
+
+import json
+from decimal import Decimal
+from datetime import datetime
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+
+
+from crmapp.models import ServiceProductFrequency   # ✅ IMPORTANT
 
 from .forms import (
     InventoryServiceForm,
@@ -1018,10 +1027,10 @@ def customer_details_create(request):
                     'shifttopartycity': lead.city or '',
                     'soldtopartyaddress': lead.customeraddress or '',
                     'soldtopartycity': lead.city or '',
-                    'customer_type': lead.customer_type or 'Individual',
-                    'or_name': lead.or_name or '',
-                    'or_contact': str(lead.or_contact) if lead.or_contact else '',
-                    'branch': lead.branch.id if lead.branch else '',
+                    'customer_type':lead.customer_type or '',
+                    'or_name':lead.or_name or '',
+                    'or_contact': lead.or_contact or None,
+                    'branch': lead.branch_id or None,
                 }
                 print(data)
 
@@ -1197,6 +1206,39 @@ def get_product_items(request):
     except Exception as e:
         return JsonResponse({'error': str(e), 'success': False}, status=500)
 
+import json
+from decimal import Decimal
+from datetime import datetime
+from django.utils import timezone
+from django.shortcuts import render, redirect
+from crmapp.models import ServiceProductFrequency   # ✅ IMPORTANT
+
+import json
+from decimal import Decimal
+from datetime import datetime
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from crmapp.models import (
+    service_management,
+    customer_details,
+    Product,
+    ServiceProduct,
+    ServiceProductFrequency,
+    Branch,
+    SalesPerson,
+    BranchManager
+)
+from crmapp.decorators import role_required
+import json
+from datetime import datetime
+from decimal import Decimal
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from crmapp.models import (
+    ServiceProductFrequency, Product, service_management, 
+    customer_details, SalesPerson, BranchManager, Branch, ServiceProduct
+)
+
 @login_required
 @role_required(['admin','sales', 'branch_manager'])
 def service_management_create(request):
@@ -1207,6 +1249,7 @@ def service_management_create(request):
     branch = Branch.objects.all()
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
     segments = service_management._meta.get_field('segment').choices
+    
     if request.method == 'POST':
         try:
             customer_contact = request.POST['customer_contact']
@@ -1232,18 +1275,23 @@ def service_management_create(request):
             delivery_time = request.POST.get('delivery_time', timezone.now().time())
             branch_id = request.POST.get('branch')
             branch_instance = Branch.objects.get(id=branch_id) if branch_id else None
+            
+            service_subject = request.POST.get('subject')
+
+            if not service_subject or service_subject.strip() == "":
+                service_subject = f"Service #{customer.id}"
+            
             # Create service instance
             instance = service_management.objects.create(
-                
                 customer=customer,
                 address=address,
                 total_price=total_price,
                 total_price_with_gst=total_with_gst,
-                total_charges = total_gst,
-                service_subject = request.POST.get('subject'),
+                total_charges=total_gst,
+                service_subject=service_subject,
                 contract_type=request.POST.get('contract_type', 'NOT SELECTED'),
                 contract_status=request.POST.get('contract_status', 'NOT SELECTED'),
-                segment = request.POST.get('segments'),
+                segment=request.POST.get('segments'),
                 property_type=request.POST.get('property_type',''),
                 warranty_period=request.POST.get('warranty_period',''),
                 state=request.POST.get('state', 'Null'),
@@ -1252,7 +1300,6 @@ def service_management_create(request):
                 latitude=latitude,
                 longitude=longitude,
                 gps_location=request.POST.get('gps_location'),
-                
                 frequency_count=request.POST.get('frequency_count', 'NOT SELECTED'),
                 payment_terms=request.POST.get('payment_terms', '100% Advance payment OR Whatever mutually Decided'),
                 sales_person_name=request.POST.get('sales_person_name'),
@@ -1265,94 +1312,165 @@ def service_management_create(request):
                 branch=branch_instance,
             )
 
-            # Get products from JSON string
-            # Get products from JSON string
-            # Get products from JSON string
+            # -------------------------
+            # GET PRODUCTS JSON (STEP 3)
+            # -------------------------
             selected_products_json = request.POST.get('selected_products_json', '[]')
-            print("=" * 50)
-            print("RAW selected_products_json:", selected_products_json)
-            print("Type of selected_products_json:", type(selected_products_json))
             
-            try:
+            print("📦 RAW JSON:", selected_products_json)
+            
+            if selected_products_json:
                 selected_products = json.loads(selected_products_json)
-                print("Parsed selected_products:", selected_products)
-                print("Number of products:", len(selected_products))
-                print("Type of selected_products:", type(selected_products))
-            except json.JSONDecodeError as e:
-                print(f"JSON Decode Error: {e}")
+            else:
                 selected_products = []
-            
-            # Loop through product entries
-            for idx, item in enumerate(selected_products):
-                print(f"\n--- Processing Product {idx + 1} ---")
-                print(f"Item data: {item}")
+
+            print("📦 PARSED:", selected_products)
+
+            # -------------------------
+            # SAVE LOOP (WITH SUB-ITEMS SUPPORT)
+            # -------------------------
+            for item in selected_products:
+                print("👉 ITEM:", item)
+
+                product_id = item.get("p_id")
+                frequency = item.get("frequency")
+                added_via = item.get("added_via", "detailed")
                 
-                product_id = item.get('p_id')
-                price = item.get('price')
-                quantity = item.get('quantity')
-                gst_percentage = item.get('gst', 0)
-                description = item.get('description', '')
-                
-                print(f"Product ID: {product_id}")
-                print(f"Price: {price}")
-                print(f"Quantity: {quantity}")
-                print(f"GST: {gst_percentage}")
-                print(f"Description: {description}")
-                
-                if not product_id or price is None or quantity is None:
-                    print(f"Skipping - Missing data: product_id={product_id}, price={price}, quantity={quantity}")
+                price = item.get("price")
+                quantity = item.get("quantity")
+
+                # Skip if no product_id
+                if not product_id:
+                    print("❌ skip - no product_id")
                     continue
-                
+
+                # Get product
                 try:
-                    product = Product.objects.get(product_id=product_id)
-                    print(f"Found product: {product.product_name}")
+                    product = Product.objects.get(pk=product_id)
                 except Product.DoesNotExist:
-                    print(f"Product with ID {product_id} not found!")
+                    print(f"❌ product not found for id: {product_id}")
                     continue
-                
-                # Create ServiceProduct
-                service_product = ServiceProduct.objects.create(
-                    service=instance,
-                    product=product,
-                    price=Decimal(price),
-                    quantity=Decimal(quantity),
-                    gst_percentage=Decimal(gst_percentage) or Decimal('0.00'),
-                    description=description,
-                )
-                print(f"Created ServiceProduct with ID: {service_product.id}")
-                
-                # Save selected items for this service product
-                selected_items = item.get('items', [])
-                print(f"Number of selected items: {len(selected_items)}")
-                
-                for s_idx, selected_item in enumerate(selected_items):
-                    print(f"  Item {s_idx + 1}: {selected_item}")
-                    required_item_id = selected_item.get('required_item_id')
-                    if required_item_id:
+
+                # -----------------------------------
+                # SAVE MAIN PRODUCT
+                # -----------------------------------
+                service_product = None
+
+                if added_via != 'checkbox':
+                    try:
+                        gst_val = item.get("gst")
+
+                        if gst_val in [None, "", "null"]:
+                            gst_val = 0
+
+                        # ✅ SAVE MAIN PRODUCT
+                        service_product = ServiceProduct.objects.create(
+                            service=instance,
+                            product=product,
+                            price=Decimal(str(price or 0)),
+                            quantity=Decimal(str(quantity or 1)),
+                            gst_percentage=Decimal(str(gst_val)),
+                        )
+
+                        print(f"✅ PRODUCT SAVED: {product.product_name}")
+
+                    except Exception as e:
+                        print("❌ PRODUCT SAVE ERROR:", e)
+
+                # -----------------------------------
+                # SAVE SUB ITEMS (ADDED HERE)
+                # -----------------------------------
+                if service_product:
+                    sub_items = item.get("items", [])
+
+                    print("📦 SUB ITEMS:", sub_items)
+
+                    for sub_item in sub_items:
+                        required_item_id = sub_item.get("required_item_id")
+
+                        if not required_item_id:
+                            print("❌ No required_item_id")
+                            continue
+
                         try:
-                            required_item = ProductRequiredItem.objects.get(id=required_item_id)
-                            print(f"    Found required item: {required_item.item_name}")
-                            item_obj = ServiceProductItem.objects.create(
+                            required_item = ProductRequiredItem.objects.get(
+                                id=required_item_id
+                            )
+
+                            ServiceProductItem.objects.create(
                                 service_product=service_product,
                                 required_item=required_item,
-                                quantity=Decimal(selected_item.get('quantity', 1)),
-                                notes=selected_item.get('notes', '')
+                                quantity=sub_item.get("quantity", 1),
+                                notes=sub_item.get("notes", "")
                             )
-                            print(f"    Created ServiceProductItem with ID: {item_obj.id}")
+
+                            print(
+                                f"✅ SUB ITEM SAVED: "
+                                f"{required_item.item_name}"
+                            )
+
                         except ProductRequiredItem.DoesNotExist:
-                            print(f"    Item with ID {required_item_id} not found")
-                            continue
+                            print(
+                                f"❌ Required item not found: "
+                                f"{required_item_id}"
+                            )
+
                         except Exception as e:
-                            print(f"    Error creating ServiceProductItem: {e}")
-                            continue
-            
-            print("\n" + "=" * 50)
-            print("All products processed successfully")
-            print("=" * 50)
-            
+                            print("❌ SUB ITEM SAVE ERROR:", e)
+
+                # -----------------------------------
+                # SAVE FREQUENCY
+                # -----------------------------------
+                freq_raw = str(frequency or "").strip().lower()
+
+                if not freq_raw:
+                    print("❌ No frequency")
+                    continue
+
+                if freq_raw.isdigit():
+                    freq_int = int(freq_raw)
+
+                elif freq_raw == "weekly":
+                    freq_int = 52
+
+                elif freq_raw == "fortnight":
+                    freq_int = 26
+
+                elif freq_raw == "daily":
+                    freq_int = 365
+
+                else:
+                    print("❌ INVALID FREQUENCY:", freq_raw)
+                    continue
+
+                # SAVE FREQUENCY
+                try:
+                    frequency_value = freq_int
+
+                    # 🔥 custom fortnight logic
+                    if str(frequency).lower() == "fortnight":
+                        fortnight_count = request.POST.get("fortnight_count")
+                        if fortnight_count:
+                            frequency_value = int(fortnight_count)
+
+                    ServiceProductFrequency.objects.create(
+                        service=instance,
+                        product=product,
+                        frequency=frequency_value
+                    )
+
+                    print(f"🔥 FREQUENCY SAVED: {product.product_name} - {frequency_value}")
+                except Exception as e:
+                    print("❌ FREQUENCY SAVE ERROR:", e)
+                    continue
+
+            print("✅ Service management record created successfully")
             return redirect('/display_service_management')
 
         except Exception as e:
+            print("❌ ERROR in service_management_create:", str(e))
+            import traceback
+            traceback.print_exc()
             return render(request, 'service_management.html', {
                 'error': str(e),
                 'category_choices': category_choices,
@@ -1360,6 +1478,8 @@ def service_management_create(request):
                 'customers': customers,
                 'sales_persons': sales_persons,
                 'frequency_choices': frequency_choices,
+                'segments': segments,
+                'branches': branch
             })
 
     return render(request, 'service_management.html', {
@@ -1368,12 +1488,9 @@ def service_management_create(request):
         'customers': customers,
         'sales_persons': sales_persons,
         'frequency_choices': frequency_choices,
-        'segments':segments,
-        'branches':branch
+        'segments': segments,
+        'branches': branch
     })
-
-
-
 
 # views.py - COMPLETE VERSION WITH ALL ACTIONS
 
@@ -1392,13 +1509,8 @@ from datetime import datetime
 @login_required
 @csrf_exempt
 def approve_service(request, id):
-    """Approve service and deduct required product stock from inventory.
-    
-    BLOCKS approval if any product has zero/insufficient stock at the HO location.
-    Only marks is_approved=True when all products have adequate stock.
-    """
-    from new_inventory.utils import deduct_stock_for_service, reverse_stock_for_service
-
+    """Approve service and deduct required product stock from inventory."""
+    from new_inventory.utils import deduct_stock_for_service  # lazy import — avoids circular import linter warning
     service = get_object_or_404(service_management, id=id)
 
     if service.is_approved:
@@ -1408,47 +1520,17 @@ def approve_service(request, id):
             'message': 'This service is already approved.',
         })
 
-    # Deduct stock — returns list of warning strings (empty = all OK)
+    # Deduct stock from inventory — returns list of warning strings (empty = all OK)
     warnings = deduct_stock_for_service(service, request.user)
 
-    # Check if any product had NO stock at all (hard block)
-    no_stock_warnings = [w for w in warnings if 'No stock' in w]
-
-    if no_stock_warnings:
-        # Reverse any partial deductions that did happen
-        reverse_stock_for_service(service, request.user)
-        return JsonResponse({
-            'status': 'insufficient_stock',
-            'success': False,
-            'stock_deducted': False,
-            'warnings': warnings,
-            'message': '⚠️ Cannot approve: No stock available for one or more products. Please add GRN stock first.',
-        })
-
-    # Partial low-stock warning (some stock deducted but less than needed)
-    low_stock_warnings = [w for w in warnings if 'Low stock' in w]
-
-    # Mark approved — stock fully or partially deducted
     service.is_approved = True
     service.save()
-
-    if low_stock_warnings:
-        return JsonResponse({
-            'status': 'approved_with_warnings',
-            'success': True,
-            'stock_deducted': False,
-            'warnings': warnings,
-            'message': '✅ Service approved with low-stock warning. Stock partially deducted.',
-        })
 
     return JsonResponse({
         'status': 'approved',
         'success': True,
-        'stock_deducted': True,
-        'warnings': [],
-        'message': '✅ Service approved and stock deducted successfully.',
+        'warnings': warnings,
     })
-
 
 @login_required
 @csrf_exempt
@@ -1470,7 +1552,6 @@ def reject_service(request, id):
         'success': True,
         'warnings': warnings,
     })
-
 
 # def complete_service(request, id):
 #     """Complete main service - sets status to Completed"""
@@ -1868,36 +1949,13 @@ def quotation_management_create(request):
         customer = None
         data = request.POST.copy()
         data['terms_and_conditions'] = request.POST.getlist('terms_and_conditions')
+        customer_id = request.POST.get('customer_id')
         if customer_id:
             data['customer_id'] = customer_id
 
         request.session['quotation_form_data'] = data
+        print("Session stored terms:", request.session['quotation_form_data'].get('product_json_data'))
         request.session.modified = True
-
-        # ── Backend Validation ──────────────────────────────────────────
-        validation_errors = []
-        if not customer_id or not customer_id.strip():
-            validation_errors.append('Customer is required. Please enter a valid contact number and wait for auto-fill.')
-        contact_by_check = request.POST.get('sales_person_list')
-        if not contact_by_check or not contact_by_check.strip():
-            validation_errors.append('Sales Person is required. Please select a sales person.')
-        product_details_check = request.POST.get('product_details_json', '').strip()
-        if not product_details_check or product_details_check in ('[]', ''):
-            validation_errors.append('At least one product must be added to the quotation.')
-        if validation_errors:
-            messages.error(request, ' | '.join(validation_errors))
-            return render(request, 'quotation_create_new.html', {
-                'branches': branches,
-                'products': products,
-                'sales_person_list': sales_person_list,
-                'form_data': data,
-                'thank_notes': thank_notes,
-                'terms': terms,
-                'category_choices': category_choices,
-                'product_details_json': product_details_check,
-            })
-        # ── End Validation ──────────────────────────────────────────────
-
         if customer_id:
             try:
                 customer = customer_details.objects.get(id=customer_id)
@@ -1914,6 +1972,7 @@ def quotation_management_create(request):
                     or_name = request.POST.get('or_name') or None
                     or_contact = request.POST.get('or_contact') or None
                     c_branch_id = request.POST.get('branch')
+                    # branch = Branch.objects.get(id = branch_id)
                     # Assign values to the existing instance
                     customer.fullname = customer_full_name
                     customer.secondarycontact = secondary_contact_no
@@ -1922,8 +1981,7 @@ def quotation_management_create(request):
                     customer.customer_type = customer_type
                     customer.or_name = or_name
                     customer.or_contact = or_contact
-                    if c_branch_id:
-                        customer.branch_id = int(c_branch_id)
+                    customer.branch = c_branch_id
                     
                     # Save changes
                     customer.save(update_fields=[
@@ -3200,33 +3258,16 @@ def display_customer(request):
     sort_by = request.GET.get('sort_by', 'customerid')
     customer_type = request.GET.get('customer_type')
 
-    try:
-        user_role = request.user.userprofile.role
-    except:
-        user_role = 'admin'
-
-    try:
-        if user_role == 'admin': 
-            m = customer_details.objects.all()
-
-        elif user_role == 'sales':
-            try:
-                sales_person = SalesPerson.objects.get(mobile_no=request.user.username)
-                m = customer_details.objects.filter(contactperson__iexact=sales_person.full_name)
-            except SalesPerson.DoesNotExist:
-                m = customer_details.objects.none()
-
-        elif user_role == 'branch_manager':
-            try:
-                branch_manager = BranchManager.objects.get(mobile_no=request.user.username)
-                m = customer_details.objects.filter(branch=branch_manager.branch)
-            except BranchManager.DoesNotExist:
-                m = customer_details.objects.none()
-        else:
-            m = customer_details.objects.all()
-    except Exception as e:
-        print(f"Error in display_customer filtering: {str(e)}")
+    if request.user.userprofile.role == 'admin': 
         m = customer_details.objects.all()
+
+    elif request.user.userprofile.role == 'sales':
+        sales_person_name = SalesPerson.objects.get(full_name = SalesPerson.objects.get(mobile_no = request.user.username).full_name)
+        m = customer_details.objects.filter(contactperson__iexact = sales_person_name)
+
+    elif request.user.userprofile.role == 'branch_manager':
+        branch = BranchManager.objects.get(mobile_no = request.user.username ).branch
+        m = customer_details.objects.filter(branch_id = branch)
         
     # Base queryset
 
@@ -4099,16 +4140,7 @@ def edit_customer(request , rid):
     
 
 
-def get_product_items(request):
-    product_id = request.GET.get('product_id')
-    if product_id:
-        try:
-            product = Product.objects.get(product_id=product_id)
-            items = ProductRequiredItem.objects.filter(product=product).values('id', 'item_name')
-            return JsonResponse({'success': True, 'items': list(items)})
-        except Product.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Product not found'})
-    return JsonResponse({'success': False, 'error': 'Product ID required'})
+
 
 
 
@@ -4576,7 +4608,7 @@ def edit_quotation(request, rid):
         quotation.contact_by_no = contact_by_no
         quotation.address = address
         quotation.subject = subject
-        quotation.branch_id = int(branch_id) if branch_id else quotation.branch_id
+        quotation.branch_id = branch_id
         quotation.quotation_date = quotation_date
         quotation.product_details_json = updated_products
         quotation.total_price = total_without_gst
@@ -4616,7 +4648,7 @@ def edit_quotation(request, rid):
         all_terms = ordered_terms + remaining_terms
 
         branches = Branch.objects.all()
-        branch = quotation.branch
+        branch = Branch.objects.get(id = quotation.branch_id)
         
         try:
             product_details = json.loads(quotation.product_details_json)
@@ -6566,22 +6598,22 @@ def get_customer_details(request):
             customer = customer_details.objects.get(primarycontact=contact_no)
             data = {
                 'customer_id': customer.id,
-                'customer_full_name': customer.fullname or '',
-                'secondary_contact_no': customer.secondarycontact or '',
-                'customer_email': customer.primaryemail or '',
-                'secondary_email': customer.secondaryemail or '',
-                'contactperson': customer.contactperson or '',
-                'shifttopartyaddress': customer.shifttopartyaddress or '',
-                'city': customer.shifttopartycity or '',
-                'state': customer.shifttopartystate or '',
-                'pincode': customer.shifttopartypostal or '',
-                'soldtopartyaddress': customer.soldtopartyaddress or '',
-                'sold_city': customer.soldtopartycity or '',
-                'sold_state': customer.soldtopartystate or '',
-                'sold_pincode': customer.soldtopartypostal or '',
-                'customer_type': customer.customer_type or 'Individual',
-                'or_name': customer.or_name or '',
-                'or_contact': str(customer.or_contact) if customer.or_contact else '',
+                'customer_full_name': customer.fullname,
+                'secondary_contact_no':customer.secondarycontact,
+                'customer_email': customer.primaryemail,
+                'secondary_email' : customer.secondaryemail,
+                'contactperson':customer.contactperson,
+                'shifttopartyaddress': customer.shifttopartyaddress,
+                'city': customer.shifttopartycity,
+                'state': customer.shifttopartystate,
+                'pincode':customer.shifttopartypostal,
+                'soldtopartyaddress': customer.soldtopartyaddress,
+                'sold_city': customer.soldtopartycity,
+                'sold_state': customer.soldtopartystate,
+                'sold_pincode':customer.soldtopartypostal,
+                'customer_type': customer.customer_type,
+                'or_name':customer.or_name,
+                'or_contact':customer.or_contact,  
             }
            
             return JsonResponse(data)
@@ -6689,7 +6721,7 @@ def create_tax_invoice(request):
                 quotation_no = request.POST.get("quotation_no")
                 quotation = get_object_or_404(quotation_management, quotation_no=quotation_no)
                 customer = get_object_or_404(customer_details, primarycontact=quotation.customer.primarycontact)
-                branch = quotation.branch
+                branch = get_object_or_404(Branch, id = quotation.branch_id)
                 gst_enabled = quotation.apply_gst
                 if quotation.igst > 0:
                     gst_type = "IGST"
@@ -6910,9 +6942,7 @@ def edit_tax_invoice(request, id):
         customer.or_name = request.POST.get('or_name')
         customer.save()
 
-        branch_id = request.POST.get('branch_id')
-        if branch_id:
-            invoice.branch_id = int(branch_id)
+        invoice.branch_id = request.POST.get('branch_id')
         invoice.customer = customer
         invoice.bill_to_address = request.POST.get('bill_to_address')
         invoice.ship_to_address = request.POST.get('ship_to_address')
@@ -7730,13 +7760,6 @@ def reportlab_quotation_pdf(request, id):
 
     elements.append(terms_table)
 
-    # Fixed last term: validity clause
-    validity_idx = idx  # continues numbering after ordered_terms and custom_terms
-    elements.append(Paragraph(
-        f"{validity_idx}. Quotation is valid for 30 days from the date of quotation sent by mail.",
-        small
-    ))
-
     if quotation.apply_gst:
         elements.append(Paragraph(
             "All above material and services will be attracted to GST extra as per product or service applicable.",
@@ -8367,3 +8390,8 @@ def service_list_with_amc(request):
     return render(request, "bharat.html", {
         "final_data": final_data
     })
+    
+    
+    
+    
+    

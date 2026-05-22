@@ -22,14 +22,6 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name='amccontract',
-            name='frequency_months',
-        ),
-        migrations.RemoveField(
-            model_name='amccontract',
-            name='next_service_date',
-        ),
-        migrations.RemoveField(
-            model_name='amccontract',
             name='reminder_15_days_sent',
         ),
         migrations.RemoveField(
