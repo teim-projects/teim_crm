@@ -1792,15 +1792,17 @@
 
             let confirmMsg = "Approve this AMC visit?\n\n";
             if (perVisitProducts.length > 0) {
-                confirmMsg += `📦 Stock to be deducted (1 of ${totalVisits} visits):\n`;
+                confirmMsg += `📦 Stock to be deducted this visit:\n`;
                 perVisitProducts.forEach(p => {
+                    const visits = p.product_visits || totalVisits;
                     confirmMsg += `  • ${p.name}: ${p.per_visit_qty} units`;
-                    if (p.total_qty) confirmMsg += ` (${p.total_qty} total ÷ ${totalVisits} visits)`;
+                    if (p.total_qty) confirmMsg += ` (${p.total_qty} total ÷ ${visits} visits)`;
                     confirmMsg += '\n';
                 });
             } else {
                 confirmMsg += "Stock will be deducted from inventory.";
             }
+
 
             if (!confirm(confirmMsg)) return;
 

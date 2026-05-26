@@ -1615,125 +1615,226 @@ def approve_amc_visit(request, schedule_id):
 
         amc = schedule.amc
 
-        # ── 2. Find or create AMCServiceVisit (duplicate-safe) ────────────────
-        # get_or_create crashes if duplicate rows already exist in the DB.
-        # Use filter() instead and handle the multi-row edge-case explicitly.
-        existing = AMCServiceVisit.objects.filter(
+        # ── 2. Find the AMCServiceVisit for this schedule date ────────────────
+        # IMPORTANT: Multiple visits can exist on the same date — one per product.
+        # We must NOT touch visits for other products.
+        # Strategy: find a PENDING visit with no crm_service on this date.
+        # If the user is approving a specific product visit, pick that one.
+        # If the schedule was pre-generated with product=None (legacy), pick any pending.
+
+        # Prefer: visit with product matching schedule's context, then pending without crm_service
+        pending_visits = AMCServiceVisit.objects.filter(
             amc=amc,
             service_date=schedule.service_date,
-        ).order_by(
-            # Prefer: has crm_service linked > newest id
-            'crm_service',      # NULL sorts last in MySQL ASC — flip below
-            '-id',
-        )
+            crm_service=None,  # not yet approved
+        ).order_by('id')
 
-        if existing.count() > 1:
-            # Stale duplicates: keep the one with crm_service if any, else newest.
-            with_crm = existing.exclude(crm_service=None).first()
-            visit = with_crm if with_crm else existing.first()
-            # Delete the true duplicates to self-heal over time
-            AMCServiceVisit.objects.filter(
-                amc=amc,
-                service_date=schedule.service_date,
-            ).exclude(pk=visit.pk).delete()
+        if pending_visits.count() > 1:
+            # Multiple PENDING visits on same date: pick the one for a specific product
+            # (no auto-delete — they belong to different products)
+            visit = pending_visits.first()
             visit_created = False
-        elif existing.count() == 1:
-            visit = existing.first()
+        elif pending_visits.count() == 1:
+            visit = pending_visits.first()
             visit_created = False
         else:
-            visit = AMCServiceVisit.objects.create(
+            # Check if there's already an allocated visit (re-approval guard)
+            allocated = AMCServiceVisit.objects.filter(
                 amc=amc,
                 service_date=schedule.service_date,
-                allocation_status='PENDING',
-                product=None,
-            )
-            visit_created = True
+            ).exclude(crm_service=None).first()
+            if allocated:
+                visit = allocated
+                visit_created = False
+            else:
+                visit = AMCServiceVisit.objects.create(
+                    amc=amc,
+                    service_date=schedule.service_date,
+                    allocation_status='PENDING',
+                    product=None,
+                )
+                visit_created = True
 
-        # Use 'ALLOCATED' (a valid choice on the model) to mark this visit approved
+        # Mark this visit as allocated
         visit.allocation_status = 'ALLOCATED'
         visit.save(update_fields=['allocation_status'])
+
 
         # ── 3. Find or create the linked crm_service ───────────────────────────
         if not visit.crm_service:
             parent_service = amc.service  # the original service_management
 
-            # ── DISTRIBUTION CALCULATION ──────────────────────────────────────
-            # Count ALL scheduled visits for this AMC contract so we know
-            # what share each visit should consume.
-            # e.g. Qty=100, visits=10 → each visit deducts 10
-            total_visits = AMCServiceSchedule.objects.filter(amc=amc).count()
-            per_visit_divisor = Decimal(str(max(1, total_visits)))
+            # ── CORRECT DISTRIBUTION LOGIC ────────────────────────────────────
+            # Each AMCServiceVisit already has `visit.product` — the ONE product
+            # this visit is scheduled for. We ONLY deduct that product, NOT all
+            # products from the parent service.
+            #
+            # The divisor = how many visits exist for THIS product in the AMC.
+            # e.g. Ant Management has 15 visit rows → each visit deducts qty/15
+            #      Agenda 500 ML has 2 visit rows  → each visit deducts qty/2
+            #
+            # If visit.product is None (old data / no product-wise frequencies),
+            # fall back to copying all parent products with total_schedule_count divisor.
 
-            new_svc = service_management.objects.create(
-                customer=parent_service.customer,
-                branch=parent_service.branch,
-                service_subject=(
-                    f"AMC Visit – {amc.contract_number} – {schedule.service_date} "
-                    f"(1 of {total_visits} visits)"
-                ),
-                contract_type='AMC',
-                service_date=schedule.service_date,
-                gst_status=parent_service.gst_status,
-                segment=parent_service.segment,
-                address=parent_service.address,
-                city=parent_service.city,
-                state=parent_service.state,
-                pincode=parent_service.pincode,
-                is_approved=False,
-            )
+            visit_product = visit.product  # The ONE product this visit is for
 
-            # Copy all products with DISTRIBUTED quantities
-            for sp in parent_service.service_products.select_related('product').prefetch_related(
-                'selected_items__required_item'
-            ).all():
-                # Core distribution: divide total qty by number of visits
-                per_visit_qty = (
-                    Decimal(str(sp.quantity)) / per_visit_divisor
-                ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+            if visit_product:
+                # Count how many visits are scheduled for THIS product
+                product_visit_count = AMCServiceVisit.objects.filter(
+                    amc=amc,
+                    product=visit_product,
+                ).count()
+                per_visit_divisor = Decimal(str(max(1, product_visit_count)))
 
-                # Recalculate total_with_gst based on per-visit qty
-                price = Decimal(str(sp.price))
-                gst_pct = Decimal(str(sp.gst_percentage))
-                per_visit_total_with_gst = (
-                    per_visit_qty * price * (1 + gst_pct / 100)
-                ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                # Get the parent service product row for this specific product
+                try:
+                    parent_sp = parent_service.service_products.select_related('product').prefetch_related(
+                        'selected_items__required_item'
+                    ).get(product=visit_product)
+                except ServiceProduct.DoesNotExist:
+                    # Product not in parent service — warn and skip
+                    warnings.append(
+                        f"Product '{visit_product.product_name}' is not in the parent service "
+                        f"(SRV-{parent_service.id:04d}). Cannot deduct stock."
+                    )
+                    parent_sp = None
 
-                new_sp = ServiceProduct.objects.create(
-                    service=new_svc,
-                    product=sp.product,
-                    price=price,
-                    quantity=per_visit_qty,
-                    gst_percentage=gst_pct,
-                    total_with_gst=per_visit_total_with_gst,
-                    description=(
-                        f"[Distributed: {per_visit_qty} of {sp.quantity} total "
-                        f"across {total_visits} visits] {sp.description or ''}"
-                    ).strip(),
+                new_svc = service_management.objects.create(
+                    customer=parent_service.customer,
+                    branch=parent_service.branch,
+                    service_subject=(
+                        f"AMC Visit – {amc.contract_number} – {schedule.service_date} "
+                        f"– {visit_product.product_name} "
+                        f"(1 of {product_visit_count} visits)"
+                    ),
+                    contract_type='AMC',
+                    service_date=schedule.service_date,
+                    gst_status=parent_service.gst_status,
+                    segment=parent_service.segment,
+                    address=parent_service.address,
+                    city=parent_service.city,
+                    state=parent_service.state,
+                    pincode=parent_service.pincode,
+                    is_approved=False,
                 )
 
-                # Track what's being deducted this visit for the response
-                per_visit_info.append({
-                    'product': sp.product.product_name,
-                    'total_qty': float(sp.quantity),
-                    'total_visits': total_visits,
-                    'per_visit_qty': float(per_visit_qty),
-                })
-
-                # Distribute sub-item quantities the same way
-                for spi in sp.selected_items.all():
-                    per_visit_sub_qty = (
-                        Decimal(str(spi.quantity)) / per_visit_divisor
+                if parent_sp:
+                    per_visit_qty = (
+                        Decimal(str(parent_sp.quantity)) / per_visit_divisor
                     ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
 
-                    ServiceProductItem.objects.create(
-                        service_product=new_sp,
-                        required_item=spi.required_item,
-                        quantity=per_visit_sub_qty,
-                        notes=(
-                            f"[Distributed: {per_visit_sub_qty} of {spi.quantity} total] "
-                            f"{spi.notes or ''}"
+                    price = Decimal(str(parent_sp.price))
+                    gst_pct = Decimal(str(parent_sp.gst_percentage))
+                    per_visit_total_with_gst = (
+                        per_visit_qty * price * (1 + gst_pct / 100)
+                    ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+                    new_sp = ServiceProduct.objects.create(
+                        service=new_svc,
+                        product=parent_sp.product,
+                        price=price,
+                        quantity=per_visit_qty,
+                        gst_percentage=gst_pct,
+                        total_with_gst=per_visit_total_with_gst,
+                        description=(
+                            f"[Visit share: {per_visit_qty} of {parent_sp.quantity} total "
+                            f"÷ {product_visit_count} visits] {parent_sp.description or ''}"
                         ).strip(),
                     )
+
+                    per_visit_info.append({
+                        'product': parent_sp.product.product_name,
+                        'total_qty': float(parent_sp.quantity),
+                        'product_visits': product_visit_count,
+                        'per_visit_qty': float(per_visit_qty),
+                    })
+
+                    # Sub-items use the same per-product divisor
+                    for spi in parent_sp.selected_items.all():
+                        per_visit_sub_qty = (
+                            Decimal(str(spi.quantity)) / per_visit_divisor
+                        ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+
+                        ServiceProductItem.objects.create(
+                            service_product=new_sp,
+                            required_item=spi.required_item,
+                            quantity=per_visit_sub_qty,
+                            notes=(
+                                f"[Visit share: {per_visit_sub_qty} of {spi.quantity} total "
+                                f"÷ {product_visit_count} visits] {spi.notes or ''}"
+                            ).strip(),
+                        )
+
+            else:
+                # Fallback: visit has no product (legacy / no product-wise frequencies)
+                # Copy ALL products from parent service using total schedule count as divisor
+                total_schedule_count = AMCServiceSchedule.objects.filter(amc=amc).count()
+                fallback_divisor = Decimal(str(max(1, total_schedule_count)))
+
+                new_svc = service_management.objects.create(
+                    customer=parent_service.customer,
+                    branch=parent_service.branch,
+                    service_subject=(
+                        f"AMC Visit – {amc.contract_number} – {schedule.service_date} "
+                        f"(1 of {total_schedule_count} visits)"
+                    ),
+                    contract_type='AMC',
+                    service_date=schedule.service_date,
+                    gst_status=parent_service.gst_status,
+                    segment=parent_service.segment,
+                    address=parent_service.address,
+                    city=parent_service.city,
+                    state=parent_service.state,
+                    pincode=parent_service.pincode,
+                    is_approved=False,
+                )
+
+                for sp in parent_service.service_products.select_related('product').prefetch_related(
+                    'selected_items__required_item'
+                ).all():
+                    per_visit_qty = (
+                        Decimal(str(sp.quantity)) / fallback_divisor
+                    ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+
+                    price = Decimal(str(sp.price))
+                    gst_pct = Decimal(str(sp.gst_percentage))
+                    per_visit_total_with_gst = (
+                        per_visit_qty * price * (1 + gst_pct / 100)
+                    ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+                    new_sp = ServiceProduct.objects.create(
+                        service=new_svc,
+                        product=sp.product,
+                        price=price,
+                        quantity=per_visit_qty,
+                        gst_percentage=gst_pct,
+                        total_with_gst=per_visit_total_with_gst,
+                        description=(
+                            f"[Visit share: {per_visit_qty} of {sp.quantity} total "
+                            f"÷ {total_schedule_count} visits] {sp.description or ''}"
+                        ).strip(),
+                    )
+
+                    per_visit_info.append({
+                        'product': sp.product.product_name,
+                        'total_qty': float(sp.quantity),
+                        'product_visits': total_schedule_count,
+                        'per_visit_qty': float(per_visit_qty),
+                    })
+
+                    for spi in sp.selected_items.all():
+                        per_visit_sub_qty = (
+                            Decimal(str(spi.quantity)) / fallback_divisor
+                        ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+                        ServiceProductItem.objects.create(
+                            service_product=new_sp,
+                            required_item=spi.required_item,
+                            quantity=per_visit_sub_qty,
+                            notes=(
+                                f"[Visit share: {per_visit_sub_qty} of {spi.quantity} total] "
+                                f"{spi.notes or ''}"
+                            ).strip(),
+                        )
 
             if not new_svc.service_products.exists():
                 warnings.append(
@@ -1744,6 +1845,9 @@ def approve_amc_visit(request, schedule_id):
             visit.crm_service = new_svc
             visit.crm_service_created_at = timezone.now()
             visit.save(update_fields=['crm_service', 'crm_service_created_at'])
+
+
+
 
         else:
             # crm_service already exists — gather distribution info for the response
@@ -2029,7 +2133,8 @@ def get_products_with_amc_schedules(service, amc_contracts=None, visit_lookup=No
 
         for schedule in schedules:
             if visit_lookup is not None:
-                visit = visit_lookup.get((amc.id, schedule.service_date))
+                visits_for_date = visit_lookup.get((amc.id, schedule.service_date), [])
+                visit = visits_for_date[0] if visits_for_date else None
             else:
                 visit = AMCServiceVisit.objects.filter(
                     amc=amc, service_date=schedule.service_date
@@ -2093,11 +2198,13 @@ def bharat_page(request):
     for amc in all_contracts:
         contracts_by_service.setdefault(amc.service_id, []).append(amc)
 
-    # Build visit lookup: (amc_id, service_date) → AMCServiceVisit
+    # Build visit lookup: (amc_id, service_date) → list[AMCServiceVisit]
+    # Using a list because multiple visits can occur on the same date (one per product).
     visit_lookup = {}
     for amc in all_contracts:
         for visit in amc.visits.all():
-            visit_lookup[(amc.id, visit.service_date)] = visit
+            key = (amc.id, visit.service_date)
+            visit_lookup.setdefault(key, []).append(visit)
 
     # ── Pre-compute which services have actual StockLedger deductions ─────────
     # A single query: extract service IDs from refs like 'SERVICE_303' or 'SERVICE_303_SUBITEM_3'
@@ -2132,23 +2239,24 @@ def bharat_page(request):
 
         for amc in amc_contracts:
             schedules = sorted(amc.service_schedules.all(), key=lambda s: s.service_date)
-            total_visits = len(schedules)  # total visits for this AMC contract
+            total_visits = len(schedules)
 
-            # Build per-visit product allocation for display
-            # e.g. Agenda 500ML: 100 total ÷ 10 visits = 10/visit
             from decimal import Decimal, ROUND_HALF_UP
-            per_visit_divisor = Decimal(str(max(1, total_visits)))
-            parent_products = amc.service.service_products.select_related('product').all() if hasattr(amc, 'service') and amc.service else []
-            per_visit_products = []
-            for sp in parent_products:
-                qty_per_visit = (
-                    Decimal(str(sp.quantity)) / per_visit_divisor
-                ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
-                per_visit_products.append({
-                    'name': sp.product.product_name,
-                    'total_qty': float(sp.quantity),
-                    'per_visit_qty': float(qty_per_visit),
-                })
+
+            # Pre-build parent product lookup: product_id → ServiceProduct
+            parent_product_map = {}
+            if hasattr(amc, 'service') and amc.service:
+                for sp in amc.service.service_products.select_related('product').all():
+                    parent_product_map[sp.product_id] = sp
+
+            # Pre-build visit count per product: product_id → count of AMCServiceVisit rows
+            from django.db.models import Count
+            product_visit_counts = {}
+            if hasattr(amc, 'service') and amc.service:
+                vc_qs = amc.visits.values('product_id').annotate(cnt=Count('id'))
+                for row in vc_qs:
+                    if row['product_id']:
+                        product_visit_counts[row['product_id']] = row['cnt']
 
             for schedule in schedules:
                 if schedule.is_completed:
@@ -2158,35 +2266,68 @@ def bharat_page(request):
                 else:
                     status = "Pending"
 
-                # O(1) dict lookup — no extra DB query
-                visit = visit_lookup.get((amc.id, schedule.service_date))
+                # Get all visits for this schedule date (one per product)
+                visits_for_date = visit_lookup.get((amc.id, schedule.service_date), [])
+                if not visits_for_date:
+                    visits_for_date = [None]
 
-                crm_service_id = None
-                crm_service_approved = False
-                if visit and visit.crm_service:
-                    crm_service_id = visit.crm_service.id
-                    crm_service_approved = visit.crm_service.is_approved
+                for visit in visits_for_date:
+                    crm_service_id = None
+                    crm_service_approved = False
+                    if visit and visit.crm_service:
+                        crm_service_id = visit.crm_service.id
+                        crm_service_approved = visit.crm_service.is_approved
 
-                amc_sub_services.append({
-                    "id": schedule.id,
-                    "schedule_id": schedule.id,
-                    "type": "AMC",
-                    "product": f"AMC Visit ({amc.contract_number})",
-                    "service_date": schedule.service_date,
-                    "service_date_display": schedule.service_date.strftime('%b %d, %Y'),
-                    "status": status,
-                    "contract_number": amc.contract_number,
-                    "is_completed": schedule.is_completed,
-                    "is_approved": schedule.is_approved,
-                    "crm_service_id": crm_service_id,
-                    "crm_service_approved": crm_service_approved,
-                    # True only if the linked crm_service has actual stock deductions
-                    "crm_has_stock": crm_service_id in services_with_stock if crm_service_id else False,
-                    "total_visits": total_visits,
-                    # JSON string so it renders correctly in data-per-visit attribute
-                    "per_visit_products_json": __import__('json').dumps(per_visit_products),
-                    "per_visit_products": per_visit_products,  # for template loop display
-                })
+                    # Build per-visit stock info for THIS specific visit's product only
+                    per_visit_products = []
+                    if visit and visit.product_id and visit.product_id in parent_product_map:
+                        sp = parent_product_map[visit.product_id]
+                        product_visit_count = product_visit_counts.get(visit.product_id, total_visits)
+                        divisor = Decimal(str(max(1, product_visit_count)))
+                        qty_per_visit = (
+                            Decimal(str(sp.quantity)) / divisor
+                        ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+                        per_visit_products = [{
+                            'name': sp.product.product_name,
+                            'total_qty': float(sp.quantity),
+                            'product_visits': product_visit_count,
+                            'per_visit_qty': float(qty_per_visit),
+                        }]
+                    elif not visit or not visit.product_id:
+                        # Legacy: no product on visit — show all products ÷ total_visits
+                        for sp in parent_product_map.values():
+                            divisor = Decimal(str(max(1, total_visits)))
+                            qty_per_visit = (
+                                Decimal(str(sp.quantity)) / divisor
+                            ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+                            per_visit_products.append({
+                                'name': sp.product.product_name,
+                                'total_qty': float(sp.quantity),
+                                'product_visits': total_visits,
+                                'per_visit_qty': float(qty_per_visit),
+                            })
+
+                    amc_sub_services.append({
+                        "id": schedule.id,
+                        "schedule_id": schedule.id,
+                        "type": "AMC",
+                        "product": (
+                            f"AMC Visit ({amc.contract_number})"
+                            + (f" – {visit.product.product_name}" if visit and visit.product else "")
+                        ),
+                        "service_date": schedule.service_date,
+                        "service_date_display": schedule.service_date.strftime('%b %d, %Y'),
+                        "status": status,
+                        "contract_number": amc.contract_number,
+                        "is_completed": schedule.is_completed,
+                        "is_approved": schedule.is_approved,
+                        "crm_service_id": crm_service_id,
+                        "crm_service_approved": crm_service_approved,
+                        "crm_has_stock": crm_service_id in services_with_stock if crm_service_id else False,
+                        "total_visits": total_visits,
+                        "per_visit_products_json": __import__('json').dumps(per_visit_products),
+                        "per_visit_products": per_visit_products,
+                    })
 
         # has_amc = True if a real AMCContract record exists OR if the service
         # was manually labelled as AMC (contract_type field) but not yet linked
