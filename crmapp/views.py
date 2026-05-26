@@ -1509,8 +1509,12 @@ from datetime import datetime
 @login_required
 @csrf_exempt
 def approve_service(request, id):
-    """Approve service and deduct required product stock from inventory."""
-    from new_inventory.utils import deduct_stock_for_service  # lazy import — avoids circular import linter warning
+    """Approve service and deduct required product stock from inventory.
+
+    Approval is BLOCKED if any product has zero stock at the service's
+    own branch/HO. Stock is NEVER pulled from another branch or HO.
+    """
+    from new_inventory.utils import deduct_stock_for_service
     service = get_object_or_404(service_management, id=id)
 
     if service.is_approved:
@@ -1520,16 +1524,27 @@ def approve_service(request, id):
             'message': 'This service is already approved.',
         })
 
-    # Deduct stock from inventory — returns list of warning strings (empty = all OK)
-    warnings = deduct_stock_for_service(service, request.user)
+    # Attempt stock deduction — returns {'warnings': [...], 'errors': [...], 'blocked': bool}
+    result = deduct_stock_for_service(service, request.user)
 
+    if result.get('blocked'):
+        # One or more products have no stock at this location — refuse approval
+        return JsonResponse({
+            'status': 'blocked',
+            'success': False,
+            'message': 'Approval blocked: insufficient stock at this branch/location.',
+            'errors': result.get('errors', []),
+            'warnings': result.get('warnings', []),
+        }, status=400)
+
+    # All products either deducted OK or partially — allow approval with warnings
     service.is_approved = True
     service.save()
 
     return JsonResponse({
         'status': 'approved',
         'success': True,
-        'warnings': warnings,
+        'warnings': result.get('warnings', []),
     })
 
 @login_required
@@ -1553,52 +1568,271 @@ def reject_service(request, id):
         'warnings': warnings,
     })
 
-# def complete_service(request, id):
-#     """Complete main service - sets status to Completed"""
-#     service = get_object_or_404(service_management, id=id)
-#     service.status = 'Completed'
-#     service.save()
-#     return JsonResponse({'status': 'completed', 'success': True})
 
 @login_required
 @csrf_exempt
 def approve_amc_visit(request, schedule_id):
-    """Approve individual AMC visit"""
-    if request.method == 'POST':
-        schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
-        schedule.is_approved= True
-        schedule.save()
-        
-        visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
-        if visit:
-            visit.allocation_status = 'APPROVED'   # ✅ F
-            visit.save()
-            
-            
-                 # ✅ UPDATE SERVICE MANAGEMENT ALSO
-            if visit.crm_service:
-                visit.crm_service.is_approved = True
-                visit.crm_service.save()
-        
-        return JsonResponse({'success': True, 'message': 'AMC visit approved'})
-    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
+    """
+    Approve an individual AMC visit schedule and deduct stock for its linked crm_service.
+
+    Flow:
+      1. Mark the AMCServiceSchedule as approved.
+      2. Find or create the AMCServiceVisit for this schedule.
+      3. Find or create the crm_service (service_management) linked to the visit.
+         - If crm_service is missing, clone products from the parent AMC's service.
+         - PRODUCT DISTRIBUTION: each visit only gets its proportional share:
+             per_visit_qty = total_qty / total_visits_in_contract
+         - Sub-item quantities are distributed the same way.
+      4. Deduct stock (with select_for_update to prevent race conditions).
+      5. Return per_visit_info so the UI can show what was deducted.
+    """
+    from new_inventory.utils import deduct_stock_for_service
+    from django.db import transaction
+    from crmapp.models import ServiceProduct, ServiceProductItem
+    from decimal import Decimal, ROUND_HALF_UP
+    from django.utils import timezone
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
+
+    warnings = []
+    per_visit_info = []   # summary of what will be / was deducted this visit
+
+    with transaction.atomic():
+        # ── 1. Lock & mark the schedule approved ──────────────────────────────
+        schedule = get_object_or_404(
+            AMCServiceSchedule.objects.select_for_update(), id=schedule_id
+        )
+
+        if schedule.is_approved:
+            return JsonResponse({
+                'success': False,
+                'error': 'This visit is already approved.',
+            }, status=400)
+
+        schedule.is_approved = True
+        schedule.save(update_fields=['is_approved'])
+
+        amc = schedule.amc
+
+        # ── 2. Find or create AMCServiceVisit (duplicate-safe) ────────────────
+        # get_or_create crashes if duplicate rows already exist in the DB.
+        # Use filter() instead and handle the multi-row edge-case explicitly.
+        existing = AMCServiceVisit.objects.filter(
+            amc=amc,
+            service_date=schedule.service_date,
+        ).order_by(
+            # Prefer: has crm_service linked > newest id
+            'crm_service',      # NULL sorts last in MySQL ASC — flip below
+            '-id',
+        )
+
+        if existing.count() > 1:
+            # Stale duplicates: keep the one with crm_service if any, else newest.
+            with_crm = existing.exclude(crm_service=None).first()
+            visit = with_crm if with_crm else existing.first()
+            # Delete the true duplicates to self-heal over time
+            AMCServiceVisit.objects.filter(
+                amc=amc,
+                service_date=schedule.service_date,
+            ).exclude(pk=visit.pk).delete()
+            visit_created = False
+        elif existing.count() == 1:
+            visit = existing.first()
+            visit_created = False
+        else:
+            visit = AMCServiceVisit.objects.create(
+                amc=amc,
+                service_date=schedule.service_date,
+                allocation_status='PENDING',
+                product=None,
+            )
+            visit_created = True
+
+        # Use 'ALLOCATED' (a valid choice on the model) to mark this visit approved
+        visit.allocation_status = 'ALLOCATED'
+        visit.save(update_fields=['allocation_status'])
+
+        # ── 3. Find or create the linked crm_service ───────────────────────────
+        if not visit.crm_service:
+            parent_service = amc.service  # the original service_management
+
+            # ── DISTRIBUTION CALCULATION ──────────────────────────────────────
+            # Count ALL scheduled visits for this AMC contract so we know
+            # what share each visit should consume.
+            # e.g. Qty=100, visits=10 → each visit deducts 10
+            total_visits = AMCServiceSchedule.objects.filter(amc=amc).count()
+            per_visit_divisor = Decimal(str(max(1, total_visits)))
+
+            new_svc = service_management.objects.create(
+                customer=parent_service.customer,
+                branch=parent_service.branch,
+                service_subject=(
+                    f"AMC Visit – {amc.contract_number} – {schedule.service_date} "
+                    f"(1 of {total_visits} visits)"
+                ),
+                contract_type='AMC',
+                service_date=schedule.service_date,
+                gst_status=parent_service.gst_status,
+                segment=parent_service.segment,
+                address=parent_service.address,
+                city=parent_service.city,
+                state=parent_service.state,
+                pincode=parent_service.pincode,
+                is_approved=False,
+            )
+
+            # Copy all products with DISTRIBUTED quantities
+            for sp in parent_service.service_products.select_related('product').prefetch_related(
+                'selected_items__required_item'
+            ).all():
+                # Core distribution: divide total qty by number of visits
+                per_visit_qty = (
+                    Decimal(str(sp.quantity)) / per_visit_divisor
+                ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+
+                # Recalculate total_with_gst based on per-visit qty
+                price = Decimal(str(sp.price))
+                gst_pct = Decimal(str(sp.gst_percentage))
+                per_visit_total_with_gst = (
+                    per_visit_qty * price * (1 + gst_pct / 100)
+                ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+                new_sp = ServiceProduct.objects.create(
+                    service=new_svc,
+                    product=sp.product,
+                    price=price,
+                    quantity=per_visit_qty,
+                    gst_percentage=gst_pct,
+                    total_with_gst=per_visit_total_with_gst,
+                    description=(
+                        f"[Distributed: {per_visit_qty} of {sp.quantity} total "
+                        f"across {total_visits} visits] {sp.description or ''}"
+                    ).strip(),
+                )
+
+                # Track what's being deducted this visit for the response
+                per_visit_info.append({
+                    'product': sp.product.product_name,
+                    'total_qty': float(sp.quantity),
+                    'total_visits': total_visits,
+                    'per_visit_qty': float(per_visit_qty),
+                })
+
+                # Distribute sub-item quantities the same way
+                for spi in sp.selected_items.all():
+                    per_visit_sub_qty = (
+                        Decimal(str(spi.quantity)) / per_visit_divisor
+                    ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+
+                    ServiceProductItem.objects.create(
+                        service_product=new_sp,
+                        required_item=spi.required_item,
+                        quantity=per_visit_sub_qty,
+                        notes=(
+                            f"[Distributed: {per_visit_sub_qty} of {spi.quantity} total] "
+                            f"{spi.notes or ''}"
+                        ).strip(),
+                    )
+
+            if not new_svc.service_products.exists():
+                warnings.append(
+                    f"AMC parent service (SRV-{parent_service.id:04d}) has no products — "
+                    "stock deduction skipped. Add products to the parent service first."
+                )
+
+            visit.crm_service = new_svc
+            visit.crm_service_created_at = timezone.now()
+            visit.save(update_fields=['crm_service', 'crm_service_created_at'])
+
+        else:
+            # crm_service already exists — gather distribution info for the response
+            for sp in visit.crm_service.service_products.select_related('product').all():
+                per_visit_info.append({
+                    'product': sp.product.product_name,
+                    'per_visit_qty': float(sp.quantity),
+                })
+
+        # ── 4. Deduct stock (idempotent guard via is_approved flag) ───────────
+        crm_svc = service_management.objects.select_for_update().get(pk=visit.crm_service.pk)
+
+        if crm_svc.is_approved:
+            return JsonResponse({
+                'success': False,
+                'error': 'Stock already deducted for this visit.',
+            }, status=400)
+
+        if crm_svc.service_products.exists():
+            stock_result = deduct_stock_for_service(crm_svc, request.user)
+            if stock_result.get('blocked'):
+                # Not enough stock at this branch — roll back visit approval
+                schedule.is_approved = False
+                schedule.save(update_fields=['is_approved'])
+                return JsonResponse({
+                    'success': False,
+                    'error': 'AMC visit approval blocked: insufficient stock at branch.',
+                    'errors': stock_result.get('errors', []),
+                }, status=400)
+            warnings.extend(stock_result.get('warnings', []))
+
+        crm_svc.is_approved = True
+        crm_svc.save(update_fields=['is_approved'])
+
+    return JsonResponse({
+        'success': True,
+        'message': 'AMC visit approved and stock deducted.',
+        'warnings': warnings,
+        'visit_created': visit_created,
+        'per_visit_info': per_visit_info,
+    })
+
 
 @login_required
 @csrf_exempt
 def reject_amc_visit(request, schedule_id):
-    """Reject individual AMC visit"""
-    if request.method == 'POST':
-        schedule = get_object_or_404(AMCServiceSchedule, id=schedule_id)
+    """
+    Reject/un-approve an individual AMC visit and reverse stock deduction
+    for its linked crm_service.
+    """
+    from new_inventory.utils import reverse_stock_for_service
+    from django.db import transaction
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
+
+    warnings = []
+
+    with transaction.atomic():
+        schedule = get_object_or_404(
+            AMCServiceSchedule.objects.select_for_update(), id=schedule_id
+        )
         schedule.is_approved = False
-        schedule.save()
-        
-        visit = AMCServiceVisit.objects.filter(amc=schedule.amc, service_date=schedule.service_date).first()
+        schedule.save(update_fields=['is_approved'])
+
+        visit = AMCServiceVisit.objects.filter(
+            amc=schedule.amc,
+            service_date=schedule.service_date,
+        ).select_related('crm_service').first()
+
         if visit:
             visit.allocation_status = 'CANCELLED'
-            visit.save()
-        
-        return JsonResponse({'success': True, 'message': 'AMC visit rejected'})
-    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
+            visit.save(update_fields=['allocation_status'])
+
+            if visit.crm_service:
+                crm_svc = service_management.objects.select_for_update().get(
+                    pk=visit.crm_service.pk
+                )
+                if crm_svc.is_approved:
+                    rev_warnings = reverse_stock_for_service(crm_svc, request.user)
+                    warnings.extend(rev_warnings)
+                    crm_svc.is_approved = False
+                    crm_svc.save(update_fields=['is_approved'])
+
+    return JsonResponse({
+        'success': True,
+        'message': 'AMC visit rejected and stock reversed.',
+        'warnings': warnings,
+    })
 
 @login_required
 @csrf_exempt
@@ -1756,11 +1990,15 @@ def get_amc_service_products(request, schedule_id):
     
     return JsonResponse({'success': True, 'products': products, 'count': len(products)})
 
-def get_products_with_amc_schedules(service):
-    """Get products for a service, automatically including AMC schedules"""
+def get_products_with_amc_schedules(service, amc_contracts=None, visit_lookup=None):
+    """
+    Get products for a service, including AMC schedule entries.
+    Accepts preloaded amc_contracts and visit_lookup to avoid N+1 queries.
+    Falls back to live DB queries when called standalone (e.g. for the AJAX detail endpoint).
+    """
     products = []
-    
-    # First, add regular products from ServiceProduct
+
+    # ── Regular products (already prefetched via select_related) ─────────────
     for sp in service.service_products.all():
         product_data = {
             "name": sp.product.product_name,
@@ -1769,34 +2007,41 @@ def get_products_with_amc_schedules(service):
             "price": float(sp.price),
             "gst_percentage": float(sp.gst_percentage),
             "total_with_gst": float(sp.total_with_gst) if sp.total_with_gst else None,
-            "items": []
+            "items": [],
         }
-        
         for item in sp.selected_items.all():
             product_data["items"].append({
                 "name": item.required_item.item_name,
                 "qty": float(item.quantity),
-                "notes": item.notes or ""
+                "notes": item.notes or "",
             })
-        
         products.append(product_data)
-    
-    # Check if this service has any AMC contracts
-    amc_contracts = AMCContract.objects.filter(service=service)
-    
+
+    # ── AMC schedule entries ──────────────────────────────────────────────────
+    # Use preloaded data when available; fall back to DB queries otherwise.
+    if amc_contracts is None:
+        amc_contracts = AMCContract.objects.filter(service=service).prefetch_related(
+            'service_schedules', 'visits'
+        )
+
     for amc in amc_contracts:
-        schedules = AMCServiceSchedule.objects.filter(amc=amc).order_by('service_date')
-        
+        schedules = sorted(amc.service_schedules.all(), key=lambda s: s.service_date)
+
         for schedule in schedules:
-            visit = AMCServiceVisit.objects.filter(amc=amc, service_date=schedule.service_date).first()
+            if visit_lookup is not None:
+                visit = visit_lookup.get((amc.id, schedule.service_date))
+            else:
+                visit = AMCServiceVisit.objects.filter(
+                    amc=amc, service_date=schedule.service_date
+                ).first()
 
             if schedule.is_completed:
                 status = "Completed"
             elif schedule.is_approved:
                 status = "Approved"
             else:
-                status = "Pending"            
-            
+                status = "Pending"
+
             products.append({
                 "name": f"AMC Service - {amc.contract_number}",
                 "type": "AMC",
@@ -1812,42 +2057,116 @@ def get_products_with_amc_schedules(service):
                         "status": status,
                         "is_approved": schedule.is_approved,
                     }
-                ]
+                ],
             })
-    
+
     return products
 
+@login_required
 def bharat_page(request):
     filter_type = request.GET.get("type", "all")
-    
+
     services = service_management.objects.select_related('customer').prefetch_related(
         'service_products__product',
         'service_products__selected_items__required_item'
     ).order_by("-id")
-    
+
     if filter_type == "amc":
         service_ids_with_amc = AMCContract.objects.values_list('service_id', flat=True).distinct()
         services = services.filter(id__in=service_ids_with_amc)
-    
+
+    # ── Pre-fetch ALL AMC contracts + schedules + visits in bulk ─────────────
+    # This eliminates N+1 queries (previously 1 query per schedule for visits).
+    service_ids = list(services.values_list('id', flat=True))
+
+    all_contracts = (
+        AMCContract.objects
+        .filter(service_id__in=service_ids)
+        .prefetch_related(
+            'service_schedules',                      # AMCServiceSchedule set
+            'visits__crm_service',                    # AMCServiceVisit + crm_service FK
+        )
+    )
+
+    # Build contract lookup: service_id → [AMCContract, ...]
+    contracts_by_service = {}
+    for amc in all_contracts:
+        contracts_by_service.setdefault(amc.service_id, []).append(amc)
+
+    # Build visit lookup: (amc_id, service_date) → AMCServiceVisit
+    visit_lookup = {}
+    for amc in all_contracts:
+        for visit in amc.visits.all():
+            visit_lookup[(amc.id, visit.service_date)] = visit
+
+    # ── Pre-compute which services have actual StockLedger deductions ─────────
+    # A single query: extract service IDs from refs like 'SERVICE_303' or 'SERVICE_303_SUBITEM_3'
+    # This prevents the "Return Stock" button showing for services with no stock deducted.
+    from new_inventory.models import StockLedger
+    stock_refs = StockLedger.objects.filter(
+        transaction_type='SERVICE_OUT'
+    ).values_list('transaction_ref', flat=True).distinct()
+
+    services_with_stock = set()
+    for ref in stock_refs:
+        parts = ref.split('_')
+        if len(parts) >= 2 and parts[0] == 'SERVICE' and parts[1].isdigit():
+            services_with_stock.add(int(parts[1]))
+
     grouped = {}
-    
+
     for service in services:
+        # Group by customer phone — sibling services collapse into one card
         key = service.customer.primarycontact if service.customer else f"no_{service.id}"
-        
-        products_with_amc = get_products_with_amc_schedules(service)
-        
+
+        # Resolve this service's AMC contracts from the preloaded dict FIRST
+        amc_contracts = contracts_by_service.get(service.id, [])
+
+        products_with_amc = get_products_with_amc_schedules(
+            service,
+            amc_contracts=amc_contracts,
+            visit_lookup=visit_lookup,
+        )
+
         amc_sub_services = []
-        amc_contracts = AMCContract.objects.filter(service=service)
-        
+
         for amc in amc_contracts:
-            schedules = AMCServiceSchedule.objects.filter(amc=amc).order_by('service_date')
+            schedules = sorted(amc.service_schedules.all(), key=lambda s: s.service_date)
+            total_visits = len(schedules)  # total visits for this AMC contract
+
+            # Build per-visit product allocation for display
+            # e.g. Agenda 500ML: 100 total ÷ 10 visits = 10/visit
+            from decimal import Decimal, ROUND_HALF_UP
+            per_visit_divisor = Decimal(str(max(1, total_visits)))
+            parent_products = amc.service.service_products.select_related('product').all() if hasattr(amc, 'service') and amc.service else []
+            per_visit_products = []
+            for sp in parent_products:
+                qty_per_visit = (
+                    Decimal(str(sp.quantity)) / per_visit_divisor
+                ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+                per_visit_products.append({
+                    'name': sp.product.product_name,
+                    'total_qty': float(sp.quantity),
+                    'per_visit_qty': float(qty_per_visit),
+                })
+
             for schedule in schedules:
                 if schedule.is_completed:
                     status = "Completed"
                 elif schedule.is_approved:
                     status = "Approved"
                 else:
-                    status = "Pending"                
+                    status = "Pending"
+
+                # O(1) dict lookup — no extra DB query
+                visit = visit_lookup.get((amc.id, schedule.service_date))
+
+                crm_service_id = None
+                crm_service_approved = False
+                if visit and visit.crm_service:
+                    crm_service_id = visit.crm_service.id
+                    crm_service_approved = visit.crm_service.is_approved
+
                 amc_sub_services.append({
                     "id": schedule.id,
                     "schedule_id": schedule.id,
@@ -1859,38 +2178,46 @@ def bharat_page(request):
                     "contract_number": amc.contract_number,
                     "is_completed": schedule.is_completed,
                     "is_approved": schedule.is_approved,
+                    "crm_service_id": crm_service_id,
+                    "crm_service_approved": crm_service_approved,
+                    # True only if the linked crm_service has actual stock deductions
+                    "crm_has_stock": crm_service_id in services_with_stock if crm_service_id else False,
+                    "total_visits": total_visits,
+                    # JSON string so it renders correctly in data-per-visit attribute
+                    "per_visit_products_json": __import__('json').dumps(per_visit_products),
+                    "per_visit_products": per_visit_products,  # for template loop display
                 })
-        
-        has_amc = len(amc_contracts) > 0
-        status = "Approved" if service.is_approved else "Pending"
-        
+
+        # has_amc = True if a real AMCContract record exists OR if the service
+        # was manually labelled as AMC (contract_type field) but not yet linked
+        has_amc = len(amc_contracts) > 0 or service.contract_type == 'AMC'
+        svc_status = "Approved" if service.is_approved else "Pending"
+
         main_service_data = {
             "id": service.id,
             "service_no": f"SRV-{service.id:04d}",
             "customer": service.customer.fullname if service.customer else "",
             "mobile": service.customer.primarycontact if service.customer else "",
-            # "status": service.status.capitalize() if service.status else "Pending",
-            "status": status,
+            "status": svc_status,
             "is_approved": service.is_approved,
-
-            
+            # True only when the StockLedger actually has SERVICE_OUT entries for this service
+            "has_stock_entries": service.id in services_with_stock,
             "date": service.service_date,
             "contract": "AMC" if has_amc else service.contract_type,
             "products": products_with_amc,
-            "sub_services": amc_sub_services
+            "sub_services": amc_sub_services,
         }
-        
+
+        # Group by customer — sibling services go into 'subs' (shown as expandable panel)
         if key not in grouped:
             grouped[key] = {"main": main_service_data, "subs": []}
         else:
             grouped[key]["subs"].append(main_service_data)
-    
+
     total_services = service_management.objects.count()
-    # completed_count = service_management.objects.filter(status='Completed').count()
     approved_count = service_management.objects.filter(is_approved=True).count()
     pending_count = service_management.objects.filter(is_approved=False).count()
-    # rejected_count = service_management.objects.filter(status='Rejected').count()
-    
+
     context = {
         "groups": grouped.values(),
         "total_entries": total_services,
