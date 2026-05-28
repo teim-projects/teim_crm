@@ -6,15 +6,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Management Form</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/customer.css' %}">
     <script src="{% static 'js/script.js' %}"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
             background-color: #f0fbff;
             color: #333333;
         }
@@ -22,8 +25,9 @@
         #map {
             width: 100%;
             height: 400px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+            border-radius: 12px;
+            border: 1px solid #d6d6d6;
+            margin-top: 8px;
         }
 
         .main-container {
@@ -35,19 +39,21 @@
         }
 
         .card-registration {
-            border-radius: 15px;
+            border-radius: 18px;
             background-color: #ffffff;
-            box-shadow: 0 4px 20px rgba(3, 174, 210, 0.2);
+            box-shadow: 0 8px 28px rgba(3, 174, 210, 0.16);
             width: 100%;
-            max-width: 700px;
+            max-width: 860px;
             margin-top: 70px;
+            border: none;
         }
 
         h3 {
             text-align: center;
             font-family: 'Playfair Display', serif;
             color: #03AED2;
-            margin-bottom: 30px;
+            margin-bottom: 26px;
+            font-size: 28px;
         }
 
         .switch {
@@ -71,7 +77,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ffffff;
+            background-color: #d7d7d7;
             transition: .4s;
             border-radius: 34px;
         }
@@ -86,77 +92,76 @@
             background-color: white;
             transition: .4s;
             border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
-        input:checked+.slider {
-            background-color: #4caf50;
+        input:checked + .slider {
+            background-color: #28a745;
         }
 
-        input:checked+.slider:before {
+        input:checked + .slider:before {
             transform: translateX(26px);
         }
 
-        .gst-toggle-label {
-            display: inline-block;
-            margin-left: 10px;
-            vertical-align: middle;
-            margin-bottom: 35px;
-        }
-
-        .form-check {
-            margin-bottom: 10px;
-        }
-
-        .form-check-input {
-            margin-right: 10px;
-        }
-
-        #gst-price-container,
-        #gst-number-container {
-            display: none;
-        }
-
         label {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 16px;
-            color: #333;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #2b2b2b;
         }
 
         input[type="number"],
         input[type="password"],
         input[type="url"],
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        input[type="time"],
+        input[type="search"],
+        input[type="tel"],
         select,
         textarea {
             width: 100%;
-            padding: 10px;
+            padding: 10px 12px;
             margin-bottom: 15px;
-            border: 1px solid #ffffff;
+            border: 1px solid #cfcfcf;
             font-size: 14px;
             box-sizing: border-box;
             background-color: #ffffff;
+            border-radius: 10px;
+            transition: all 0.2s ease-in-out;
         }
 
-        input[type="number"],
-        input[type="password"],
-        input[type="url"],
-        select,
-        textarea {
-            border-color: #878787;
+        input[type="number"]:focus,
+        input[type="password"]:focus,
+        input[type="url"]:focus,
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="search"]:focus,
+        input[type="tel"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #03AED2;
             outline: none;
-            box-shadow: 0 0 8px rgba(237, 237, 237, 0.2);
+            box-shadow: 0 0 0 3px rgba(3, 174, 210, 0.12);
         }
 
         select {
-            height: 40px;
+            min-height: 42px;
             background-color: #fff;
+        }
+
+        textarea {
+            resize: vertical;
         }
 
         form {
             justify-content: center;
-            max-width: 600px;
+            max-width: 760px;
             margin: 0 auto;
             padding: 10px;
             background-color: #ffffff;
@@ -168,37 +173,42 @@
             margin-bottom: 10px;
         }
 
+        .form-check {
+            margin-bottom: 10px;
+        }
+
+        .form-check-input {
+            margin-right: 10px;
+        }
+
         .form-check-label {
             margin-left: 5px;
             font-size: 14px;
+            font-weight: 500;
         }
 
         .btn-info {
             background-color: #03AED2;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 10px 20px;
             transition: background-color 0.3s, box-shadow 0.3s;
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .btn-info:hover {
             background-color: #027994;
-            box-shadow: 0 4px 15px rgba(3, 174, 210, 0.4);
+            box-shadow: 0 4px 15px rgba(3, 174, 210, 0.25);
         }
 
-        @media (max-width: 768px) {
-            .main-container {
-                margin-top: 30px;
-            }
-
-            .card {
-                margin-left: 0;
-                max-width: 100%;
-            }
-
-            .open-sidebar .card {
-                margin-left: 300px;
-            }
+        .btn-primary,
+        .btn-secondary,
+        .btn-danger,
+        .btn-outline-primary {
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .form-step {
@@ -209,67 +219,16 @@
             display: block;
         }
 
-        .step-indicator.fw-bold {
-            font-weight: bold;
-            color: #0d6efd;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            background-color: #ccc;
-            border-radius: 34px;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            transition: 0.4s;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            border-radius: 50%;
-            transition: 0.4s;
-        }
-
-        input:checked+.slider {
-            background-color: #28a745;
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(26px);
-        }
-
-        .adjustment {
-            padding: 2px !important;
-            padding-left: 6px;
-        }
-
         .gst-toggle-container {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-top: 20px;
             margin-bottom: 15px;
+            padding: 10px 14px;
+            background: #f7fcff;
+            border-radius: 12px;
+            border: 1px solid #daf3f9;
         }
 
         .gst-toggle-container label {
@@ -277,52 +236,187 @@
             line-height: 26px;
         }
 
+        .col-12 {
+            margin-bottom: -15px;
+        }
+
+        .quick-add-section {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .selected-products-list {
+            max-height: 260px;
+            overflow-y: auto;
+            border: 1px solid #dfe7ea;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 18px;
+            list-style: none;
+            background: #fcfeff;
+        }
+
+        .selected-products-list li {
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: #ffffff;
+        }
+
+        .product-card {
+            border: 1px solid #dfe7ea;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .product-card:hover {
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+            border-color: #cfeaf2;
+        }
+
+        .product-name {
+            font-size: 15px;
+            color: #1e1e1e;
+            font-weight: 600;
+        }
+
+        .product-frequency-group {
+            margin-top: 10px;
+            background: #f8fbfd;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e9f2f5;
+        }
+
+        .product-frequency-group label {
+            font-size: 14px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .product-frequency-group input,
+        .product-frequency-group select {
+            font-size: 14px;
+            padding: 8px 10px;
+        }
+
+        .fortnight-container {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: #fff8ef;
+            border: 1px solid #ffe2b8;
+            border-radius: 10px;
+        }
+
+        .fortnight-container label {
+            color: #8a5b00;
+            font-weight: 600;
+        }
+
+        .items-box {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: #f9fcff;
+            border: 1px solid #dceef5;
+            border-radius: 10px;
+        }
+
+        #products-container {
+            max-height: 540px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        #products-container::-webkit-scrollbar,
+        .selected-products-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #products-container::-webkit-scrollbar-thumb,
+        .selected-products-list::-webkit-scrollbar-thumb {
+            background: #cbdce2;
+            border-radius: 10px;
+        }
+
+        .search .form-control {
+            border-radius: 12px;
+        }
+
+        .add-service-btn {
+            min-width: 210px;
+        }
+
+        .small,
+        small {
+            font-size: 12px !important;
+        }
+
+        .star {
+            color: red;
+        }
+
+        #gst_fields input {
+            margin-top: 28px;
+        }
+
+        .footer p {
+            font-size: 14px;
+        }
+
+        .badge-soft {
+            background: #e9f8fd;
+            color: #027994;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
         @media (max-width: 768px) {
+            .main-container {
+                margin-top: 30px;
+                padding: 12px;
+            }
+
+            .card-registration {
+                max-width: 100%;
+            }
+
+            h3 {
+                font-size: 22px;
+            }
+
             .gst-toggle-container {
                 margin-top: 25px;
                 margin-bottom: 20px;
             }
         }
 
-        .col-12 {
-            margin-bottom: -15px;
-        }
+        @media (max-width: 576px) {
+            .card-registration {
+                margin-top: 45px;
+                border-radius: 14px;
+            }
 
-        /* Frequency input styling */
-        .product-frequency-group {
-            margin-top: 10px;
-        }
-        
-        .product-frequency-group label {
-            font-size: 12px;
-            margin-bottom: 3px;
-        }
-        
-        .product-frequency-group input {
-            font-size: 14px;
-            padding: 5px;
-        }
+            .product-card {
+                padding: 12px;
+            }
 
-        .quick-add-section {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
+            .add-service-btn {
+                width: 100%;
+            }
 
-        /* Selected items styling */
-        .selected-products-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 15px;
-            list-style: none;
-        }
-
-        .selected-products-list li {
-            margin-bottom: 10px;
+            .footer p {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -337,32 +431,32 @@
                     style="float: left; cursor: pointer; color:rgb(75, 162, 255); font-size:20px;" class="mb-4">
                     <i class="fas fa-house-chimney"></i>
                 </span>
-                <span onclick="goBackAndRefresh()" style="float: right; cursor: pointer; color:red; font-size:20px;"
-                    class="mb-4">X</span>
+
+                <span onclick="goBackAndRefresh()"
+                    style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
 
                 <h3 style="font-weight: 600; margin: 10px;" class="mt-5">Service Management Record</h3>
+
                 <form method="POST" id="service-management-form">
                     {% csrf_token %}
 
-                    <!-- STEP 1: Customer & Services -->
+                    <!-- STEP 1 -->
                     <div class="form-step">
                         <div class="row">
                             <div class="col-md-4">
                                 <label>Customer Contact<span class="star">*</span></label>
-                                <input type="text" id="customer_contact" name="customer_contact" required
-                                    class="form-control">
+                                <input type="tel" id="customer_contact" name="customer_contact" required class="form-control">
                             </div>
                             <div class="col-md-4">
                                 <label>Customer Name<span class="star">*</span></label>
-                                <input type="text" id="customer_full_name" name="customer_full_name" readonly required
-                                    class="form-control">
+                                <input type="text" id="customer_full_name" name="customer_full_name" readonly required class="form-control">
                             </div>
                             <div class="col-md-4">
                                 <label>Customer Email<span class="star">*</span></label>
-                                <input type="text" id="customer_email" name="customer_email" readonly required
-                                    class="form-control">
+                                <input type="text" id="customer_email" name="customer_email" readonly required class="form-control">
                             </div>
                         </div>
+
                         <div class="col-12">
                             <label>Subject<span class="star">*</span></label>
                             <input type="text" name="subject" value="" class="form-control"><br>
@@ -379,8 +473,7 @@
 
                             <div class="col-12 col-md-8" style="margin-top: 30px;">
                                 <label>Service Type<span class="star">*</span></label>
-                                <select id="servicetype" name="servicetype" class="form-control"
-                                    onchange="fetchProducts(this)">
+                                <select id="servicetype" name="servicetype" class="form-control" onchange="fetchProducts(this)">
                                     <option value="">Select service types</option>
                                     {% for category, display_name in category_choices %}
                                     <option value="{{ category }}">{{ display_name }}</option>
@@ -388,68 +481,56 @@
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="row" style="margin-top:30px">
                             <label>Select Products</label>
                             <div class="search mb-2">
-                                <input type="search" id="product-search" class="form-control" 
+                                <input type="search" id="product-search" class="form-control"
                                     placeholder="Search products..." oninput="filterProducts()">
                             </div>
-                            <div id="products-container" style="max-height: 300px; overflow-y: auto;">
-                                <!-- Dynamically loaded -->
+
+                            <div id="products-container">
+                                <!-- Products render here -->
                             </div>
                         </div>
 
                         <label>Selected Services</label>
                         <ul id="selected_services" class="selected-products-list"></ul>
+
                         <input type="hidden" id="selected_services_names" name="selected_services_names">
                         <input type="hidden" id="selected_products_json" name="selected_products_json" value="">
-                        
+
                         <div class="row">
                             <div class="col-5">
                                 <label>Total Price (without GST)<span class="star">*</span></label>
-                                <input type="number" id="total_price" name="total_price" step="0.01" readonly
-                                    class="form-control">
+                                <input type="number" id="total_price" name="total_price" step="0.01" readonly class="form-control">
                             </div>
 
-                            <div id="gst_fields" style="display: none;">
-                                <input type="text" name="gst_number" placeholder="Enter GST Number"
-                                    class="form-control">
+                            <div id="gst_fields" style="display: none;" class="col-4">
+                                <label>GST Number</label>
+                                <input type="text" name="gst_number" placeholder="Enter GST Number" class="form-control">
                             </div>
 
                             <div class="col-3">
                                 <label>GST</label>
-                                <input type="number" id="gst_price" name="gst_price" step="0.01" readonly
-                                    class="form-control">
+                                <input type="number" id="gst_price" name="gst_price" step="0.01" readonly class="form-control">
                             </div>
+
                             <div class="col-4">
                                 <label>Total Price (with GST)</label>
-                                <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" readonly
-                                    class="form-control">
-                            </div>
-                        </div>
-
-                        <!-- Fortnight Visits Input -->
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <label>Fortnight Visits</label>
-                                <input type="number" name="fortnight_count" id="fortnight_count" class="form-control" 
-                                       placeholder="Enter number of fortnight visits" min="0" step="1" value="0">
-                                <small class="text-muted">Number of visits required per fortnight period</small>
+                                <input type="number" id="total_with_gst" name="total_with_gst" step="0.01" readonly class="form-control">
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
-                                <button type="button" class="btn btn-primary next-step mt-3"
-                                    style="width: 150px;">Next</button>
-                                <a href="/display_customer" class="btn btn-info mt-3" style="width: 150px;">View
-                                    Records</a>
+                                <button type="button" class="btn btn-primary next-step mt-3" style="width: 150px;">Next</button>
+                                <a href="/display_customer" class="btn btn-info mt-3" style="width: 150px;">View Records</a>
                             </div>
                         </div>
                     </div>
 
-                    <!-- STEP 2: Contract & Property Details -->
+                    <!-- STEP 2 -->
                     <div class="form-step d-none">
                         <div class="row">
                             <div class="col-4">
@@ -479,6 +560,7 @@
                                 </select>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-6">
                                 <label>Property Type</label>
@@ -489,6 +571,7 @@
                                 <input type="text" name="warranty_period" class="form-control"><br>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-4">
                                 <label for="state">State<span class="star">*</span></label>
@@ -500,8 +583,7 @@
                             </div>
                             <div class="col-4">
                                 <label>Pincode<span class="star">*</span></label>
-                                <input type="text" id="pincode" name="pincode" maxlength="6" class="form-control"
-                                    required>
+                                <input type="text" id="pincode" name="pincode" maxlength="6" class="form-control" required>
                             </div>
                         </div>
 
@@ -522,30 +604,27 @@
                         <div id="map"></div>
 
                         <label>GPS Location (For Technician Navigation)</label>
-                        <input type="url" id="gps_location" name="gps_location"
-                            class="form-control"
-                            placeholder="Paste Google Maps location link for technician">
+                        <input type="url" id="gps_location" name="gps_location" class="form-control"
+                               placeholder="Paste Google Maps location link for technician">
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
-                                <button type="button" class="btn btn-secondary prev-step mt-3"
-                                    style="width: 150px;">Previous</button>
-                                <button type="button" class="btn btn-primary next-step mt-3"
-                                    style="width: 150px;">Next</button>
+                                <button type="button" class="btn btn-secondary prev-step mt-3" style="width: 150px;">Previous</button>
+                                <button type="button" class="btn btn-primary next-step mt-3" style="width: 150px;">Next</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- STEP 3: Sales & Delivery -->
+                    <!-- STEP 3 -->
                     <div class="form-step d-none">
                         <div class="row">
-                           
                             <div class="col-6">
                                 <label>Payment Terms<span class="star">*</span></label>
                                 <input class="form-control" type="text" name="payment_terms"
-                                    value="100% Advance payment OR Whatever mutually Decided" readonly>
+                                       value="100% Advance payment OR Whatever mutually Decided" readonly>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-6">
                                 <label>Sales Person Name <span class="star">*</span></label>
@@ -558,36 +637,42 @@
                                     {% endfor %}
                                 </select>
                             </div>
+
                             <div class="col-6">
                                 <label>Sales Person Contact No <span class="star">*</span></label>
-                                <input type="text" id="sales_person_contact_no" name="sales_person_contact_no"
-                                    class="form-control" pattern="\d{10}"
-                                    title="Please enter a valid 10-digit phone number" required readonly>
+                                <input type="tel" id="sales_person_contact_no" name="sales_person_contact_no"
+                                       class="form-control" pattern="\d{10}"
+                                       title="Please enter a valid 10-digit phone number" required readonly>
                             </div>
+
                             <div class="col-6">
                                 <label>Sales Person Email <span class="star">*</span></label>
                                 <input type="email" id="sales_person_email" name="sales_person_email"
-                                    class="form-control" readonly>
+                                       class="form-control" readonly>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-6">
                                 <label>Branch<span class="star">*</span></label>
                                 <select name="branch" class="form-control">
                                     <option value="">-- Select Branch --</option>
                                     {% for branch in branches %}
-                                        <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
-                                    {% endfor %}     
+                                    <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
+
                             <div class="col-6">
                                 <label>Delivery Time<span class="star">*</span></label>
                                 <input type="time" class="form-control" name="delivery_time" required>
                             </div>
+
                             <div class="col-6">
                                 <label>Lead Date<span class="star">*</span></label>
                                 <input type="date" name="lead_date" class="form-control" required>
                             </div>
+
                             <div class="col-6">
                                 <label>Service Date<span class="star">*</span></label>
                                 <input type="date" name="service_date" class="form-control" required>
@@ -596,12 +681,9 @@
 
                         <div class="row">
                             <div class="col-md-12 text-center col-12">
-                                <button type="button" class="btn btn-secondary prev-step mt-3"
-                                    style="width: 150px;">Previous</button>
+                                <button type="button" class="btn btn-secondary prev-step mt-3" style="width: 150px;">Previous</button>
                                 <button class="btn btn-info mt-3" type="submit" style="width:150px;">Submit</button>
                             </div>
-                        </div>
-                        <div class="mt-4 pt-2 text-center">
                         </div>
                     </div>
                 </form>
@@ -609,732 +691,50 @@
         </div>
     </div>
 
+    <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+        <div class="row p-3">
+            <div class="col-md-12 text-center">
+                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
+                    © 2025. Powered by
+                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
+                         style="height: 20px; vertical-align: middle;">
+                    <a href="http://www.chronoanalytics.in/"
+                       style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">
+                        Chronoanalytics Solution
+                    </a>
+                    All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; word-wrap: break-word;color:#000000">
+                    © 2025. Marketed by
+                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
+                         style="height: 20px; vertical-align: middle;">
+                    <a href="http://teim.in/"
+                       style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">
+                        TEIM
+                    </a>
+                    All Rights Reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
-            menuItems.forEach(item => {
-                item.addEventListener('click', function () {
-                    const submenu = this.querySelector('.submenu');
-                    const arrow = this.querySelector('.arrow-down');
-
-                    menuItems.forEach(otherItem => {
-                        if (otherItem !== this) {
-                            const otherSubmenu = otherItem.querySelector('.submenu');
-                            const otherArrow = otherItem.querySelector('.arrow-down');
-                            if (otherSubmenu) {
-                                otherSubmenu.style.display = 'none';
-                                if (otherArrow.classList.contains('arrow-up')) {
-                                    otherArrow.classList.remove('arrow-up');
-                                }
-                            }
-                        }
-                    });
-
-                    if (submenu) {
-                        submenu.style.display = (submenu.style.display === 'block' ? 'none' : 'block');
-                        arrow.classList.toggle('arrow-up');
-                    }
-                });
-            });
-        });
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const select = document.getElementById("sales_person_select");
-            const contactInput = document.getElementById("sales_person_contact_no");
-            const emailInput = document.getElementById("sales_person_email");
-
-            if(!select) return;
-
-            select.addEventListener("change", function () {
-                const selectedOption = this.options[this.selectedIndex];
-                const contact = selectedOption.getAttribute("data-contact") || "";
-                const email = selectedOption.getAttribute("data-email") || "";
-                contactInput.value = contact;
-                emailInput.value = email;
-            });
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const contactInput = document.getElementById("customer_contact");
-            const nameInput = document.getElementById("customer_full_name");
-            const emailInput = document.getElementById("customer_email");
-            const cityInput = document.getElementById("city");
-            const stateInput = document.getElementById("state");
-            const pincodeInput = document.getElementById("pincode");
-            const addressInput = document.getElementById("address");
-
-            contactInput.addEventListener('blur', function () {
-                const contactNo = contactInput.value.trim();
-                if (!contactNo) return;
-
-                fetch(`/get_customer_details/?contact_no=${encodeURIComponent(contactNo)}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Customer not found');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.error) {
-                            alert(data.error);
-                            return;
-                        }
-                        if (data.customer_email) {
-                            emailInput.value = data.customer_email;
-                        }
-                        if (data.customer_full_name) {
-                            nameInput.value = data.customer_full_name;
-                        }
-                        if (data.city) {
-                            cityInput.value = data.city;
-                        }
-                        if (data.pincode) {
-                            pincodeInput.value = data.pincode;
-                        }
-                        if (data.shifttopartyaddress) {
-                            addressInput.value = data.shifttopartyaddress;
-                        }
-                        if (data.state) {
-                            stateInput.value = data.state;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-            });
-        });
-    </script>
-
-    <!-- Product section with Frequency and Checkbox Integration -->
-    <script>
-        // Global variables
         let selectedProducts = [];
-        let gstEnabled = false;  // starts disabled, toggled by the Apply GST switch
-        let counter = 1;
+        let gstEnabled = false;
         let productItemsCache = {};
+        let productsCache = {};
 
-        // Function to fetch products by category
-        function fetchProducts(selectElement) {
-            document.getElementById('products-container').innerHTML = '<div class="text-center p-3">Loading products...</div>';
-            
-            const selectedCategories = Array.from(selectElement.selectedOptions).map(o => o.value);
-
-            if (selectedCategories.length === 0) {
-                document.getElementById('products-container').innerHTML = '';
-                return;
-            }
-
-            fetch(`/get_products?categories=${selectedCategories.join(',')}`)
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('products-container').innerHTML = '';
-                    
-                    if (data.products.length === 0) {
-                        document.getElementById('products-container').innerHTML = '<div class="alert alert-info">No products found</div>';
-                        return;
-                    }
-                    
-                    data.products.forEach(product => {
-                        displayProduct(product);
-                    });
-                    
-                    // Add checkboxes after products are loaded
-                    setTimeout(addCheckboxesToProducts, 100);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('products-container').innerHTML = '<div class="alert alert-danger">Error loading products</div>';
-                });
-        }
-
-        // Function to display a single product with its items and frequency
-        function displayProduct(product) {
-            const productDiv = document.createElement('div');
-            productDiv.className = 'product-item mb-3 p-3 border rounded';
-            productDiv.setAttribute('data-product-id', product.product_id);
-            productDiv.setAttribute('data-product-name', product.product_name.toLowerCase());
-            productDiv.setAttribute('data-product-price', product.price);
-
-            productDiv.innerHTML = `
-                <div class="quick-add-section">
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input product-checkbox" 
-                               id="quick-checkbox-${product.product_id}"
-                               data-product-id="${product.product_id}"
-                               data-product-name="${escapeHtml(product.product_name)}"
-                               data-product-price="${product.price}"
-                               onchange="addProductViaCheckbox(this)">
-                        <label class="form-check-label" for="quick-checkbox-${product.product_id}">
-                            <strong>Quick Add (with frequency)</strong> - Click to add this service with frequency selection
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <strong class="h6 mb-0">${escapeHtml(product.product_name)}</strong>
-                    <button type="button" class="btn btn-sm btn-outline-primary" 
-                            onclick="toggleItemsSection(${product.product_id})">
-                        Show/Hide Items
-                    </button>
-                </div>
-                
-                <div class="row g-2 mb-3">
-                    <div class="col-md-4">
-                        <label class="small">Price (₹)</label>
-                        <input type="number" class="form-control form-control-sm product-price" 
-                               value="${product.price}" step="0.01" id="price-${product.product_id}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="small">Quantity</label>
-                        <input type="number" class="form-control form-control-sm product-quantity" 
-                               value="1" step="0.01" min="0.01" id="qty-${product.product_id}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="small">Unit</label>
-                        <input type="text" class="form-control form-control-sm product-unit" 
-                               placeholder="Unit" id="unit-${product.product_id}">
-                    </div>
-                </div>
-                
-                <div class="row g-2 mb-3">
-                    <div class="col-md-3 product-gst-group" style="display:${gstEnabled ? 'block' : 'none'}">
-                        <label class="small">GST %</label>
-                        <input type="number" class="form-control form-control-sm product-gst" 
-                               value="18" step="0.01" id="gst-${product.product_id}">
-                    </div>
-                    <div class="col-md-9">
-                        <label class="small">Description</label>
-                        <textarea class="form-control form-control-sm product-description" 
-                                  rows="2" id="desc-${product.product_id}"></textarea>
-                    </div>
-                </div>
-                
-                <!-- Frequency Field -->
-                <div class="row g-2 mb-3 product-frequency-group">
-                    <div class="col-md-12">
-                        <label class="small fw-bold">Service Frequency</label>
-                        <select class="form-control form-control-sm product-frequency" id="frequency-${product.product_id}">
-                            <option value="NOT SELECTED">-- Select Frequency --</option>
-                            <option value="1">1 Month</option>
-                            <option value="2">2 Months</option>
-                            <option value="3">3 Months</option>
-                            <option value="4">4 Months</option>
-                            <option value="5">5 Months</option>
-                            <option value="6">6 Months</option>
-                            <option value="7">7 Months</option>
-                            <option value="8">8 Months</option>
-                            <option value="9">9 Months</option>
-                            <option value="10">10 Months</option>
-                            <option value="11">11 Months</option>
-                            <option value="12">12 Months</option>
-                            <option value="Fortnight">Fortnight</option>
-                            <option value="Weekly">Weekly</option>
-                            <option value="Daily">Daily</option>
-                        </select>
-                        <small class="text-muted">How often should this service be performed?</small>
-                    </div>
-                </div>
-                
-                <div id="items-section-${product.product_id}" style="display: none;">
-                    <div class="items-section mt-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <small class="text-muted fw-bold">Required Items:</small>
-                            <button type="button" class="btn btn-sm btn-link" onclick="selectAllItems(${product.product_id})">
-                                Select All
-                            </button>
-                        </div>
-                        <div id="items-list-${product.product_id}" class="ms-2">
-                            <div class="text-muted small">Loading items...</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="text-end mt-3">
-                    <button type="button" class="btn btn-sm btn-primary" onclick='addProductToService(${JSON.stringify(product).replace(/'/g, "\\'")})'>
-                        Add to Service (Detailed)
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('products-container').appendChild(productDiv);
-            fetchProductItems(product.product_id);
-        }
-
-        // Add checkboxes to existing products
-        function addCheckboxesToProducts() {
-            const products = document.querySelectorAll('.product-item');
-            products.forEach(product => {
-                const productId = product.getAttribute('data-product-id');
-                if (productId && !product.querySelector('.quick-add-section')) {
-                    const productName = product.querySelector('.h6')?.innerText || '';
-                    const productPrice = product.getAttribute('data-product-price') || 0;
-                    const quickAddDiv = document.createElement('div');
-                    quickAddDiv.className = 'quick-add-section mb-2';
-                    quickAddDiv.innerHTML = `
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input product-checkbox" 
-                                   id="quick-checkbox-${productId}"
-                                   data-product-id="${productId}"
-                                   data-product-name="${escapeHtml(productName)}"
-                                   data-product-price="${productPrice}"
-                                   onchange="addProductViaCheckbox(this)">
-                            <label class="form-check-label" for="quick-checkbox-${productId}">
-                                <strong>Quick Add (with frequency)</strong> - Click to add this service with frequency selection
-                            </label>
-                        </div>
-                    `;
-                    product.insertBefore(quickAddDiv, product.firstChild);
-                }
-            });
-        }
-
-        // Add product via checkbox (quick method)
-        function addProductViaCheckbox(checkbox) {
-            if (!checkbox.checked) {
-                // Remove the product if unchecked
-                const productId = checkbox.getAttribute('data-product-id');
-                removeCheckboxProduct(productId);
-                return;
-            }
-            
-            const productId = checkbox.getAttribute('data-product-id');
-            const productName = checkbox.getAttribute('data-product-name');
-            const productPrice = parseFloat(checkbox.getAttribute('data-product-price')) || 0;
-            
-            // Check if product already added via checkbox
-            let existing = document.querySelector(`#selected_services li[data-product-id='${productId}'][data-added-via='checkbox']`);
-            if (existing) {
-                alert('Product already added via Quick Add!');
-                checkbox.checked = false;
-                return;
-            }
-            
-            // Check if product already added via detailed method
-            const existingDetailed = selectedProducts.find(p => p.p_id == productId && !p.added_via);
-            if (existingDetailed) {
-                if (confirm('This product is already added via detailed method. Do you want to add it again via Quick Add?')) {
-                    // Allow adding
-                } else {
-                    checkbox.checked = false;
-                    return;
-                }
-            }
-            
-            let list = document.getElementById("selected_services");
-            
-            let li = document.createElement("li");
-            li.setAttribute("data-product-id", productId);
-            li.setAttribute("data-added-via", "checkbox");
-            li.setAttribute("data-product-price", productPrice);
-            li.setAttribute("data-product-name", productName);
-            li.className = 'd-flex justify-content-between align-items-start p-2 border-bottom';
-            
-            li.innerHTML = `
-                <div class="flex-grow-1">
-                    <strong>${escapeHtml(productName)}</strong>
-                    <div class="small text-muted">Price: ₹${productPrice.toFixed(2)}</div>
-                    <div class="mt-2">
-                        <label class="small fw-bold">Service Frequency:</label>
-                        <select class="form-control form-control-sm frequency-select" style="width: auto; display: inline-block; margin-left: 10px;" onchange="updateCheckboxProductFrequency(this)">
-                            <option value="NOT SELECTED">-- Select Frequency --</option>
-                            <option value="1">1 Month</option>
-                            <option value="2">2 Months</option>
-                            <option value="3">3 Months</option>
-                            <option value="4">4 Months</option>
-                            <option value="5">5 Months</option>
-                            <option value="6">6 Months</option>
-                            <option value="7">7 Months</option>
-                            <option value="8">8 Months</option>
-                            <option value="9">9 Months</option>
-                            <option value="10">10 Months</option>
-                            <option value="11">11 Months</option>
-                            <option value="12">12 Months</option>
-                            <option value="Fortnight">Fortnight</option>
-                            <option value="Weekly">Weekly</option>
-                            <option value="Daily">Daily</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="text-end ms-3">
-                    <button type="button" class="btn btn-sm btn-danger" onclick="removeCheckboxProduct(${productId})">✕</button>
-                </div>
-            `;
-            
-            list.appendChild(li);
-            
-            // Add to selectedProducts array
-            selectedProducts.push({
-                id: counter++,
-                p_id: parseInt(productId),
-                name: productName,
-                price: productPrice,
-                quantity: 1,
-                unit: '',
-                gst: 18,
-                description: '',
-                frequency: 'NOT SELECTED',
-                items: [],
-                added_via: 'checkbox'
-            });
-            
-            updateTotalPrice();
-            updateHiddenInput();
-            showToast(`${productName} added via Quick Add! Please select frequency.`);
-        }
-
-        // Update checkbox product frequency
-        function updateCheckboxProductFrequency(selectElement) {
-            const li = selectElement.closest('li');
-            const productId = li.getAttribute('data-product-id');
-            const frequency = selectElement.value;
-            
-            // Update in selectedProducts array
-            const productIndex = selectedProducts.findIndex(p => p.p_id == productId && p.added_via === 'checkbox');
-            if (productIndex !== -1) {
-                selectedProducts[productIndex].frequency = frequency;
-                updateHiddenInput();
-            }
-        }
-
-        // Remove checkbox product
-        function removeCheckboxProduct(productId) {
-            // Remove from UI
-            const item = document.querySelector(`#selected_services li[data-product-id='${productId}'][data-added-via='checkbox']`);
-            if (item) {
-                item.remove();
-            }
-            
-            // Remove from selectedProducts array
-            selectedProducts = selectedProducts.filter(p => !(p.p_id == productId && p.added_via === 'checkbox'));
-            
-            // Uncheck the checkbox if it exists
-            const checkbox = document.querySelector(`.product-checkbox[data-product-id='${productId}']`);
-            if (checkbox) checkbox.checked = false;
-            
-            updateTotalPrice();
-            updateHiddenInput();
-            showToast('Product removed');
-        }
-
-        // Function to fetch items for a specific product
-        function fetchProductItems(productId) {
-            if (productItemsCache[productId]) {
-                displayItemsList(productId, productItemsCache[productId]);
-                return;
-            }
-            
-            fetch(`/get_product_items/?product_id=${productId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.items) {
-                        productItemsCache[productId] = data.items;
-                        displayItemsList(productId, data.items);
-                    } else {
-                        const container = document.getElementById(`items-list-${productId}`);
-                        if (container) {
-                            container.innerHTML = '<div class="text-muted small">No items available</div>';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading items:', error);
-                    const container = document.getElementById(`items-list-${productId}`);
-                    if (container) {
-                        container.innerHTML = '<div class="text-danger small">Error loading items</div>';
-                    }
-                });
-        }
-
-        // Function to display items list with checkboxes
-        function displayItemsList(productId, items) {
-            const container = document.getElementById(`items-list-${productId}`);
-            if (!container) return;
-            
-            if (!items || items.length === 0) {
-                container.innerHTML = '<div class="text-muted small">No items required</div>';
-                return;
-            }
-            
-            let itemsHTML = '';
-            items.forEach(item => {
-                itemsHTML += `
-                    <div class="form-check mb-2">
-                        <input type="checkbox" class="form-check-input product-item-checkbox" 
-                               data-product-id="${productId}"
-                               data-item-id="${item.id}"
-                               data-item-name="${escapeHtml(item.item_name)}"
-                               id="item-${productId}-${item.id}"
-                               onchange="toggleItemControls(${productId}, ${item.id})">
-                        <label class="form-check-label small" for="item-${productId}-${item.id}">
-                            ${escapeHtml(item.item_name)}
-                        </label>
-                        <div id="item-controls-${productId}-${item.id}" style="display: none;" class="mt-1 ms-4">
-                            <div class="row g-2">
-                                <div class="col-5">
-                                    <input type="number" class="form-control form-control-sm item-quantity" 
-                                           placeholder="Qty" min="1" value="1" 
-                                           id="item-qty-${productId}-${item.id}">
-                                </div>
-                                <div class="col-7">
-                                    <input type="text" class="form-control form-control-sm item-notes" 
-                                           placeholder="Notes" 
-                                           id="item-notes-${productId}-${item.id}">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = itemsHTML;
-        }
-
-        function toggleItemsSection(productId) {
-            const section = document.getElementById(`items-section-${productId}`);
-            if (section) {
-                if (section.style.display === 'none') {
-                    section.style.display = 'block';
-                } else {
-                    section.style.display = 'none';
-                }
-            }
-        }
-
-        function toggleItemControls(productId, itemId) {
-            const checkbox = document.getElementById(`item-${productId}-${itemId}`);
-            const controls = document.getElementById(`item-controls-${productId}-${itemId}`);
-            
-            if (checkbox && controls) {
-                controls.style.display = checkbox.checked ? 'block' : 'none';
-                if (!checkbox.checked) {
-                    const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
-                    const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
-                    if (qtyInput) qtyInput.value = '1';
-                    if (notesInput) notesInput.value = '';
-                }
-            }
-        }
-
-        function selectAllItems(productId) {
-            const checkboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = !allChecked;
-                const itemId = checkbox.getAttribute('data-item-id');
-                toggleItemControls(productId, itemId);
-            });
-        }
-
-        function addProductToService(product) {
-            console.log("=== ADDING PRODUCT TO SERVICE ===");
-            
-            const productId = product.product_id;
-            
-            const price = parseFloat(document.getElementById(`price-${productId}`).value) || 0;
-            const quantity = parseFloat(document.getElementById(`qty-${productId}`).value) || 0;
-            const unit = document.getElementById(`unit-${productId}`).value || '';
-            const gst = parseFloat(document.getElementById(`gst-${productId}`).value) || 0;
-            const description = document.getElementById(`desc-${productId}`).value || '';
-            const frequency = document.getElementById(`frequency-${productId}`).value || 'NOT SELECTED';
-            
-            if (quantity <= 0) {
-                alert('Quantity must be greater than zero');
-                return;
-            }
-            
-            if (price <= 0) {
-                alert('Price must be greater than zero');
-                return;
-            }
-            
-            // Check if already added via checkbox
-            const existingCheckbox = selectedProducts.find(p => p.p_id == productId && p.added_via === 'checkbox');
-            if (existingCheckbox) {
-                if (confirm('This product is already added via Quick Add. Do you want to replace it with detailed version?')) {
-                    // Remove checkbox version
-                    removeCheckboxProduct(productId);
-                } else {
-                    return;
-                }
-            }
-            
-            const selectedItems = [];
-            const checkboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
-            
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    const itemId = checkbox.getAttribute('data-item-id');
-                    const itemName = checkbox.getAttribute('data-item-name');
-                    const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
-                    const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
-                    
-                    const itemQuantity = qtyInput ? parseFloat(qtyInput.value) || 1 : 1;
-                    const notes = notesInput ? notesInput.value : '';
-                    
-                    selectedItems.push({
-                        required_item_id: parseInt(itemId),
-                        item_name: itemName,
-                        quantity: itemQuantity,
-                        notes: notes
-                    });
-                }
-            });
-            
-            const serviceEntry = {
-                id: counter++,
-                p_id: productId,
-                name: product.product_name,
-                price: price,
-                quantity: quantity,
-                unit: unit,
-                gst: gst,
-                description: description,
-                frequency: frequency,
-                items: selectedItems
-            };
-            
-            // Remove any existing detailed version of same product
-            selectedProducts = selectedProducts.filter(p => !(p.p_id == productId && !p.added_via));
-            
-            selectedProducts.push(serviceEntry);
-            updateSelectedServicesList();
-            updateTotalPrice();
-            updateHiddenInput();
-            
-            // Reset form
-            document.getElementById(`qty-${productId}`).value = '1';
-            document.getElementById(`desc-${productId}`).value = '';
-            document.getElementById(`frequency-${productId}`).value = 'NOT SELECTED';
-            
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-                const itemId = checkbox.getAttribute('data-item-id');
-                const controls = document.getElementById(`item-controls-${productId}-${itemId}`);
-                if (controls) controls.style.display = 'none';
-                const qtyInput = document.getElementById(`item-qty-${productId}-${itemId}`);
-                const notesInput = document.getElementById(`item-notes-${productId}-${itemId}`);
-                if (qtyInput) qtyInput.value = '1';
-                if (notesInput) notesInput.value = '';
-            });
-            
-            showToast(`${product.product_name} added successfully!`);
-        }
-
-        function updateSelectedServicesList() {
-            const list = document.getElementById('selected_services');
-            if (!list) return;
-            
-            // Clear only detailed items, keep checkbox items
-            const detailedItems = document.querySelectorAll('#selected_services li:not([data-added-via="checkbox"])');
-            detailedItems.forEach(item => item.remove());
-            
-            // Re-add detailed items from selectedProducts array
-            const detailedProducts = selectedProducts.filter(p => !p.added_via);
-            
-            detailedProducts.forEach((service, index) => {
-                const gstText = gstEnabled ? ` + GST(${service.gst}%)` : '';
-                const freqText = service.frequency && service.frequency !== 'NOT SELECTED' ? 
-                    ` | Freq: ${service.frequency}` : '';
-                
-                let itemsText = '';
-                if (service.items && service.items.length > 0) {
-                    itemsText = '<div class="small text-muted mt-1">📦 Required Items: ';
-                    itemsText += service.items.map(item => 
-                        `${escapeHtml(item.item_name)} (Qty: ${item.quantity})${item.notes ? ` - ${escapeHtml(item.notes)}` : ''}`
-                    ).join('; ');
-                    itemsText += '</div>';
-                }
-                
-                const li = document.createElement('li');
-                li.className = 'd-flex justify-content-between align-items-start p-2 border-bottom';
-                li.innerHTML = `
-                    <div class="flex-grow-1">
-                        <strong>${escapeHtml(service.name)}</strong>
-                        <div class="small">
-                            Unit: ${service.unit || 'N/A'} | ₹${service.price.toFixed(2)} x ${service.quantity}${gstText}${freqText}
-                        </div>
-                        ${itemsText}
-                    </div>
-                    <div class="text-end ms-3">
-                        <strong>₹${(service.price * service.quantity).toFixed(2)}</strong>
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${index})">✕</button>
-                    </div>
-                `;
-                list.appendChild(li);
-            });
-        }
-
-        function removeSelectedProduct(index) {
-            if (confirm('Remove this service from the list?')) {
-                selectedProducts.splice(index, 1);
-                updateSelectedServicesList();
-                updateTotalPrice();
-                updateHiddenInput();
-            }
-        }
-
-        function updateTotalPrice() {
-            let total = 0, gstTotal = 0;
-            selectedProducts.forEach(service => {
-                const subtotal = service.price * service.quantity;
-                total += subtotal;
-                // Apply GST only when the toggle is enabled
-                if (gstEnabled) {
-                    gstTotal += subtotal * (service.gst / 100);
-                }
-            });
-            
-            document.getElementById('total_price').value = total.toFixed(2);
-            document.getElementById('gst_price').value = gstTotal.toFixed(2);
-            document.getElementById('total_with_gst').value = (total + gstTotal).toFixed(2);
-        }
-
-        function updateHiddenInput() {
-            const hiddenInput = document.getElementById('selected_products_json');
-            if (hiddenInput) {
-                // Prepare data for submission
-                const dataToSave = selectedProducts.map(product => ({
-                    p_id: product.p_id,
-                    name: product.name,
-                    price: product.price,
-                    quantity: product.quantity,
-                    unit: product.unit || '',
-                    gst: product.gst || 18,
-                    description: product.description || '',
-                    frequency: product.frequency || 'NOT SELECTED',
-                    items: product.items || [],
-                    added_via: product.added_via || 'detailed'
-                }));
-                hiddenInput.value = JSON.stringify(dataToSave);
-                console.log('Saved to hidden input:', hiddenInput.value);
-            }
-        }
-
-        function filterProducts() {
-            const searchValue = document.getElementById('product-search').value.toLowerCase();
-            const productItems = document.querySelectorAll('#products-container .product-item');
-            
-            productItems.forEach(item => {
-                const name = item.getAttribute('data-product-name') || '';
-                item.style.display = name.includes(searchValue) ? '' : 'none';
-            });
-        }
-
-        function toggleGST() {
-            gstEnabled = document.getElementById('apply_gst').checked;
-            const gstFields = document.querySelectorAll('.product-gst-group');
-            gstFields.forEach(field => {
-                field.style.display = gstEnabled ? 'block' : 'none';
-            });
-            updateTotalPrice();
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function showToast(message) {
@@ -1347,111 +747,583 @@
                         <strong class="me-auto">Success</strong>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
                     </div>
-                    <div class="toast-body">
-                        ${escapeHtml(message)}
-                    </div>
+                    <div class="toast-body">${escapeHtml(message)}</div>
                 </div>
             `;
             document.body.appendChild(toastContainer);
             setTimeout(() => toastContainer.remove(), 3000);
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function normalizeFrequency(label, fortnightCount) {
+            let visits = 0;
+            let normalizedLabel = label || '';
+
+            if (!label || label === '') {
+                visits = 12;
+                normalizedLabel = 'Default';
+            } else if (!isNaN(label)) {
+
+                visits = parseInt(label);
+
+                normalizedLabel = `${visits} Visits/Year`;
+            } else if (label === 'Fortnight') {
+                visits = parseInt(fortnightCount || 24) || 24;
+            } else if (label === 'Weekly') {
+                visits = 52;
+            } else if (label === 'Daily') {
+                visits = 365;
+            } else {
+                visits = 12;
+            }
+
+            return {
+                label: normalizedLabel,
+                visits: visits
+            };
         }
 
-        // Form validation
+        function getSelectedProductIndex(productId) {
+            return selectedProducts.findIndex(p => parseInt(p.p_id) === parseInt(productId));
+        }
+
+        function updateHiddenInput() {
+            const hiddenInput = document.getElementById('selected_products_json');
+            const hiddenNames = document.getElementById('selected_services_names');
+
+            if (!hiddenInput) return;
+
+            const dataToSave = selectedProducts.map(product => ({
+                p_id: product.p_id,
+                name: product.name,
+                price: product.price,
+                quantity: product.quantity,
+                unit: product.unit || '',
+                gst: product.gst || 0,
+                description: product.description || '',
+                frequency: product.frequency || 0,
+                frequency_label: product.frequency_label || '',
+                added_via: product.added_via || 'detailed',
+                items: product.items || []
+            }));
+
+            hiddenInput.value = JSON.stringify(dataToSave);
+            if (hiddenNames) {
+                hiddenNames.value = selectedProducts.map(p => p.name).join(', ');
+            }
+        }
+
+        function updateTotalPrice() {
+            let total = 0;
+            let gstTotal = 0;
+
+            selectedProducts.forEach(service => {
+                const subtotal = parseFloat(service.price || 0) * parseFloat(service.quantity || 0);
+                total += subtotal;
+                if (gstEnabled) {
+                    gstTotal += subtotal * (parseFloat(service.gst || 0) / 100);
+                }
+            });
+
+            document.getElementById('total_price').value = total.toFixed(2);
+            document.getElementById('gst_price').value = gstTotal.toFixed(2);
+            document.getElementById('total_with_gst').value = (total + gstTotal).toFixed(2);
+        }
+
+        function renderSelectedList() {
+            const list = document.getElementById('selected_services');
+            if (!list) return;
+
+            list.innerHTML = '';
+
+            selectedProducts.forEach(service => {
+                const gstText = gstEnabled ? ` + GST(${service.gst}%)` : '';
+                const freqText = service.frequency_label ? ` | Freq: ${service.frequency_label} (${service.frequency} visits/year)` : '';
+                const viaText = service.added_via === 'quick' ? 'Quick Add' : 'Detailed';
+
+                let itemsText = '';
+                if (service.items && service.items.length > 0) {
+                    itemsText = `
+                        <div class="small text-muted mt-1">
+                            <strong>Items:</strong>
+                            ${service.items.map(item =>
+                                `${escapeHtml(item.item_name)} (Qty: ${item.quantity})${item.notes ? ` - ${escapeHtml(item.notes)}` : ''}`
+                            ).join('; ')}
+                        </div>
+                    `;
+                }
+
+                const li = document.createElement('li');
+                li.className = 'd-flex justify-content-between align-items-start p-2 border-bottom';
+                li.innerHTML = `
+                    <div class="flex-grow-1">
+                        <strong>${escapeHtml(service.name)}</strong>
+                        <div class="small">
+                            ₹${parseFloat(service.price).toFixed(2)} x ${service.quantity}${gstText}${freqText}
+                            <span class="badge-soft ms-2">${escapeHtml(viaText)}</span>
+                        </div>
+                        ${service.unit ? `<div class="small text-muted">Unit: ${escapeHtml(service.unit)}</div>` : ''}
+                        ${service.description ? `<div class="small text-muted">Desc: ${escapeHtml(service.description)}</div>` : ''}
+                        ${itemsText}
+                    </div>
+                    <div class="text-end ms-3">
+                        <strong>₹${(parseFloat(service.price) * parseFloat(service.quantity)).toFixed(2)}</strong>
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${service.p_id})">✕</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+
+            updateTotalPrice();
+            updateHiddenInput();
+        }
+
+        function removeSelectedProduct(productId) {
+            selectedProducts = selectedProducts.filter(p => parseInt(p.p_id) !== parseInt(productId));
+            const quickCheckbox = document.getElementById(`quick-checkbox-${productId}`);
+            if (quickCheckbox) quickCheckbox.checked = false;
+            renderSelectedList();
+        }
+
+        function toggleGST() {
+            gstEnabled = document.getElementById('apply_gst').checked;
+            const gstFields = document.querySelectorAll('.product-gst-group');
+            gstFields.forEach(field => {
+                field.style.display = gstEnabled ? 'block' : 'none';
+            });
+
+            const gstNumberBox = document.getElementById('gst_fields');
+            if (gstNumberBox) {
+                gstNumberBox.style.display = gstEnabled ? 'block' : 'none';
+            }
+
+            updateTotalPrice();
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('product-search').value.toLowerCase();
+            const cards = document.querySelectorAll('.product-card');
+
+            cards.forEach(card => {
+                const name = card.getAttribute('data-product-name') || '';
+                card.style.display = name.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        function fetchProducts(selectElement) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<div class="text-center p-3">Loading products...</div>';
+
+            const selectedCategories = Array.from(selectElement.selectedOptions).map(o => o.value);
+
+            if (selectedCategories.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            fetch(`/get_products?categories=${selectedCategories.join(',')}`)
+                .then(res => res.json())
+                .then(data => {
+                    container.innerHTML = '';
+
+                    if (!data.products || data.products.length === 0) {
+                        container.innerHTML = '<div class="alert alert-info">No products found</div>';
+                        return;
+                    }
+
+                    data.products.forEach(product => {
+                        productsCache[product.product_id] = product;
+                        renderProductCard(product);
+                        fetchProductItems(product.product_id);
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    container.innerHTML = '<div class="alert alert-danger">Error loading products</div>';
+                });
+        }
+
+        function renderProductCard(product) {
+            const container = document.getElementById('products-container');
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.setAttribute('data-product-id', product.product_id);
+            card.setAttribute('data-product-name', (product.product_name || '').toLowerCase());
+
+            card.innerHTML = `
+                <div class="quick-add-section">
+                    <div class="form-check">
+                        <input type="checkbox"
+                               class="form-check-input quick-add-checkbox"
+                               id="quick-checkbox-${product.product_id}"
+                               onchange="addProductViaCheckbox(${product.product_id}, this)">
+                        <label class="form-check-label" for="quick-checkbox-${product.product_id}">
+                            <strong>Quick Add</strong> - add this service directly
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="product-name">${escapeHtml(product.product_name)}</div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleItemsSection(${product.product_id})">
+                        Show/Hide Items
+                    </button>
+                </div>
+
+                <div class="row g-2 mb-2">
+                    <div class="col-md-4">
+                        <label class="small">Price (₹)</label>
+                        <input type="number" class="form-control price-input" id="price-${product.product_id}" value="${product.price || 0}" step="0.01">
+                    </div>
+                    <div class="col-md-4 product-gst-group" style="display:${gstEnabled ? 'block' : 'none'}">
+                        <label class="small">GST %</label>
+                        <input type="number" class="form-control gst-input" id="gst-${product.product_id}" value="18" step="0.01">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small">Qty</label>
+                        <input type="number" class="form-control qty-input" id="qty-${product.product_id}" value="1" step="1" min="1">
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-2">
+                    <div class="col-md-4">
+                        <label class="small">Unit</label>
+                        <input type="text" class="form-control" id="unit-${product.product_id}" placeholder="Unit">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="small">Description</label>
+                        <textarea class="form-control" id="desc-${product.product_id}" rows="1" placeholder="Description"></textarea>
+                    </div>
+                </div>
+
+                <div class="product-frequency-group">
+                    <label>Service Frequency</label>
+                    <select class="form-control frequency-select" id="frequency-${product.product_id}"
+                            onchange="toggleFortnightField(${product.product_id})">
+                        <option value="">-- Select Frequency --</option>
+                        <option value="1">1 Visit/Year</option>
+                        <option value="2">2 Visits/Year</option>
+                        <option value="3">3 Visits/Year</option>
+                        <option value="4">4 Visits/Year</option>
+                        <option value="5">5 Visits/Year</option>
+                        <option value="6">6 Visits/Year</option>
+                        <option value="7">7 Visits/Year</option>
+                        <option value="8">8 Visits/Year</option>
+                        <option value="9">9 Visits/Year</option>
+                        <option value="10">10 Visits/Year</option>
+                        <option value="11">11 Visits/Year</option>
+                        <option value="12">12 Visits/Year</option>
+                        <option value="Fortnight">Fortnight</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Daily">Daily</option>
+                    </select>
+
+                    <div class="fortnight-container" id="fortnight-box-${product.product_id}">
+                        <label>Fortnight Visits</label>
+                        <input type="number" class="form-control fortnight-count" id="fortnight-${product.product_id}"
+                               min="1" value="24" placeholder="Enter visits">
+                    </div>
+                </div>
+
+                <div class="items-box" id="items-section-${product.product_id}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted fw-bold">Required Items</small>
+                        <button type="button" class="btn btn-sm btn-link" onclick="selectAllItems(${product.product_id})">
+                            Select All
+                        </button>
+                    </div>
+                    <div id="items-list-${product.product_id}">
+                        <div class="text-muted small">Loading items...</div>
+                    </div>
+                </div>
+
+                <div class="text-end mt-3">
+                    <button type="button" class="btn btn-primary add-service-btn" onclick="addProductToService(${product.product_id})">
+                        Add to Service (Detailed)
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(card);
+        }
+
+        function toggleFortnightField(productId) {
+            const frequency = document.getElementById(`frequency-${productId}`)?.value || '';
+            const box = document.getElementById(`fortnight-box-${productId}`);
+            if (box) {
+                box.style.display = frequency === 'Fortnight' ? 'block' : 'none';
+            }
+        }
+
+        function fetchProductItems(productId) {
+            if (productItemsCache[productId]) {
+                displayItemsList(productId, productItemsCache[productId]);
+                return;
+            }
+
+            fetch(`/get_product_items/?product_id=${productId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.items) {
+                        productItemsCache[productId] = data.items;
+                        displayItemsList(productId, data.items);
+                    } else {
+                        displayItemsList(productId, []);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading items:', error);
+                    const container = document.getElementById(`items-list-${productId}`);
+                    if (container) {
+                        container.innerHTML = '<div class="text-danger small">Error loading items</div>';
+                    }
+                });
+        }
+
+        function displayItemsList(productId, items) {
+            const container = document.getElementById(`items-list-${productId}`);
+            if (!container) return;
+
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="text-muted small">No items available</div>';
+                return;
+            }
+
+            let html = '';
+            items.forEach(item => {
+                html += `
+                    <div class="form-check mb-2">
+                        <input type="checkbox"
+                               class="form-check-input product-item-checkbox"
+                               data-product-id="${productId}"
+                               data-item-id="${item.id}"
+                               data-item-name="${escapeHtml(item.item_name)}"
+                               id="item-${productId}-${item.id}"
+                               onchange="toggleItemControls(${productId}, ${item.id})">
+                        <label class="form-check-label small" for="item-${productId}-${item.id}">
+                            ${escapeHtml(item.item_name)}
+                        </label>
+
+                        <div id="item-controls-${productId}-${item.id}" style="display:none;" class="mt-1 ms-4">
+                            <div class="row g-2">
+                                <div class="col-5">
+                                    <input type="number" class="form-control form-control-sm"
+                                           id="item-qty-${productId}-${item.id}" value="1" min="1" placeholder="Qty">
+                                </div>
+                                <div class="col-7">
+                                    <input type="text" class="form-control form-control-sm"
+                                           id="item-notes-${productId}-${item.id}" placeholder="Notes">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleItemsSection(productId) {
+            const box = document.getElementById(`items-section-${productId}`);
+            if (box) {
+                box.style.display = box.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        function toggleItemControls(productId, itemId) {
+            const checkbox = document.getElementById(`item-${productId}-${itemId}`);
+            const controls = document.getElementById(`item-controls-${productId}-${itemId}`);
+            if (checkbox && controls) {
+                controls.style.display = checkbox.checked ? 'block' : 'none';
+            }
+        }
+
+        function selectAllItems(productId) {
+            const checkboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked;
+                const itemId = cb.getAttribute('data-item-id');
+                toggleItemControls(productId, itemId);
+            });
+        }
+
+        function collectProductData(productId, addedVia = 'detailed') {
+            const product = productsCache[productId];
+            if (!product) return null;
+
+            const price = parseFloat(document.getElementById(`price-${productId}`)?.value || 0);
+            const gst = parseFloat(document.getElementById(`gst-${productId}`)?.value || 0);
+            const quantity = parseFloat(document.getElementById(`qty-${productId}`)?.value || 1);
+            const unit = document.getElementById(`unit-${productId}`)?.value || '';
+            const description = document.getElementById(`desc-${productId}`)?.value || '';
+            const frequencyLabelRaw = document.getElementById(`frequency-${productId}`)?.value || '';
+            const fortnightCount = document.getElementById(`fortnight-${productId}`)?.value || 24;
+
+            const freqMeta = normalizeFrequency(frequencyLabelRaw, fortnightCount);
+
+            const items = [];
+            if (addedVia === 'detailed') {
+                const itemCheckboxes = document.querySelectorAll(`#items-list-${productId} .product-item-checkbox`);
+                itemCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        const itemId = cb.getAttribute('data-item-id');
+                        const itemName = cb.getAttribute('data-item-name');
+                        const qty = parseFloat(document.getElementById(`item-qty-${productId}-${itemId}`)?.value || 1);
+                        const notes = document.getElementById(`item-notes-${productId}-${itemId}`)?.value || '';
+
+                        items.push({
+                            required_item_id: parseInt(itemId),
+                            item_name: itemName,
+                            quantity: qty,
+                            notes: notes
+                        });
+                    }
+                });
+            }
+
+            return {
+                p_id: parseInt(productId),
+                name: product.product_name,
+                price: price,
+                quantity: quantity,
+                unit: unit,
+                gst: gst,
+                description: description,
+                frequency: freqMeta.visits,
+                frequency_label: freqMeta.label || 'Default',
+                added_via: addedVia,
+                items: items
+            };
+        }
+
+        function addOrReplaceProduct(productData) {
+            const existingIndex = getSelectedProductIndex(productData.p_id);
+            if (existingIndex !== -1) {
+                selectedProducts[existingIndex] = productData;
+            } else {
+                selectedProducts.push(productData);
+            }
+            renderSelectedList();
+        }
+
+        function addProductViaCheckbox(productId, checkbox) {
+            if (!checkbox.checked) {
+                removeSelectedProduct(productId);
+                return;
+            }
+
+            const productData = collectProductData(productId, 'quick');
+            if (!productData) return;
+
+            if (productData.price <= 0 || productData.quantity <= 0) {
+                alert('Price and quantity must be greater than zero');
+                checkbox.checked = false;
+                return;
+            }
+
+            addOrReplaceProduct(productData);
+            showToast(`${productData.name} added via Quick Add`);
+        }
+
+        function addProductToService(productId) {
+            const productData = collectProductData(productId, 'detailed');
+            if (!productData) return;
+
+            if (productData.price <= 0) {
+                alert('Price must be greater than zero');
+                return;
+            }
+
+            if (productData.quantity <= 0) {
+                alert('Quantity must be greater than zero');
+                return;
+            }
+
+            addOrReplaceProduct(productData);
+
+            const quickCheckbox = document.getElementById(`quick-checkbox-${productId}`);
+            if (quickCheckbox) quickCheckbox.checked = true;
+
+            showToast(`${productData.name} added successfully`);
+        }
+
         document.getElementById('service-management-form').addEventListener('submit', function(e) {
-            // Validate at least one product is selected
             if (selectedProducts.length === 0) {
                 alert('Please add at least one product before submitting!');
                 e.preventDefault();
                 return false;
             }
-            
-            // Check if all checkbox products have frequency selected
-            const checkboxProducts = selectedProducts.filter(p => p.added_via === 'checkbox');
-            const missingFrequency = checkboxProducts.filter(p => !p.frequency || p.frequency === 'NOT SELECTED');
-            
-            if (missingFrequency.length > 0) {
-                alert(`Please select frequency for: ${missingFrequency.map(p => p.name).join(', ')}`);
-                e.preventDefault();
-                return false;
-            }
-            
+
             updateHiddenInput();
-            console.log('Submitting with products:', selectedProducts);
             return true;
         });
     </script>
 
-    <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:200px;">
-        <div class="row p-3">
-            <div class="col-md-12 text-center">
-                <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
-                    © 2025. Powered by
-                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo"
-                        style="height: 20px; vertical-align: middle;">
-                    <a href="http://www.chronoanalytics.in/"
-                        style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb);-webkit-background-clip: text;-webkit-text-fill-color: transparent; font-size: 1.1rem;">Chronoanalytics
-                        Solution</a>
-                    All Rights Reserved.
-                </p>
-            </div>
-            <div class="col-md-12 text-center">
-                <p style="font-weight: 600; word-wrap: break-word;color:#000000">
-                    © 2025. Marketed by
-                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo"
-                        style="height: 20px; vertical-align: middle;">
-                    <a href="http://teim.in/" style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a>
-                    All Rights Reserved.
-                </p>
-            </div>
-        </div>
-    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const salesSelect = document.getElementById("sales_person_select");
+            if (salesSelect) {
+                salesSelect.addEventListener("change", function () {
+                    const opt = this.options[this.selectedIndex];
+                    document.getElementById("sales_person_contact_no").value = opt.getAttribute("data-contact") || "";
+                    document.getElementById("sales_person_email").value = opt.getAttribute("data-email") || "";
+                });
+            }
+
+            const contactField = document.getElementById("customer_contact");
+            if (contactField) {
+                contactField.addEventListener('blur', function () {
+                    const contactNo = contactField.value.trim();
+                    if (!contactNo) return;
+
+                    fetch(`/get_customer_details/?contact_no=${encodeURIComponent(contactNo)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) return;
+
+                            if (data.customer_email) document.getElementById("customer_email").value = data.customer_email;
+                            if (data.customer_full_name) document.getElementById("customer_full_name").value = data.customer_full_name;
+                            if (data.city) document.getElementById("city").value = data.city;
+                            if (data.pincode) document.getElementById("pincode").value = data.pincode;
+                            if (data.shifttopartyaddress) document.getElementById("address").value = data.shifttopartyaddress;
+                            if (data.state) document.getElementById("state").value = data.state;
+                        })
+                        .catch(err => console.warn(err));
+                });
+            }
+        });
+    </script>
 
     <script>
         const steps = document.querySelectorAll(".form-step");
         const nextBtns = document.querySelectorAll(".next-step");
         const prevBtns = document.querySelectorAll(".prev-step");
-
         let currentStep = 0;
 
         function showStep(index) {
-            steps.forEach((step, i) => {
-                step.classList.toggle("d-none", i !== index);
-            });
-
-            if(index === 1) {
-                setTimeout(function() {
-                    if(map) map.invalidateSize();
-                }, 200);
+            steps.forEach((step, i) => step.classList.toggle("d-none", i !== index));
+            if (index === 1 && window.map) {
+                setTimeout(() => map.invalidateSize(), 200);
             }
         }
 
-        nextBtns.forEach(btn => {
-            btn.addEventListener("click", () => {
-                if (currentStep < steps.length - 1) {
-                    currentStep++;
-                    showStep(currentStep);
-                }
-            });
-        });
+        nextBtns.forEach(btn => btn.addEventListener("click", () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        }));
 
-        prevBtns.forEach(btn => {
-            btn.addEventListener("click", () => {
-                if (currentStep > 0) {
-                    currentStep--;
-                    showStep(currentStep);
-                }
-            });
-        });
+        prevBtns.forEach(btn => btn.addEventListener("click", () => {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }));
 
         showStep(currentStep);
 
-        // leaflet map
         var map = L.map('map').setView([20.5937, 78.9629], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1461,28 +1333,22 @@
         var marker;
 
         map.on('click', function(e) {
-            var lat = e.latlng.lat;
-            var lng = e.latlng.lng;
-
-            if(marker){
-                map.removeLayer(marker);
-            }
-
-            marker = L.marker([lat, lng]).addTo(map);
-            document.getElementById("latitude").value = lat;
-            document.getElementById("longitude").value = lng;
+            if (marker) map.removeLayer(marker);
+            marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+            document.getElementById("latitude").value = e.latlng.lat;
+            document.getElementById("longitude").value = e.latlng.lng;
         });
 
-        function extractLatLngFromURL(url){
+        function extractLatLngFromURL(url) {
             let patterns = [
                 /@(-?\d+\.\d+),(-?\d+\.\d+)/,
                 /q=(-?\d+\.\d+),(-?\d+\.\d+)/,
                 /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/
             ];
 
-            for(let regex of patterns){
+            for (let regex of patterns) {
                 let match = url.match(regex);
-                if(match){
+                if (match) {
                     return {
                         lat: parseFloat(match[1]),
                         lng: parseFloat(match[2])
@@ -1492,48 +1358,39 @@
             return null;
         }
 
-        async function searchLocation(){
+        async function searchLocation() {
             let query = document.getElementById("location-search").value.trim();
-
-            if(!query){
+            if (!query) {
                 alert("Enter location");
                 return;
             }
 
             let coords = extractLatLngFromURL(query);
-
-            if(coords){
+            if (coords) {
                 placeMarker(coords.lat, coords.lng);
                 return;
             }
 
-            try{
+            try {
                 const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
-                const response = await fetch(url,{
-                    headers:{"Accept": "application/json"}
-                });
+                const response = await fetch(url, { headers: { "Accept": "application/json" } });
                 const data = await response.json();
 
-                if(!data || data.length === 0){
+                if (!data.length) {
                     alert("Location not found");
                     return;
                 }
 
-                const lat = parseFloat(data[0].lat);
-                const lon = parseFloat(data[0].lon);
-                placeMarker(lat, lon);
-
-            }catch(error){
+                placeMarker(parseFloat(data[0].lat), parseFloat(data[0].lon));
+            } catch (error) {
                 console.error(error);
                 alert("Error fetching location");
             }
         }
 
-        function placeMarker(lat, lon){
+        function placeMarker(lat, lon) {
             map.setView([lat, lon], 15);
-            if(marker){
-                map.removeLayer(marker);
-            }
+            if (marker) map.removeLayer(marker);
             marker = L.marker([lat, lon]).addTo(map);
             document.getElementById("latitude").value = lat;
             document.getElementById("longitude").value = lon;
@@ -1542,34 +1399,38 @@
         function goBackAndRefresh() {
             window.location.href = '/display_service_management';
         }
+
+        window.searchLocation = searchLocation;
     </script>
 
+    <script>
+        /* TEIM-PHONE-RESTRICT */
+        (function(){
+            document.addEventListener('DOMContentLoaded', function(){
+                var phoneFields = document.querySelectorAll('[name="customer_contact"], [name="sales_person_contact_no"]');
+                phoneFields.forEach(function(inp){
+                    inp.setAttribute('maxlength', '10');
+                    inp.setAttribute('pattern', '[0-9]{10}');
+                    inp.setAttribute('title', 'Enter exactly 10 digits');
+                    inp.setAttribute('inputmode', 'numeric');
+                    if (inp.type === 'number') inp.type = 'tel';
 
-<script>
-/* TEIM-PHONE-RESTRICT */
-(function(){
-  document.addEventListener('DOMContentLoaded', function(){
-    var phoneFields = document.querySelectorAll('[name="customer_contact"], [name="sales_person_contact_no"]');
-    phoneFields.forEach(function(inp){
-      inp.setAttribute('maxlength', '10');
-      inp.setAttribute('pattern', '[0-9]{10}');
-      inp.setAttribute('title', 'Enter exactly 10 digits');
-      inp.setAttribute('inputmode', 'numeric');
-      if (inp.type === 'number') inp.type = 'tel';
-      inp.addEventListener('input', function(){
-        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
-      });
-      inp.addEventListener('keypress', function(e){
-        if (!/[0-9]/.test(e.key)) e.preventDefault();
-      });
-      inp.addEventListener('paste', function(e){
-        e.preventDefault();
-        var txt = (e.clipboardData || window.clipboardData).getData('text');
-        this.value = txt.replace(/[^0-9]/g, '').slice(0, 10);
-      });
-    });
-  });
-})();
-</script>
+                    inp.addEventListener('input', function(){
+                        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+                    });
+
+                    inp.addEventListener('keypress', function(e){
+                        if (!/[0-9]/.test(e.key)) e.preventDefault();
+                    });
+
+                    inp.addEventListener('paste', function(e){
+                        e.preventDefault();
+                        var txt = (e.clipboardData || window.clipboardData).getData('text');
+                        this.value = txt.replace(/[^0-9]/g, '').slice(0, 10);
+                    });
+                });
+            });
+        })();
+    </script>
 </body>
 </html>
