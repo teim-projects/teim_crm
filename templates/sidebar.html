@@ -1058,6 +1058,24 @@
                 <li data-link="/index"><i class="fas fa-home"></i> Dashboard</li>
             </a>
 
+
+             {% if role == 'admin' or role == 'branch_manager' or role == 'operation_person' or role == 'HO_manager' or role == 'HO_operation' %}
+            <li class="has-submenu"><i class="fas fa-box"></i> Dashboard All <span class="arrow-down"></span>
+                <div class="submenu">
+                    <ul>
+                        <a href="/sales_dashboard">
+                            <li data-link="/sales_dashboard">1. Sales Dashboard</li>
+                        </a>
+                        <a href="/invetory_dashbord">
+                            <li data-link="/invetory_dashbord">2. Inventory Dashboard</li>
+                        </a>
+
+                        
+                    </ul>
+                </div>
+            </li>
+            {% endif %}
+
             {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
 
 

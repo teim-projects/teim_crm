@@ -19,6 +19,8 @@ urlpatterns = [
     path('sales-persons/export/', views.export_sales_person_csv, name='export_sales_person_csv'),
     path('customer_details_create',views.customer_details_create, name='customer_details_create'),
     path('service_management_create',views.service_management_create, name='service_management_create'),
+    path('sales_dashboard/', views.sales_dashboard, name='sales_dashboard'),
+    path('invetory_dashbord/', views.invetory_dashbord, name='invetory_dashbord'),
 
 
     # path('approve/<int:id>/', views.approve_service),

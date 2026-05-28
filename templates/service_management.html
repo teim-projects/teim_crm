@@ -761,9 +761,11 @@
             if (!label || label === '') {
                 visits = 12;
                 normalizedLabel = 'Default';
-            } else if (label.includes('Month')) {
-                const months = parseInt(label);
-                visits = months > 0 ? Math.floor(12 / months) : 12;
+            } else if (!isNaN(label)) {
+
+                visits = parseInt(label);
+
+                normalizedLabel = `${visits} Visits/Year`;
             } else if (label === 'Fortnight') {
                 visits = parseInt(fortnightCount || 24) || 24;
             } else if (label === 'Weekly') {
@@ -998,18 +1000,18 @@
                     <select class="form-control frequency-select" id="frequency-${product.product_id}"
                             onchange="toggleFortnightField(${product.product_id})">
                         <option value="">-- Select Frequency --</option>
-                        <option value="1 Month">1 Month</option>
-                        <option value="2 Months">2 Months</option>
-                        <option value="3 Months">3 Months</option>
-                        <option value="4 Months">4 Months</option>
-                        <option value="5 Months">5 Months</option>
-                        <option value="6 Months">6 Months</option>
-                        <option value="7 Months">7 Months</option>
-                        <option value="8 Months">8 Months</option>
-                        <option value="9 Months">9 Months</option>
-                        <option value="10 Months">10 Months</option>
-                        <option value="11 Months">11 Months</option>
-                        <option value="12 Months">12 Months</option>
+                        <option value="1">1 Visit/Year</option>
+                        <option value="2">2 Visits/Year</option>
+                        <option value="3">3 Visits/Year</option>
+                        <option value="4">4 Visits/Year</option>
+                        <option value="5">5 Visits/Year</option>
+                        <option value="6">6 Visits/Year</option>
+                        <option value="7">7 Visits/Year</option>
+                        <option value="8">8 Visits/Year</option>
+                        <option value="9">9 Visits/Year</option>
+                        <option value="10">10 Visits/Year</option>
+                        <option value="11">11 Visits/Year</option>
+                        <option value="12">12 Visits/Year</option>
                         <option value="Fortnight">Fortnight</option>
                         <option value="Weekly">Weekly</option>
                         <option value="Daily">Daily</option>
@@ -1189,7 +1191,7 @@
                 gst: gst,
                 description: description,
                 frequency: freqMeta.visits,
-                frequency_label: frequencyLabelRaw || 'Default',
+                frequency_label: freqMeta.label || 'Default',
                 added_via: addedVia,
                 items: items
             };
