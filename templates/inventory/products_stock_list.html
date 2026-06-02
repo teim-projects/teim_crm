@@ -343,13 +343,13 @@
                 >
                   Product
                 </th>
-                <th style="width: 110px">Receipt</th>
-                <th style="width: 110px">Sent</th>
-                <th style="width: 120px">Approved</th>
-                <th style="width: 110px">Reserved</th>
-                <th>
-                  Closing
-                </th>
+                <th style="width: 100px">Opening</th>
+                <th style="width: 100px">Receipt</th>
+                <th style="width: 100px">Sent</th>
+                <th style="width: 110px">Approved</th>
+                <th style="width: 100px">Reserved</th>
+                <th style="width: 100px">Closing</th>
+                <th style="width: 100px">Available</th>
               </tr>
             </thead>
             <tbody>
@@ -357,15 +357,17 @@
               <tr>
                 <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
                 <td>{{ r.name }}</td>
-                <td>{{ r.in_qty }}</td>
-                <td>{{ r.out_qty }}</td>
+                <td>{{ r.opening_qty }}</td>
+                <td>{{ r.receipt_qty }}</td>
+                <td>{{ r.sent_qty }}</td>
                 <td>{{ r.approved_qty }}</td>
                 <td>{{ r.reserved_qty }}</td>
+                <td>{{ r.closing_qty }}</td>
                 <td class="text-success">{{ r.available_qty }}</td>
               </tr>
             {% empty %}
               <tr>
-                <td colspan="7" class="text-center py-5 small-muted">
+                <td colspan="9" class="text-center py-5 small-muted">
                   <i
                     class="fa fa-cubes"
                     style="font-size: 3.5rem; opacity: 0.4"
@@ -376,7 +378,7 @@
               </tr>
               {% endfor %} {% if not rows %}
               <tr>
-                <td colspan="7" class="text-center py-5 small-muted">
+                <td colspan="9" class="text-center py-5 small-muted">
                   <i
                     class="fa fa-cubes"
                     style="font-size: 3.5rem; opacity: 0.4"

@@ -1113,20 +1113,30 @@ def products_stock_list_view(request):
             approved = Decimal(str(getattr(p, 'approved_qty', 0) or 0))
             reserved = Decimal(str(getattr(p, 'reserved_qty', 0) or 0))
 
-        # closing = in - out (out already includes service deductions via total_out_qty)
-        # approved_qty is purely display-only: shows what portion of out went to services
-        closing   = max(Decimal('0'), in_qty - out_qty)
-        available = max(Decimal('0'), closing - reserved)
-        mtn_only  = max(Decimal('0'), out_qty - approved)
+        # NEW CALCULATIONS
+        opening = Decimal("0.000")  # Temporary - will be replaced with previous month closing
+        
+        sent = max(Decimal('0'), out_qty - approved)
+        
+        closing = max(
+            Decimal('0'),
+            opening + in_qty - sent - approved
+        )
+        
+        available = max(
+            Decimal('0'),
+            closing - reserved
+        )
 
         rows.append({
-            "id"           : p.pk,
-            "name"         : getattr(p, 'product_name', str(p)),
-            "in_qty"       : f"{in_qty:.3f}",
-            "out_qty"      : f"{mtn_only:.3f}",
-            "approved_qty" : f"{approved:.3f}",
-            "reserved_qty" : f"{reserved:.3f}",
-            "closing_qty"  : f"{closing:.3f}",
+            "id": p.pk,
+            "name": getattr(p, 'product_name', str(p)),
+            "opening_qty": f"{opening:.3f}",
+            "receipt_qty": f"{in_qty:.3f}",
+            "sent_qty": f"{sent:.3f}",
+            "approved_qty": f"{approved:.3f}",
+            "reserved_qty": f"{reserved:.3f}",
+            "closing_qty": f"{closing:.3f}",
             "available_qty": f"{available:.3f}",
         })
 
@@ -1268,7 +1278,6 @@ def products_stock_list_view(request):
 
 # stock export to excel
 from openpyxl import Workbook
-
 @login_required
 @role_required(['admin', 'HO_operation', 'HO_manager', 'branch_manager'])
 def export_products_stock_excel(request):
@@ -1283,7 +1292,6 @@ def export_products_stock_excel(request):
     user = request.user
     role = getattr(user.userprofile, "role", None)
 
-    # 🔐 ROLE BASED LOCATION FILTER
     if role == "branch_manager":
         branch_id = BranchManager.objects.get(
             mobile_no=user.username
@@ -1292,7 +1300,6 @@ def export_products_stock_excel(request):
         location_type = "BRANCH"
         location_id = branch_id
 
-    # Fetch stock data (same as list view)
     qs = annotated_product_stock_qs(
         Product,
         location_type=location_type,
@@ -1303,51 +1310,77 @@ def export_products_stock_excel(request):
         expiry_to=expiry_to
     ).order_by('product_name')
 
-    # 🟢 Create Excel workbook
     wb = Workbook()
     ws = wb.active
     ws.title = "Product Stock"
 
-    # 🟢 Excel Header
     headers = [
         "Product Name",
-        "In Qty",
-        "Out Qty",
-        "Reserved Qty",
-        "Closing Qty",
+        "Opening",
+        "Receipt",
+        "Sent",
+        "Approved",
+        "Reserved",
+        "Closing",
+        "Available",
     ]
     ws.append(headers)
 
-    # 🟢 Excel Rows
     for p in qs:
+
         if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
-            in_qty = getattr(p, 'batch_in_qty', Decimal('0'))
+            receipt = Decimal(str(getattr(p, 'batch_in_qty', 0) or 0))
             out_qty = Decimal('0')
+            approved = Decimal('0')
             reserved = Decimal('0')
         else:
-            in_qty = getattr(p, 'in_qty', Decimal('0'))
-            out_qty = getattr(p, 'out_qty', Decimal('0'))
-            reserved = getattr(p, 'reserved_qty', Decimal('0'))
+            receipt = Decimal(str(getattr(p, 'in_qty', 0) or 0))
+            out_qty = Decimal(str(getattr(p, 'out_qty', 0) or 0))
+            approved = Decimal(str(getattr(p, 'approved_qty', 0) or 0))
+            reserved = Decimal(str(getattr(p, 'reserved_qty', 0) or 0))
 
-        closing = in_qty - out_qty - reserved
+        # TEMPORARY OPENING
+        opening = Decimal('0.000')
+
+        # Sent Qty
+        sent = max(
+            Decimal('0'),
+            out_qty - approved
+        )
+
+        # Closing Formula
+        closing = max(
+            Decimal('0'),
+            opening + receipt - sent - approved
+        )
+
+        # Available Formula
+        available = max(
+            Decimal('0'),
+            closing - reserved
+        )
 
         ws.append([
             getattr(p, 'product_name', str(p)),
-            float(in_qty),
-            float(out_qty),
+            float(opening),
+            float(receipt),
+            float(sent),
+            float(approved),
             float(reserved),
             float(closing),
+            float(available),
         ])
 
-    # 🟢 Prepare HTTP response
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    response['Content-Disposition'] = 'attachment; filename="product_stock.xlsx"'
+
+    response['Content-Disposition'] = (
+        'attachment; filename="product_stock.xlsx"'
+    )
 
     wb.save(response)
     return response
-
 
 # ---- batch api ------
 def load_batches(request):

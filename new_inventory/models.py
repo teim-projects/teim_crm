@@ -968,3 +968,61 @@ class DeliveryChallanItem(models.Model):
 
     def __str__(self):
         return f"{self.product} - {self.quantity}"
+
+
+
+
+class MonthlyStockSnapshot(models.Model):
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE
+    )
+
+    location_type = models.CharField(max_length=20)
+
+    location_id = models.BigIntegerField()
+
+    year = models.IntegerField()
+    month = models.IntegerField()
+
+    opening_qty = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+        default=0
+    )
+
+    receipt_qty = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+        default=0
+    )
+
+    sent_qty = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+        default=0
+    )
+
+    approved_qty = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+        default=0
+    )
+
+    closing_qty = models.DecimalField(
+        max_digits=18,
+        decimal_places=3,
+        default=0
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (
+            "product",
+            "location_type",
+            "location_id",
+            "year",
+            "month"
+        )
