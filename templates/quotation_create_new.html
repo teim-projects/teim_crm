@@ -369,7 +369,10 @@ input:checked + .slider:before {
                                         <div class="col-md-6">
                                             <label>Customer Contact<span class="star">*</span></label>
                                             <input type="text" id="customer_contact" name="contact_no" required
-                                                class="form-control" value="{{ form_data.contact_no }}" >
+                                                class="form-control" value="{{ form_data.contact_no }}"
+                                                maxlength="10" pattern="[0-9]{10}" inputmode="numeric"
+                                                title="Enter exactly 10 digits"
+                                                oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                                             <input type="hidden" name="customer_id" id="customer_id"  value="{{ form_data.customer_id }}" required>
                                         </div>
                                         <div class="col-md-6">

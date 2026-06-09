@@ -306,20 +306,6 @@
             padding: 8px 10px;
         }
 
-        .fortnight-container {
-            display: none;
-            margin-top: 12px;
-            padding: 12px;
-            background: #fff8ef;
-            border: 1px solid #ffe2b8;
-            border-radius: 10px;
-        }
-
-        .fortnight-container label {
-            color: #8a5b00;
-            font-weight: 600;
-        }
-
         .items-box {
             display: none;
             margin-top: 12px;
@@ -762,18 +748,20 @@
                 visits = 12;
                 normalizedLabel = 'Default';
             } else if (!isNaN(label)) {
-
                 visits = parseInt(label);
-
                 normalizedLabel = `${visits} Visits/Year`;
             } else if (label === 'Fortnight') {
-                visits = parseInt(fortnightCount || 24) || 24;
+                visits = 26;
+                normalizedLabel = 'Fortnight';
             } else if (label === 'Weekly') {
                 visits = 52;
+                normalizedLabel = 'Weekly';
             } else if (label === 'Daily') {
                 visits = 365;
+                normalizedLabel = 'Daily';
             } else {
                 visits = 12;
+                normalizedLabel = 'Default';
             }
 
             return {
@@ -997,8 +985,7 @@
 
                 <div class="product-frequency-group">
                     <label>Service Frequency</label>
-                    <select class="form-control frequency-select" id="frequency-${product.product_id}"
-                            onchange="toggleFortnightField(${product.product_id})">
+                    <select class="form-control frequency-select" id="frequency-${product.product_id}">
                         <option value="">-- Select Frequency --</option>
                         <option value="1">1 Visit/Year</option>
                         <option value="2">2 Visits/Year</option>
@@ -1016,12 +1003,6 @@
                         <option value="Weekly">Weekly</option>
                         <option value="Daily">Daily</option>
                     </select>
-
-                    <div class="fortnight-container" id="fortnight-box-${product.product_id}">
-                        <label>Fortnight Visits</label>
-                        <input type="number" class="form-control fortnight-count" id="fortnight-${product.product_id}"
-                               min="1" value="24" placeholder="Enter visits">
-                    </div>
                 </div>
 
                 <div class="items-box" id="items-section-${product.product_id}">
@@ -1044,14 +1025,6 @@
             `;
 
             container.appendChild(card);
-        }
-
-        function toggleFortnightField(productId) {
-            const frequency = document.getElementById(`frequency-${productId}`)?.value || '';
-            const box = document.getElementById(`fortnight-box-${productId}`);
-            if (box) {
-                box.style.display = frequency === 'Fortnight' ? 'block' : 'none';
-            }
         }
 
         function fetchProductItems(productId) {
@@ -1158,9 +1131,8 @@
             const unit = document.getElementById(`unit-${productId}`)?.value || '';
             const description = document.getElementById(`desc-${productId}`)?.value || '';
             const frequencyLabelRaw = document.getElementById(`frequency-${productId}`)?.value || '';
-            const fortnightCount = document.getElementById(`fortnight-${productId}`)?.value || 24;
 
-            const freqMeta = normalizeFrequency(frequencyLabelRaw, fortnightCount);
+            const freqMeta = normalizeFrequency(frequencyLabelRaw, null);
 
             const items = [];
             if (addedVia === 'detailed') {

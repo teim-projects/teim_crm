@@ -372,10 +372,12 @@ class AMCContract(models.Model):
         # Update end date and per visit amount
         if date_product_pairs:
             unique_dates = sorted(set(p['date'] for p in date_product_pairs))
-            self.end_date = unique_dates[-1]
+            # FIXED: AMC validity = 1 year from start date
+            self.end_date = self.start_date + relativedelta(years=1)
+            total_visits = len(date_product_pairs)
             self.per_visit_amount = (
-                self.total_amount / len(date_product_pairs)
-                if date_product_pairs else 0
+                self.total_amount / total_visits
+                if total_visits > 0 else 0
             )
             self.default_payment_amount = self.per_visit_amount
             super().save(update_fields=["end_date", "per_visit_amount", "default_payment_amount"])
@@ -392,6 +394,8 @@ class AMCContract(models.Model):
     # ---------------------------------
     def __str__(self):
         return self.contract_number
+
+
 # ---------------------------------
 # AMC SERVICE SCHEDULE (PLANNED)
 # ---------------------------------

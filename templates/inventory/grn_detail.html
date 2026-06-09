@@ -29,15 +29,29 @@
         <div class="row form-rowsales">
             <div class="col-md-10 offset-md-1 shadow bg-white rounded p-4">
 
-                <!-- Heading + PO PDF Button -->
+                <!-- Heading + PO PDF Button + Direct DC Button -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="text-primary">GRN Details — {{ grn.grn_no }}</h4>
 
-                    <a href="{% url 'purchase_order_pdf' grn.purchase_order.id %}"
-                       target="_blank"
-                       class="btn btn-sm btn-outline-primary">
-                        View PO
-                    </a>
+                    <div>
+                        <a href="{% url 'purchase_order_pdf' grn.purchase_order.id %}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-primary">
+                            View PO
+                        </a>
+
+                        <!-- Direct DC Button - Only show if DC not already created -->
+                        {% if not grn.delivery_challans.exists %}
+                            <a href="{% url 'create_dc_from_grn' grn.id %}"
+                               class="btn btn-sm btn-success ms-2">
+                                Create Direct DC
+                            </a>
+                        {% else %}
+                            <button class="btn btn-sm btn-secondary ms-2" disabled>
+                                DC Already Created
+                            </button>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <!-- =========================
@@ -95,54 +109,55 @@
                 </table>
 
                 <!-- =========================
+                     SUB ITEMS TABLE
+                ========================== -->
+                <h5 class="mt-4 text-primary font-weight-bold">Sub Items</h5>
+
+                <table class="table table-bordered table-sm mt-3">
+                    <thead>
+                        <tr>
+                            <th>Sub Item</th>
+                            <th>Received Qty</th>
+                            <th>Batch No</th>
+                            <th>Mfg Date</th>
+                            <th>Expiry Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in sub_items %}
+                        <tr>
+                            <td>{{ item.sub_item.item_name }}</td>
+
+                            <td class="text-success font-weight-bold">
+                                {{ item.received_qty }}
+                            </td>
+
+                            <td>
+                                {{ item.batch_no|default:"—" }}
+                            </td>
+
+                            <td>
+                                {{ item.mfg_date|default:"—" }}
+                            </td>
+
+                            <td>
+                                {{ item.exp_date|default:"—" }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                No Sub Items Found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- =========================
                      PRODUCT DETAILS TABLE
                 ========================== -->
-
-
-<h5 class="mt-4 text-primary font-weight-bold">Sub Items</h5>
-
-<table class="table table-bordered table-sm mt-3">
-    <thead>
-        <tr>
-            <th>Sub Item</th>
-            <th>Received Qty</th>
-            <th>Batch No</th>
-            <th>Mfg Date</th>
-            <th>Expiry Date</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for item in sub_items %}
-        <tr>
-            <td>{{ item.sub_item.item_name }}</td>
-
-            <td class="text-success font-weight-bold">
-                {{ item.received_qty }}
-            </td>
-
-            <td>
-                {{ item.batch_no|default:"—" }}
-            </td>
-
-            <td>
-                {{ item.mfg_date|default:"—" }}
-            </td>
-
-            <td>
-                {{ item.exp_date|default:"—" }}
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5" class="text-center text-muted">
-                No Sub Items Found
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
                 <h5 class="mt-4 text-primary font-weight-bold">Product Details</h5>
 
                 <table class="table table-bordered table-sm mt-3">
@@ -211,6 +226,7 @@
         </div>
     </div>
 </div>
+
 <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:200px;">
     <div class="row p-3">
         <div class="col-md-12 text-center">
@@ -242,7 +258,6 @@
         </div>
     </div>
 </div>
-
 
 </body>
 </html>

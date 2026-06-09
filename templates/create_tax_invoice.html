@@ -1,4 +1,3 @@
-
 {% load static %}<!doctype html>
 <html lang="en">
 
@@ -180,7 +179,7 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label>Contact <span class="star">*</span></label>
-                            <input type="text" id="primary_contact" name="contact_no" class="form-control" required>
+                            <input type="text" id="primary_contact" name="contact_no" class="form-control" required maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label>Email <span class="star">*</span></label>
@@ -206,7 +205,7 @@
                         </div>
                         <div class="col-md-3 org-fields">
                             <label>Sub-Contact No</label>
-                            <input type="text" name="or_contact" id="or_contact" value="{{ form_data.or_contact }}" class="form-control">
+                            <input type="text" name="or_contact" id="or_contact" value="{{ form_data.or_contact }}" class="form-control" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                         </div>
                     </div>
                     
@@ -485,7 +484,7 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label>Contact <span class="star">*</span></label>
-                            <input type="text" id="primary_contact" name="contact_no" class="form-control">
+                            <input type="text" id="primary_contact" name="contact_no" class="form-control" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label>Customer Name <span class="star">*</span></label>
@@ -515,7 +514,7 @@
                         </div>
                         <div class="col-md-3 org-fields">
                             <label>Sub-Contact No</label>
-                            <input type="text" name="or_contact" value="{{ form_data.or_contact }}" class="form-control">
+                            <input type="text" name="or_contact" value="{{ form_data.or_contact }}" class="form-control" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                         </div>
 
 
@@ -799,7 +798,7 @@
                                   <div class="row">
                                     <div class="col-md-6 mb-3">
                                       <label>Primary Contact No <span class="text-danger">*</span></label>
-                                      <input type="text" class="form-control" name="primarycontact" placeholder="Primary Contact No" pattern="\d{10}" required maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+                                      <input type="text" class="form-control" name="primarycontact" placeholder="Primary Contact No" required maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                                     </div>
                                 
                                     <div class="col-md-6 mb-3">
@@ -824,7 +823,7 @@
                                 
                                     <div class="col-md-6 mb-3">
                                       <label>Secondary Contact No</label>
-                                      <input type="text" class="form-control" name="secondarycontact" placeholder="Secondary Contact No" pattern="\d{10}" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+                                      <input type="text" class="form-control" name="secondarycontact" placeholder="Secondary Contact No" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                                     </div>
 
                                     <div class="col-md-4 mb-4">
@@ -841,7 +840,7 @@
                                     </div>
                                     <div class="or_contact col-md-4 mb-4" style="display: none;">
                                       <label>Contact <span class="star">*</span></label>
-                                      <input type="number" name="or_contact" class="form-control">
+                                      <input type="text" name="or_contact" class="form-control" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
                                     </div>
                             
                                 
@@ -1019,7 +1018,7 @@ showStep(currentStep);
 <script>
     let gstEnabled = false; // initially off
 
-    document.getElementById('gstToggle').addEventListener('change', function () {
+    document.getElementById('gstToggle')?.addEventListener('change', function () {
         gstEnabled = this.checked;
         console.log(gstEnabled ? "GST Enabled" : "GST Disabled");
         
@@ -1092,7 +1091,7 @@ showStep(currentStep);
     }
 
     // Attach search functionality
-    document.getElementById("product_search").addEventListener("keyup", function () {
+    document.getElementById("product_search")?.addEventListener("keyup", function () {
         let query = this.value.toLowerCase();
         let products = document.querySelectorAll("#products-container .product-item");
     
@@ -1138,6 +1137,7 @@ showStep(currentStep);
 
     function updateSelectedServicesList() {
         const list = document.getElementById('selected_services');
+        if (!list) return;
         list.innerHTML = '';
 
         if (selectedProducts.length === 0) {
@@ -1176,23 +1176,24 @@ showStep(currentStep);
             }
         });
 
-        document.getElementById('total_price').value = total.toFixed(2);
-        document.getElementById('gst_price').value = gstEnabled ? gstTotal.toFixed(2) : '0.00';
-        document.getElementById('total_with_gst').value = (total + (gstEnabled ? gstTotal : 0)).toFixed(2);
+        if (document.getElementById('total_price')) {
+            document.getElementById('total_price').value = total.toFixed(2);
+        }
+        if (document.getElementById('gst_price')) {
+            document.getElementById('gst_price').value = gstEnabled ? gstTotal.toFixed(2) : '0.00';
+        }
+        if (document.getElementById('total_with_gst')) {
+            document.getElementById('total_with_gst').value = (total + (gstEnabled ? gstTotal : 0)).toFixed(2);
+        }
     }
 
 
     function updateHiddenInput() {
-        document.getElementById('selected_products_json').value = JSON.stringify(selectedProducts);
+        const hidden = document.getElementById('selected_products_json');
+        if (hidden) {
+            hidden.value = JSON.stringify(selectedProducts);
+        }
     }
-    // function updateHiddenInput() {
-    //     const hiddenInput = document.getElementById('selected_products_json');
-    //     hiddenInput.value = JSON.stringify(selectedProducts);
-
-    //     // Debug log
-    //     console.log("selected_products_json:", hiddenInput.value);
-    // }
-
 </script>
 
 <!-- Customer type but in quotation form -->
@@ -1220,23 +1221,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 </script>
+
 <!-- Customer details -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const customerIdField = document.getElementById("customer_id");
-            const contactInput = document.getElementById("primary_contact");
-            const emailField = document.getElementById("primary_email");
-            const nameField = document.getElementById("customer_name");
-            const soldAddressField = document.getElementById("sold_address");
-            const soldStateSelect = document.getElementById("sold_state_select");
-            
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const customerIdField = document.getElementById("customer_id");
+        const contactInput = document.getElementById("primary_contact");
+        const emailField = document.getElementById("primary_email");
+        const nameField = document.getElementById("customer_name");
+        const soldAddressField = document.getElementById("sold_address");
+        const soldStateSelect = document.getElementById("sold_state_select");
+        
 
-            const shipAddressField = document.getElementById("ship_address");
-            const shiftStateSelect = document.getElementById("shift_state_select");
-            const customerTypeField = document.querySelector('select[name="customer_type"]');
-            const or_nameField = document.querySelector('input[name="or_name"]');
-            const or_contactField = document.querySelector('input[name="or_contact"]');
+        const shipAddressField = document.getElementById("ship_address");
+        const shiftStateSelect = document.getElementById("shift_state_select");
+        const customerTypeField = document.querySelector('select[name="customer_type"]');
+        const or_nameField = document.querySelector('input[name="or_name"]');
+        const or_contactField = document.querySelector('input[name="or_contact"]');
 
+        if (contactInput) {
             contactInput.addEventListener('blur', function () {
                 const contactNo = this.value.trim();
                 if (!contactNo) return;
@@ -1254,17 +1257,17 @@ document.addEventListener("DOMContentLoaded", function () {
                             return;
                         }
 
-                        customerIdField.value = data.customer_id || '';
+                        if (customerIdField) customerIdField.value = data.customer_id || '';
 
-                        if (!emailField.value && data.customer_email) {
+                        if (emailField && !emailField.value && data.customer_email) {
                             emailField.value = data.customer_email;
                         }
 
-                        if (!nameField.value && data.customer_full_name) {
+                        if (nameField && !nameField.value && data.customer_full_name) {
                             nameField.value = data.customer_full_name;
                         }
 
-                        if (!soldAddressField.value && data.soldtopartyaddress) {
+                        if (soldAddressField && !soldAddressField.value && data.soldtopartyaddress) {
                             soldAddressField.value = `${data.soldtopartyaddress}, ${data.sold_city} - ${data.sold_pincode}`;
                             soldAddressField.style.borderLeft = "4px solid #03AED2";
                             soldAddressField.title = "Auto-filled from customer records";
@@ -1274,27 +1277,27 @@ document.addEventListener("DOMContentLoaded", function () {
                             }, 4000);
                         }
 
-                        if (data.sold_state) {
+                        if (soldStateSelect && data.sold_state) {
                             soldStateSelect.value = data.sold_state;
                         }
 
-                        if (!shipAddressField.value && data.shifttopartyaddress) {
+                        if (shipAddressField && !shipAddressField.value && data.shifttopartyaddress) {
                             shipAddressField.value = `${data.shifttopartyaddress}, ${data.city} - ${data.pincode}`;
                         }
 
-                        if (data.state) {
+                        if (shiftStateSelect && data.state) {
                             shiftStateSelect.value = data.state;
                         }
-                        if (!customerTypeField.value && data.customer_type) {
+                        if (customerTypeField && !customerTypeField.value && data.customer_type) {
                             customerTypeField.value = data.customer_type;
                             toggleOrgFieldsByCustomerType(); 
                         }
 
-                        if (!or_nameField.value && data.or_name) {
+                        if (or_nameField && !or_nameField.value && data.or_name) {
                             or_nameField.value = data.or_name;
                         }
 
-                        if (!or_contactField.value && data.or_contact) {
+                        if (or_contactField && !or_contactField.value && data.or_contact) {
                             or_contactField.value = data.or_contact;
                         }
                     })
@@ -1302,191 +1305,192 @@ document.addEventListener("DOMContentLoaded", function () {
                         console.error('Error:', error);
                     });
             });
-        });
-    </script>  
+        }
+    });
+</script>  
 
 <!-- Branch details -->
-    <script>
-        function fetchBranchDetails(branchId) {
-            if (!branchId) {
-                // Clear all fields if no branch is selected
-                document.getElementById('branch_contact_1').value = '';
-                document.getElementById('branch_email_1').value = '';
-                document.getElementById('branch_gst').value = '';
-                document.getElementById('branch_pan').value = '';
-                document.getElementById('branch_address').value = '';
-                return;
-            }
-
-            fetch(`/get_branch_details/${branchId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                        return;
-                    }
-
-                    // Fill in the branch details
-                    document.getElementById('branch_contact_1').value = data.contact_1 || '';
-                    document.getElementById('branch_email_1').value = data.email_1 || '';
-                    document.getElementById('branch_gst').value = data.gst_number || '';
-                    document.getElementById('branch_pan').value = data.pan_number || '';
-                    document.getElementById('branch_address').value = data.full_address || '';
-                })
-                .catch(error => {
-                    console.error('Error fetching branch details:', error);
-                    alert('Error fetching branch details');
-                });
+<script>
+    function fetchBranchDetails(branchId) {
+        if (!branchId) {
+            // Clear all fields if no branch is selected
+            document.getElementById('branch_contact_1').value = '';
+            document.getElementById('branch_email_1').value = '';
+            document.getElementById('branch_gst').value = '';
+            document.getElementById('branch_pan').value = '';
+            document.getElementById('branch_address').value = '';
+            return;
         }
-    </script>
 
-    <!-- ✅ Do NOT remove this sidebar toggle logic -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
-            menuItems.forEach(item => {
-                item.addEventListener('click', function () {
-                    const submenu = this.querySelector('.submenu');
-                    const arrow = this.querySelector('.arrow-down');
+        fetch(`/get_branch_details/${branchId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
 
-                    menuItems.forEach(otherItem => {
-                        if (otherItem !== this) {
-                            const otherSubmenu = otherItem.querySelector('.submenu');
-                            const otherArrow = otherItem.querySelector('.arrow-down');
-                            if (otherSubmenu) {
-                                otherSubmenu.style.display = 'none';
-                                if (otherArrow && otherArrow.classList.contains('arrow-up')) {
-                                    otherArrow.classList.remove('arrow-up');
-                                }
+                // Fill in the branch details
+                document.getElementById('branch_contact_1').value = data.contact_1 || '';
+                document.getElementById('branch_email_1').value = data.email_1 || '';
+                document.getElementById('branch_gst').value = data.gst_number || '';
+                document.getElementById('branch_pan').value = data.pan_number || '';
+                document.getElementById('branch_address').value = data.full_address || '';
+            })
+            .catch(error => {
+                console.error('Error fetching branch details:', error);
+                alert('Error fetching branch details');
+            });
+    }
+</script>
+
+<!-- ✅ Do NOT remove this sidebar toggle logic -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const menuItems = document.querySelectorAll('.sidebar ul li.has-submenu');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function () {
+                const submenu = this.querySelector('.submenu');
+                const arrow = this.querySelector('.arrow-down');
+
+                menuItems.forEach(otherItem => {
+                    if (otherItem !== this) {
+                        const otherSubmenu = otherItem.querySelector('.submenu');
+                        const otherArrow = otherItem.querySelector('.arrow-down');
+                        if (otherSubmenu) {
+                            otherSubmenu.style.display = 'none';
+                            if (otherArrow && otherArrow.classList.contains('arrow-up')) {
+                                otherArrow.classList.remove('arrow-up');
                             }
                         }
-                    });
-
-                    if (submenu) {
-                        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-                        if (arrow) arrow.classList.toggle('arrow-up');
                     }
                 });
+
+                if (submenu) {
+                    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+                    if (arrow) arrow.classList.toggle('arrow-up');
+                }
             });
         });
-        let globalStateMap = {}; // Global state map
-        function fetchQuotationDetails() {
-            const quotationNo = document.getElementById('quotationNo').value;
-            if (!quotationNo) return;
+    });
+    let globalStateMap = {}; // Global state map
+    function fetchQuotationDetails() {
+        const quotationNo = document.getElementById('quotationNo').value;
+        if (!quotationNo) return;
 
-            fetch(`/get_quotation_details_by_no/?quotation_no=${encodeURIComponent(quotationNo)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                        return;
-                    }
+        fetch(`/get_quotation_details_by_no/?quotation_no=${encodeURIComponent(quotationNo)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
 
-                    // Branch Info
-                    document.getElementById('branch_name').value = data.branch_name || '';
-                    document.getElementById('branch_contact_1').value = data.branch_contact_1 || '';
-                    document.getElementById('branch_email_1').value = data.branch_email_1 || '';
-                    document.getElementById('branch_gst').value = data.branch_gst || '';
-                    document.getElementById('branch_pan').value = data.branch_pan || '';
-                    document.getElementById('branch_address').value = `${data.branch_address},${data.state},${data.code}`;
+                // Branch Info
+                document.getElementById('branch_name').value = data.branch_name || '';
+                document.getElementById('branch_contact_1').value = data.branch_contact_1 || '';
+                document.getElementById('branch_email_1').value = data.branch_email_1 || '';
+                document.getElementById('branch_gst').value = data.branch_gst || '';
+                document.getElementById('branch_pan').value = data.branch_pan || '';
+                document.getElementById('branch_address').value = `${data.branch_address},${data.state},${data.code}`;
 
-                    // Customer Info
-                    document.getElementById('customer_name').value = data.fullname || '';
-                    document.getElementById('primary_contact').value = data.primarycontact || '';
-                    document.getElementById('primary_email').value = data.primaryemail || '';
-                    document.getElementById('view_customer_type').value = data.customer_type || '';
-                    document.getElementById('or_name').value = data.or_name || '';
-                    document.getElementById('or_contact').value = data.or_contact || '';
-                    document.getElementById('sold_address').value =
-                        `${data.soldtopartyaddress}, ${data.soldtopartycity}, ${data.soldtopartystate}, ${data.soldtopartypostal} `;
-                    document.getElementById('ship_address').value =
-                        `${data.shifttopartyaddress}, ${data.shifttopartycity}, ${data.shifttopartystate}, ${data.shifttopartypostal} `;
-                    toggleOrgFieldsByCustomerType();
-                    // ✅ Bank Account (populate dynamically)
-                    const bankDropdown = document.getElementById('bank_id');
-                    bankDropdown.innerHTML = '<option value="">Select Bank Account</option>';
-                    if (data.bank && Array.isArray(data.bank)) {
-                        data.bank.forEach(bank => {
-                            const option = document.createElement('option');
-                            option.value = bank.id;
-                            option.text = `${bank.bank_name} - ${bank.account_number}`;
-                            bankDropdown.appendChild(option);
-                        });
-                    }
+                // Customer Info
+                document.getElementById('customer_name').value = data.fullname || '';
+                document.getElementById('primary_contact').value = data.primarycontact || '';
+                document.getElementById('primary_email').value = data.primaryemail || '';
+                document.getElementById('view_customer_type').value = data.customer_type || '';
+                document.getElementById('or_name').value = data.or_name || '';
+                document.getElementById('or_contact').value = data.or_contact || '';
+                document.getElementById('sold_address').value =
+                    `${data.soldtopartyaddress}, ${data.soldtopartycity}, ${data.soldtopartystate}, ${data.soldtopartypostal} `;
+                document.getElementById('ship_address').value =
+                    `${data.shifttopartyaddress}, ${data.shifttopartycity}, ${data.shifttopartystate}, ${data.shifttopartypostal} `;
+                toggleOrgFieldsByCustomerType();
+                // ✅ Bank Account (populate dynamically)
+                const bankDropdown = document.getElementById('bank_id');
+                bankDropdown.innerHTML = '<option value="">Select Bank Account</option>';
+                if (data.bank && Array.isArray(data.bank)) {
+                    data.bank.forEach(bank => {
+                        const option = document.createElement('option');
+                        option.value = bank.id;
+                        option.text = `${bank.bank_name} - ${bank.account_number}`;
+                        bankDropdown.appendChild(option);
+                    });
+                }
 
-                    // Populate State Dropdowns
-                    populateStateDropdowns(data.state_map, data.soldtopartystate, data.shifttopartystate);
+                // Populate State Dropdowns
+                populateStateDropdowns(data.state_map, data.soldtopartystate, data.shifttopartystate);
 
-                    // Product Table Rendering
-                    const productHead = document.querySelector('#product-table-head');
-                    const productBody = document.querySelector('#product-table-body');
+                // Product Table Rendering
+                const productHead = document.querySelector('#product-table-head');
+                const productBody = document.querySelector('#product-table-body');
 
-                    function renderTableHeader(showGST) {
-                        let headerHTML = `
-                            <tr>
-                                <th>Product Name</th>
-                                <th>HSN/SAC</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Unit</th>
-                                <th>Description</th>
-                        `;
-                            
-                        if (showGST) {
-                            headerHTML += `<th>GST (%)</th>`;
-                        }
-
-                        headerHTML += `</tr>`;
-                        productHead.innerHTML = headerHTML;
-                    }
-
-                    function renderProductRows(products, showGST) {
-                        productBody.innerHTML = ''; // Clear old rows
-                    
-                        products.forEach(prod => {
-                            const gstColumn = showGST
-                                ? `<td><input type="number" class="form-control gst" value="${prod.gst}" readonly></td>`
-                                : '';
+                function renderTableHeader(showGST) {
+                    let headerHTML = `
+                        <tr>
+                            <th>Product Name</th>
+                            <th>HSN/SAC</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Description</th>
+                    `;
                         
-                            const row = `
-                                <tr>
-                                    <td><input type="text" class="form-control product-name" value="${prod.name}" readonly></td>
-                                    <td><input type="text" class="form-control hsn" placeholder="Enter HSN/SAC number"></td>
-                                    <td><input type="number" class="form-control price" value="${parseFloat(prod.price).toFixed(2)}" readonly></td>
-                                    <td><input type="number" class="form-control quantity" value="${parseFloat(prod.quantity).toFixed(2)}" readonly></td>
-                                    <td><input type="text" class="form-control unit" value="${prod.unit}" readonly></td>
-                                    <td><input type="text" class="form-control description" value="${prod.description}" readonly></td>
-                                    ${gstColumn}
-                                </tr>
-                            `;
-                            productBody.insertAdjacentHTML('beforeend', row);
-                        });
+                    if (showGST) {
+                        headerHTML += `<th>GST (%)</th>`;
                     }
 
-                    // Example usage after fetching data
-                    renderTableHeader(data.apply_gst == 1);
-                    renderProductRows(data.product, data.apply_gst == 1);
+                    headerHTML += `</tr>`;
+                    productHead.innerHTML = headerHTML;
+                }
 
-                    // Calculate total quantity
-                    const totalQuantity = data.product.reduce((sum, item) => {
-                        return sum + (parseFloat(item.quantity) || 0);
-                    }, 0);
+                function renderProductRows(products, showGST) {
+                    productBody.innerHTML = ''; // Clear old rows
+                
+                    products.forEach(prod => {
+                        const gstColumn = showGST
+                            ? `<td><input type="number" class="form-control gst" value="${prod.gst}" readonly></td>`
+                            : '';
+                    
+                        const row = `
+                            <tr>
+                                <td><input type="text" class="form-control product-name" value="${prod.name}" readonly></td>
+                                <td><input type="text" class="form-control hsn" placeholder="Enter HSN/SAC number"></td>
+                                <td><input type="number" class="form-control price" value="${parseFloat(prod.price).toFixed(2)}" readonly></td>
+                                <td><input type="number" class="form-control quantity" value="${parseFloat(prod.quantity).toFixed(2)}" readonly></td>
+                                <td><input type="text" class="form-control unit" value="${prod.unit}" readonly></td>
+                                <td><input type="text" class="form-control description" value="${prod.description}" readonly></td>
+                                ${gstColumn}
+                            </tr>
+                        `;
+                        productBody.insertAdjacentHTML('beforeend', row);
+                    });
+                }
 
-                    // GST & Totals display logic
-                    if (data.apply_gst == 1) {
-                        // GST is applied
-                        if (data.igst > 0) {
-                            // IGST case
-                            document.getElementById('gstHeader1').innerHTML = 'IGST';
-                            document.getElementById('gstValues1').innerText = data.igst || 0;
-                            document.getElementById('gstHeader2').innerHTML = '';
-                            document.getElementById('gstValues2').innerText = '';
-                        } else {
-                            // CGST + SGST case
-                            document.getElementById('gstHeader1').innerHTML = 'CGST';
-                            document.getElementById('gstValues1').innerText = data.cgst || 0;
-                            document.getElementById('gstHeader2').innerHTML = 'SGST';
-                            document.getElementById('gstValues2').innerText = data.sgst || 0;
+                // Example usage after fetching data
+                renderTableHeader(data.apply_gst == 1);
+                renderProductRows(data.product, data.apply_gst == 1);
+
+                // Calculate total quantity
+                const totalQuantity = data.product.reduce((sum, item) => {
+                    return sum + (parseFloat(item.quantity) || 0);
+                }, 0);
+
+                // GST & Totals display logic
+                if (data.apply_gst == 1) {
+                    // GST is applied
+                    if (data.igst > 0) {
+                        // IGST case
+                        document.getElementById('gstHeader1').innerHTML = 'IGST';
+                        document.getElementById('gstValues1').innerText = data.igst || 0;
+                        document.getElementById('gstHeader2').innerHTML = '';
+                        document.getElementById('gstValues2').innerText = '';
+                    } else {
+                        // CGST + SGST case
+                        document.getElementById('gstHeader1').innerHTML = 'CGST';
+                        document.getElementById('gstValues1').innerText = data.cgst || 0;
+                        document.getElementById('gstHeader2').innerHTML = 'SGST
+                        document.getElementById('gstValues2').innerText = data.sgst || 0;
                         }
                     } else {
                         // No GST — hide GST headers & values
