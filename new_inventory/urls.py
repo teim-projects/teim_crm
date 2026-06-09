@@ -104,6 +104,13 @@ urlpatterns = [
             dc_edit_view,
             name="dc_edit"
         ),
+        
+        
+    path(
+      "grn/<int:grn_id>/create-dc/",
+      create_dc_from_grn,
+      name="create_dc_from_grn",
+    ),
 
      path("delivery-challan/<int:pk>/pdf/", dc_pdf_view, name="dc_pdf"),
     path("get-required-items/<int:product_id>/", get_required_items, name="get_required_items"),

@@ -313,7 +313,7 @@ EMAIL_HOST_PASSWORD = "wsgc mnza ovvh cggw"
 
 # Whatsapp Api
 WHATSAPP_API  = "https://app.rapbooster.com/api/send/msg?authKey=6538c8eff027d41e9151"
-WHATSAPP_CHANNEL_ID = "22035"
+WHATSAPP_CHANNEL_ID = "28393"
 
 
 

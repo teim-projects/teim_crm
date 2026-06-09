@@ -23,43 +23,76 @@
   <!-- ================= HEADER ================= -->
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold text-dark">Create Delivery Challan</h4>
-    <span class="badge bg-success">MTN APPROVED</span>
+    {% if is_direct_dc %}
+      <span class="badge bg-primary">DIRECT FROM GRN</span>
+    {% else %}
+      <span class="badge bg-success">FROM MTN</span>
+    {% endif %}
   </div>
 
-  <!-- ================= MTN INFO ================= -->
+  <!-- ================= SOURCE INFO (MTN or GRN) ================= -->
   <div class="card shadow-sm mb-4">
-    <div class="card-header fw-bold">MTN Details</div>
+    <div class="card-header fw-bold">
+      {% if is_direct_dc %}GRN Details{% else %}MTN Details{% endif %}
+    </div>
 
     <div class="card-body">
       <div class="row g-3">
 
-        <div class="col-md-3">
-          <label class="form-label">MTN No</label>
-          <input type="text" class="form-control" value="{{ mtn.mtn_no }}" disabled>
-        </div>
+        {% if is_direct_dc %}
+          <!-- GRN Flow -->
+          <div class="col-md-3">
+            <label class="form-label">GRN No</label>
+            <input type="text" class="form-control" value="{{ grn.grn_no }}" disabled>
+          </div>
 
-        <div class="col-md-3">
-          <label class="form-label">Transfer Date</label>
-          <input type="text" class="form-control"
-                 value="{{ mtn.transfer_date|date:'d-m-Y' }}" disabled>
-        </div>
+          <div class="col-md-3">
+            <label class="form-label">GRN Date</label>
+            <input type="text" class="form-control" value="{{ grn.grn_date|date:'d-m-Y' }}" disabled>
+          </div>
 
-        <div class="col-md-3">
-          <label class="form-label">Source</label>
-          <input type="text" class="form-control"
-                 value="{{ mtn.source_type }} - {{ mtn.source_name }}" disabled>
-        </div>
+          <div class="col-md-3">
+            <label class="form-label">Supplier</label>
+            <input type="text" class="form-control" value="{{ grn.supplier.supplier_name }}" disabled>
+          </div>
 
-        <div class="col-md-3">
-          <label class="form-label">Destination</label>
-          <input type="text" class="form-control"
-                 value="{{ mtn.destination_type }} - {{ mtn.destination_name }}" disabled>
-        </div>
+          <div class="col-md-3">
+            <label class="form-label">Destination Warehouse</label>
+            <input type="text" class="form-control" value="{{ source }}" disabled>
+          </div>
 
-        <div class="col-md-12">
-          <label class="form-label">MTN Remarks</label>
-          <textarea class="form-control" rows="2" disabled>{{ mtn.remark|default:"-" }}</textarea>
-        </div>
+          <div class="col-md-12">
+            <label class="form-label">GRN Remarks</label>
+            <textarea class="form-control" rows="2" disabled>{{ grn.remarks|default:"-" }}</textarea>
+          </div>
+
+        {% else %}
+          <!-- MTN Flow -->
+          <div class="col-md-3">
+            <label class="form-label">MTN No</label>
+            <input type="text" class="form-control" value="{{ mtn.mtn_no }}" disabled>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Transfer Date</label>
+            <input type="text" class="form-control" value="{{ mtn.transfer_date|date:'d-m-Y' }}" disabled>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Source</label>
+            <input type="text" class="form-control" value="{{ mtn.source_type }} - {{ mtn.source_name }}" disabled>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Destination</label>
+            <input type="text" class="form-control" value="{{ mtn.destination_type }} - {{ mtn.destination_name }}" disabled>
+          </div>
+
+          <div class="col-md-12">
+            <label class="form-label">MTN Remarks</label>
+            <textarea class="form-control" rows="2" disabled>{{ mtn.remark|default:"-" }}</textarea>
+          </div>
+        {% endif %}
 
       </div>
     </div>
@@ -75,11 +108,31 @@
       <div class="card-body">
         <div class="row g-3">
 
+          <!-- Destination Type - FIXED with correct backend values -->
+          <div class="col-md-4">
+            <label class="form-label">Destination Type *</label>
+            <select name="destination_type" id="destination_type" class="form-select" required>
+              <option value="">Select Destination Type</option>
+              <option value="HO">Head Office (HO)</option>
+              <option value="BRANCH">Branch</option>
+              <option value="SITE">Site</option>
+            </select>
+          </div>
+
+          <!-- Destination Location - Dynamic Dropdown -->
+          <div class="col-md-4">
+            <label class="form-label">Destination Location *</label>
+            <select name="destination_id" id="destination_id" class="form-select" required>
+              <option value="">Select Location First</option>
+            </select>
+          </div>
+
           <!-- Delivery Date -->
           <div class="col-md-4">
             <label class="form-label">Delivery Date</label>
             <input type="date"
                    name="delivery_date"
+                   id="delivery_date"
                    class="form-control"
                    value="{{ today|default:'' }}"
                    required>
@@ -90,6 +143,7 @@
             <label class="form-label">Delivery Partner Name</label>
             <input type="text"
                    name="delivery_partner_name"
+                   id="delivery_partner_name"
                    class="form-control"
                    placeholder="e.g. BlueDart / DTDC / Self">
           </div>
@@ -99,6 +153,7 @@
             <label class="form-label">Delivery Person Name</label>
             <input type="text"
                    name="delivery_person_name"
+                   id="delivery_person_name"
                    class="form-control"
                    placeholder="e.g. Ramesh">
           </div>
@@ -108,14 +163,20 @@
             <label class="form-label">Delivery Person Phone</label>
             <input type="text"
                    name="delivery_person_phone"
+                   id="delivery_person_phone"
                    class="form-control"
-                   placeholder="10-digit mobile number" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+                   placeholder="10-digit mobile number" 
+                   maxlength="10" 
+                   pattern="[0-9]{10}" 
+                   title="Enter exactly 10 digits" 
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
           </div>
 
           <!-- Delivery Remarks -->
-          <div class="col-md-8">
+          <div class="col-md-12">
             <label class="form-label">Delivery Remarks</label>
             <textarea name="remarks"
+                      id="remarks"
                       class="form-control"
                       rows="2"
                       placeholder="Optional delivery remarks"></textarea>
@@ -127,7 +188,14 @@
 
     <!-- ================= ITEMS ================= -->
     <div class="card shadow-sm mb-4">
-      <div class="card-header fw-bold">Items (From MTN)</div>
+      <div class="card-header fw-bold">
+        Items 
+        {% if is_direct_dc %}
+          (From GRN)
+        {% else %}
+          (From MTN)
+        {% endif %}
+      </div>
 
       <div class="card-body p-0">
         <table class="table table-bordered mb-0 align-middle">
@@ -145,7 +213,13 @@
             <tr>
               <td>{{ item.product.product_name }}</td>
               <td>{{ item.batch.batch }}</td>
-              <td class="text-end fw-semibold">{{ item.transfer_qty }}</td>
+              <td class="text-end fw-semibold">
+                {% if is_direct_dc %}
+                  {{ item.received_qty }}
+                {% else %}
+                  {{ item.transfer_qty }}
+                {% endif %}
+              </td>
               <td>{{ item.remarks|default:"-" }}</td>
             </tr>
             {% empty %}
@@ -162,12 +236,19 @@
 
     <!-- ================= ACTIONS ================= -->
     <div class="text-end mb-4">
-      <a href="{% url 'mtn_detail_view' mtn.id %}" class="btn btn-secondary">
-        Cancel
-      </a>
+      <!-- BACK BUTTON - Conditionally show based on flow -->
+      {% if is_direct_dc %}
+        <a href="{% url 'grn_detail' grn.id %}" class="btn btn-secondary">
+          <i class="bi bi-arrow-left"></i> Back to GRN
+        </a>
+      {% else %}
+        <a href="{% url 'mtn_detail_view' mtn.id %}" class="btn btn-secondary">
+          <i class="bi bi-arrow-left"></i> Back to MTN
+        </a>
+      {% endif %}
 
       <button type="submit" class="btn btn-success px-4">
-        Create Delivery Challan
+        <i class="bi bi-check-lg"></i> Create Delivery Challan
       </button>
     </div>
 
@@ -175,20 +256,74 @@
 
 </div>
 
-
 <script>
-/* TEIM-VALIDATION: templates/inventory/delivery_challan_create.html */
+$(document).ready(function() {
+  // When destination type changes, load locations via AJAX
+  $('#destination_type').change(function() {
+    var destinationType = $(this).val();
+    var $locationSelect = $('#destination_id');
+    
+    if (destinationType) {
+      // Disable and show loading
+      $locationSelect.prop('disabled', true);
+      $locationSelect.html('<option value="">Loading...</option>');
+      
+      $.ajax({
+        url: "{% url 'load_destinations' %}",
+        type: "GET",
+        data: {
+          'destination_type': destinationType
+        },
+        success: function(response) {
+          var options = '<option value="">Select Location</option>';
+          
+          if (response.results && response.results.length > 0) {
+            $.each(response.results, function(index, item) {
+              options += '<option value="' + item.id + '">' + item.name + '</option>';
+            });
+          } else {
+            options += '<option value="">No locations found</option>';
+          }
+          
+          $locationSelect.html(options);
+          $locationSelect.prop('disabled', false);
+        },
+        error: function(xhr, status, error) {
+          console.error("AJAX Error:", error);
+          $locationSelect.html('<option value="">Error loading locations</option>');
+          $locationSelect.prop('disabled', false);
+        }
+      });
+    } else {
+      // Reset location dropdown if no type selected
+      $locationSelect.html('<option value="">Select Location First</option>');
+      $locationSelect.prop('disabled', true);
+    }
+  });
+});
 
+/* FORM VALIDATION */
 (function(){
   var form = document.getElementById('dcForm');
   if (!form) return;
+  
   form.addEventListener('submit', function(e) {
     var errors = [];
+    
+    var destType = form.querySelector('[name="destination_type"]');
+    if (destType && !destType.value) errors.push('Destination Type is required.');
+    
+    var destId = form.querySelector('[name="destination_id"]');
+    if (destId && !destId.value) errors.push('Destination Location is required.');
+    
     var dd = form.querySelector('[name="delivery_date"]');
     if (dd && !dd.value) errors.push('Delivery Date is required.');
+    
     var phone = form.querySelector('[name="delivery_person_phone"]');
-    if (phone && phone.value.trim() && !/^[0-9]{10}$/.test(phone.value.trim()))
+    if (phone && phone.value.trim() && !/^[0-9]{10}$/.test(phone.value.trim())) {
       errors.push('Delivery Person Phone must be exactly 10 digits.');
+    }
+    
     if (errors.length) {
       e.preventDefault();
       showErrors('dcAlertBox', errors, form);
@@ -196,24 +331,24 @@
   });
 })();
 
-</script>
-
-<script>
 function showErrors(boxId, errors, form) {
   var old = document.getElementById(boxId);
   if (old) old.remove();
+  
   var d = document.createElement('div');
   d.id = boxId;
   d.className = 'alert alert-danger mt-2 mb-2';
   d.style.cssText = 'border-left:4px solid #dc3545; background:#fff5f5; padding:12px 16px;';
-  d.innerHTML = '<strong style="color:#dc3545">&#9888; Please fix the following:</strong><ul class="mb-0 mt-1" style="padding-left:20px">' +
+  d.innerHTML = '<strong style="color:#dc3545">⚠️ Please fix the following:</strong><ul class="mb-0 mt-1" style="padding-left:20px">' +
     errors.map(function(m){ return '<li style="margin-top:4px">' + m + '</li>'; }).join('') + '</ul>';
+  
   form.insertBefore(d, form.firstChild);
-  // Scroll the alert into view regardless of scroll container
+  
   setTimeout(function() {
     d.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 50);
 }
 </script>
+
 </body>
 </html>

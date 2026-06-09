@@ -2175,3 +2175,65 @@ def service_stock_return(request, service_id):
         "sub_item_summary": sub_item_summary,
         "has_returnable"  : has_returnable,
     })
+    
+  
+  
+  
+  
+  
+
+@login_required
+@role_required(['admin', 'HO_operation', 'HO_manager'])
+@transaction.atomic
+def create_dc_from_grn(request, grn_id):
+
+    grn = get_object_or_404(
+        GoodsReceiveNote.objects.prefetch_related("items"),
+        id=grn_id
+    )
+
+    if request.method == "POST":
+
+        dc = DeliveryChallan.objects.create(
+            grn=grn,  # ✅ IMPORTANT
+            mtn=None, # ✅ IMPORTANT
+
+            source_type=grn.destination_type,
+            source_id=grn.destination_id,
+
+            destination_type=request.POST.get("destination_type"),
+            destination_id=int(request.POST.get("destination_id")),
+
+            delivery_date=timezone.now().date(),
+            status="DISPATCHED",
+            created_by=request.user,
+
+            delivery_partner_name=request.POST.get("delivery_partner_name"),
+            delivery_person_name=request.POST.get("delivery_person_name"),
+            delivery_person_phone=request.POST.get("delivery_person_phone"),
+            remarks=request.POST.get("remarks"),
+        )
+
+        for item in grn.items.all():
+
+            DeliveryChallanItem.objects.create(
+                delivery_challan=dc,
+                product=item.product,
+                batch=item.batch,
+                quantity=item.received_qty,
+                remarks=item.remarks
+            )
+
+        messages.success(request, "Delivery Challan Created Successfully")
+
+        return redirect("dc_detail_view", pk=dc.pk)
+
+    return render(
+        request,
+        "inventory/delivery_challan_create.html",
+        {
+            "grn": grn,
+            "items": grn.items.all(),
+            "is_direct_dc": True
+        }
+    )

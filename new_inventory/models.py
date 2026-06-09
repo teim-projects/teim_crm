@@ -909,13 +909,24 @@ class DeliveryChallan(models.Model):
         default=generate_dc_no,
         editable=False
     )
-
-    # 🔗 LINK TO MTN
+# MTN DC
     mtn = models.OneToOneField(
         MaterialTransferNote,
         on_delete=models.PROTECT,
-        related_name="delivery_challan"
+        related_name="delivery_challan",
+        null=True,
+        blank=True
     )
+
+    # Direct GRN DC
+    grn = models.ForeignKey(
+        GoodsReceiveNote,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="delivery_challans"
+    )
+
 
     source_type = models.CharField(max_length=20, choices=LOCATION_TYPES)
     source_id = models.BigIntegerField()
