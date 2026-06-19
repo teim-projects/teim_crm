@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -770,9 +771,7 @@
             };
         }
 
-        function getSelectedProductIndex(productId) {
-            return selectedProducts.findIndex(p => parseInt(p.p_id) === parseInt(productId));
-        }
+        // Updated: removed getSelectedProductIndex function as requested
 
         function updateHiddenInput() {
             const hiddenInput = document.getElementById('selected_products_json');
@@ -781,6 +780,7 @@
             if (!hiddenInput) return;
 
             const dataToSave = selectedProducts.map(product => ({
+                unique_id: product.unique_id, // include unique_id for tracking (optional for backend)
                 p_id: product.p_id,
                 name: product.name,
                 price: product.price,
@@ -855,7 +855,8 @@
                     </div>
                     <div class="text-end ms-3">
                         <strong>₹${(parseFloat(service.price) * parseFloat(service.quantity)).toFixed(2)}</strong>
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${service.p_id})">✕</button>
+                        <!-- Updated: pass unique_id instead of p_id -->
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct('${service.unique_id}')">✕</button>
                     </div>
                 `;
                 list.appendChild(li);
@@ -865,10 +866,28 @@
             updateHiddenInput();
         }
 
-        function removeSelectedProduct(productId) {
-            selectedProducts = selectedProducts.filter(p => parseInt(p.p_id) !== parseInt(productId));
-            const quickCheckbox = document.getElementById(`quick-checkbox-${productId}`);
-            if (quickCheckbox) quickCheckbox.checked = false;
+        // Updated: removeSelectedProduct now uses unique_id
+        function removeSelectedProduct(uniqueId) {
+            // Find the product to be removed to get its p_id for unchecking quick checkbox
+            const removedProduct = selectedProducts.find(p => p.unique_id === uniqueId);
+            if (removedProduct) {
+                // Uncheck the corresponding quick checkbox if it exists and has matching dataset
+                const quickCheckbox = document.querySelector(`.quick-add-checkbox[data-unique-id="${uniqueId}"]`);
+                if (quickCheckbox) {
+                    quickCheckbox.checked = false;
+                    quickCheckbox.removeAttribute('data-unique-id');
+                } else {
+                    // Fallback: try to find by product id (for older entries)
+                    const fallbackCheckbox = document.getElementById(`quick-checkbox-${removedProduct.p_id}`);
+                    if (fallbackCheckbox && fallbackCheckbox.dataset.uniqueId === uniqueId) {
+                        fallbackCheckbox.checked = false;
+                        delete fallbackCheckbox.dataset.uniqueId;
+                    }
+                }
+            }
+
+            // Filter out the product by unique_id
+            selectedProducts = selectedProducts.filter(p => p.unique_id !== uniqueId);
             renderSelectedList();
         }
 
@@ -1154,7 +1173,11 @@
                 });
             }
 
+            // Generate unique ID for this instance
+            const unique_id = Date.now() + "_" + Math.random();
+
             return {
+                unique_id: unique_id,
                 p_id: parseInt(productId),
                 name: product.product_name,
                 price: price,
@@ -1169,19 +1192,22 @@
             };
         }
 
+        // Updated: always add new entry (no replacement)
         function addOrReplaceProduct(productData) {
-            const existingIndex = getSelectedProductIndex(productData.p_id);
-            if (existingIndex !== -1) {
-                selectedProducts[existingIndex] = productData;
-            } else {
-                selectedProducts.push(productData);
-            }
+            // Always push new entry with its unique_id
+            selectedProducts.push(productData);
             renderSelectedList();
         }
 
+        // Updated: Quick add checkbox handler - supports multiple entries per product
         function addProductViaCheckbox(productId, checkbox) {
             if (!checkbox.checked) {
-                removeSelectedProduct(productId);
+                // If unchecked, we need to remove the specific entry associated with this checkbox.
+                // The unique_id is stored in dataset.uniqueId.
+                const uniqueId = checkbox.dataset.uniqueId;
+                if (uniqueId) {
+                    removeSelectedProduct(uniqueId);
+                }
                 return;
             }
 
@@ -1193,6 +1219,9 @@
                 checkbox.checked = false;
                 return;
             }
+
+            // Store the unique_id on the checkbox for later removal
+            checkbox.dataset.uniqueId = productData.unique_id;
 
             addOrReplaceProduct(productData);
             showToast(`${productData.name} added via Quick Add`);
@@ -1214,8 +1243,13 @@
 
             addOrReplaceProduct(productData);
 
-            const quickCheckbox = document.getElementById(`quick-checkbox-${productId}`);
-            if (quickCheckbox) quickCheckbox.checked = true;
+            // Also check the quick checkbox for convenience? But careful: multiple entries would conflict.
+            // We'll only check the quick checkbox if no other entry with same productId? Not necessary.
+            // But user might expect checkbox to reflect added state. However multiple entries make it ambiguous.
+            // To avoid confusion, we do not auto-check the quick checkbox for detailed adds.
+            // Optionally, we could find the checkbox and set dataset.uniqueId to the new entry's ID,
+            // but then unchecking would remove the last added. We'll skip for simplicity.
+            // The quick add checkbox will only manage entries added via quick add.
 
             showToast(`${productData.name} added successfully`);
         }

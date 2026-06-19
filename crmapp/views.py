@@ -8199,6 +8199,12 @@ def reportlab_quotation_pdf(request, id):
     for tid in quotation.terms_order or []:
         if tid in terms_by_id:
             ordered_terms.append(terms_by_id[tid])
+            
+    
+    # Separate the "valid for 30 days" term so it is always printed LAST
+    PINNED_LAST_KEYWORD = "quotation is valid for 30 days"
+    pinned_last_terms = [t for t in ordered_terms if PINNED_LAST_KEYWORD in t.description.lower()]
+    ordered_terms     = [t for t in ordered_terms if PINNED_LAST_KEYWORD not in t.description.lower()]
 
     custom_terms = []
     if quotation.custom_terms:
@@ -8212,6 +8218,12 @@ def reportlab_quotation_pdf(request, id):
     for ct in custom_terms:
         terms_paragraphs.append([Paragraph(f"{idx}. {ct}", small)])
         idx += 1
+        
+    
+    # Always place the pinned term(s) at the very end
+    for t in pinned_last_terms:
+        terms_paragraphs.append([Paragraph(f"{idx}. {t.description}", small)])
+        idx += 1  
 
     if not terms_paragraphs:
         terms_paragraphs = [[Paragraph("No Terms & Conditions.", small)]]
@@ -8458,7 +8470,7 @@ def send_lead_whatsapp(request, pk):
     # Prepare placeholders
     placeholders = {
         "customername": lead.customername,
-        "typeoflead": lead.typeoflead,
+        "typeoflead": lead.typeoflead,  
         "primarycontact": lead.primarycontact,
         # Add more fields if needed
     }
