@@ -770,10 +770,6 @@
             };
         }
 
-        function getSelectedProductIndex(productId) {
-            return selectedProducts.findIndex(p => parseInt(p.p_id) === parseInt(productId));
-        }
-
         function updateHiddenInput() {
             const hiddenInput = document.getElementById('selected_products_json');
             const hiddenNames = document.getElementById('selected_services_names');
@@ -781,6 +777,7 @@
             if (!hiddenInput) return;
 
             const dataToSave = selectedProducts.map(product => ({
+                unique_id: product.unique_id,
                 p_id: product.p_id,
                 name: product.name,
                 price: product.price,
@@ -791,7 +788,8 @@
                 frequency: product.frequency || 0,
                 frequency_label: product.frequency_label || '',
                 added_via: product.added_via || 'detailed',
-                items: product.items || []
+                items: product.items || [],
+                duration_months: product.duration_months || 12   // ✅ Added
             }));
 
             hiddenInput.value = JSON.stringify(dataToSave);
@@ -826,6 +824,7 @@
             selectedProducts.forEach(service => {
                 const gstText = gstEnabled ? ` + GST(${service.gst}%)` : '';
                 const freqText = service.frequency_label ? ` | Freq: ${service.frequency_label} (${service.frequency} visits/year)` : '';
+                const durationText = ` | Duration: ${service.duration_months || 12} Month(s)`;   // ✅ Added
                 const viaText = service.added_via === 'quick' ? 'Quick Add' : 'Detailed';
 
                 let itemsText = '';
@@ -846,7 +845,7 @@
                     <div class="flex-grow-1">
                         <strong>${escapeHtml(service.name)}</strong>
                         <div class="small">
-                            ₹${parseFloat(service.price).toFixed(2)} x ${service.quantity}${gstText}${freqText}
+                            ₹${parseFloat(service.price).toFixed(2)} x ${service.quantity}${gstText}${freqText}${durationText}
                             <span class="badge-soft ms-2">${escapeHtml(viaText)}</span>
                         </div>
                         ${service.unit ? `<div class="small text-muted">Unit: ${escapeHtml(service.unit)}</div>` : ''}
@@ -855,7 +854,7 @@
                     </div>
                     <div class="text-end ms-3">
                         <strong>₹${(parseFloat(service.price) * parseFloat(service.quantity)).toFixed(2)}</strong>
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct(${service.p_id})">✕</button>
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeSelectedProduct('${service.unique_id}')">✕</button>
                     </div>
                 `;
                 list.appendChild(li);
@@ -865,10 +864,23 @@
             updateHiddenInput();
         }
 
-        function removeSelectedProduct(productId) {
-            selectedProducts = selectedProducts.filter(p => parseInt(p.p_id) !== parseInt(productId));
-            const quickCheckbox = document.getElementById(`quick-checkbox-${productId}`);
-            if (quickCheckbox) quickCheckbox.checked = false;
+        function removeSelectedProduct(uniqueId) {
+            const removedProduct = selectedProducts.find(p => p.unique_id === uniqueId);
+            if (removedProduct) {
+                const quickCheckbox = document.querySelector(`.quick-add-checkbox[data-unique-id="${uniqueId}"]`);
+                if (quickCheckbox) {
+                    quickCheckbox.checked = false;
+                    quickCheckbox.removeAttribute('data-unique-id');
+                } else {
+                    const fallbackCheckbox = document.getElementById(`quick-checkbox-${removedProduct.p_id}`);
+                    if (fallbackCheckbox && fallbackCheckbox.dataset.uniqueId === uniqueId) {
+                        fallbackCheckbox.checked = false;
+                        delete fallbackCheckbox.dataset.uniqueId;
+                    }
+                }
+            }
+
+            selectedProducts = selectedProducts.filter(p => p.unique_id !== uniqueId);
             renderSelectedList();
         }
 
@@ -1003,6 +1015,15 @@
                         <option value="Weekly">Weekly</option>
                         <option value="Daily">Daily</option>
                     </select>
+
+                    <!-- ✅ NEW: Duration (Months) input -->
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label>Duration (Months)</label>
+                            <input type="number" min="1" value="12" class="form-control"
+                                   id="duration-${product.product_id}">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="items-box" id="items-section-${product.product_id}">
@@ -1132,6 +1153,9 @@
             const description = document.getElementById(`desc-${productId}`)?.value || '';
             const frequencyLabelRaw = document.getElementById(`frequency-${productId}`)?.value || '';
 
+            // ✅ NEW: extract duration_months
+            const durationMonths = parseInt(document.getElementById(`duration-${productId}`)?.value || 12, 10);
+
             const freqMeta = normalizeFrequency(frequencyLabelRaw, null);
 
             const items = [];
@@ -1154,7 +1178,10 @@
                 });
             }
 
+            const unique_id = Date.now() + "_" + Math.random();
+
             return {
+                unique_id: unique_id,
                 p_id: parseInt(productId),
                 name: product.product_name,
                 price: price,
@@ -1165,23 +1192,22 @@
                 frequency: freqMeta.visits,
                 frequency_label: freqMeta.label || 'Default',
                 added_via: addedVia,
-                items: items
+                items: items,
+                duration_months: durationMonths   // ✅ Added
             };
         }
 
         function addOrReplaceProduct(productData) {
-            const existingIndex = getSelectedProductIndex(productData.p_id);
-            if (existingIndex !== -1) {
-                selectedProducts[existingIndex] = productData;
-            } else {
-                selectedProducts.push(productData);
-            }
+            selectedProducts.push(productData);
             renderSelectedList();
         }
 
         function addProductViaCheckbox(productId, checkbox) {
             if (!checkbox.checked) {
-                removeSelectedProduct(productId);
+                const uniqueId = checkbox.dataset.uniqueId;
+                if (uniqueId) {
+                    removeSelectedProduct(uniqueId);
+                }
                 return;
             }
 
@@ -1193,6 +1219,8 @@
                 checkbox.checked = false;
                 return;
             }
+
+            checkbox.dataset.uniqueId = productData.unique_id;
 
             addOrReplaceProduct(productData);
             showToast(`${productData.name} added via Quick Add`);
@@ -1213,10 +1241,6 @@
             }
 
             addOrReplaceProduct(productData);
-
-            const quickCheckbox = document.getElementById(`quick-checkbox-${productId}`);
-            if (quickCheckbox) quickCheckbox.checked = true;
-
             showToast(`${productData.name} added successfully`);
         }
 

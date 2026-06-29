@@ -252,6 +252,17 @@ urlpatterns = [
     path('product-items', views.add_product_items, name='product_items'),
     path('delete-product-item/<int:item_id>/', views.delete_product_item, name='delete_product_item'),
     path('get_product_items/', views.get_product_items, name='get_product_items'),
+    
+    path(
+        'work-order/<int:service_id>/',
+        views.work_order_pdf,
+        name='work_order_pdf'
+      ),
+    path(
+    'work-order-download/<int:service_id>/',
+    views.work_order_download_pdf,
+    name='work_order_download_pdf'
+     ),
 
 ]
 

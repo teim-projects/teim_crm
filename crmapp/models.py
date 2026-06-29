@@ -1164,8 +1164,6 @@ def bharat_page(request):
 
 
 
-# models.py
-
 from django.utils import timezone
 
 class ServiceProductFrequency(models.Model):
@@ -1174,9 +1172,31 @@ class ServiceProductFrequency(models.Model):
         on_delete=models.CASCADE,
         related_name="service_frequencies"
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE
+    )
 
     frequency = models.IntegerField()
-    remarks = models.CharField(max_length=255, blank=True, null=True)
 
-    created_at = models.DateTimeField(default=timezone.now)
+    remarks = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    # NEW FIELD
+    duration_months = models.PositiveIntegerField(
+        default=12,
+        blank=True,
+        null=True,
+        help_text="Duration in months"
+    )
+
+    created_at = models.DateTimeField(
+        default=timezone.now
+    )
+
+    def __str__(self):
+        return f"{self.product} - {self.frequency} visits - {self.duration_months} months"
