@@ -587,15 +587,37 @@
                                     {% for x in page_obj %}
                                     <tr>
                                         <td>{{ forloop.counter|add:start_index }}</td>
-                                        <td>
-                                        <a href="{% url 'edit_service_records' x.id %}" class="btn btn-sm btn-outline-success me-1">
-                                          <i class="fa-solid fa-pen-to-square"></i>
-                                        </a>
-                                        <a href="{% url 'delete_service_records' x.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?');">
-                                          <i class="fa-solid fa-trash"></i>
-                                        </a>
-                                        </td>
+                                        <!-- ========== नया Actions column ========== -->
+                                        <td class="text-center">
 
+                                            <!-- Edit -->
+                                            <a href="{% url 'edit_service_records' x.id %}"
+                                               class="btn btn-sm btn-outline-success mb-1">
+                                                <i class="fa fa-pencil"></i>
+                                            </a>
+
+                                            <!-- Delete -->
+                                            <a href="{% url 'delete_service_records' x.id %}"
+                                               class="btn btn-sm btn-outline-danger mb-1"
+                                               onclick="return confirm('Are you sure?');">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+
+                                            <!-- View PDF -->
+                                            <a href="{% url 'work_order_pdf' x.id %}"
+                                               target="_blank"
+                                               class="btn btn-sm btn-outline-primary mb-1">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+
+                                            <!-- Download PDF -->
+                                            <a href="{% url 'work_order_download_pdf' x.id %}"
+                                               class="btn btn-sm btn-outline-dark mb-1">
+                                                <i class="fa fa-download"></i>
+                                            </a>
+
+                                        </td>
+                                        <!-- ========== End Actions column ========== -->
                                         <td>
                                             {{ x.customer.customerid }}
                                             <div class="dropdown">

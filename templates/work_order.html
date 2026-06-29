@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Work Order - SFS Pest Control</title>
+    <style>
+        /* A4 Page Isolation Configuration */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+            line-height: 1.35;
+            font-size: 11px;
+            background-color: #ffffff;
+            -webkit-print-color-adjust: exact;
+            box-sizing: border-box;
+        }
+
+        /* Continuous outer bounds wrapper framing */
+        .wrapper {
+            border: 2px solid #000000;
+            width: 100%;
+            min-height: 275mm; 
+            margin: 0 auto;
+            box-sizing: border-box;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row {
+            display: flex;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .cell {
+            padding: 8px 10px;
+            box-sizing: border-box;
+        }
+
+        /* Layout Grid lines */
+        .border-bottom { border-bottom: 1px solid #000000; }
+        .border-right { border-right: 1px solid #000000; }
+        .w-50 { width: 50%; }
+        .w-100 { width: 100%; }
+        
+        .bold { font-weight: 700; color: #000000; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        
+        /* Corporate Branding Header System */
+        h1 {
+            text-align: center;
+            margin: 0;
+            padding: 6px 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .brand-title { 
+            font-size: 26px; 
+            font-weight: 900; 
+            margin: 0; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .brand-sub { 
+            font-size: 13px; 
+            font-weight: 700; 
+            margin: 1px 0; 
+        }
+        .brand-meta { 
+            font-size: 9px; 
+            margin: 0; 
+            color: #333333;
+        }
+
+        /* Inline Text Value Displays */
+        .value-text {
+            font-weight: 700;
+            color: #000000;
+            padding-left: 5px;
+            font-size: 11.5px;
+        }
+
+        .field-row {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: baseline;
+        }
+        
+        .field-label {
+            white-space: nowrap;
+        }
+
+        /* Master Flexible Table Sheet Architecture */
+        .table-container {
+            flex-grow: 1; /* Pushes content down cleanly */
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #000000;
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #eaeaea;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        /* Clean sign lines exclusively for manual inputs */
+        .signature-line {
+            border-bottom: 1px solid #000000;
+            width: 55%;
+            display: inline-block;
+        }
+
+        .footer-banner {
+            font-size: 9px;
+            padding: 8px;
+            background-color: #eaeaea;
+            font-weight: 700;
+            text-align: center;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+    <div class="row border-bottom" style="align-items: center;">
+        <div class="cell w-50 border-right text-center">
+            <h1>WORK ORDER</h1>
+        </div>
+        <div class="cell w-50 bold text-right" style="font-size: 13px; padding-right: 20px;">
+            Sr. No. &nbsp;<span style="font-size: 15px; font-family: monospace;">WO-{{ service.id }}</span>
+        </div>
+    </div>
+
+    <div class="row border-bottom">
+        <div class="cell w-50 border-right" style="min-height: 70px;">
+            <div class="bold" style="font-size: 10px; margin-bottom: 4px; color:#444;">To,</div>
+            <div class="field-row"><span class="bold field-label">Customer:</span><span class="value-text">{{ customer.fullname }}</span></div>
+            <div class="field-row"><span class="bold field-label">Address:</span><span class="value-text">{{ service.address }}</span></div>
+        </div>
+        <div class="cell w-50" style="min-height: 70px;">
+            <div class="bold" style="font-size: 10px; margin-bottom: 4px; color:#444;">From,</div>
+            <div class="bold" style="font-size: 12px;">{{ company_name }}</div>
+            <div style="margin-top: 2px; color: #333;">{{ company_address }}</div>
+        </div>
+    </div>
+
+    <div class="row border-bottom" style="align-items: center;">
+        <div class="cell w-50 border-right text-center" style="padding: 8px 4px;">
+            <div class="brand-title">SFS Pest Control</div>
+            <div class="brand-sub">Seva Facility Services Private Limited</div>
+            <div class="brand-meta">Mo. No. 9503102302/3 | Ph: 020 29701544 | IVR No: 9112003300</div>
+        </div>
+        <div class="cell w-50" style="padding-left: 15px;">
+            <div class="field-row"><span class="bold field-label">Contact No. :</span><span class="value-text">{{ customer.primarycontact }}</span></div>
+            <div class="field-row" style="margin-top: 5px;"><span class="bold field-label">E-mail ID :</span><span class="value-text">{{ customer.primaryemail }}</span></div>
+        </div>
+    </div>
+
+    <div class="row border-bottom" style="padding: 10px 12px; font-size: 11px;">
+        <div class="w-100">
+            We are pleased to avail your pest management services as per quote dated <span style="border-bottom: 1px dotted #000; padding: 0 15px; font-weight:700;">{% if service.quote_date %}{{ service.quote_date }}{% else %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}</span> and request you to provide services From <span style="border-bottom: 1px solid #000; padding: 0 10px; font-weight:700;">{{ service.service_date }}</span> to <span style="border-bottom: 1px dotted #000; padding: 0 15px; font-weight:700;">{% if service.end_date %}{{ service.end_date }}{% else %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}</span>.
+        </div>
+    </div>
+
+    <div class="row border-bottom" style="align-items: center;">
+        <div class="cell w-50 border-right">
+            <span class="bold" style="font-size: 9px; color:#444; text-transform: uppercase;">Service Location :</span>
+            <div class="value-text" style="padding-left: 0; margin-top: 2px;">{{ service.address }}</div>
+        </div>
+        <div class="cell w-50">
+            <div class="field-row" style="margin: 0;"><span class="bold field-label">Total area in sq.fts. :</span><span class="value-text">{% if service.total_area_sqft %}{{ service.total_area_sqft }}{% else %}__________{% endif %}</span></div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 35%; text-align: left;">Product</th>
+                    <th style="width: 25%; text-align: center;">Frequency Name (Count)</th>
+                    <th style="width: 15%; text-align: center;">Duration</th>
+                    <th style="width: 10%; text-align: center;">Qty</th>
+                    <th style="width: 15%; text-align: right;">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in product_rows %}
+                <tr>
+                    <td class="bold">{{ item.name }}</td>
+                    <td style="text-align: center;" class="bold">
+                        {% if item.frequency == 26 %}Fortnight (26){% elif item.frequency == 52 %}Weekly (52){% elif item.frequency == 365 %}Daily (365){% else %}{{ item.frequency }}{% endif %}
+                    </td>
+                    <td class="bold" style="text-align: center;">
+                        {% if item.duration %}{{ item.duration }} Months{% else %}-{% endif %}
+                    </td>
+                    <td style="text-align: center;">{{ item.quantity }}</td>
+                    <td class="bold" style="text-align: right;">₹ {{ item.price }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center" style="color: #666; padding: 25px;">No active products mapped.</td>
+                </tr>
+                {% endfor %}
+                
+                <tr style="background: #fafafa;">
+                    <td colspan="3" class="bold" style="text-transform: uppercase;">Total Service Charges</td>
+                    <td class="bold" style="text-align: right; text-transform: uppercase; font-size: 10px;">(Incl. GST)</td>
+                    <td class="bold" style="text-align: right; font-size: 12px;">₹ {{ service.total_price_with_gst }}</td>
+                </tr>
+                <tr>
+                    <td class="bold" style="font-size: 11px; color:#444;">Payment Terms :</td>
+                    <td colspan="4" class="value-text" style="font-size: 12px;">{{ service.contract_type }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row border-bottom" style="padding: 8px 12px; background: #fafafa; font-size: 10px; text-align: center; flex-direction: column;">
+        <div>Invoice for service may be raised on our address above or as below-</div>
+        <div class="bold" style="margin-top: 1px;">We confirm having read & understood terms and conditions of your services mentioned overleaf.</div>
+    </div>
+
+    <div class="row border-bottom">
+        <div class="cell w-50 border-right" style="padding-top: 10px; padding-bottom: 10px;">
+            <div class="bold" style="font-size: 10px; text-transform: uppercase; margin-bottom: 8px; color: #555;">Your Sincerely</div>
+            <div class="field-row"><span class="field-label">Name of Customer:</span><span class="value-text">{{ customer.fullname }}</span></div>
+            <div class="field-row"><span class="field-label">Contact no.:</span><span class="value-text">{{ customer.primarycontact }}</span></div>
+            <div class="field-row"><span class="field-label">Email id:</span><span class="value-text">{{ customer.primaryemail }}</span></div>
+            
+            <div style="margin-top: 18px;">
+                <div class="field-row"><span class="field-label">Signature of Customer:</span><span class="signature-line"></span></div>
+                <div class="field-row" style="margin-top: 5px;"><span class="field-label">Date:</span><span class="value-text">{{ service.service_date }}</span></div>
+                <div class="field-row" style="margin-top: 5px;"><span class="field-label">Company Seal:</span><span class="signature-line"></span></div>
+            </div>
+        </div>
+
+        <div class="cell w-50" style="padding-top: 10px; padding-bottom: 10px; padding-left: 20px;">
+            <div class="bold" style="font-size: 10px; text-transform: uppercase; margin-bottom: 8px; color: #555;">Received & Accepted</div>
+            <div class="field-row"><span class="field-label">Name of SFS Rep.:</span><span class="value-text">{% if rep_name %}{{ rep_name }}{% endif %}</span></div>
+            <div class="field-row"><span class="field-label">Signature:</span><span class="signature-line"></span></div>
+            <div class="field-row" style="margin-top: 5px;"><span class="field-label">Contact No.:</span><span class="value-text">{% if rep_phone %}{{ rep_phone }}{% endif %}</span></div>
+            
+            <div style="margin-top: 18px;">
+                <div class="field-row"><span class="field-label">OP Name:</span><span class="value-text">{% if rep_name %}{{ rep_name }}{% endif %}</span></div>
+                <div class="field-row" style="margin-top: 5px;"><span class="field-label">Date:</span><span class="value-text">{{ service.service_date }}</span></div>
+                <div class="field-row" style="font-size: 10px; color: #444444; margin-top: 5px;">Email ID: info@sevafacility.com</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row border-bottom" style="padding: 10px 12px; align-items: center; background: #fafafa;">
+        <div class="w-100" style="display: flex; align-items: center; justify-content: space-between;">
+            <div><span class="bold" style="text-transform: uppercase; font-size: 10px;">Payment Received:</span></div>
+            <div>Amount: <span class="value-text" style="border-bottom: 1px dotted #000; padding-right: 35px;">₹ {{ service.total_price_with_gst }}</span></div>
+            <div>Date: <span class="value-text" style="border-bottom: 1px dotted #000; padding-right: 35px;">{{ service.service_date }}</span></div>
+            <div>Sign: <span style="border-bottom: 1px dotted #000; display:inline-block; width:110px;">&nbsp;</span></div>
+        </div>
+    </div>
+
+    <div class="footer-banner">
+        Branches - Pune, Vashi, Kalyan, Baramati, Amravati, Aurangabad, Nagpur, Belgum (KA), Byadgi (KA), Hyderabad (TS), Nizamabad (TS), Indore (MP)
+    </div>
+
+</div>
+
+</body>
+</html>

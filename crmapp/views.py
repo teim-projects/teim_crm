@@ -1238,6 +1238,7 @@ from crmapp.models import (
     ServiceProductFrequency, Product, service_management, 
     customer_details, SalesPerson, BranchManager, Branch, ServiceProduct
 )
+from django.contrib import messages  # <-- Add this import at the top if missing
 
 @login_required
 @role_required(['admin','sales', 'branch_manager'])
@@ -1313,7 +1314,7 @@ def service_management_create(request):
             )
 
             # -------------------------
-            # GET PRODUCTS JSON (STEP 3)
+            # GET PRODUCTS JSON
             # -------------------------
             selected_products_json = request.POST.get('selected_products_json', '[]')
             
@@ -1339,6 +1340,9 @@ def service_management_create(request):
                 price = item.get("price")
                 quantity = item.get("quantity")
 
+                # --- NEW: extract duration_months (default 12) ---
+                duration_months = int(item.get("duration_months", 12))
+
                 # Skip if no product_id
                 if not product_id:
                     print("❌ skip - no product_id")
@@ -1363,7 +1367,6 @@ def service_management_create(request):
                         if gst_val in [None, "", "null"]:
                             gst_val = 0
 
-                        # ✅ SAVE MAIN PRODUCT
                         service_product = ServiceProduct.objects.create(
                             service=instance,
                             product=product,
@@ -1378,7 +1381,7 @@ def service_management_create(request):
                         print("❌ PRODUCT SAVE ERROR:", e)
 
                 # -----------------------------------
-                # SAVE SUB ITEMS (ADDED HERE)
+                # SAVE SUB ITEMS
                 # -----------------------------------
                 if service_product:
                     sub_items = item.get("items", [])
@@ -1419,7 +1422,7 @@ def service_management_create(request):
                             print("❌ SUB ITEM SAVE ERROR:", e)
 
                 # -----------------------------------
-                # SAVE FREQUENCY
+                # SAVE FREQUENCY (with duration_months)
                 # -----------------------------------
                 freq_raw = str(frequency or "").strip().lower()
 
@@ -1447,25 +1450,29 @@ def service_management_create(request):
                 try:
                     frequency_value = freq_int
 
-                    # 🔥 custom fortnight logic
+                    # custom fortnight logic
                     if str(frequency).lower() == "fortnight":
                         fortnight_count = request.POST.get("fortnight_count")
                         if fortnight_count:
                             frequency_value = int(fortnight_count)
 
+                    # --- UPDATED: include duration_months ---
                     ServiceProductFrequency.objects.create(
                         service=instance,
                         product=product,
-                        frequency=frequency_value
+                        frequency=frequency_value,
+                        duration_months=duration_months   # <-- new field
                     )
 
-                    print(f"🔥 FREQUENCY SAVED: {product.product_name} - {frequency_value}")
+                    print(f"🔥 FREQUENCY SAVED: {product.product_name} - {frequency_value}, duration: {duration_months} months")
                 except Exception as e:
                     print("❌ FREQUENCY SAVE ERROR:", e)
                     continue
 
+            # ✅ REPLACED: Now redirect to display page with success message
             print("✅ Service management record created successfully")
-            return redirect('/display_service_management')
+            messages.success(request, "Service Management Record Created Successfully")
+            return redirect('display_service_management')   # <-- Changed line
 
         except Exception as e:
             print("❌ ERROR in service_management_create:", str(e))
@@ -1490,8 +1497,9 @@ def service_management_create(request):
         'frequency_choices': frequency_choices,
         'segments': segments,
         'branches': branch
-    })
-
+    })    
+    
+    
 # views.py - COMPLETE VERSION WITH ALL ACTIONS
 
 # views.py - COMPLETE VERSION WITH AMC PRODUCTS API
@@ -8887,3 +8895,97 @@ from django.shortcuts import render
 
 def invetory_dashbord(request):
     return render(request, 'invetory_dashbord.html')
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+
+from crmapp.models import (
+    service_management,
+    ServiceProduct,
+    ServiceProductFrequency
+)
+
+
+def work_order_pdf(request, service_id):
+
+    service = get_object_or_404(
+        service_management,
+        id=service_id
+    )
+
+    # SAME ORDER IMPORTANT
+    products = list(
+        ServiceProduct.objects.filter(
+            service=service
+        ).order_by("id")
+    )
+
+    frequencies = list(
+        ServiceProductFrequency.objects.filter(
+            service=service
+        ).order_by("id")
+    )
+
+    product_rows = []
+
+    for index, p in enumerate(products):
+
+        freq_obj = None
+
+        if index < len(frequencies):
+            freq_obj = frequencies[index]
+
+        product_rows.append({
+            "name": p.product.product_name,
+            "quantity": p.quantity,
+            "price": p.price,
+            "gst": p.gst_percentage,
+            "frequency": freq_obj.frequency if freq_obj else "",
+            "duration": freq_obj.duration_months if freq_obj else "",
+        })
+
+    context = {
+        "service": service,
+        "customer": service.customer,
+        "product_rows": product_rows,
+    }
+
+    print("\n========== PDF ROWS ==========")
+
+    for row in product_rows:
+        print(row)
+
+    print("=============================\n")
+
+    html = render_to_string(
+        "work_order.html",   # <-- your template name
+        context
+    )
+
+    pdf = HTML(
+        string=html,
+        base_url=request.build_absolute_uri("/")
+    ).write_pdf()
+
+    response = HttpResponse(
+        pdf,
+        content_type="application/pdf"
+    )
+
+    response["Content-Disposition"] = (
+        f'inline; filename="WO-{service.id}.pdf"'
+    )
+
+    return response
+
+
+
+def work_order_download_pdf(request, service_id):
+    response = work_order_pdf(request, service_id)
+
+    response["Content-Disposition"] = (
+        f'attachment; filename="WO-{service_id}.pdf"'
+    )
+
+    return response
