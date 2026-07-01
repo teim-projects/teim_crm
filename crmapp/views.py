@@ -4072,12 +4072,11 @@ def get_allocation_details(request, service_id):
     return render(request, 'allocation_details_modal.html', {'allocation': allocation})
 
 
-
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from .models import quotation_management
+from django.db.models import Q
+from .models import quotation_management, Branch, SalesPerson, BranchManager, Product  # ensure Product is imported
 
-from django.core.paginator import Paginator
 
 def display_quotation(request):
     query = request.GET.get('search', '')
@@ -4088,6 +4087,7 @@ def display_quotation(request):
     valid_sort_fields = ['quotation_no','customer__fullname', 'quotation_date', 'total_price', 'total_price_with_gst']
     branch = request.GET.get('branch')
     sfs_representatives = request.GET.get('sfs_representatives')
+    selected_service = request.GET.get('selected_service')   # NEW
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
     is_sales_coordinator = False
@@ -4105,6 +4105,7 @@ def display_quotation(request):
 
     elif request.user.userprofile.role == 'branch_manager':
         m = quotation_management.objects.filter(branch = BranchManager.objects.get(mobile_no = request.user.username).branch)
+
     if query:
         m = m.filter(
             Q(customer__fullname__icontains=query) |
@@ -4112,9 +4113,10 @@ def display_quotation(request):
             Q(customer__customerid__icontains=query) |
             Q(customer__primarycontact__icontains=query)
         )
+
     # Filter by customer type 
     if customer_type:
-        m=m.filter(customer__customer_type=customer_type)
+        m = m.filter(customer__customer_type=customer_type)
 
     if branch:
         m = m.filter(branch = branch)
@@ -4122,7 +4124,11 @@ def display_quotation(request):
     if sfs_representatives:
         m = m.filter(contact_by = sfs_representatives)
 
-     # Date range filter
+    # NEW FILTER – selected service
+    if selected_service:
+        m = m.filter(selected_services__product_id=selected_service)
+
+    # Date range filter
     if from_date:
         from_date_obj = parse_date(from_date)
         if from_date_obj:
@@ -4133,32 +4139,34 @@ def display_quotation(request):
             m = m.filter(quotation_date__lte=to_date_obj)
 
     filter_count = m.count()
-    # if sort_by in valid_sort_fields:
-    #     order_prefix = '-' if sort_order == 'desc' else ''
-    #     m = m.order_by(f'{order_prefix}{sort_by}')
-    # else:
-    #     m = m.order_by('customer__fullname')
     m = m.order_by('-quotation_date')
+
     paginator = Paginator(m, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     start_index = (page_obj.number - 1) * paginator.per_page
+
     branch_list = Branch.objects.all()
-    sfs_representatives = quotation_management.objects.values_list("contact_by", flat=True).distinct()
+    # This overwrites the GET variable, but that's fine – we use it for the dropdown
+    sfs_representatives_list = quotation_management.objects.values_list("contact_by", flat=True).distinct()
+
+    # NEW – list of products for the service dropdown
+    selected_services = Product.objects.all().order_by('product_name')
+
     context = {
         'current_order': sort_order,
         'current_sort_by': sort_by,
         'page_obj': page_obj,
         'start_index': start_index,
         'search_query': query,
-        'filter_count':filter_count,
-        'branches':branch_list,
-        'sfs_representatives':sfs_representatives,
+        'filter_count': filter_count,
+        'branches': branch_list,
+        'sfs_representatives': sfs_representatives_list,
         'from_date': from_date,
         'to_date': to_date,
         "querystring": request.GET.urlencode(),
-        # "role": request.user.userprofile.role,
-        'is_sales_coordinator': is_sales_coordinator, 
+        'is_sales_coordinator': is_sales_coordinator,
+        'selected_services': selected_services,          # NEW
     }
     return render(request, 'display_quotation.html', context)
 
