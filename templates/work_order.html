@@ -157,18 +157,51 @@
         </div>
     </div>
 
+    <!-- ====== SWAPPED TO / FROM SECTION ====== -->
     <div class="row border-bottom">
-        <div class="cell w-50 border-right" style="min-height: 70px;">
-            <div class="bold" style="font-size: 10px; margin-bottom: 4px; color:#444;">To,</div>
-            <div class="field-row"><span class="bold field-label">Customer:</span><span class="value-text">{{ customer.fullname }}</span></div>
-            <div class="field-row"><span class="bold field-label">Address:</span><span class="value-text">{{ service.address }}</span></div>
+
+        <!-- LEFT : TO (SFS Company) -->
+        <div class="cell w-50 border-right" style="min-height:90px;">
+            <div class="bold" style="font-size:10px; margin-bottom:8px;">
+                To,
+            </div>
+
+            <div style="font-size:18px; font-weight:bold; margin-top:10px;">
+                SFS Pest Control
+            </div>
+
+            <div style="font-size:14px; font-weight:bold; margin-top:5px;">
+                Seva Facility Services Pvt. Ltd.
+            </div>
+
+            <div style="font-size:14px; margin-top:5px;">
+                Ravet, Pune
+            </div>
         </div>
-        <div class="cell w-50" style="min-height: 70px;">
-            <div class="bold" style="font-size: 10px; margin-bottom: 4px; color:#444;">From,</div>
-            <div class="bold" style="font-size: 12px;">{{ company_name }}</div>
-            <div style="margin-top: 2px; color: #333;">{{ company_address }}</div>
+
+        <!-- RIGHT : FROM (Customer) -->
+        <div class="cell w-50" style="min-height:90px;">
+            <div class="bold" style="font-size:10px; margin-bottom:8px;">
+                From,
+            </div>
+
+            <div style="margin-top:10px; font-size:15px;">
+                <span style="font-weight:bold;">Customer:</span>
+                <span style="font-weight:bold; margin-left:8px;">
+                    {{ customer.fullname }}
+                </span>
+            </div>
+
+            <div style="margin-top:8px; font-size:15px; line-height:1.6;">
+                <span style="font-weight:bold;">Address:</span>
+                <span style="font-weight:bold; margin-left:8px;">
+                    {{ service.address }}
+                </span>
+            </div>
         </div>
+
     </div>
+    <!-- ====== END SWAPPED SECTION ====== -->
 
     <div class="row border-bottom" style="align-items: center;">
         <div class="cell w-50 border-right text-center" style="padding: 8px 4px;">
@@ -182,11 +215,28 @@
         </div>
     </div>
 
+    <!-- ====== UPDATED DATE LINE ====== -->
     <div class="row border-bottom" style="padding: 10px 12px; font-size: 11px;">
         <div class="w-100">
-            We are pleased to avail your pest management services as per quote dated <span style="border-bottom: 1px dotted #000; padding: 0 15px; font-weight:700;">{% if service.quote_date %}{{ service.quote_date }}{% else %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}</span> and request you to provide services From <span style="border-bottom: 1px solid #000; padding: 0 10px; font-weight:700;">{{ service.service_date }}</span> to <span style="border-bottom: 1px dotted #000; padding: 0 15px; font-weight:700;">{% if service.end_date %}{{ service.end_date }}{% else %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}</span>.
+            We are pleased to avail your pest management services as per quote dated
+            <span style="border-bottom:1px dotted #000; padding:0 15px; font-weight:700;">
+                {% if service.quote_date %}{{ service.quote_date|date:"d/m/Y" }}{% else %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+            </span>
+
+            and request you to provide services From
+
+            <span style="border-bottom:1px solid #000; padding:0 10px; font-weight:700; white-space: nowrap;">
+                {{ service.service_date|date:"d/m/Y" }}
+            </span>
+
+            to
+
+            <span style="border-bottom:1px dotted #000; padding:0 15px; font-weight:700; white-space: nowrap;">
+                {% if service.end_date %}{{ service.end_date|date:"d/m/Y" }}{% else %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+            </span>.
         </div>
     </div>
+    <!-- ====== END DATE LINE ====== -->
 
     <div class="row border-bottom" style="align-items: center;">
         <div class="cell w-50 border-right">
@@ -255,7 +305,7 @@
             
             <div style="margin-top: 18px;">
                 <div class="field-row"><span class="field-label">Signature of Customer:</span><span class="signature-line"></span></div>
-                <div class="field-row" style="margin-top: 5px;"><span class="field-label">Date:</span><span class="value-text">{{ service.service_date }}</span></div>
+                <div class="field-row" style="margin-top: 5px;"><span class="field-label">Date:</span><span class="value-text">{{ service.service_date|date:"d/m/Y" }}</span></div>
                 <div class="field-row" style="margin-top: 5px;"><span class="field-label">Company Seal:</span><span class="signature-line"></span></div>
             </div>
         </div>
@@ -268,7 +318,7 @@
             
             <div style="margin-top: 18px;">
                 <div class="field-row"><span class="field-label">OP Name:</span><span class="value-text">{% if rep_name %}{{ rep_name }}{% endif %}</span></div>
-                <div class="field-row" style="margin-top: 5px;"><span class="field-label">Date:</span><span class="value-text">{{ service.service_date }}</span></div>
+                <div class="field-row" style="margin-top: 5px;"><span class="field-label">Date:</span><span class="value-text">{{ service.service_date|date:"d/m/Y" }}</span></div>
                 <div class="field-row" style="font-size: 10px; color: #444444; margin-top: 5px;">Email ID: info@sevafacility.com</div>
             </div>
         </div>
@@ -278,7 +328,7 @@
         <div class="w-100" style="display: flex; align-items: center; justify-content: space-between;">
             <div><span class="bold" style="text-transform: uppercase; font-size: 10px;">Payment Received:</span></div>
             <div>Amount: <span class="value-text" style="border-bottom: 1px dotted #000; padding-right: 35px;">₹ {{ service.total_price_with_gst }}</span></div>
-            <div>Date: <span class="value-text" style="border-bottom: 1px dotted #000; padding-right: 35px;">{{ service.service_date }}</span></div>
+            <div>Date: <span class="value-text" style="border-bottom: 1px dotted #000; padding-right: 35px;">{{ service.service_date|date:"d/m/Y" }}</span></div>
             <div>Sign: <span style="border-bottom: 1px dotted #000; display:inline-block; width:110px;">&nbsp;</span></div>
         </div>
     </div>
