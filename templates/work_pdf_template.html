@@ -5,212 +5,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Order Details</title>
     <style>
+        @page {
+            size: A4;
+            margin: 12mm;
+        }
         body {
-            font-family: 'Arial, sans-serif';
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: #fff;
+            color: #1e293b;
             margin: 0;
             padding: 0;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .container {
-            max-width: 800px;
-            margin: 20px auto;
+            width: 100%;
+            margin: 0 auto;
+            border: 1px solid #cbd5e1;
             background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            border-radius: 6px;
+            overflow: hidden;
         }
 
-        .header {
-            font-size: 2em;
+        /* Clean Structural Layout */
+        .grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .grid-table td {
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            vertical-align: top;
+        }
+
+        /* Section Headings Styling */
+        .box-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #475569;
             margin-bottom: 10px;
-            font-weight: bold;
-            color: #000000;
-            border-bottom: 2px solid #007BFF;
-            padding-bottom: 5px;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 6px;
         }
 
-        .section {
-            margin-bottom: 5px;
+        .main-header {
+            font-size: 24px;
+            font-weight: 800;
+            text-align: left;
+            letter-spacing: 0.5px;
+            color: #0f172a;
+            margin: 0;
         }
 
-        .section p {
-            font-size: 14px;
-            margin: 10px 0;
-            padding: 5px;
+        .col-half {
+            width: 50%;
         }
 
-        .img-container {
+        .info-p {
+            font-size: 13px;
+            margin: 6px 0;
+            color: #334155;
+        }
+
+        .info-p strong {
+            color: #0f172a;
+            display: inline-block;
+            width: 150px;
+        }
+
+        /* Image Management Grid */
+        .img-container-grid {
             display: flex;
+            gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
-            /* Ensure wrapping */
-            gap: 10px;
-            /* Add spacing between images */
-        }
-
-        .img-container div {
-            flex: 1 1 calc(40% - 20px);
-            /* Each image takes 50% width with spacing */
-            max-width: calc(40% - 20px);
-            /* Maximum width */
-            box-sizing: border-box;
-            text-align: center;
-        }
-
-        /* .img-container img {
-            width: 70%;  
-            height: auto;
-            border: 1px solid #1e1e1e;
-            border-radius: 8px;
-        } */
-        .img-container p {
-            margin-bottom: 0px;
+            margin-top: 8px;
         }
 
         .img-fluid {
-            width: 500px;
+            width: 100%;
+            max-width: 240px;
             height: auto;
-            object-fit: cover;
-            border: 1px solid #1e1e1e;
-            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        .text-center {
+        .payment-img {
+            max-width: 200px;
+            display: block;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Signature Area Adjustment */
+        .signature-area {
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            background: #fafafa;
+            border: 1px dashed #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .signature-img {
+            max-height: 80px;
+            max-width: 90%;
+            object-fit: contain;
+        }
+
+        .no-photo-text {
+            color: #94a3b8;
+            font-size: 12px;
+            font-style: italic;
             text-align: center;
+            padding: 15px 0;
+            width: 100%;
         }
 
-        h1 {
-            text-align: center;
-            color: #007BFF;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-
-        .footer {
-            margin-top: 20px;
+        .footer-banner {
+            background-color: #f8fafc;
             text-align: center;
             font-size: 12px;
-            color: #666;
+            font-weight: 600;
+            color: #64748b;
+            padding: 14px;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="header">
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-
-                    <td style="width: 70%; text-align:left; vertical-align: middle;">
-                        <div style="padding: 0; margin: 0;">
-
-                            <h1
-                                style="margin: 0 0 10px 0; padding: 0; font-size: 50px; color: #3c99fc; line-height: 1;">
-                                Work Details</h1>
-
-                        </div>
-                    </td>
-                    <!-- Logo Section -->
-                    <td style="width: 30%; text-align: right; vertical-align: middle;margin-top: 0;">
-                        <img src="{{ logo_path }}" alt="Logo" style="max-width: 70px; height: auto;">
-                        
-                    </td>
-
-                </tr>
-            </table>
-        </div>
-
+        
         {% for item in work.work.all %}
-        <div class="section">
-            <p><strong>Customer Name:</strong> {{ item.fullname }}</p>
-            <p><strong>Customer Phone Number:</strong> {{ item.customer_contact }}</p>
-            <p><strong>Customer Address:</strong> {{ item.customer_address }}</p>
-        </div>
 
+        <table class="grid-table" style="border-bottom: 1px solid #e2e8f0;">
+            <tr>
+                <td style="vertical-align: middle; background-color: #f8fafc; border: none;">
+                    <h1 class="main-header">WORK ORDER</h1>
+                </td>
+                <td style="width: 30%; text-align: center; vertical-align: middle; background-color: #f8fafc; border: none;">
+                    {% if logo_path %}
+                        <img src="{{ logo_path }}" alt="Logo" style="max-width: 75px; height: auto; display: inline-block;">
+                    {% else %}
+                        <span style="font-weight: 800; font-size: 14px; color: #0f172a; letter-spacing: 1px;">SFS CONTROL</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
 
-        <div class="section">
-            <div class="header">Technician Information</div>
-            <p><strong>Technician Name:</strong> {{ work.technician.first_name }} {{ work.technician.last_name }}</p>
-            <p><strong>Work Description:</strong> {{ item.work_description }}</p>
-            <p><strong>Payment Status:</strong> {{ item.customer_payment_status }}</p>
-            <p><strong>Payment Amount:</strong> {{ item.payment_amount }}</p>
-        </div>
+        <table class="grid-table">
+            <tr>
+                <td class="col-half">
+                    <div class="box-title">Customer Details</div>
+                    <p class="info-p"><strong>Customer Name:</strong> {{ item.fullname }}</p>
+                    <p class="info-p"><strong>Phone Number:</strong> {{ item.customer_contact }}</p>
+                    <p class="info-p"><strong>Address:</strong> {{ item.customer_address }}</p>
+                </td>
+                
+                <td class="col-half">
+                    <div class="box-title">Technician & Assignment</div>
+                    <p class="info-p"><strong>Technician Name:</strong> {{ work.technician.first_name }} {{ work.technician.last_name }}</p>
+                    <p class="info-p"><strong>Work Description:</strong> {{ item.work_description }}</p>
+                    <p class="info-p"><strong>Payment Status:</strong> {{ item.customer_payment_status }}</p>
+                    <p class="info-p"><strong>Payment Amount:</strong> ₹{{ item.payment_amount }}</p>
+                </td>
+            </tr>
+        </table>
 
+        <table class="grid-table">
+            <tr>
+                <td>
+                    <div class="box-title">Execution Tracking</div>
+                    <p class="info-p" style="display: inline-block; margin-right: 40px;"><strong>Status:</strong> {{ work.status }}</p>
+                    <p class="info-p" style="display: inline-block;"><strong>Completion Date & Time:</strong> {{ work.completion_datetime }}</p>
+                </td>
+            </tr>
+        </table>
 
-        <div class="section">
-            <div class="header">Work Information</div>
-            <p><strong>Status:</strong> {{ work.status }}</p>
-            <p><strong>Completion Date & Time:</strong> {{ work.completion_datetime }}</p>
-        </div>
-
-        <div class="section">
-            <div class="header">Photos</div>
-            <div class="img-container">
-                <div>
-                    <p><strong>Photo Before Service:</strong><br>
+        <table class="grid-table">
+            <tr>
+                <td class="col-half">
+                    <div class="box-title" style="text-align: center;">Before Service Photo</div>
+                    <div class="img-container-grid">
                         {% if work.photos_before_service.all %}
-                    <div>
-                        {% for photo in work.photos_before_service.all %}
-                        <img src="{{ photo.file.path }}" alt="Photo before service" class="img-fluid"
-                            onclick="openModal('{{ photo.file.url }}')">
-                        <br>
-                        {% endfor %}
+                            {% for photo in work.photos_before_service.all %}
+                                <img src="{{ photo.file.path }}" alt="Before Service" class="img-fluid">
+                            {% endfor %}
+                        {% else %}
+                            <p class="no-photo-text">No photos available before service.</p>
+                        {% endif %}
                     </div>
-                    {% else %}
-                    <p>No photos available for before service.</p>
-                    {% endif %}
-                    </p>
-                </div>
-                <div>
-                    <p><strong>Photo After Service:</strong><br>
-                        {% if work.photos_after_service.all %}
-                    <div>
-                        {% for photo in work.photos_after_service.all %}
-                        <img src="{{ photo.file.path }}" alt="Photo after service" class="img-fluid"
-                            onclick="openModal('{{ photo.file.url }}')">
-                        <br>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p>No photos available for after service.</p>
-                    {% endif %}
-                    </p>
-                </div>
-                <div>
-                    <p class="text-center"><strong>Customer Signature Photo</strong></p>
-                    {% if work.customer_signature_photo %}
-                    <img src="{{ work.customer_signature_photo.path }}" alt="Customer Signature Photo"
-                        class="img-fluid">
-                    {% else %}
-                    <p class="text-center">No photo available.</p>
-                    {% endif %}
-                </div>
-                <div>
-                    <p><strong>Payment Photos:</strong><br>
-                        {% if work.payment_photos.all %}
-                    <div>
-                        {% for photo in work.payment_photos.all %}
-                        <img src="{{ photo.file.path }}" alt="Payment Photos" class="img-fluid"
-                            onclick="openModal('{{ photo.file.url }}')">
-                        <br>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p>No photos available for after service.</p>
-                    {% endif %}
-                    </p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+                </td>
 
-        <div class="footer">
-            <p>Thank you for doing business with us! Please visit again!</p>
-        </div>
+                <td class="col-half">
+                    <div class="box-title" style="text-align: center;">After Service Photo</div>
+                    <div class="img-container-grid">
+                        {% if work.photos_after_service.all %}
+                            {% for photo in work.photos_after_service.all %}
+                                <img src="{{ photo.file.path }}" alt="After Service" class="img-fluid">
+                            {% endfor %}
+                        {% else %}
+                            <p class="no-photo-text">No photos available after service.</p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="grid-table">
+            <tr>
+                <td>
+                    <div class="box-title">Payment Confirmation Proof</div>
+                    <div style="margin-top: 10px;">
+                        {% if work.payment_photos.all %}
+                            <div class="img-container-grid" style="justify-content: flex-start;">
+                                {% for photo in work.payment_photos.all %}
+                                    <img src="{{ photo.file.path }}" alt="Payment Receipt" class="payment-img">
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="no-photo-text" style="text-align: left; padding: 5px 0;">No payment confirmation photos attached.</p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="grid-table">
+            <tr>
+                <td style="padding: 20px;">
+                    <div class="box-title" style="text-align: center; border: none; margin-bottom: 5px;">Customer Acknowledgment Signature</div>
+                    <div class="signature-area" style="max-width: 400px; margin: 0 auto;">
+                        {% if work.customer_signature_photo %}
+                            <img src="{{ work.customer_signature_photo.path }}" alt="Customer Sign" class="signature-img">
+                        {% else %}
+                            <p style="color: #94a3b8; font-style: italic; font-size: 13px;">Awaiting Signature</p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="grid-table">
+            <tr>
+                <td class="footer-banner" style="border-top: none;">
+                    Thank you for your business! If you have any questions about this work order, please contact us.
+                </td>
+            </tr>
+        </table>
+
+        {% endfor %}
     </div>
 </body>
 
