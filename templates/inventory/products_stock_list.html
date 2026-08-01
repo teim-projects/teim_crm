@@ -231,10 +231,15 @@
         <div
           class="d-flex justify-content-between align-items-center mb-4 mt-3 flex-wrap gap-3"
         >
-          <h3>Products — Stock Summary</h3>
-          <small class="small-muted"
-            >Showing product totals (all batches aggregated)</small
-          >
+          <div>
+            <h3 class="mb-1">Products — Stock Summary</h3>
+            <small class="small-muted me-2"
+              >Showing product totals (all batches aggregated)</small
+            >
+            <span class="badge px-3 py-2" style="background-color: #6b21a8; color: #ffffff; font-size: 0.85rem; font-weight: 500; border-radius: 20px;">
+              <i class="fa fa-calendar me-1"></i> Period: {{ period_label }}
+            </span>
+          </div>
         </div>
 
         <div class="d-flex justify-content-end mb-4">
@@ -251,7 +256,7 @@
           class="filter-form d-flex flex-wrap align-items-end gap-3"
           id="filterForm"
         >
-          <div style="flex: 1; min-width: 200px">
+          <div style="flex: 1; min-width: 180px">
             <input
               type="text"
               name="q"
@@ -261,7 +266,29 @@
             />
           </div>
 
-          <div style="min-width: 160px">
+          <div style="min-width: 140px">
+            <select name="month" id="month_select" class="form-select">
+              <option value="all" {% if filters.month == 'all' %}selected{% endif %}>All Months</option>
+              {% for m_num, m_name in months_list %}
+                <option value="{{ m_num }}" {% if filters.month == m_num|stringformat:"s" %}selected{% endif %}>
+                  {{ m_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div style="min-width: 120px">
+            <select name="year" id="year_select" class="form-select">
+              <option value="all" {% if filters.year == 'all' %}selected{% endif %}>All Years</option>
+              {% for y in years_list %}
+                <option value="{{ y }}" {% if filters.year == y|stringformat:"s" %}selected{% endif %}>
+                  {{ y }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div style="min-width: 150px">
             <select name="location_type" id="location_type" class="form-select">
               <option value="">All locations</option>
               <option value="BRANCH" {% if filters.location_type == "BRANCH" %}selected{% endif %}>Branch</option>
@@ -270,13 +297,13 @@
             </select>
           </div>
 
-          <div style="min-width: 160px">
+          <div style="min-width: 150px">
             <select name="location_id" id="location_id" class="form-select">
               <option value="">All locations</option>
             </select>
           </div>
 
-          <div style="min-width: 160px">
+          <div style="min-width: 140px">
             <input
               type="text"
               name="batch_no"
@@ -288,7 +315,7 @@
 
           <div
             class="d-flex align-items-center gap-2 flex-wrap"
-            style="min-width: 320px"
+            style="min-width: 300px"
           >
             <label class="small-muted mb-0" style="white-space: nowrap"
               >Expiry:</label
@@ -298,7 +325,7 @@
               name="expiry_from"
               value="{{ filters.expiry_from|default_if_none:'' }}"
               class="form-control"
-              style="width: 160px"
+              style="width: 140px"
             />
             <span class="small-muted">to</span>
             <input
@@ -306,7 +333,7 @@
               name="expiry_to"
               value="{{ filters.expiry_to|default_if_none:'' }}"
               class="form-control"
-              style="width: 160px"
+              style="width: 140px"
             />
           </div>
 

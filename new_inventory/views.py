@@ -1011,6 +1011,123 @@ def _parse_int_or_none(val):
         return None
     
 from django.db.models.functions import Lower   # ✅ ADD THIS IMPORT
+import datetime
+import calendar
+
+def _calculate_product_monthly_stock(p, location_type, location_id, year_str, month_str, batch_no=None, expiry_from=None, expiry_to=None):
+    from new_inventory.models import StockLedger, MonthlyStockSnapshot
+    now = timezone.now()
+
+    # If 'all' time is explicitly requested
+    if month_str == 'all' or year_str == 'all':
+        if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
+            in_qty = Decimal(str(getattr(p, 'batch_in_qty', 0) or 0))
+            out_qty = Decimal('0')
+            approved = Decimal('0')
+            reserved = Decimal('0')
+        else:
+            in_qty = Decimal(str(getattr(p, 'in_qty', 0) or 0))
+            out_qty = Decimal(str(getattr(p, 'out_qty', 0) or 0))
+            approved = Decimal(str(getattr(p, 'approved_qty', 0) or 0))
+            reserved = Decimal(str(getattr(p, 'reserved_qty', 0) or 0))
+
+        opening = Decimal("0.000")
+        sent = max(Decimal('0.000'), out_qty - approved)
+        closing = max(Decimal('0.000'), opening + in_qty - sent - approved)
+        available = max(Decimal('0.000'), closing - reserved)
+
+        return {
+            "opening": opening,
+            "receipt": in_qty,
+            "sent": sent,
+            "approved": approved,
+            "reserved": reserved,
+            "closing": closing,
+            "available": available,
+        }
+
+    try:
+        req_year = int(year_str) if year_str else now.year
+    except (ValueError, TypeError):
+        req_year = now.year
+
+    try:
+        req_month = int(month_str) if month_str else now.month
+    except (ValueError, TypeError):
+        req_month = now.month
+
+    start_date = datetime.date(req_year, req_month, 1)
+    _, last_day = calendar.monthrange(req_year, req_month)
+    end_date = datetime.date(req_year, req_month, last_day)
+
+    ledger_base = StockLedger.objects.filter(product_id=p.pk)
+    if location_type:
+        ledger_base = ledger_base.filter(location_type=location_type)
+    if location_id is not None:
+        ledger_base = ledger_base.filter(location_id=location_id)
+
+    # 1. OPENING STOCK (Prior to month start date)
+    prior_ledger = ledger_base.filter(transaction_date__lt=start_date)
+    prior_in = prior_ledger.aggregate(total=Sum('in_qty'))['total'] or Decimal('0.000')
+    prior_out = prior_ledger.aggregate(total=Sum('out_qty'))['total'] or Decimal('0.000')
+    opening = max(Decimal('0.000'), Decimal(str(prior_in)) - Decimal(str(prior_out)))
+
+    # Fallback to MonthlyStockSnapshot if available for prev month
+    if prior_in == 0 and prior_out == 0:
+        prev_month = req_month - 1
+        prev_year = req_year
+        if prev_month == 0:
+            prev_month = 12
+            prev_year -= 1
+        snap_qs = MonthlyStockSnapshot.objects.filter(
+            product_id=p.pk, year=prev_year, month=prev_month
+        )
+        if location_type:
+            snap_qs = snap_qs.filter(location_type=location_type)
+        if location_id is not None:
+            snap_qs = snap_qs.filter(location_id=location_id)
+        snap = snap_qs.first()
+        if snap:
+            opening = Decimal(str(snap.closing_qty or 0))
+
+    # 2. MONTH TRANSACTIONS
+    month_ledger = ledger_base.filter(transaction_date__gte=start_date, transaction_date__lte=end_date)
+    month_in = month_ledger.aggregate(total=Sum('in_qty'))['total'] or Decimal('0.000')
+
+    srv_out = month_ledger.filter(transaction_type='SERVICE_OUT').aggregate(total=Sum('out_qty'))['total'] or Decimal('0.000')
+    srv_ret = month_ledger.filter(transaction_type__in=['SERVICE_RETURN', 'SERVICE_REVERSAL']).aggregate(total=Sum('in_qty'))['total'] or Decimal('0.000')
+    approved = max(Decimal('0.000'), Decimal(str(srv_out)) - Decimal(str(srv_ret)))
+
+    sent_out = month_ledger.exclude(transaction_type__in=['SERVICE_OUT', 'SERVICE_RETURN', 'SERVICE_REVERSAL']).aggregate(total=Sum('out_qty'))['total'] or Decimal('0.000')
+    sent = max(Decimal('0.000'), Decimal(str(sent_out)))
+
+    receipt = Decimal(str(month_in))
+    reserved = Decimal(str(getattr(p, 'reserved_qty', 0) or 0))
+
+    # Fallback for current month if ledger had no records yet (e.g. legacy aggregate ProductStock)
+    if opening == 0 and receipt == 0 and sent == 0 and approved == 0:
+        cum_in = Decimal(str(getattr(p, 'in_qty', 0) or 0))
+        cum_out = Decimal(str(getattr(p, 'out_qty', 0) or 0))
+        cum_app = Decimal(str(getattr(p, 'approved_qty', 0) or 0))
+        if req_year == now.year and req_month == now.month:
+            receipt = cum_in
+            approved = cum_app
+            sent = max(Decimal('0.000'), cum_out - approved)
+
+    closing = max(Decimal('0.000'), opening + receipt - sent - approved)
+    available = max(Decimal('0.000'), closing - reserved)
+
+    return {
+        "opening": opening,
+        "receipt": receipt,
+        "sent": sent,
+        "approved": approved,
+        "reserved": reserved,
+        "closing": closing,
+        "available": available,
+    }
+
+
 @login_required
 @role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def products_stock_list_view(request):
@@ -1055,6 +1172,18 @@ def products_stock_list_view(request):
         destination_qs = []
 
     # -----------------------------
+    # GET MONTH & YEAR FILTERS (Default to current month/year)
+    # -----------------------------
+    now = timezone.now()
+    selected_year = request.GET.get('year')
+    selected_month = request.GET.get('month')
+
+    if selected_year is None:
+        selected_year = str(now.year)
+    if selected_month is None:
+        selected_month = str(now.month)
+
+    # -----------------------------
     # MAIN STOCK QUERY (ONLY SORT UPDATED)
     # -----------------------------
     qs = annotated_product_stock_qs(
@@ -1097,47 +1226,26 @@ def products_stock_list_view(request):
     products_page = paginator.get_page(page)
 
     # -----------------------------
-    # PREPARE TABLE DATA
+    # PREPARE TABLE DATA (MONTH-AWARE OPENING/CLOSING)
     # -----------------------------
     rows = []
 
     for p in products_page:
-        if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
-            in_qty   = Decimal(str(getattr(p, 'batch_in_qty', 0) or 0))
-            out_qty  = Decimal('0')
-            approved = Decimal('0')
-            reserved = Decimal('0')
-        else:
-            in_qty   = Decimal(str(getattr(p, 'in_qty',       0) or 0))
-            out_qty  = Decimal(str(getattr(p, 'out_qty',      0) or 0))
-            approved = Decimal(str(getattr(p, 'approved_qty', 0) or 0))
-            reserved = Decimal(str(getattr(p, 'reserved_qty', 0) or 0))
-
-        # NEW CALCULATIONS
-        opening = Decimal("0.000")  # Temporary - will be replaced with previous month closing
-        
-        sent = max(Decimal('0'), out_qty - approved)
-        
-        closing = max(
-            Decimal('0'),
-            opening + in_qty - sent - approved
-        )
-        
-        available = max(
-            Decimal('0'),
-            closing - reserved
+        stock_data = _calculate_product_monthly_stock(
+            p, location_type, location_id, selected_year, selected_month,
+            batch_no=batch_no, expiry_from=expiry_from, expiry_to=expiry_to
         )
 
         rows.append({
             "id": p.pk,
             "name": getattr(p, 'product_name', str(p)),
-            "opening_qty": f"{opening:.3f}",
-            "receipt_qty": f"{in_qty:.3f}",
-            "sent_qty": f"{sent:.3f}",
-            "approved_qty": f"{approved:.3f}",
-            "reserved_qty": f"{reserved:.3f}",
-            "closing_qty": f"{closing:.3f}",
-            "available_qty": f"{available:.3f}",
+            "opening_qty": f"{stock_data['opening']:.3f}",
+            "receipt_qty": f"{stock_data['receipt']:.3f}",
+            "sent_qty": f"{stock_data['sent']:.3f}",
+            "approved_qty": f"{stock_data['approved']:.3f}",
+            "reserved_qty": f"{stock_data['reserved']:.3f}",
+            "closing_qty": f"{stock_data['closing']:.3f}",
+            "available_qty": f"{stock_data['available']:.3f}",
         })
 
     # -----------------------------
@@ -1255,6 +1363,24 @@ def products_stock_list_view(request):
     sub_item_rows.sort(key=lambda x: x["name"])
 
 
+    months_list = [
+        (1, "January"), (2, "February"), (3, "March"), (4, "April"),
+        (5, "May"), (6, "June"), (7, "July"), (8, "August"),
+        (9, "September"), (10, "October"), (11, "November"), (12, "December")
+    ]
+    current_year_int = now.year
+    years_list = list(range(current_year_int - 2, current_year_int + 3))
+
+    if selected_month == 'all' or selected_year == 'all':
+        period_label = "All Time (Cumulative)"
+    else:
+        try:
+            m_idx = int(selected_month)
+            m_name = months_list[m_idx - 1][1]
+            period_label = f"{m_name} {selected_year}"
+        except (ValueError, IndexError):
+            period_label = f"{selected_month}/{selected_year}"
+
     context = {
         "rows": rows,
         "page_obj": products_page,
@@ -1263,15 +1389,19 @@ def products_stock_list_view(request):
         "sub_item_rows": sub_item_rows,
         "filters": {
             "location_type": location_type,
-            
             "location_id": location_id,
             "q": search,
             "batch_no": batch_no,
             "expiry_from": expiry_from,
             "expiry_to": expiry_to,
             "sort": sort,                     # pass current sort to template
+            "month": str(selected_month),
+            "year": str(selected_year),
         },
         "destination_qs": destination_qs,
+        "months_list": months_list,
+        "years_list": years_list,
+        "period_label": period_label,
     }
 
     return render(request, "inventory/products_stock_list.html", context)
@@ -1281,6 +1411,7 @@ from openpyxl import Workbook
 @login_required
 @role_required(['admin', 'HO_operation', 'HO_manager', 'branch_manager'])
 def export_products_stock_excel(request):
+    now = timezone.now()
     search = request.GET.get('q') or None
     location_type = request.GET.get('location_type') or None
     location_id = _parse_int_or_none(request.GET.get('location_id'))
@@ -1288,6 +1419,13 @@ def export_products_stock_excel(request):
     batch_no = request.GET.get('batch_no') or None
     expiry_from = request.GET.get('expiry_from') or None
     expiry_to = request.GET.get('expiry_to') or None
+
+    selected_year = request.GET.get('year')
+    selected_month = request.GET.get('month')
+    if selected_year is None:
+        selected_year = str(now.year)
+    if selected_month is None:
+        selected_month = str(now.month)
 
     user = request.user
     role = getattr(user.userprofile, "role", None)
@@ -1327,48 +1465,20 @@ def export_products_stock_excel(request):
     ws.append(headers)
 
     for p in qs:
-
-        if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
-            receipt = Decimal(str(getattr(p, 'batch_in_qty', 0) or 0))
-            out_qty = Decimal('0')
-            approved = Decimal('0')
-            reserved = Decimal('0')
-        else:
-            receipt = Decimal(str(getattr(p, 'in_qty', 0) or 0))
-            out_qty = Decimal(str(getattr(p, 'out_qty', 0) or 0))
-            approved = Decimal(str(getattr(p, 'approved_qty', 0) or 0))
-            reserved = Decimal(str(getattr(p, 'reserved_qty', 0) or 0))
-
-        # TEMPORARY OPENING
-        opening = Decimal('0.000')
-
-        # Sent Qty
-        sent = max(
-            Decimal('0'),
-            out_qty - approved
-        )
-
-        # Closing Formula
-        closing = max(
-            Decimal('0'),
-            opening + receipt - sent - approved
-        )
-
-        # Available Formula
-        available = max(
-            Decimal('0'),
-            closing - reserved
+        stock_data = _calculate_product_monthly_stock(
+            p, location_type, location_id, selected_year, selected_month,
+            batch_no=batch_no, expiry_from=expiry_from, expiry_to=expiry_to
         )
 
         ws.append([
             getattr(p, 'product_name', str(p)),
-            float(opening),
-            float(receipt),
-            float(sent),
-            float(approved),
-            float(reserved),
-            float(closing),
-            float(available),
+            float(stock_data['opening']),
+            float(stock_data['receipt']),
+            float(stock_data['sent']),
+            float(stock_data['approved']),
+            float(stock_data['reserved']),
+            float(stock_data['closing']),
+            float(stock_data['available']),
         ])
 
     response = HttpResponse(
