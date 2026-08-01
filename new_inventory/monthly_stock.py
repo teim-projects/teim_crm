@@ -56,9 +56,6 @@ def auto_month_snapshot():
         # Receipt
         receipt = stock.in_qty or Decimal("0.000")
 
-        # Sent
-        sent = stock.out_qty or Decimal("0.000")
-
         # Approved Qty
         approved = (
             StockLedger.objects.filter(
@@ -71,6 +68,10 @@ def auto_month_snapshot():
             .get("total")
             or Decimal("0.000")
         )
+
+        # Sent (Out Qty net of Approved)
+        total_out = stock.out_qty or Decimal("0.000")
+        sent = max(Decimal("0.000"), total_out - approved)
 
         # Closing Formula
         closing = max(
