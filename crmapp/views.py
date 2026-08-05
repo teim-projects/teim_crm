@@ -6970,13 +6970,13 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 import urllib.parse
 
-def generate_pdf_link(request, work_id):
-    work = get_object_or_404(TechWorkList, id=work_id)
-    pdf_url = request.build_absolute_uri(reverse('download_work_pdf', args=[work_id]))
-    whatsapp_message = f"Here is your service report: {pdf_url}"
-    encoded_message = urllib.parse.quote(whatsapp_message)
-    whatsapp_url = f"https://wa.me/{work.work.customer_contact}?text={encoded_message}"
-    return redirect(whatsapp_url)
+# def generate_pdf_link(request, work_id):
+#     work = get_object_or_404(TechWorkList, id=work_id)
+#     pdf_url = request.build_absolute_uri(reverse('download_work_pdf', args=[work_id]))
+#     whatsapp_message = f"Here is your service report: {pdf_url}"
+#     encoded_message = urllib.parse.quote(whatsapp_message)
+#     whatsapp_url = f"https://wa.me/{work.work.customer_contact}?text={encoded_message}"
+#     return redirect(whatsapp_url)
 
 
 
@@ -8357,7 +8357,7 @@ from django.apps import apps
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import redirect
-from .tasks import send_email_task, send_whatsapp_task
+from .tasks import send_email_task  # , send_whatsapp_task
 
 def send_lead_email(request, pk):
     lead = get_object_or_404(lead_management, pk=pk)
@@ -8465,159 +8465,159 @@ def send_group_lead_email(request, lead_type):
 
 
 
-def send_lead_whatsapp(request, pk):
-    lead = get_object_or_404(lead_management, pk=pk)
+# def send_lead_whatsapp(request, pk):
+#     lead = get_object_or_404(lead_management, pk=pk)
 
-    if not lead.primarycontact:
-        messages.error(request, f"{lead.customername} has no phone number.")
-        return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+#     if not lead.primarycontact:
+#         messages.error(request, f"{lead.customername} has no phone number.")
+#         return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
     
-    # Fetch WhatsApp template for this lead type
-    template = MessageTemplates.objects.filter(
-        message_type='whatsapp',
-        category='lead',
-        lead_status__iexact=lead.typeoflead.strip().lower()
-    ).first()
+#     # Fetch WhatsApp template for this lead type
+#     template = MessageTemplates.objects.filter(
+#         message_type='whatsapp',
+#         category='lead',
+#         lead_status__iexact=lead.typeoflead.strip().lower()
+#     ).first()
 
-    if not template:
-        messages.error(request, f"No WhatsApp template found for {lead.typeoflead}.")
-        return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+#     if not template:
+#         messages.error(request, f"No WhatsApp template found for {lead.typeoflead}.")
+#         return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
 
-    # Prepare placeholders
-    placeholders = {
-        "customername": lead.customername,
-        "typeoflead": lead.typeoflead,  
-        "primarycontact": lead.primarycontact,
-        # Add more fields if needed
-    }
+#     # Prepare placeholders
+#     placeholders = {
+#         "customername": lead.customername,
+#         "typeoflead": lead.typeoflead,  
+#         "primarycontact": lead.primarycontact,
+#         # Add more fields if needed
+#     }
 
-    # Replace placeholders in template body
-    msg = template.body
-    for key, value in placeholders.items():
-        msg = msg.replace(f"{{{key}}}", str(value))
+#     # Replace placeholders in template body
+#     msg = template.body
+#     for key, value in placeholders.items():
+#         msg = msg.replace(f"{{{key}}}", str(value))
 
-    # Handle attachment if present
-    attachment_url = None
-    attachment_name = None
-    if template.attachment:
-        # Use .url (relative to MEDIA_URL)
-        relative_url = template.attachment.url  # e.g. /media/message_attachments/ape1_hbHE7TU.jpg
+#     # Handle attachment if present
+#     attachment_url = None
+#     attachment_name = None
+#     if template.attachment:
+#         # Use .url (relative to MEDIA_URL)
+#         relative_url = template.attachment.url  # e.g. /media/message_attachments/ape1_hbHE7TU.jpg
 
-        # Build absolute URL
-        site_url = getattr(settings, "SITE_URL", "https://www.teimcrm.com")  
-        attachment_url = f"{site_url}{relative_url}"
-        attachment_name = os.path.basename(template.attachment.name)
+#         # Build absolute URL
+#         site_url = getattr(settings, "SITE_URL", "https://www.teimcrm.com")  
+#         attachment_url = f"{site_url}{relative_url}"
+#         attachment_name = os.path.basename(template.attachment.name)
     
-    print("url: ", attachment_url)
-    print("attachment_name :",attachment_name)
-    # Queue the Celery task
-    mobile = f"91{lead.primarycontact}"
-    send_whatsapp_task.delay(mobile, msg, attachment_url, attachment_name)
+#     print("url: ", attachment_url)
+#     print("attachment_name :",attachment_name)
+#     # Queue the Celery task
+#     mobile = f"91{lead.primarycontact}"
+#     send_whatsapp_task.delay(mobile, msg, attachment_url, attachment_name)
 
-    messages.success(request, f"WhatsApp message queued for {lead.customername}")
-    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
-
-
-def send_group_lead_whatsapp(request, lead_type):
-    leads = lead_management.objects.filter(typeoflead__iexact=lead_type)
-    sent_count = 0
-    skipped_count = 0
-
-    site_url = getattr(settings, "SITE_URL", "https://www.teimcrm.com")
-
-    for lead in leads:
-        latest_followup = main_followup.objects.filter(lead=lead).order_by('-created_at').first()
-
-        # Skip Closed/No contact
-        if latest_followup and latest_followup.order_status == 'Close Win':
-            skipped_count += 1
-            continue
-        if not lead.primarycontact:
-            skipped_count += 1
-            continue
-
-        # Fetch template
-        template = MessageTemplates.objects.filter(
-            message_type='whatsapp',
-            category='lead',
-            lead_status__iexact=lead_type.strip()
-        ).first()
-        if not template:
-            skipped_count += 1
-            continue
-
-        # Prepare placeholders
-        placeholders = {
-            "customername": lead.customername,
-            "typeoflead": lead.typeoflead,
-            "primarycontact": lead.primarycontact,
-        }
-
-        body = template.body
-        for key, value in placeholders.items():
-            body = body.replace(f"{{{key}}}", str(value))
-
-        # Prepare attachment URL if exists
-        attachment_url = None
-        attachment_name = None
-        if template.attachment:
-            relative_url = template.attachment.url
-            attachment_url = f"{site_url}{relative_url}"
-            attachment_name = os.path.basename(template.attachment.name)
-
-        # Mobile number
-        mobile = f"91{lead.primarycontact}"
-
-        # Only send msg if no attachment
-        # msg = None if attachment_url else body
-        msg = body
-        send_whatsapp_task.delay(mobile, msg, attachment_url, attachment_name)
-
-        sent_count += 1
-
-    messages.success(request, f"✅ WhatsApp sent: {sent_count}, ⏭️ Skipped: {skipped_count}")
-    return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+#     messages.success(request, f"WhatsApp message queued for {lead.customername}")
+#     return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
 
 
-def send_quotation_pdf_on_whatsapp(request, id):
-    quotation = get_object_or_404(quotation_management, id=id)
+# def send_group_lead_whatsapp(request, lead_type):
+#     leads = lead_management.objects.filter(typeoflead__iexact=lead_type)
+#     sent_count = 0
+#     skipped_count = 0
 
-    mobile = f"91{quotation.customer.primarycontact}"  # adjust if field name is different
+#     site_url = getattr(settings, "SITE_URL", "https://www.teimcrm.com")
 
-        # Fetch WhatsApp template for this lead type
-    template = MessageTemplates.objects.filter(
-        message_type='whatsapp',
-        category='quotation',
-    ).first()
+#     for lead in leads:
+#         latest_followup = main_followup.objects.filter(lead=lead).order_by('-created_at').first()
 
-    if not template:
-        messages.error(request, f"No WhatsApp template found for quotation.")
-        return redirect(request.META.get("HTTP_REFERER", "display_quotation"))
+#         # Skip Closed/No contact
+#         if latest_followup and latest_followup.order_status == 'Close Win':
+#             skipped_count += 1
+#             continue
+#         if not lead.primarycontact:
+#             skipped_count += 1
+#             continue
 
-    # Prepare placeholders
-    placeholders = {
-        "customername": quotation.customer.fullname,
+#         # Fetch template
+#         template = MessageTemplates.objects.filter(
+#             message_type='whatsapp',
+#             category='lead',
+#             lead_status__iexact=lead_type.strip()
+#         ).first()
+#         if not template:
+#             skipped_count += 1
+#             continue
 
-    }
+#         # Prepare placeholders
+#         placeholders = {
+#             "customername": lead.customername,
+#             "typeoflead": lead.typeoflead,
+#             "primarycontact": lead.primarycontact,
+#         }
 
-    # Replace placeholders in template body
-    msg = template.body
-    for key, value in placeholders.items():
-        msg = msg.replace(f"{{{key}}}", str(value))
+#         body = template.body
+#         for key, value in placeholders.items():
+#             body = body.replace(f"{{{key}}}", str(value))
 
-    # Handle attachment if present
-    attachment_url = f"https://www.teimcrm.com/generate_quotation/quotation/pdf/{quotation.id}/view?download=True"
-    attachment_name = f"quotation_{quotation.id}.pdf"
+#         # Prepare attachment URL if exists
+#         attachment_url = None
+#         attachment_name = None
+#         if template.attachment:
+#             relative_url = template.attachment.url
+#             attachment_url = f"{site_url}{relative_url}"
+#             attachment_name = os.path.basename(template.attachment.name)
 
-    # Trigger Celery task
-    send_whatsapp_task.delay(
-        mobile=mobile,
-        msg=msg,
-        attachment_path=attachment_url,   # must be accessible URL
-        attachment_name=attachment_name
-    )
+#         # Mobile number
+#         mobile = f"91{lead.primarycontact}"
 
-    return redirect(request.META.get("HTTP_REFERER", "display_quotation")) 
+#         # Only send msg if no attachment
+#         # msg = None if attachment_url else body
+#         msg = body
+#         send_whatsapp_task.delay(mobile, msg, attachment_url, attachment_name)
+
+#         sent_count += 1
+
+#     messages.success(request, f"✅ WhatsApp sent: {sent_count}, ⏭️ Skipped: {skipped_count}")
+#     return redirect(request.META.get("HTTP_REFERER", "display_lead_management"))
+
+
+# def send_quotation_pdf_on_whatsapp(request, id):
+#     quotation = get_object_or_404(quotation_management, id=id)
+
+#     mobile = f"91{quotation.customer.primarycontact}"  # adjust if field name is different
+
+#         # Fetch WhatsApp template for this lead type
+#     template = MessageTemplates.objects.filter(
+#         message_type='whatsapp',
+#         category='quotation',
+#     ).first()
+
+#     if not template:
+#         messages.error(request, f"No WhatsApp template found for quotation.")
+#         return redirect(request.META.get("HTTP_REFERER", "display_quotation"))
+
+#     # Prepare placeholders
+#     placeholders = {
+#         "customername": quotation.customer.fullname,
+
+#     }
+
+#     # Replace placeholders in template body
+#     msg = template.body
+#     for key, value in placeholders.items():
+#         msg = msg.replace(f"{{{key}}}", str(value))
+
+#     # Handle attachment if present
+#     attachment_url = f"https://www.teimcrm.com/generate_quotation/quotation/pdf/{quotation.id}/view?download=True"
+#     attachment_name = f"quotation_{quotation.id}.pdf"
+
+#     # Trigger Celery task
+#     send_whatsapp_task.delay(
+#         mobile=mobile,
+#         msg=msg,
+#         attachment_path=attachment_url,   # must be accessible URL
+#         attachment_name=attachment_name
+#     )
+
+#     return redirect(request.META.get("HTTP_REFERER", "display_quotation")) 
 
 def send_quotation_email(request, id):
     quotation = get_object_or_404(quotation_management, id=id)
@@ -8692,45 +8692,45 @@ def send_invoice_email(request, id):
 
     return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice"))
 
-def send_invoice_pdf_on_whatsapp(request, id):
-    invoice = get_object_or_404(TaxInvoice, id=id)
+# def send_invoice_pdf_on_whatsapp(request, id):
+#     invoice = get_object_or_404(TaxInvoice, id=id)
 
-    mobile = f"91{invoice.customer.primarycontact}"  
+#     mobile = f"91{invoice.customer.primarycontact}"  
 
-        # Fetch WhatsApp template for this lead type
-    template = MessageTemplates.objects.filter(
-        message_type='whatsapp',
-        category='invoice',
-    ).first()
+#         # Fetch WhatsApp template for this lead type
+#     template = MessageTemplates.objects.filter(
+#         message_type='whatsapp',
+#         category='invoice',
+#     ).first()
 
-    if not template:
-        messages.error(request, f"No WhatsApp template found for quotation.")
-        return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice"))
+#     if not template:
+#         messages.error(request, f"No WhatsApp template found for quotation.")
+#         return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice"))
 
-    # Prepare placeholders
-    placeholders = {
-        "customername": invoice.customer.fullname,
+#     # Prepare placeholders
+#     placeholders = {
+#         "customername": invoice.customer.fullname,
 
-    }
+#     }
 
-    # Replace placeholders in template body
-    msg = template.body
-    for key, value in placeholders.items():
-        msg = msg.replace(f"{{{key}}}", str(value))
+#     # Replace placeholders in template body
+#     msg = template.body
+#     for key, value in placeholders.items():
+#         msg = msg.replace(f"{{{key}}}", str(value))
 
-    # Handle attachment if present
-    attachment_url = f"https://www.teimcrm.com/tax-invoice/pdf/{invoice.id}/?download=true"
-    attachment_name = f"Invoice_{invoice.customer.fullname}.pdf"
+#     # Handle attachment if present
+#     attachment_url = f"https://www.teimcrm.com/tax-invoice/pdf/{invoice.id}/?download=true"
+#     attachment_name = f"Invoice_{invoice.customer.fullname}.pdf"
 
-    # Trigger Celery task
-    send_whatsapp_task.delay(
-        mobile=mobile,
-        msg=msg,
-        attachment_path=attachment_url,   # must be accessible URL
-        attachment_name=attachment_name
-    )
+#     # Trigger Celery task
+#     send_whatsapp_task.delay(
+#         mobile=mobile,
+#         msg=msg,
+#         attachment_path=attachment_url,   # must be accessible URL
+#         attachment_name=attachment_name
+#     )
 
-    return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice")) 
+#     return redirect(request.META.get("HTTP_REFERER", "display_tax_invoice")) 
 
 
 
