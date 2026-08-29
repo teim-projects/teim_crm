@@ -10,6 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/customer.css' %}">
+    {% include 'sweetalert_init.html' %}
     <script src="{% static 'js/script.js' %}"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -445,7 +446,7 @@
 
                         <div class="col-12">
                             <label>Subject<span class="star">*</span></label>
-                            <input type="text" name="subject" value="" class="form-control"><br>
+                            <input type="text" name="subject" value="" class="form-control" required><br>
                         </div>
 
                         <div class="row">
@@ -459,7 +460,7 @@
 
                             <div class="col-12 col-md-8" style="margin-top: 30px;">
                                 <label>Service Type<span class="star">*</span></label>
-                                <select id="servicetype" name="servicetype" class="form-control" onchange="fetchProducts(this)">
+                                <select id="servicetype" name="servicetype" class="form-control" onchange="fetchProducts(this)" required>
                                     <option value="">Select service types</option>
                                     {% for category, display_name in category_choices %}
                                     <option value="{{ category }}">{{ display_name }}</option>
@@ -576,10 +577,10 @@
                         <label>Address<span class="star">*</span></label>
                         <textarea name="address" id="address" class="form-control" required></textarea>
 
-                        <label>Search Address or Paste Google Map Link</label>
+                        <label>Search Address or Paste Google Map Link<span class="star">*</span></label>
                         <div class="input-group mb-2">
-                            <input type="text" id="location-search" class="form-control"
-                                   placeholder="Enter address OR paste Google Maps link">
+                            <input type="text" id="location-search" class="form-control" style="border: 1px solid #dc3545 !important; border-left: 3px solid #dc3545 !important;"
+                                   placeholder="Enter address OR paste Google Maps link" required>
                             <button type="button" class="btn btn-primary" onclick="searchLocation()">Search</button>
                         </div>
 
@@ -634,14 +635,14 @@
                             <div class="col-6">
                                 <label>Sales Person Email <span class="star">*</span></label>
                                 <input type="email" id="sales_person_email" name="sales_person_email"
-                                       class="form-control" readonly>
+                                       class="form-control" readonly required>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-6">
                                 <label>Branch<span class="star">*</span></label>
-                                <select name="branch" class="form-control">
+                                <select name="branch" class="form-control" required>
                                     <option value="">-- Select Branch --</option>
                                     {% for branch in branches %}
                                     <option value="{{ branch.id }}">{{ branch.branch_name }}</option>
@@ -1304,7 +1305,42 @@
             }
         }
 
+        function getFieldLabel(input) {
+            let labelElement = document.querySelector(`label[for="${input.id}"]`);
+            if (!labelElement) {
+                const parentCol = input.closest('.col-4, .col-6, .col-md-4, .col-md-6, .col-md-12, div');
+                if (parentCol) labelElement = parentCol.querySelector('label');
+            }
+            if (!labelElement) {
+                let prev = input.previousElementSibling;
+                while (prev && prev.tagName !== 'LABEL') {
+                    prev = prev.previousElementSibling;
+                }
+                labelElement = prev;
+            }
+            if (labelElement) {
+                return labelElement.innerText.replace('*', '').trim();
+            }
+            return input.name || input.placeholder || "Field";
+        }
+
+        function validateCurrentStep(stepElement) {
+            const requiredInputs = stepElement.querySelectorAll("input[required], select[required], textarea[required]");
+            for (let inp of requiredInputs) {
+                if (!inp.value || !inp.value.trim()) {
+                    const labelName = getFieldLabel(inp);
+                    showValidationAlert(`${labelName} is required`);
+                    inp.focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
         nextBtns.forEach(btn => btn.addEventListener("click", () => {
+            if (!validateCurrentStep(steps[currentStep])) {
+                return;
+            }
             if (currentStep < steps.length - 1) {
                 currentStep++;
                 showStep(currentStep);
@@ -1357,7 +1393,7 @@
         async function searchLocation() {
             let query = document.getElementById("location-search").value.trim();
             if (!query) {
-                alert("Enter location");
+                showValidationAlert("Search Address is required");
                 return;
             }
 
@@ -1373,14 +1409,14 @@
                 const data = await response.json();
 
                 if (!data.length) {
-                    alert("Location not found");
+                    showErrorAlert("Location not found");
                     return;
                 }
 
                 placeMarker(parseFloat(data[0].lat), parseFloat(data[0].lon));
             } catch (error) {
                 console.error(error);
-                alert("Error fetching location");
+                showErrorAlert("Error fetching location");
             }
         }
 

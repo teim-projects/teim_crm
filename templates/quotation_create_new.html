@@ -446,23 +446,21 @@ input:checked + .slider:before {
                                             <input type="number" id="contact_by_no" name="contact_by_no" required
                                                    value="{{ form_data.contact_by_no }}" class="form-control">
                                         </div>
-
-
-                                        <div class="col-md-6">
+                                         <div class="col-md-6">
                                             <label>Subject<span class="star">*</span></label>
-                                            <input type="text" name="subject" value="{{ form_data.subject }}" class="form-control"><br>
+                                            <input type="text" name="subject" value="{{ form_data.subject }}" class="form-control" required><br>
                                         </div>
                                        
                                         <div class="col-md-6">
                                             <label>Quotation Date<span class="star">*</span></label>
                                             <input type="date" name="quotation_date" class="form-control" 
-                                            value="{{ form_data.quotation_date }}"><br>
+                                            value="{{ form_data.quotation_date }}" required><br>
                                         </div>
                                         <div class="col-12 position-relative">
                                             <label>Thank you note<span class="star">*</span></label>
-                                            <textarea id="thank_u_note" name="thank_u_note" rows="2" placeholder="Enter Thank you note..">{{ form_data.thank_u_note }}</textarea>
+                                            <textarea id="thank_u_note" name="thank_u_note" rows="2" placeholder="Enter Thank you note.." required>{{ form_data.thank_u_note }}</textarea>
                                             <ul id="thank-suggestions" class="autocomplete-box" style="display: none;"></ul>
-                                        </div>
+                                        </div>div>
                                         {{ thank_notes|json_script:"thank-notes-json" }}
 
                                         <div class="col-12">
@@ -1051,6 +1049,25 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
+        function getFieldLabel(input) {
+            let labelElement = document.querySelector(`label[for="${input.id}"]`);
+            if (!labelElement) {
+                const parentCol = input.closest('.col-4, .col-6, .col-md-4, .col-md-6, .col-md-12, div');
+                if (parentCol) labelElement = parentCol.querySelector('label');
+            }
+            if (!labelElement) {
+                let prev = input.previousElementSibling;
+                while (prev && prev.tagName !== 'LABEL') {
+                    prev = prev.previousElementSibling;
+                }
+                labelElement = prev;
+            }
+            if (labelElement) {
+                return labelElement.innerText.replace('*', '').trim();
+            }
+            return input.name || input.placeholder || "Field";
+        }
+
         nextBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 // ✅ Validate all required fields in the CURRENT step before advancing
@@ -1062,7 +1079,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Skip hidden fields (display:none parent)
                     if (field.closest('[style*="display: none"]') || field.type === 'hidden') continue;
                     if (!field.value || !field.value.trim()) {
-                        field.reportValidity(); // Shows native browser tooltip on the empty field
+                        const labelName = getFieldLabel(field);
+                        showValidationAlert(`${labelName} is required`);
                         field.focus();
                         valid = false;
                         break;
@@ -1073,7 +1091,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (valid && currentStep === 0) {
                     const customerIdField = document.getElementById('customer_id');
                     if (customerIdField && !customerIdField.value.trim()) {
-                        alert('⚠️ Please select a valid customer by entering their contact number and waiting for auto-fill.');
+                        showValidationAlert('Please select a valid customer by entering their contact number and waiting for auto-fill.');
                         document.getElementById('customer_contact').focus();
                         valid = false;
                     }
@@ -1777,8 +1795,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
 {% if show_pdf_script %}
 <script>
-    // Automatically open the PDF in a new tab
-    window.open("{{ pdf_url }}", "_blank");
+  function showPdfPrompt() {
+    Swal.fire({
+      icon: 'success',
+      title: 'Quotation Generated Successfully!',
+      text: 'Your quotation document is ready. Click below to view or print the PDF.',
+      showCancelButton: true,
+      confirmButtonText: '<i class="fa fa-file-pdf"></i> View PDF',
+      cancelButtonText: 'Close',
+      customClass: {
+        confirmButton: 'swal2-confirm',
+        cancelButton: 'btn btn-secondary'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.open("{{ pdf_url }}", "_blank");
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', showPdfPrompt);
+  } else {
+    showPdfPrompt();
+  }
 </script>
 {% endif %}
 

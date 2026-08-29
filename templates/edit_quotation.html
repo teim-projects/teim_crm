@@ -384,19 +384,19 @@
                                         </div>
 
                                         <div class="col-md-6">
-                                            <label>Subject:</label>
-                                            <input type="text" name="subject" class="form-control" value="{{ quotation.subject }}"><br>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label>Quotation Date:</label>
-                                            <input type="date" name="quotation_date" class="form-control" 
-                                            value="{{ quotation.quotation_date|date:'Y-m-d' }}"><br>
-                                        </div>
-                                        <div class="col-12 position-relative">
-                                            <label>Thank you note<span class="star">*</span></label>
-                                            <textarea id="thank_u_note" name="thank_u_note" rows="2" >{{ quotation.thank_u_note }}</textarea>
-                                            <ul id="thank-suggestions" class="autocomplete-box" style="display: none;"></ul>
-                                        </div>
+                                             <label>Subject<span class="star">*</span></label>
+                                             <input type="text" name="subject" class="form-control" value="{{ quotation.subject }}" required><br>
+                                         </div>
+                                         <div class="col-md-6">
+                                             <label>Quotation Date<span class="star">*</span></label>
+                                             <input type="date" name="quotation_date" class="form-control" 
+                                             value="{{ quotation.quotation_date|date:'Y-m-d' }}" required><br>
+                                         </div>
+                                         <div class="col-12 position-relative">
+                                             <label>Thank you note<span class="star">*</span></label>
+                                             <textarea id="thank_u_note" name="thank_u_note" rows="2" required>{{ quotation.thank_u_note }}</textarea>
+                                             <ul id="thank-suggestions" class="autocomplete-box" style="display: none;"></ul>
+                                         </div>
                                         {{ thank_notes|json_script:"thank-notes-json" }}
                                         <div class="col-12">
                                             <label>Billing Address (Auto-filled from customer record):</label>
@@ -978,8 +978,44 @@ function showCombinedGrandTotal() {
             });
         }
 
+        function getFieldLabel(input) {
+            let labelElement = document.querySelector(`label[for="${input.id}"]`);
+            if (!labelElement) {
+                const parentCol = input.closest('.col-4, .col-6, .col-md-4, .col-md-6, .col-md-12, div');
+                if (parentCol) labelElement = parentCol.querySelector('label');
+            }
+            if (!labelElement) {
+                let prev = input.previousElementSibling;
+                while (prev && prev.tagName !== 'LABEL') {
+                    prev = prev.previousElementSibling;
+                }
+                labelElement = prev;
+            }
+            if (labelElement) {
+                return labelElement.innerText.replace('*', '').trim();
+            }
+            return input.name || input.placeholder || "Field";
+        }
+
         nextBtns.forEach(btn => {
             btn.addEventListener('click', () => {
+                const currentStepEl = steps[currentStep];
+                const requiredFields = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+                
+                let valid = true;
+                for (let field of requiredFields) {
+                    if (field.closest('[style*="display: none"]') || field.type === 'hidden') continue;
+                    if (!field.value || !field.value.trim()) {
+                        const labelName = getFieldLabel(field);
+                        showValidationAlert(`${labelName} is required`);
+                        field.focus();
+                        valid = false;
+                        break;
+                    }
+                }
+
+                if (!valid) return;
+
                 if (currentStep < steps.length - 1) {
                     currentStep++;
                     showStep(currentStep);

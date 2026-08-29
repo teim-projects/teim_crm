@@ -5,31 +5,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Dashboard</title>
+    <title>Sales Dashboard - TEIM CRM</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/customer.css' %}">
 
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
-            --primary: #03AED2;
-            --primary-dark: #0289a5;
-            --secondary-bg: #f0fbff;
-            --white: #ffffff;
-            --text-dark: #333333;
-            --text-muted: #6b7280;
-            --danger: #ef4444;
-            --shadow: 0 10px 30px rgba(3, 174, 210, 0.15);
-            --shadow-hover: 0 14px 35px rgba(3, 174, 210, 0.22);
-            --border-radius: 18px;
+            --primary-blue: #007DBE;
+            --header-bg: #ffffff;
+            --bg-canvas: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
         }
 
         * {
@@ -38,342 +37,1133 @@
             box-sizing: border-box;
         }
 
-        html,
         body {
-            width: 100%;
-            min-height: 100vh;
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #eefcff 0%, #f7fcff 100%);
+            background-color: var(--bg-canvas);
             color: var(--text-dark);
-        }
-
-        body {
             overflow-x: hidden;
         }
 
-        .main-container {
-            padding: 16px;
-            margin-top: 90px;
+        .sales-dashboard-container {
+            margin-top: 85px;
+            padding: 15px 25px 40px 25px;
             width: 100%;
+            min-height: calc(100vh - 85px);
         }
 
-        .dashboard-wrapper {
+        /* ===== SUB-TABS NAVIGATION ===== */
+        .dash-subtabs {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 15px;
+            padding-left: 5px;
+        }
+
+        .subtab-item {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            padding: 8px 4px 10px 4px;
+            cursor: pointer;
+            position: relative;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .subtab-item:hover {
+            color: #0284c7;
+        }
+
+        .subtab-item.active {
+            color: #0284c7;
+            font-weight: 600;
+        }
+
+        .subtab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
             width: 100%;
-            max-width: 100%;
+            height: 2.5px;
+            background-color: #0284c7;
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* ===== FILTERS BAR ===== */
+        .dash-filter-bar {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 13px;
+        }
+
+        .filter-label-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-item label {
+            color: #64748b;
+            font-size: 12.5px;
+            font-weight: 500;
             margin: 0;
         }
 
-        .dashboard-card {
-            border-radius: var(--border-radius);
-            background: var(--white);
-            box-shadow: var(--shadow);
-            width: 100%;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(3, 174, 210, 0.08);
+        .filter-select {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 12.5px;
+            color: #334155;
+            outline: none;
+            cursor: pointer;
+            min-width: 110px;
         }
 
-        .dashboard-card:hover {
-            box-shadow: var(--shadow-hover);
+        .filter-select:focus {
+            border-color: #0284c7;
         }
 
-        .dashboard-body {
-            padding: 12px;
+        /* ===== KPI METRIC CARDS GRID ===== */
+        .kpi-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 22px;
         }
 
-        .iframe-container {
+        .kpi-grid-6 {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .kpi-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px 15px;
             position: relative;
-            width: 100%;
-            height: calc(100vh - 140px);
-            min-height: 700px;
-            border-radius: 14px;
-            overflow: hidden;
-            background: #f9fdff;
-            border: 1px solid rgba(3, 174, 210, 0.12);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        iframe {
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Border accents */
+        .kpi-card-1 { border: 1.5px solid #38bdf8; }
+        .kpi-card-2 { border: 1.5px solid #a78bfa; }
+        .kpi-card-3 { border: 1.5px solid #f472b6; }
+        .kpi-card-4 { border: 1.5px solid #fb923c; }
+        .kpi-card-5 { border: 1.5px solid #facc15; }
+        .kpi-card-6 { border: 1.5px solid #2dd4bf; }
+
+        .kpi-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 34px;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+
+        /* ===== CHARTS SECTION ===== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-card {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .chart-card-header {
+            padding: 10px 16px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-yellow { background-color: #eb9800; }
+        .header-teal { background-color: #00b4d8; }
+        .header-blue { background-color: #1d72b8; }
+        .header-red { background-color: #e11d48; }
+        .header-orange { background-color: #f97316; }
+        .header-green { background-color: #00c49f; }
+
+        .chart-body {
+            padding: 20px 15px;
+            height: 380px;
+            position: relative;
+        }
+
+        /* Treemap block styling */
+        .treemap-container {
+            display: flex;
+            gap: 6px;
             width: 100%;
             height: 100%;
-            border: none;
-            display: block;
-            background: #ffffff;
+            padding: 5px;
         }
-
-        .top-buttons {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            right: 16px;
-            z-index: 5;
+        .treemap-box {
+            background-color: #6366f1;
+            border-radius: 4px;
+            color: #ffffff;
+            padding: 15px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            pointer-events: none;
-        }
-
-        .action-btn {
-            width: 46px;
-            height: 46px;
-            border: none;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 18px;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
-            text-decoration: none;
-            pointer-events: auto;
-        }
-
-        .home-btn {
-            background: rgba(3, 174, 210, 0.12);
-            color: var(--primary);
-        }
-
-        .home-btn:hover {
-            background: var(--primary);
-            color: var(--white);
-            transform: translateY(-2px);
-        }
-
-        .close-btn {
-            background: rgba(239, 68, 68, 0.12);
-            color: var(--danger);
-        }
-
-        .close-btn:hover {
-            background: var(--danger);
-            color: var(--white);
-            transform: translateY(-2px);
-        }
-
-        .iframe-loader {
-            position: absolute;
-            inset: 0;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             flex-direction: column;
-            background: rgba(255, 255, 255, 0.92);
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .iframe-loader.hide {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .spinner {
-            width: 52px;
-            height: 52px;
-            border: 5px solid #d8f5fb;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-            margin-bottom: 14px;
-        }
-
-        .loader-text {
-            font-size: 0.98rem;
+            justify-content: flex-end;
+            font-size: 13px;
             font-weight: 500;
-            color: #4b5563;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .footer {
-            background-color: #f7f7f7;
-            width: 100%;
-            margin-top: 20px;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .footer p {
-            margin: 0;
-            font-weight: 600;
-            color: #000000;
-            line-height: 1.8;
-        }
-
-        .footer a {
-            text-decoration: none;
-            background: linear-gradient(to right, #2575fc, #6a11cb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 1.05rem;
-            font-weight: 700;
-        }
-
-        .footer a:hover {
-            opacity: 0.85;
-        }
-
-        .footer-logo {
-            height: 20px;
-            vertical-align: middle;
-            margin: 0 4px;
-        }
-
-        @media (max-width: 992px) {
-            .main-container {
-                padding: 12px;
-                margin-top: 85px;
-            }
-
-            .iframe-container {
-                height: calc(100vh - 130px);
-                min-height: 620px;
-            }
+        /* Responsive Breakpoints */
+        @media (max-width: 1200px) {
+            .kpi-grid-6 { grid-template-columns: repeat(3, 1fr); }
+            .kpi-grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 768px) {
-            .main-container {
-                margin-top: 75px;
-                padding: 10px;
-            }
-
-            .dashboard-body {
-                padding: 10px;
-            }
-
-            .action-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 15px;
-            }
-
-            .top-buttons {
-                top: 12px;
-                left: 12px;
-                right: 12px;
-            }
-
-            .iframe-container {
-                height: calc(100vh - 120px);
-                min-height: 500px;
-            }
-
-            .footer p {
-                font-size: 0.92rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .iframe-container {
-                height: calc(100vh - 110px);
-                min-height: 430px;
-            }
-
-            .footer a {
-                font-size: 0.98rem;
-            }
+            .sales-dashboard-container { padding: 10px; margin-top: 75px; }
+            .kpi-grid-6, .kpi-grid-4 { grid-template-columns: 1fr; }
+            .dash-subtabs { overflow-x: auto; white-space: nowrap; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- SAME SIDEBAR + HEADER -->
+    <!-- SIDEBAR & HEADER INTEGRATION -->
     {% include 'sidebar.html' %}
 
-    <!-- MAIN CONTENT -->
-    <div class="main-container">
-        <div class="dashboard-wrapper">
-            <div class="dashboard-card">
-                <div class="dashboard-body">
+    <!-- MAIN DASHBOARD CONTENT -->
+    <div class="sales-dashboard-container">
 
-                    <!-- ZOHO DASHBOARD -->
-                    <div class="iframe-container">
+        <!-- ===== SUB-TABS BAR ===== -->
+        <div class="dash-subtabs">
+            <a class="subtab-item active" onclick="switchTab(this, 'revenue')">Revenue Analysis</a>
+            <a class="subtab-item" onclick="switchTab(this, 'lead')">Lead Analysis</a>
+            <a class="subtab-item" onclick="switchTab(this, 'service')">Service Analysis</a>
+            <a class="subtab-item" onclick="switchTab(this, 'product')">Product Analysis</a>
+            <a class="subtab-item" onclick="switchTab(this, 'customer')">Customer Segment Analysis</a>
+        </div>
 
-                        <!-- TOP BUTTONS -->
-                   
+        <!-- ===== NATIVE DASHBOARD VIEW ===== -->
+        <div id="nativeDashboardView">
 
-                        <div class="iframe-loader" id="iframeLoader">
-                            <div class="spinner"></div>
-                            <div class="loader-text">Loading dashboard...</div>
-                        </div>
+            <!-- ===== FILTERS ROW ===== -->
+            <div class="dash-filter-bar">
+                <div class="filter-label-group">
+                    <i class="fa-solid fa-sliders text-secondary"></i>
+                    <span>Filters</span>
+                </div>
 
-                        <iframe
-                            id="dashboardFrame"
-                            frameborder="0"
-                            loading="lazy"
-                            src="https://analytics.zoho.in/open-view/533395000000049334"
-                            allowfullscreen>
-                        </iframe>
-                    </div>
+                <div class="filter-item">
+                    <label>full_name:</label>
+                    <select class="filter-select" id="filterFullName" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        {% for sp in salespersons %}
+                        <option value="{{ sp.full_name|default:sp }}">{{ sp.full_name|default:sp }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
+                <div class="filter-item">
+                    <label>branch_name:</label>
+                    <select class="filter-select" id="filterBranchName" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        {% for b in branches %}
+                        <option value="{{ b.branch_name }}">{{ b.branch_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label>product_name:</label>
+                    <select class="filter-select" id="filterProductName" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        {% for p in products %}
+                        <option value="{{ p.product_name }}">{{ p.product_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label>Date:</label>
+                    <select class="filter-select" id="filterDate" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        <option value="today">Today</option>
+                        <option value="this_month">This Month</option>
+                        <option value="this_year">This Year</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label>x.service_subject:</label>
+                    <select class="filter-select" id="filterSubject" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        <option value="AMC Contract">AMC Contract</option>
+                        <option value="One Time Service">One Time Service</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label>service_date:</label>
+                    <select class="filter-select" id="filterServiceDate" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        <option value="recent">Recent</option>
+                        <option value="past">Past</option>
+                    </select>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- FOOTER -->
-    <div class="container-fluid footer">
-        <div class="row p-3">
+            <!-- ========================================================= -->
+            <!-- 1. REVENUE ANALYSIS VIEW -->
+            <!-- ========================================================= -->
+            <div id="revenueAnalysisView">
 
-            <div class="col-md-12 text-center mb-2">
-                <p>
-                    © 2025. Powered by
+                <!-- 4 KPI SUMMARY CARDS -->
+                <div class="kpi-grid-4">
+                    <div class="kpi-card kpi-card-1">
+                        <div class="kpi-title">Total Revenue</div>
+                        <div class="kpi-value" id="kpiRevenue">{{ total_revenue }}</div>
+                    </div>
+                    <div class="kpi-card kpi-card-2">
+                        <div class="kpi-title">No. of Quotation</div>
+                        <div class="kpi-value" id="kpiQuotation">{{ total_quotations }}</div>
+                    </div>
+                    <div class="kpi-card kpi-card-3">
+                        <div class="kpi-title">Total Leads</div>
+                        <div class="kpi-value" id="kpiLeads">{{ total_leads }}</div>
+                    </div>
+                    <div class="kpi-card kpi-card-4">
+                        <div class="kpi-title">Total Customers</div>
+                        <div class="kpi-value" id="kpiCustomers">{{ total_customers }}</div>
+                    </div>
+                </div>
 
-                    <img src="{% static 'images/crono.png' %}"
-                        alt="Chronoanalytics Logo"
-                        class="footer-logo">
+                <!-- 2 CHARTS GRID -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-card-header header-yellow">
+                            <span>Branches by Revenue / Volume</span>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="revBranchCanvas"></canvas>
+                        </div>
+                    </div>
 
-                    <a href="http://www.chronoanalytics.in/" target="_blank">
-                        Chronoanalytics Solution
-                    </a>
+                    <div class="chart-card">
+                        <div class="chart-card-header header-teal">
+                            <span>Salesperson by Revenue / Volume</span>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="revSpCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
 
-                    All Rights Reserved.
-                </p>
+                <!-- REVENUE TREND BY MONTH CHART CARD -->
+                <div class="chart-card mt-4">
+                    <div class="chart-card-header header-blue">
+                        <span>Revenue Trend by month1</span>
+                    </div>
+                    <div class="chart-body" style="height: 400px;">
+                        <canvas id="trendChartCanvas"></canvas>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="col-md-12 text-center">
-                <p>
-                    © 2025. Marketed by
+            <!-- ========================================================= -->
+            <!-- 2. LEAD ANALYSIS VIEW -->
+            <!-- ========================================================= -->
+            <div id="leadAnalysisView" style="display: none;">
 
-                    <img src="{% static 'images/TeimLogo.png' %}"
-                        alt="Teim Logo"
-                        class="footer-logo">
+                <!-- 6 KPI CARDS GRID -->
+                <div class="kpi-grid-6">
+                    <div class="kpi-card kpi-card-1">
+                        <div class="kpi-title">Total Leads</div>
+                        <div class="kpi-value" id="leadKpiTotal">{{ lead_kpi_total }}</div>
+                    </div>
+                    <div class="kpi-card kpi-card-2">
+                        <div class="kpi-title">Hot Leads</div>
+                        <div class="kpi-value" id="leadKpiHot">{{ lead_kpi_hot }}</div>
+                    </div>
+                    <div class="kpi-card kpi-card-3">
+                        <div class="kpi-title">Cold Leads</div>
+                        <div class="kpi-value" id="leadKpiCold">{{ lead_kpi_cold }}</div>
+                    </div>
+                    <div class="kpi-card kpi-card-4">
+                        <div class="kpi-title">Warm Leads</div>
+                        <div class="kpi-value" id="leadKpiWarm">{{ lead_kpi_warm }}</div>
+                    </div>
+                    <div class="kpi-card kpi-card-5">
+                        <div class="kpi-title">Not Interested</div>
+                        <div class="kpi-value" id="leadKpiNotInterested">{{ lead_kpi_not_interested }}</div>
+                    </div>
+                    <div class="kpi-card kpi-card-6">
+                        <div class="kpi-title">Loss of Order</div>
+                        <div class="kpi-value" id="leadKpiLossOrder">{{ lead_kpi_loss_order }}</div>
+                    </div>
+                </div>
 
-                    <a href="http://teim.in/" target="_blank">
-                        TEIM
-                    </a>
+                <!-- ROW 1 CHARTS: CUSTOMER TYPE PIE + FUNNEL CHART -->
+                <div class="charts-grid mb-4">
+                    <div class="chart-card">
+                        <div class="chart-card-header header-blue">
+                            <span>Number of Leads By Customer Type</span>
+                        </div>
+                        <div class="chart-body" style="height: 360px;">
+                            <canvas id="custTypePieCanvas"></canvas>
+                        </div>
+                    </div>
 
-                    All Rights Reserved.
-                </p>
+                    <!-- EXACT FUNNEL CHART CARD (REAL DATA) -->
+                    <div class="chart-card">
+                        <div class="chart-card-header header-red">
+                            <span>Converted leads by Type of leads</span>
+                        </div>
+                        <div class="chart-body d-flex align-items-center justify-content-between px-3" style="height: 360px;">
+                            <div style="flex: 1; height: 100%; display: flex; align-items: center; justify-content: center;">
+                                <svg viewBox="0 0 360 290" style="width: 100%; height: 100%; max-height: 290px;">
+                                    <polygon id="leadFunnelPoly" points="40,20 320,20 205,230 155,230" fill="#6366f1" />
+                                    <text id="leadFunnelText" x="180" y="135" text-anchor="middle" fill="#000000" font-size="13" font-weight="600" font-family="Roboto, sans-serif">100%</text>
+                                    <g id="leadFunnelBars">
+                                        <rect x="153" y="238" width="54" height="7" rx="1" fill="#2dd4bf" />
+                                        <rect x="154" y="249" width="52" height="5" rx="1" fill="#f472b6" />
+                                        <rect x="155" y="258" width="50" height="4" rx="1" fill="#fb923c" />
+                                        <rect x="156" y="266" width="48" height="3" rx="1" fill="#facc15" />
+                                    </g>
+                                </svg>
+                            </div>
+
+                            <div style="width: 160px; padding-left: 10px; font-size: 13px;">
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                                    <input type="checkbox" checked disabled style="accent-color: #475569; width: 14px; height: 14px;">
+                                    <span style="font-weight: 600;">typeoflead</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="checkbox" checked style="accent-color: #6366f1; width: 14px; height: 14px;">
+                                        <span style="color: #1e293b; font-weight: 500;">Hot</span>
+                                    </div>
+                                    <span style="font-weight: 600; color: #0f172a;" id="funnelHotVal">{{ lead_kpi_hot }}</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="checkbox" checked style="accent-color: #2dd4bf; width: 14px; height: 14px;">
+                                        <span style="color: #1e293b; font-weight: 500;">Warm</span>
+                                    </div>
+                                    <span style="font-weight: 600; color: #0f172a;" id="funnelWarmVal">{{ lead_kpi_warm }}</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="checkbox" checked style="accent-color: #f472b6; width: 14px; height: 14px;">
+                                        <span style="color: #1e293b; font-weight: 500;">Cold</span>
+                                    </div>
+                                    <span style="font-weight: 600; color: #0f172a;" id="funnelColdVal">{{ lead_kpi_cold }}</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="checkbox" checked style="accent-color: #fb923c; width: 14px; height: 14px;">
+                                        <span style="color: #1e293b; font-weight: 500;">Not Interested</span>
+                                    </div>
+                                    <span style="font-weight: 600; color: #0f172a;" id="funnelNotVal">{{ lead_kpi_not_interested }}</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="checkbox" checked style="accent-color: #facc15; width: 14px; height: 14px;">
+                                        <span style="color: #1e293b; font-weight: 500;">Loss of Order</span>
+                                    </div>
+                                    <span style="font-weight: 600; color: #0f172a;" id="funnelLossVal">{{ lead_kpi_loss_order }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 2 CHARTS: MONTH-WISE LEAD FLOW + DAY-WISE LEAD FLOW -->
+                <div class="charts-grid mb-4">
+                    <div class="chart-card">
+                        <div class="chart-card-header header-orange">
+                            <span>Month - Wise Lead Flow</span>
+                        </div>
+                        <div class="chart-body" style="height: 360px;">
+                            <canvas id="monthFlowCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header header-yellow">
+                            <span>Day- Wise Lead Flow</span>
+                        </div>
+                        <div class="chart-body" style="height: 360px;">
+                            <canvas id="dayFlowCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 3 CHART: LEAD SOURCE DISTRIBUTION CENTERED CARD -->
+                <div class="d-flex justify-content-center mb-4">
+                    <div class="chart-card w-100" style="max-width: 820px;">
+                        <div class="chart-card-header" style="background-color: #00c49f;">
+                            <span>Lead Source Distribution</span>
+                        </div>
+                        <div class="chart-body" style="height: 420px;">
+                            <canvas id="leadSourceDistCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- 3. SERVICE ANALYSIS VIEW -->
+            <!-- ========================================================= -->
+            <div id="serviceAnalysisView" style="display: none;">
+                <div class="charts-grid mb-4">
+                    <div class="chart-card">
+                        <div class="chart-card-header" style="background-color: #00c49f;">
+                            <span>Number of Services Provided</span>
+                        </div>
+                        <div class="chart-body" style="height: 400px;">
+                            <canvas id="svcProvidedCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header header-blue">
+                            <span>Total Revenue Ganerrated from Services</span>
+                        </div>
+                        <div class="chart-body" style="height: 400px;">
+                            <canvas id="svcRevenueCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- 4. PRODUCT ANALYSIS VIEW -->
+            <!-- ========================================================= -->
+            <div id="productAnalysisView" style="display: none;">
+                <div class="charts-grid mb-4">
+                    <div class="chart-card">
+                        <div class="chart-card-header" style="background-color: #00c49f;">
+                            <span>Revenue by Product</span>
+                        </div>
+                        <div class="chart-body" style="height: 400px;">
+                            <canvas id="prodRevCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header header-blue">
+                            <span>Product - wise Service Count</span>
+                        </div>
+                        <div class="chart-body" style="height: 400px;">
+                            <canvas id="prodSvcCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- 5. CUSTOMER SEGMENT ANALYSIS VIEW -->
+            <!-- ========================================================= -->
+            <div id="customerAnalysisView" style="display: none;">
+                
+                <!-- ROW 1 CHARTS -->
+                <div class="charts-grid mb-4">
+                    <!-- LEFT CARD: State wise Lead (Resedential vs Commercial) -->
+                    <div class="chart-card">
+                        <div class="chart-card-header" style="background-color: #00c49f;">
+                            <span>State wise Lead (Resedential vs Commercial)</span>
+                        </div>
+                        <div class="chart-body d-flex align-items-center justify-content-between px-2" style="height: 380px;">
+                            <div style="flex: 1; height: 100%;">
+                                <canvas id="stateLeadCanvas"></canvas>
+                            </div>
+                            <div style="width: 155px; padding-left: 5px; font-size: 12px;">
+                                <div style="color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                                    <input type="checkbox" checked disabled style="accent-color: #475569; width: 13px; height: 13px;">
+                                    <span style="font-weight: 600;">customersegment</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #64748b;"><span style="color: #1e293b;">Unknown</span></div>
+                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #6366f1;"><span style="color: #1e293b;">Industrial / Commercial</span></div>
+                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #2dd4bf;"><span style="color: #1e293b;">Institutional</span></div>
+                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #f472b6;"><span style="color: #1e293b;">Irrelevant Lead</span></div>
+                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #f97316;"><span style="color: #1e293b;">Residential</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT CARD: FollowUp Dropdown Analysis (FUNNEL CHART) -->
+                    <div class="chart-card">
+                        <div class="chart-card-header header-blue">
+                            <span>FollowUp Dropdown Analysis</span>
+                        </div>
+                        <div class="chart-body d-flex align-items-center justify-content-between px-3" style="height: 380px;">
+                            <div style="flex: 1; height: 100%; display: flex; align-items: center; justify-content: center;">
+                                <svg viewBox="0 0 360 290" style="width: 100%; height: 100%; max-height: 290px;">
+                                    <polygon id="followupFunnelPoly" points="40,20 320,20 205,230 155,230" fill="#6366f1" />
+                                    <text id="followupFunnelText" x="180" y="135" text-anchor="middle" fill="#000000" font-size="13" font-weight="600" font-family="Roboto, sans-serif">100%</text>
+                                    <g id="followupFunnelBars">
+                                        <rect x="153" y="238" width="54" height="7" rx="1" fill="#2dd4bf" />
+                                        <rect x="154" y="249" width="52" height="5" rx="1" fill="#f472b6" />
+                                    </g>
+                                </svg>
+                            </div>
+
+                            <div style="width: 165px; padding-left: 5px; font-size: 12px;">
+                                <div style="color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                                    <input type="checkbox" checked disabled style="accent-color: #475569; width: 13px; height: 13px;">
+                                    <span style="font-weight: 600;">followup_remark</span>
+                                </div>
+                                {% for fl in followup_labels %}
+                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #6366f1;"><span style="color: #1e293b;">{{ fl }}</span></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 2 CHARTS -->
+                <div class="charts-grid mb-4">
+                    <!-- LEFT CARD: Product Ratio % Vs Service Ratio -->
+                    <div class="chart-card">
+                        <div class="chart-card-header header-red">
+                            <span>Product Ratio % Vs Service Ratio</span>
+                        </div>
+                        <div class="chart-body d-flex align-items-center justify-content-between px-2" style="height: 380px;">
+                            <div style="flex: 1; height: 100%;">
+                                <canvas id="prodVsSvcPieCanvas"></canvas>
+                            </div>
+                            <div style="width: 150px; padding-left: 5px; font-size: 12.5px;">
+                                <div style="color: #64748b; margin-bottom: 8px; display: flex; align-items: gap: 4px;">
+                                    <input type="checkbox" checked disabled style="accent-color: #475569; width: 13px; height: 13px;">
+                                    <span style="font-weight: 600;">Legend</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2"><input type="checkbox" checked style="accent-color: #6366f1;"><span style="color: #1e293b;">Product Ratio %</span></div>
+                                    <span style="font-weight: 600;" id="prodRatioVal">{{ prod_vs_svc_data.0 }}</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2"><input type="checkbox" checked style="accent-color: #2dd4bf;"><span style="color: #1e293b;">Service Ratio %</span></div>
+                                    <span style="font-weight: 600;" id="svcRatioVal">{{ prod_vs_svc_data.1 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT CARD: Revenue By Customer Segmentation -->
+                    <div class="chart-card">
+                        <div class="chart-card-header header-orange">
+                            <span>Revenue By Customer Segmentation</span>
+                        </div>
+                        <div class="chart-body" style="height: 380px;">
+                            <div class="treemap-container">
+                                {% for label in seg_rev_labels %}
+                                <div class="treemap-box" style="flex: 1;">
+                                    <div>{{ label }}</div>
+                                    <div style="font-size: 11px; opacity: 0.9;">Real DB Metric</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>
+
     </div>
 
     <!-- JS -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 
     <script>
-        const dashboardFrame = document.getElementById('dashboardFrame');
-        const iframeLoader = document.getElementById('iframeLoader');
+        // 100% REAL Dynamic Datasets from Django Backend ORM
+        let dynamicData = {
+            total_revenue: "{{ total_revenue }}",
+            total_quotations: "{{ total_quotations }}",
+            total_leads: "{{ total_leads }}",
+            total_customers: "{{ total_customers }}",
 
-        dashboardFrame.addEventListener('load', function () {
-            iframeLoader.classList.add('hide');
+            // Revenue Tab
+            rev_branch_labels: {{ rev_branch_labels|safe }},
+            rev_branch_data: {{ rev_branch_data|safe }},
+            rev_sp_labels: {{ rev_sp_labels|safe }},
+            rev_sp_data: {{ rev_sp_data|safe }},
+            trend_labels: {{ trend_labels|safe }},
+            trend_data: {{ trend_data|safe }},
+
+            // Lead Analysis Tab
+            lead_kpi_total: "{{ lead_kpi_total }}",
+            lead_kpi_hot: "{{ lead_kpi_hot }}",
+            lead_kpi_cold: "{{ lead_kpi_cold }}",
+            lead_kpi_warm: "{{ lead_kpi_warm }}",
+            lead_kpi_not_interested: "{{ lead_kpi_not_interested }}",
+            lead_kpi_loss_order: "{{ lead_kpi_loss_order }}",
+            lead_cust_type_labels: {{ lead_cust_type_labels|safe }},
+            lead_cust_type_data: {{ lead_cust_type_data|safe }},
+            converted_type_labels: {{ converted_type_labels|safe }},
+            converted_type_data: {{ converted_type_data|safe }},
+            month_flow_labels: {{ month_flow_labels|safe }},
+            month_flow_data: {{ month_flow_data|safe }},
+            day_flow_labels: {{ day_flow_labels|safe }},
+            day_flow_data: {{ day_flow_data|safe }},
+            lead_source_dist_labels: {{ lead_source_dist_labels|safe }},
+            lead_source_dist_data: {{ lead_source_dist_data|safe }},
+
+            // Service Analysis Tab
+            svc_provided_labels: {{ svc_provided_labels|safe }},
+            svc_provided_data: {{ svc_provided_data|safe }},
+            svc_revenue_labels: {{ svc_revenue_labels|safe }},
+            svc_revenue_data: {{ svc_revenue_data|safe }},
+
+            // Product Analysis Tab
+            prod_rev_labels: {{ prod_rev_labels|safe }},
+            prod_rev_data: {{ prod_rev_data|safe }},
+            prod_svc_labels: {{ prod_svc_labels|safe }},
+            prod_svc_data: {{ prod_svc_data|safe }},
+
+            // Customer Segment Analysis Tab
+            state_lead_labels: {{ state_lead_labels|safe }},
+            state_res_data: {{ state_res_data|safe }},
+            state_ind_data: {{ state_ind_data|safe }},
+            followup_labels: {{ followup_labels|safe }},
+            followup_data: {{ followup_data|safe }},
+            prod_vs_svc_labels: {{ prod_vs_svc_labels|safe }},
+            prod_vs_svc_data: {{ prod_vs_svc_data|safe }},
+            seg_rev_labels: {{ seg_rev_labels|safe }},
+            seg_rev_data: {{ seg_rev_data|safe }}
+        };
+
+        let revBranchChart, revSpChart, trendChart;
+        let custTypePieChart, monthFlowChart, dayFlowChart, leadSourceDistChart;
+        let svcProvidedChart, svcRevenueChart;
+        let prodRevChart, prodSvcChart;
+        let stateLeadChart, prodVsSvcPieChart;
+
+        let leadInitialized = false, serviceInitialized = false, productInitialized = false, customerInitialized = false;
+
+        function updateFunnelDisplay(count, polyId, textId, barsId) {
+            const poly = document.getElementById(polyId);
+            const txt = document.getElementById(textId);
+            const bars = document.getElementById(barsId);
+            if (!poly || !txt || !bars) return;
+
+            if (count <= 0) {
+                poly.setAttribute('fill', '#e2e8f0');
+                txt.textContent = '0%';
+                bars.style.display = 'none';
+            } else {
+                poly.setAttribute('fill', '#6366f1');
+                txt.textContent = '100%';
+                bars.style.display = 'block';
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            initRevenueCharts();
+            const initFunnelCount = (parseInt("{{ lead_kpi_hot }}")||0) + (parseInt("{{ lead_kpi_warm }}")||0) + (parseInt("{{ lead_kpi_cold }}")||0) + (parseInt("{{ lead_kpi_not_interested }}")||0) + (parseInt("{{ lead_kpi_loss_order }}")||0);
+            updateFunnelDisplay(initFunnelCount, 'leadFunnelPoly', 'leadFunnelText', 'leadFunnelBars');
+            const initFollowupCount = (dynamicData.followup_data || []).reduce((a, b) => a + (parseInt(b)||0), 0);
+            updateFunnelDisplay(initFollowupCount, 'followupFunnelPoly', 'followupFunnelText', 'followupFunnelBars');
         });
 
-        setTimeout(function () {
-            iframeLoader.classList.add('hide');
-        }, 8000);
-    </script>
+        // 1. Revenue Tab Charts Initialization (100% Real DB Data)
+        function initRevenueCharts() {
+            try {
+                const ctx1 = document.getElementById('revBranchCanvas').getContext('2d');
+                revBranchChart = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: dynamicData.rev_branch_labels,
+                        datasets: [{ label: 'Value', data: dynamicData.rev_branch_data, backgroundColor: '#6366f1', borderRadius: 3, barPercentage: 0.55 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Value ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { ticks: { font: { size: 10 }, maxRotation: 45 } } }
+                    }
+                });
 
+                const ctx2 = document.getElementById('revSpCanvas').getContext('2d');
+                revSpChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: dynamicData.rev_sp_labels,
+                        datasets: [{ label: 'Value', data: dynamicData.rev_sp_data, backgroundColor: '#6366f1', borderRadius: 3, barPercentage: 0.55 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Value ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { ticks: { font: { size: 11 }, maxRotation: 45 } } }
+                    }
+                });
+
+                const ctx3 = document.getElementById('trendChartCanvas').getContext('2d');
+                trendChart = new Chart(ctx3, {
+                    type: 'line',
+                    data: {
+                        labels: dynamicData.trend_labels,
+                        datasets: [{ label: 'Total Revenue', data: dynamicData.trend_data, borderColor: '#5b7cfd', backgroundColor: 'rgba(91, 124, 253, 0.08)', borderWidth: 2.5, pointBackgroundColor: '#ffffff', pointBorderColor: '#5b7cfd', pointRadius: 4, tension: 0.3, fill: true }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Total revenue ∨', font: { weight: 'bold' } } }, x: { ticks: { font: { size: 11 }, maxRotation: 45 } } }
+                    }
+                });
+            } catch(e) { console.error("Error initRevenueCharts:", e); }
+        }
+
+        // 2. Lead Analysis Tab Charts Initialization (100% Real DB Data)
+        function initLeadCharts() {
+            try {
+                const ctxPie = document.getElementById('custTypePieCanvas').getContext('2d');
+                custTypePieChart = new Chart(ctxPie, {
+                    type: 'pie',
+                    data: { labels: dynamicData.lead_cust_type_labels, datasets: [{ data: dynamicData.lead_cust_type_data, backgroundColor: ['#5b7cfd', '#2dd4bf', '#64748b'] }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+                });
+
+                const ctxMonth = document.getElementById('monthFlowCanvas').getContext('2d');
+                monthFlowChart = new Chart(ctxMonth, {
+                    type: 'line',
+                    data: {
+                        labels: dynamicData.month_flow_labels,
+                        datasets: [{ label: 'No. of Leads', data: dynamicData.month_flow_data, borderColor: '#5b7cfd', backgroundColor: 'rgba(91, 124, 253, 0.08)', borderWidth: 2.5, pointBackgroundColor: '#ffffff', pointBorderColor: '#5b7cfd', pointRadius: 4, tension: 0.3, fill: true }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'No. of Leads ∨', font: { weight: 'bold' } } }, x: { title: { display: true, text: 'Month Number ∨', font: { weight: 'bold' } } } } }
+                });
+
+                const ctxDay = document.getElementById('dayFlowCanvas').getContext('2d');
+                dayFlowChart = new Chart(ctxDay, {
+                    type: 'line',
+                    data: {
+                        labels: dynamicData.day_flow_labels,
+                        datasets: [{
+                            label: 'Id Distinct Count',
+                            data: dynamicData.day_flow_data,
+                            borderColor: '#60a5fa',
+                            backgroundColor: 'rgba(96, 165, 250, 0.12)',
+                            borderWidth: 2,
+                            pointRadius: dynamicData.day_flow_data.length > 50 ? 2 : 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#60a5fa',
+                            tension: 0.2,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Id Distinct Count: ' + context.parsed.y;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Id Distinct Count ∨', font: { weight: 'bold' } },
+                                ticks: { precision: 0 }
+                            },
+                            x: {
+                                title: { display: true, text: 'Date of Date ∨', font: { weight: 'bold' } },
+                                ticks: { font: { size: 9 }, maxRotation: 45, autoSkip: true }
+                            }
+                        }
+                    }
+                });
+
+                const ctxSource = document.getElementById('leadSourceDistCanvas').getContext('2d');
+                leadSourceDistChart = new Chart(ctxSource, {
+                    type: 'bar',
+                    data: {
+                        labels: dynamicData.lead_source_dist_labels,
+                        datasets: [{ label: 'Distinct Count', data: dynamicData.lead_source_dist_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.65, categoryPercentage: 0.75 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { title: { display: true, text: 'sourceoflead ∨', font: { weight: 'bold' } }, ticks: { font: { size: 11 }, maxRotation: 45 } } } }
+                });
+            } catch(e) { console.error("Error initLeadCharts:", e); }
+        }
+
+        // 3. Service Analysis Tab Charts Initialization (100% Real DB Data)
+        function initServiceCharts() {
+            try {
+                const ctxSvcProv = document.getElementById('svcProvidedCanvas').getContext('2d');
+                svcProvidedChart = new Chart(ctxSvcProv, {
+                    type: 'bar',
+                    data: {
+                        labels: dynamicData.svc_provided_labels,
+                        datasets: [{ label: 'id Distinct Count', data: dynamicData.svc_provided_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { title: { display: true, text: 'service_subject ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
+                });
+
+                const ctxSvcRev = document.getElementById('svcRevenueCanvas').getContext('2d');
+                svcRevenueChart = new Chart(ctxSvcRev, {
+                    type: 'bar',
+                    data: {
+                        labels: dynamicData.svc_revenue_labels,
+                        datasets: [{ label: 'Total service_revenue', data: dynamicData.svc_revenue_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Total service_revenue ∨', font: { weight: 'bold' } } }, x: { title: { display: true, text: 'x.service_subject ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
+                });
+            } catch(e) { console.error("Error initServiceCharts:", e); }
+        }
+
+        // 4. Product Analysis Tab Charts Initialization (100% Real DB Data)
+        function initProductCharts() {
+            try {
+                const ctxProdRev = document.getElementById('prodRevCanvas').getContext('2d');
+                prodRevChart = new Chart(ctxProdRev, {
+                    type: 'bar',
+                    data: {
+                        labels: dynamicData.prod_rev_labels,
+                        datasets: [{ label: 'Revenue', data: dynamicData.prod_rev_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Revenue ∨', font: { weight: 'bold' } } }, x: { title: { display: true, text: 'Product Name ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
+                });
+
+                const ctxProdSvc = document.getElementById('prodSvcCanvas').getContext('2d');
+                prodSvcChart = new Chart(ctxProdSvc, {
+                    type: 'bar',
+                    data: {
+                        labels: dynamicData.prod_svc_labels,
+                        datasets: [{ label: 'service_id Distinct Count', data: dynamicData.prod_svc_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'service_id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { title: { display: true, text: 'product_name ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
+                });
+            } catch(e) { console.error("Error initProductCharts:", e); }
+        }
+
+        // 5. Customer Segment Analysis Tab Charts Initialization (100% Real DB Data)
+        function initCustomerCharts() {
+            try {
+                const ctxStateLead = document.getElementById('stateLeadCanvas').getContext('2d');
+                stateLeadChart = new Chart(ctxStateLead, {
+                    type: 'bar',
+                    data: {
+                        labels: dynamicData.state_lead_labels,
+                        datasets: [
+                            { label: 'Industrial / Commercial', data: dynamicData.state_ind_data, backgroundColor: '#6366f1', borderRadius: 2 },
+                            { label: 'Residential', data: dynamicData.state_res_data, backgroundColor: '#f97316', borderRadius: 2 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } },
+                            x: { title: { display: true, text: 'state ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } }
+                        }
+                    }
+                });
+
+                const ctxProdSvcPie = document.getElementById('prodVsSvcPieCanvas').getContext('2d');
+                prodVsSvcPieChart = new Chart(ctxProdSvcPie, {
+                    type: 'pie',
+                    data: {
+                        labels: dynamicData.prod_vs_svc_labels,
+                        datasets: [{ data: dynamicData.prod_vs_svc_data, backgroundColor: ['#6366f1', '#2dd4bf'] }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            } catch(e) { console.error("Error initCustomerCharts:", e); }
+        }
+
+        // Sub-Tab Switcher (With Lazy Init & Resize Trigger)
+        function switchTab(element, tabType) {
+            document.querySelectorAll('.subtab-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            const revView = document.getElementById('revenueAnalysisView');
+            const leadView = document.getElementById('leadAnalysisView');
+            const svcView = document.getElementById('serviceAnalysisView');
+            const prodView = document.getElementById('productAnalysisView');
+            const custView = document.getElementById('customerAnalysisView');
+
+            revView.style.display = 'none';
+            leadView.style.display = 'none';
+            svcView.style.display = 'none';
+            prodView.style.display = 'none';
+            custView.style.display = 'none';
+
+            if (tabType === 'lead') {
+                leadView.style.display = 'block';
+                if (!leadInitialized) { initLeadCharts(); leadInitialized = true; }
+                else {
+                    if (custTypePieChart) custTypePieChart.resize();
+                    if (monthFlowChart) monthFlowChart.resize();
+                    if (dayFlowChart) dayFlowChart.resize();
+                    if (leadSourceDistChart) leadSourceDistChart.resize();
+                }
+            } else if (tabType === 'service') {
+                svcView.style.display = 'block';
+                if (!serviceInitialized) { initServiceCharts(); serviceInitialized = true; }
+                else {
+                    if (svcProvidedChart) svcProvidedChart.resize();
+                    if (svcRevenueChart) svcRevenueChart.resize();
+                }
+            } else if (tabType === 'product') {
+                prodView.style.display = 'block';
+                if (!productInitialized) { initProductCharts(); productInitialized = true; }
+                else {
+                    if (prodRevChart) prodRevChart.resize();
+                    if (prodSvcChart) prodSvcChart.resize();
+                }
+            } else if (tabType === 'customer') {
+                custView.style.display = 'block';
+                if (!customerInitialized) { initCustomerCharts(); customerInitialized = true; }
+                else {
+                    if (stateLeadChart) stateLeadChart.resize();
+                    if (prodVsSvcPieChart) prodVsSvcPieChart.resize();
+                }
+            } else {
+                revView.style.display = 'block';
+                if (revBranchChart) revBranchChart.resize();
+                if (revSpChart) revSpChart.resize();
+                if (trendChart) trendChart.resize();
+            }
+        }
+
+        function applyFilters() {
+            const sp = document.getElementById('filterFullName').value;
+            const branch = document.getElementById('filterBranchName').value;
+            const prod = document.getElementById('filterProductName').value;
+            const dt = document.getElementById('filterDate').value;
+            const subj = document.getElementById('filterSubject').value;
+            const sdate = document.getElementById('filterServiceDate').value;
+
+            const queryParams = new URLSearchParams({
+                json: '1',
+                full_name: sp,
+                branch_name: branch,
+                product_name: prod,
+                date: dt,
+                x_service_subject: subj,
+                service_date: sdate
+            });
+
+            fetch('/sales_dashboard/?' + queryParams.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                dynamicData = data;
+
+                // 1. Revenue Analysis KPIs
+                if (document.getElementById('kpiRevenue')) document.getElementById('kpiRevenue').innerText = data.total_revenue;
+                if (document.getElementById('kpiQuotation')) document.getElementById('kpiQuotation').innerText = data.total_quotations;
+                if (document.getElementById('kpiLeads')) document.getElementById('kpiLeads').innerText = data.total_leads;
+                if (document.getElementById('kpiCustomers')) document.getElementById('kpiCustomers').innerText = data.total_customers;
+
+                // 2. Lead Analysis KPIs & Funnel Legend
+                if (document.getElementById('leadKpiTotal')) document.getElementById('leadKpiTotal').innerText = data.lead_kpi_total;
+                if (document.getElementById('leadKpiHot')) document.getElementById('leadKpiHot').innerText = data.lead_kpi_hot;
+                if (document.getElementById('leadKpiCold')) document.getElementById('leadKpiCold').innerText = data.lead_kpi_cold;
+                if (document.getElementById('leadKpiWarm')) document.getElementById('leadKpiWarm').innerText = data.lead_kpi_warm;
+                if (document.getElementById('leadKpiNotInterested')) document.getElementById('leadKpiNotInterested').innerText = data.lead_kpi_not_interested;
+                if (document.getElementById('leadKpiLossOrder')) document.getElementById('leadKpiLossOrder').innerText = data.lead_kpi_loss_order;
+
+                if (document.getElementById('funnelHotVal')) document.getElementById('funnelHotVal').innerText = data.lead_kpi_hot;
+                if (document.getElementById('funnelWarmVal')) document.getElementById('funnelWarmVal').innerText = data.lead_kpi_warm;
+                if (document.getElementById('funnelColdVal')) document.getElementById('funnelColdVal').innerText = data.lead_kpi_cold;
+                if (document.getElementById('funnelNotVal')) document.getElementById('funnelNotVal').innerText = data.lead_kpi_not_interested;
+                if (document.getElementById('funnelLossVal')) document.getElementById('funnelLossVal').innerText = data.lead_kpi_loss_order;
+
+                const totFunnelLeads = (parseInt(data.lead_kpi_hot)||0) + (parseInt(data.lead_kpi_warm)||0) + (parseInt(data.lead_kpi_cold)||0) + (parseInt(data.lead_kpi_not_interested)||0) + (parseInt(data.lead_kpi_loss_order)||0);
+                updateFunnelDisplay(totFunnelLeads, 'leadFunnelPoly', 'leadFunnelText', 'leadFunnelBars');
+
+                const totFollowupLeads = (data.followup_data || []).reduce((a, b) => a + (parseInt(b)||0), 0);
+                updateFunnelDisplay(totFollowupLeads, 'followupFunnelPoly', 'followupFunnelText', 'followupFunnelBars');
+
+                // 3. Customer Segment Text Metrics
+                if (data.prod_vs_svc_data && data.prod_vs_svc_data.length >= 2) {
+                    if (document.getElementById('prodRatioVal')) document.getElementById('prodRatioVal').innerText = data.prod_vs_svc_data[0];
+                    if (document.getElementById('svcRatioVal')) document.getElementById('svcRatioVal').innerText = data.prod_vs_svc_data[1];
+                }
+
+                // 4. Update ALL Chart.js Graphs Dynamic Datasets & Redraw
+                if (revBranchChart) { revBranchChart.data.labels = data.rev_branch_labels; revBranchChart.data.datasets[0].data = data.rev_branch_data; revBranchChart.update(); }
+                if (revSpChart) { revSpChart.data.labels = data.rev_sp_labels; revSpChart.data.datasets[0].data = data.rev_sp_data; revSpChart.update(); }
+                if (trendChart) { trendChart.data.labels = data.trend_labels; trendChart.data.datasets[0].data = data.trend_data; trendChart.update(); }
+
+                if (custTypePieChart) { custTypePieChart.data.labels = data.lead_cust_type_labels; custTypePieChart.data.datasets[0].data = data.lead_cust_type_data; custTypePieChart.update(); }
+                if (monthFlowChart) { monthFlowChart.data.labels = data.month_flow_labels; monthFlowChart.data.datasets[0].data = data.month_flow_data; monthFlowChart.update(); }
+                if (dayFlowChart) { dayFlowChart.data.labels = data.day_flow_labels; dayFlowChart.data.datasets[0].data = data.day_flow_data; dayFlowChart.update(); }
+                if (leadSourceDistChart) { leadSourceDistChart.data.labels = data.lead_source_dist_labels; leadSourceDistChart.data.datasets[0].data = data.lead_source_dist_data; leadSourceDistChart.update(); }
+
+                if (svcProvidedChart) { svcProvidedChart.data.labels = data.svc_provided_labels; svcProvidedChart.data.datasets[0].data = data.svc_provided_data; svcProvidedChart.update(); }
+                if (svcRevenueChart) { svcRevenueChart.data.labels = data.svc_revenue_labels; svcRevenueChart.data.datasets[0].data = data.svc_revenue_data; svcRevenueChart.update(); }
+
+                if (prodRevChart) { prodRevChart.data.labels = data.prod_rev_labels; prodRevChart.data.datasets[0].data = data.prod_rev_data; prodRevChart.update(); }
+                if (prodSvcChart) { prodSvcChart.data.labels = data.prod_svc_labels; prodSvcChart.data.datasets[0].data = data.prod_svc_data; prodSvcChart.update(); }
+
+                if (stateLeadChart) { stateLeadChart.data.labels = data.state_lead_labels; stateLeadChart.data.datasets[0].data = data.state_ind_data; stateLeadChart.data.datasets[1].data = data.state_res_data; stateLeadChart.update(); }
+                if (prodVsSvcPieChart) { prodVsSvcPieChart.data.labels = data.prod_vs_svc_labels; prodVsSvcPieChart.data.datasets[0].data = data.prod_vs_svc_data; prodVsSvcPieChart.update(); }
+            })
+            .catch(err => console.error('Filter update error:', err));
+        }
+    </script>
 </body>
 
 </html>

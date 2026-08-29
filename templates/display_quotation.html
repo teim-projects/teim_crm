@@ -517,7 +517,8 @@
                                         <a href="{% url 'edit_quotation' x.id %}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
                                         <a href="/delete_quotation/{{ x.id }}" class="btn btn-sm btn-danger delete-link"><i class="fa-solid fa-trash"></i></a>
                                         <a href="{% url 'send_quotation_email' x.id %}" class="btn btn-sm btn-primary"><i class="fa-solid fa-envelope"></i></a>
-                                        <a href="{% url 'send_quotation_pdf_on_whatsapp' x.id %}" class="btn btn-sm btn-success"><i class="fa-brands fa-whatsapp"></i></a>
+                                        <!-- WhatsApp - Backend Disabled -->
+                                        <a href="#" onclick="alert('WhatsApp feature is currently disabled'); return false;" class="btn btn-sm btn-success"><i class="fa-brands fa-whatsapp"></i></a>
                                     </td>
                                     <td>{{ x.quotation_no }}</td>
                                     <td>{{ x.quotation_date }}</td>

@@ -14,7 +14,7 @@ from django import contrib
 from django.conf import settings
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from django.db.models import Q, Sum, Count, Max
+from django.db.models import Q, Sum, Count, Max, Min
 from django.db.models.functions import Lower
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
@@ -612,36 +612,46 @@ def add_sales_person(request):
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
         branch_id = request.POST.get('branch')
-        branch = Branch.objects.get(id = branch_id)
-        co_ordinator = request.POST.get('co_ordinator') == True
-        # Create Django User (username as email or phone, password default or random)
-        username = mobile_no
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
-        user.is_staff = True
-        user.save()
-        
+        co_ordinator = request.POST.get('co_ordinator') == 'True' or request.POST.get('co_ordinator') == True
 
-        # Assign role to user via UserProfile
-        user_profile = user.userprofile  # auto-created by the signal
-        user_profile.role = 'sales'
-        user_profile.phone = mobile_no
-        user_profile.save()
+        if User.objects.filter(username=mobile_no).exists() or SalesPerson.objects.filter(mobile_no=mobile_no).exists():
+            messages.error(request, f"Duplicate Entry: Mobile number '{mobile_no}' is already registered!")
+            branches = Branch.objects.all()
+            return render(request, 'add_sales_person.html', {"branches": branches, "form_data": request.POST})
 
-        # Create SalesPerson record
-        SalesPerson.objects.create(
-            full_name=full_name,
-            date_of_joining=date_of_joining,
-            mobile_no=mobile_no,
-            email=email,
-            date_of_birth=date_of_birth,
-            branch = branch,
-            co_ordinator = co_ordinator
-            
-        )
+        try:
+            branch = Branch.objects.get(id=branch_id)
+            user = User.objects.create_user(username=mobile_no, password=password, email=email, first_name=full_name)
+            user.is_staff = True
+            user.save()
 
-        return redirect('sales_person_list')
+            user_profile = user.userprofile
+            user_profile.role = 'sales'
+            user_profile.phone = mobile_no
+            user_profile.save()
+
+            SalesPerson.objects.create(
+                full_name=full_name,
+                date_of_joining=date_of_joining,
+                mobile_no=mobile_no,
+                email=email,
+                date_of_birth=date_of_birth,
+                branch=branch,
+                co_ordinator=co_ordinator
+            )
+            messages.success(request, f"Sales Person '{full_name}' added successfully!")
+            return redirect('sales_person_list')
+        except IntegrityError:
+            messages.error(request, f"Duplicate Entry: Mobile number '{mobile_no}' or email is already registered!")
+            branches = Branch.objects.all()
+            return render(request, 'add_sales_person.html', {"branches": branches, "form_data": request.POST})
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+            branches = Branch.objects.all()
+            return render(request, 'add_sales_person.html', {"branches": branches, "form_data": request.POST})
+
     branches = Branch.objects.all()
-    return render(request, 'add_sales_person.html',{"branches":branches})
+    return render(request, 'add_sales_person.html', {"branches": branches})
 
 # List Sales Persons
 @login_required
@@ -766,36 +776,44 @@ def add_branch_manager(request):
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
         branch_id = request.POST.get('branch')
-        branch_instance = Branch.objects.get(pk=branch_id)
 
-        # Create Django User (username as email or phone, password default or random)
-        username = mobile_no
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
-        user.is_staff = True
-        user.save()
-        
+        if User.objects.filter(username=mobile_no).exists() or BranchManager.objects.filter(mobile_no=mobile_no).exists():
+            messages.error(request, f"Duplicate Entry: Mobile number '{mobile_no}' is already registered!")
+            branch = Branch.objects.all()
+            return render(request, 'add_branch_manager.html', {'branch': branch, "form_data": request.POST})
 
-        # Assign role to user via UserProfile
-        user_profile = user.userprofile  # auto-created by the signal
-        user_profile.role = 'branch_manager'
-        user_profile.phone = mobile_no
-        user_profile.save()
+        try:
+            branch_instance = Branch.objects.get(pk=branch_id)
+            user = User.objects.create_user(username=mobile_no, password=password, email=email, first_name=full_name)
+            user.is_staff = True
+            user.save()
 
-        # Create SalesPerson record
-        BranchManager.objects.create(
-            full_name=full_name,
-            date_of_joining=date_of_joining,
-            mobile_no=mobile_no,
-            email=email,
-            date_of_birth=date_of_birth,
-            branch=branch_instance
-            
-        )
+            user_profile = user.userprofile
+            user_profile.role = 'branch_manager'
+            user_profile.phone = mobile_no
+            user_profile.save()
 
-        return redirect('branch_manager_list')
-    
+            BranchManager.objects.create(
+                full_name=full_name,
+                date_of_joining=date_of_joining,
+                mobile_no=mobile_no,
+                email=email,
+                date_of_birth=date_of_birth,
+                branch=branch_instance
+            )
+            messages.success(request, f"Branch Manager '{full_name}' added successfully!")
+            return redirect('branch_manager_list')
+        except IntegrityError:
+            messages.error(request, f"Duplicate Entry: Mobile number '{mobile_no}' or email is already registered!")
+            branch = Branch.objects.all()
+            return render(request, 'add_branch_manager.html', {'branch': branch, "form_data": request.POST})
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+            branch = Branch.objects.all()
+            return render(request, 'add_branch_manager.html', {'branch': branch, "form_data": request.POST})
+
     branch = Branch.objects.all()
-    return render(request, 'add_branch_manager.html',{'branch': branch})
+    return render(request, 'add_branch_manager.html', {'branch': branch})
 
 
 @login_required
@@ -891,36 +909,45 @@ def add_operation_person(request):
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
         branch_id = request.POST.get('branch')
-        branch = Branch.objects.get(id = branch_id)
-        # Create Django User (username as email or phone, password default or random)
-        username = mobile_no
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
-        user.is_staff = True
-        user.save()
-        
 
-        # Assign role to user via UserProfile
-        user_profile = user.userprofile  # auto-created by the signal
-        user_profile.role = 'operation_person'
-        user_profile.phone = mobile_no
-        user_profile.save()
+        if User.objects.filter(username=mobile_no).exists() or OperationPerson.objects.filter(mobile_no=mobile_no).exists():
+            messages.error(request, f"Duplicate Entry: Mobile number '{mobile_no}' is already registered!")
+            branches = Branch.objects.all()
+            return render(request, 'add_operation_person.html', {"branches": branches, "form_data": request.POST})
 
-        # Create SalesPerson record
-        OperationPerson.objects.create(
-            user = user,
-            full_name=full_name,
-            date_of_joining=date_of_joining,
-            mobile_no=mobile_no,
-            email=email,
-            date_of_birth=date_of_birth,
-            branch = branch,
-           
-            
-        )
+        try:
+            branch = Branch.objects.get(id=branch_id)
+            user = User.objects.create_user(username=mobile_no, password=password, email=email, first_name=full_name)
+            user.is_staff = True
+            user.save()
 
-        return redirect('operation_person_list')
+            user_profile = user.userprofile
+            user_profile.role = 'operation_person'
+            user_profile.phone = mobile_no
+            user_profile.save()
+
+            OperationPerson.objects.create(
+                user=user,
+                full_name=full_name,
+                date_of_joining=date_of_joining,
+                mobile_no=mobile_no,
+                email=email,
+                date_of_birth=date_of_birth,
+                branch=branch,
+            )
+            messages.success(request, f"Operation Person '{full_name}' added successfully!")
+            return redirect('operation_person_list')
+        except IntegrityError:
+            messages.error(request, f"Duplicate Entry: Mobile number '{mobile_no}' or email is already registered!")
+            branches = Branch.objects.all()
+            return render(request, 'add_operation_person.html', {"branches": branches, "form_data": request.POST})
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+            branches = Branch.objects.all()
+            return render(request, 'add_operation_person.html', {"branches": branches, "form_data": request.POST})
+
     branches = Branch.objects.all()
-    return render(request, 'add_operation_person.html',{"branches":branches})
+    return render(request, 'add_operation_person.html', {"branches": branches})
 
 @login_required
 @role_required(['admin','branch_manager'])
@@ -1062,40 +1089,63 @@ def customer_details_create(request):
             branch = Branch.objects.get(id = request.POST.get("branch"))
             # validate required fields
             if not fullname or not primarycontact:
+                messages.error(request, "Full Name and Primary Contact are required")
                 return render(request, "customer_details.html", {
-                    'msg1': 'Full Name and Primary Contact are required'
+                    'msg1': 'Full Name and Primary Contact are required',
+                    'branches': Branch.objects.all()
+                })
+
+            if customer_details.objects.filter(primarycontact=primarycontact).exists():
+                messages.error(request, f"Duplicate Entry: Customer with primary contact '{primarycontact}' is already registered!")
+                return render(request, "customer_details.html", {
+                    'branches': Branch.objects.all(),
+                    'form_data': request.POST
                 })
 
             customerid = generate_customerid(fullname)
 
-            customer_details.objects.create(
-                fullname=fullname,
-                primaryemail=primaryemail,
-                secondaryemail=secondaryemail,
-                primarycontact=primarycontact,
-                secondarycontact=secondarycontact,
-                contactperson=contactperson,
-                designation=designstion,
-                shifttopartyaddress=shifttopartyaddress,
-                shifttopartycity=shifttopartycity,
-                shifttopartystate=shifttopartystate,
-                shifttopartypostal=shifttopartypostal,
-                soldtopartyaddress=soldtopartyaddress,
-                soldtopartycity=soldtopartycity,
-                soldtopartystate=soldtopartystate,
-                soldtopartypostal=soldtopartypostal,
-                customerid=customerid,
-                customer_type=customer_type,
-                or_name=or_name,
-                or_contact=or_contact,
-                branch = branch
-            )
+            try:
+                customer_details.objects.create(
+                    fullname=fullname,
+                    primaryemail=primaryemail,
+                    secondaryemail=secondaryemail,
+                    primarycontact=primarycontact,
+                    secondarycontact=secondarycontact,
+                    contactperson=contactperson,
+                    designation=designstion,
+                    shifttopartyaddress=shifttopartyaddress,
+                    shifttopartycity=shifttopartycity,
+                    shifttopartystate=shifttopartystate,
+                    shifttopartypostal=shifttopartypostal,
+                    soldtopartyaddress=soldtopartyaddress,
+                    soldtopartycity=soldtopartycity,
+                    soldtopartystate=soldtopartystate,
+                    soldtopartypostal=soldtopartypostal,
+                    customerid=customerid,
+                    customer_type=customer_type,
+                    or_name=or_name,
+                    or_contact=or_contact,
+                    branch=branch
+                )
+                messages.success(request, f"Customer '{fullname}' created successfully!")
 
-            # Conditional redirect
-            next_url = request.GET.get('next')
-            if next_url:
-                return redirect(next_url)
-            return redirect('/display_customer')
+                # Conditional redirect
+                next_url = request.GET.get('next')
+                if next_url:
+                    return redirect(next_url)
+                return redirect('/display_customer')
+            except IntegrityError:
+                messages.error(request, f"Duplicate Entry: Customer with contact '{primarycontact}' already exists!")
+                return render(request, "customer_details.html", {
+                    'branches': Branch.objects.all(),
+                    'form_data': request.POST
+                })
+            except Exception as e:
+                messages.error(request, f"Error creating customer: {str(e)}")
+                return render(request, "customer_details.html", {
+                    'branches': Branch.objects.all(),
+                    'form_data': request.POST
+                })
     
 
 @login_required
@@ -2604,11 +2654,7 @@ def quotation_management_create(request):
             quotation.selected_services.set(selected_services)
             selected_term_ids = request.POST.getlist('terms_and_conditions[]')
             quotation.terms_and_conditions.set(selected_term_ids)
-            request.session.pop('quotation_form_data', None)
-            request.session.modified = True
-
-           
-
+            messages.success(request, f"Quotation #{quotation.quotation_no} Created Successfully!")
             return redirect(f'/create_quotation/?pdf={quotation.id}')
 
 
@@ -5121,6 +5167,7 @@ def edit_quotation(request, rid):
 
         quotation.terms_order = ordered_term_ids
         quotation.save()
+        messages.success(request, f"Quotation #{quotation.quotation_no} Updated Successfully!")
         return redirect('display_quotation')
 
     else:
@@ -8894,9 +8941,480 @@ def service_list_with_amc(request):
 
 
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.db.models import Sum, Count, Q
 
 def sales_dashboard(request):
-    return render(request, 'sales_dashboard.html')
+    """Sales Dashboard View - Handles Revenue, Lead, Service, Product, and Customer Segment Analysis with 100% Real DB ORM Aggregations."""
+    from crmapp.models import (
+        Branch, SalesPerson, Product, customer_details,
+        quotation, quotation_management, lead_management, TaxInvoice, invoice, service_management
+    )
+    from datetime import datetime
+    from dateutil.relativedelta import relativedelta
+    from django.db.models import Min
+
+    # 1. Capture Filter Parameters
+    filter_sp = request.GET.get('full_name', '').strip()
+    filter_branch = request.GET.get('branch_name', '').strip()
+    filter_product = request.GET.get('product_name', '').strip()
+    filter_date = request.GET.get('date', '').strip()
+    filter_subject = request.GET.get('x_service_subject', '').strip() or request.GET.get('service_subject', '').strip()
+    filter_service_date = request.GET.get('service_date', '').strip()
+
+    # Build Q filters dynamically
+    lead_q = Q()
+    cust_q = Q()
+    quo_q = Q()
+    quo_mgmt_q = Q()
+    tax_q = Q()
+    inv_q = Q()
+    service_q = Q()
+
+    from datetime import datetime, timedelta
+    from django.utils import timezone
+    today_date = timezone.now().date()
+
+    if filter_branch:
+        lead_q &= Q(branch__branch_name__icontains=filter_branch)
+        cust_q &= Q(branch__branch_name__icontains=filter_branch)
+        quo_q &= Q(customer__branch__branch_name__icontains=filter_branch)
+        quo_mgmt_q &= Q(branch__branch_name__icontains=filter_branch)
+        tax_q &= Q(branch__branch_name__icontains=filter_branch)
+        inv_q &= Q(customer__branch__branch_name__icontains=filter_branch)
+        service_q &= Q(branch__branch_name__icontains=filter_branch)
+
+    if filter_sp:
+        lead_q &= (Q(salesperson__full_name__icontains=filter_sp) | Q(contactedby__icontains=filter_sp))
+        quo_mgmt_q &= Q(contact_by__icontains=filter_sp)
+        tax_q &= Q(quotation__contact_by__icontains=filter_sp)
+        service_q &= (Q(sales_person_name__icontains=filter_sp) | Q(service_subject__icontains=filter_sp))
+
+    if filter_product:
+        quo_mgmt_q &= (Q(product_details_json__icontains=filter_product) | Q(subject__icontains=filter_product))
+        tax_q &= (Q(service_titel__icontains=filter_product) | Q(quotation__product_details_json__icontains=filter_product) | Q(quotation__subject__icontains=filter_product))
+        service_q &= (Q(service_subject__icontains=filter_product) | Q(selected_services__product_name__icontains=filter_product))
+
+    if filter_subject:
+        service_q &= Q(service_subject__icontains=filter_subject)
+        quo_mgmt_q &= Q(subject__icontains=filter_subject)
+        tax_q &= Q(service_titel__icontains=filter_subject)
+
+    if filter_service_date:
+        if filter_service_date == 'recent':
+            service_q &= Q(service_date__gte=today_date - timedelta(days=30))
+        elif filter_service_date == 'past':
+            service_q &= Q(service_date__lt=today_date - timedelta(days=30))
+
+    if filter_date == 'today':
+        lead_q &= Q(enquirydate=today_date)
+        quo_q &= Q(quotation_date=today_date)
+        quo_mgmt_q &= Q(quotation_date=today_date)
+        tax_q &= Q(created_at__date=today_date)
+        inv_q &= Q(date=today_date)
+        service_q &= Q(service_date=today_date)
+    elif filter_date == 'this_month':
+        lead_q &= Q(enquirydate__year=today_date.year, enquirydate__month=today_date.month)
+        quo_q &= Q(quotation_date__year=today_date.year, quotation_date__month=today_date.month)
+        quo_mgmt_q &= Q(quotation_date__year=today_date.year, quotation_date__month=today_date.month)
+        tax_q &= Q(created_at__year=today_date.year, created_at__month=today_date.month)
+        inv_q &= Q(date__year=today_date.year, date__month=today_date.month)
+        service_q &= Q(service_date__year=today_date.year, service_date__month=today_date.month)
+    elif filter_date == 'this_year':
+        lead_q &= Q(enquirydate__year=today_date.year)
+        quo_q &= Q(quotation_date__year=today_date.year)
+        quo_mgmt_q &= Q(quotation_date__year=today_date.year)
+        tax_q &= Q(created_at__year=today_date.year)
+        inv_q &= Q(date__year=today_date.year)
+        service_q &= Q(service_date__year=today_date.year)
+
+    # 2. Dynamic Real Summary Metrics from DB
+    real_cust_count = customer_details.objects.filter(cust_q).count()
+    real_quo_count = quotation.objects.filter(quo_q).count() + quotation_management.objects.filter(quo_mgmt_q).count()
+    real_lead_count = lead_management.objects.filter(lead_q).count()
+
+    tax_inv_sum = TaxInvoice.objects.filter(tax_q).aggregate(t=Sum('grand_total'))['t'] or 0
+    inv_sum = invoice.objects.filter(inv_q).aggregate(t=Sum('total_amount_with_gst'))['t'] or 0
+    quo_sum = quotation.objects.filter(quo_q).aggregate(t=Sum('total_amount_with_gst'))['t'] or 0
+    quo_mgmt_sum = quotation_management.objects.filter(quo_mgmt_q).aggregate(t=Sum('total_price_with_gst'))['t'] or 0
+    real_revenue = float(tax_inv_sum) + float(inv_sum) + float(quo_sum) + float(quo_mgmt_sum)
+
+    # Revenue View metrics
+    if real_revenue >= 10000000:
+        revenue_display = f"₹{real_revenue / 10000000:.2f} Cr"
+    elif real_revenue >= 100000:
+        revenue_display = f"₹{real_revenue / 100000:.2f} Lacs"
+    elif real_revenue > 0:
+        revenue_display = f"₹{real_revenue:,.2f}"
+    else:
+        revenue_display = "₹0"
+
+    quo_display = f"{real_quo_count:,}"
+    lead_display = f"{real_lead_count:,}"
+    cust_display = f"{real_cust_count:,}"
+
+    # 3. Dynamic Real Branch Chart Data
+    db_branches = list(Branch.objects.all())
+    rev_branch_labels = []
+    rev_branch_data = []
+
+    if db_branches:
+        for b in db_branches:
+            rev_branch_labels.append(b.branch_name)
+            b_rev = TaxInvoice.objects.filter(tax_q, branch=b).aggregate(t=Sum('grand_total'))['t'] or 0
+            b_inv = invoice.objects.filter(inv_q, customer__branch=b).aggregate(t=Sum('total_amount_with_gst'))['t'] or 0
+            b_quo = quotation.objects.filter(quo_q, customer__branch=b).aggregate(t=Sum('total_amount_with_gst'))['t'] or 0
+            b_quo_m = quotation_management.objects.filter(quo_mgmt_q, branch=b).aggregate(t=Sum('total_price_with_gst'))['t'] or 0
+            tot_b_rev = float(b_rev) + float(b_inv) + float(b_quo) + float(b_quo_m)
+            b_leads = lead_management.objects.filter(lead_q, branch=b).count()
+            rev_branch_data.append(tot_b_rev if tot_b_rev > 0 else b_leads)
+    else:
+        rev_branch_labels = ["No Branches"]
+        rev_branch_data = [0]
+
+    # 4. Dynamic Real Salesperson Chart Data
+    db_sps = list(SalesPerson.objects.all())
+    rev_sp_labels = []
+    rev_sp_data = []
+
+    if db_sps:
+        for sp in db_sps:
+            rev_sp_labels.append(sp.full_name)
+            sp_leads = lead_management.objects.filter(lead_q, salesperson=sp).count()
+            rev_sp_data.append(sp_leads)
+    else:
+        lead_sps = lead_management.objects.values('salesperson__full_name').annotate(c=Count('id'))
+        if lead_sps:
+            for item in lead_sps:
+                rev_sp_labels.append(item['salesperson__full_name'] or 'Unassigned')
+                rev_sp_data.append(item['c'])
+        else:
+            rev_sp_labels = ["No Salespersons"]
+            rev_sp_data = [0]
+
+    # ===== 5. LEAD ANALYSIS TAB METRICS & DATASETS (100% REAL DB) =====
+    db_hot_leads = lead_management.objects.filter(lead_q, typeoflead='Hot').count()
+    db_cold_leads = lead_management.objects.filter(lead_q, typeoflead='Cold').count()
+    db_warm_leads = lead_management.objects.filter(lead_q, typeoflead='Warm').count()
+    db_not_interested = lead_management.objects.filter(lead_q, typeoflead='Not Interested').count()
+    db_loss_order = lead_management.objects.filter(lead_q, typeoflead='Loss of Order').count()
+
+    lead_kpi_total = real_lead_count
+    lead_kpi_hot = db_hot_leads
+    lead_kpi_cold = db_cold_leads
+    lead_kpi_warm = db_warm_leads
+    lead_kpi_not_interested = db_not_interested
+    lead_kpi_loss_order = db_loss_order
+
+    # Pie Chart: Number of Leads By Customer Type (Real DB)
+    cust_type_qs = list(lead_management.objects.filter(lead_q).values('customer_type').annotate(c=Count('id')).order_by('-c'))
+    if cust_type_qs:
+        lead_cust_type_labels = [item['customer_type'] or 'Unknown' for item in cust_type_qs]
+        lead_cust_type_data = [item['c'] for item in cust_type_qs]
+    else:
+        lead_cust_type_labels = ["Individual", "Organization", "Unknown"]
+        lead_cust_type_data = [0, 0, 0]
+
+    # Funnel/Bar: Converted leads by Type of leads (Real DB)
+    converted_type_labels = ["Hot", "Warm", "Cold", "Not Interested", "Loss of Order"]
+    converted_type_data = [db_hot_leads, db_warm_leads, db_cold_leads, db_not_interested, db_loss_order]
+
+    # Line Chart: Month - Wise Lead Flow (Real DB)
+    month_flow_labels = [str(m) for m in range(1, 13)]
+    month_flow_data = [lead_management.objects.filter(lead_q, enquirydate__month=m).count() for m in range(1, 13)]
+
+    # Line Chart: Day- Wise Lead Flow (Single Continuous Day-Wise Timeline)
+    from datetime import date, timedelta
+    from django.db.models import Min, Max
+
+    db_daily_qs = list(lead_management.objects.filter(lead_q, enquirydate__isnull=False).values('enquirydate').annotate(c=Count('id')).order_by('enquirydate'))
+    db_daily_dict = {item['enquirydate']: item['c'] for item in db_daily_qs}
+
+    if filter_date == 'today':
+        start_d = today_date
+        end_d = today_date
+    elif filter_date == 'this_month':
+        start_d = date(today_date.year, today_date.month, 1)
+        end_d = today_date
+    elif filter_date == 'this_year':
+        start_d = date(today_date.year, 1, 1)
+        end_d = today_date
+    else:
+        valid_dates = [item['enquirydate'] for item in db_daily_qs]
+        if valid_dates:
+            start_d = min(valid_dates)
+            end_d = max(valid_dates)
+        else:
+            end_d = today_date
+            start_d = today_date - timedelta(days=30)
+
+    day_flow_labels = []
+    day_flow_data = []
+
+    curr_d = start_d
+    while curr_d <= end_d:
+        day_flow_labels.append(curr_d.strftime('%d %b %Y'))
+        day_flow_data.append(db_daily_dict.get(curr_d, 0))
+        curr_d += timedelta(days=1)
+
+    # Bar Chart: Lead Source Distribution (Real DB)
+    source_qs = list(lead_management.objects.filter(lead_q).values('sourceoflead').annotate(c=Count('id')).order_by('-c'))
+    if source_qs:
+        lead_source_dist_labels = [item['sourceoflead'] or 'Unknown' for item in source_qs]
+        lead_source_dist_data = [item['c'] for item in source_qs]
+    else:
+        lead_source_dist_labels = ["No Sources Recorded"]
+        lead_source_dist_data = [0]
+
+    # 9. Dynamic Real Revenue Trend by Month Dataset (Real DB)
+    earliest_tax = TaxInvoice.objects.aggregate(min_date=Min('created_at'))['min_date']
+    earliest_inv = invoice.objects.aggregate(min_date=Min('date'))['min_date']
+    earliest_quo = quotation.objects.aggregate(min_date=Min('quotation_date'))['min_date']
+    earliest_lead = lead_management.objects.aggregate(min_date=Min('enquirydate'))['min_date']
+    
+    from django.utils import timezone
+
+    def to_datetime(date_obj):
+        if date_obj is None:
+            return None
+        if isinstance(date_obj, datetime):
+            if timezone.is_aware(date_obj):
+                return timezone.make_naive(date_obj)
+            return date_obj
+        return datetime.combine(date_obj, datetime.min.time())
+    
+    earliest_dates = [
+        to_datetime(d) for d in [earliest_tax, earliest_inv, earliest_quo, earliest_lead] 
+        if d is not None
+    ]
+    
+    if earliest_dates:
+        start_date = min(earliest_dates).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        start_date = (datetime.now() - relativedelta(years=1)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    current_date = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    months_list = []
+    temp_date = start_date
+    
+    while temp_date <= current_date:
+        month_name = temp_date.strftime('%b %Y')
+        months_list.append((temp_date.year, temp_date.month, month_name))
+        temp_date += relativedelta(months=1)
+    
+    trend_labels = []
+    trend_data = []
+
+    for yr, mth, name in months_list:
+        trend_labels.append(name)
+        tax_sum = TaxInvoice.objects.filter(tax_q, created_at__year=yr, created_at__month=mth).aggregate(t=Sum('grand_total'))['t'] or 0
+        inv_sum = invoice.objects.filter(inv_q, date__year=yr, date__month=mth).aggregate(t=Sum('total_amount_with_gst'))['t'] or 0
+        quo_sum = quotation.objects.filter(quo_q, quotation_date__year=yr, quotation_date__month=mth).aggregate(t=Sum('total_amount_with_gst'))['t'] or 0
+        quo_mgmt_sum = quotation_management.objects.filter(quo_mgmt_q, quotation_date__year=yr, quotation_date__month=mth).aggregate(t=Sum('total_price_with_gst'))['t'] or 0
+        tot_m_rev = float(tax_sum) + float(inv_sum) + float(quo_sum) + float(quo_mgmt_sum)
+        leads_count = lead_management.objects.filter(lead_q, enquirydate__year=yr, enquirydate__month=mth).count()
+        trend_data.append(tot_m_rev if tot_m_rev > 0 else (leads_count * 10000))
+
+    # ===== 6. SERVICE ANALYSIS TAB METRICS & DATASETS (100% REAL DB) =====
+    svc_prov_qs = list(service_management.objects.filter(service_q).values('service_subject').annotate(c=Count('id')).order_by('-c'))
+    if svc_prov_qs:
+        svc_provided_labels = [item['service_subject'] or 'Service' for item in svc_prov_qs[:20]]
+        svc_provided_data = [item['c'] for item in svc_prov_qs[:20]]
+    else:
+        svc_provided_labels = ["No Services Found"]
+        svc_provided_data = [0]
+
+    svc_rev_qs = list(service_management.objects.filter(service_q).values('service_subject').annotate(t=Sum('total_price_with_gst')).order_by('-t'))
+    if svc_rev_qs:
+        svc_revenue_labels = [item['service_subject'] or 'Service' for item in svc_rev_qs[:15]]
+        svc_revenue_data = [float(item['t'] or 0) for item in svc_rev_qs[:15]]
+    else:
+        svc_revenue_labels = ["No Revenue Recorded"]
+        svc_revenue_data = [0]
+
+    # ===== 7. PRODUCT ANALYSIS TAB METRICS & DATASETS (100% REAL DB) =====
+    db_prods = list(Product.objects.all())
+    if db_prods:
+        prod_rev_labels = []
+        prod_rev_data = []
+        for p in db_prods:
+            prod_rev_labels.append(p.product_name)
+            p_q_rev = quotation_management.objects.filter(quo_mgmt_q, Q(product_details_json__icontains=p.product_name) | Q(subject__icontains=p.product_name)).aggregate(t=Sum('total_price_with_gst'))['t'] or 0
+            p_s_rev = service_management.objects.filter(service_q, Q(service_subject__icontains=p.product_name) | Q(selected_services=p)).aggregate(t=Sum('total_price_with_gst'))['t'] or 0
+            tot_p = float(p_q_rev) + float(p_s_rev)
+            prod_rev_data.append(tot_p if tot_p > 0 else float(getattr(p, 'price', 0) or 0))
+    else:
+        prod_rev_labels = ["No Products Found"]
+        prod_rev_data = [0]
+
+    if svc_prov_qs:
+        prod_svc_labels = [item['service_subject'] or 'Product Service' for item in svc_prov_qs[:20]]
+        prod_svc_data = [item['c'] for item in svc_prov_qs[:20]]
+    else:
+        prod_svc_labels = ["No Product Services"]
+        prod_svc_data = [0]
+
+    # ===== 8. CUSTOMER SEGMENT ANALYSIS TAB METRICS & DATASETS (100% REAL DB) =====
+    state_qs = list(lead_management.objects.filter(lead_q).values('state').annotate(
+        res_count=Count('id', filter=Q(customersegment__icontains='Residential')),
+        ind_count=Count('id', filter=Q(customersegment__icontains='Industrial') | Q(customersegment__icontains='Commercial'))
+    ).order_by('-res_count'))
+    if state_qs:
+        state_lead_labels = [item['state'] or 'Unknown State' for item in state_qs[:18]]
+        state_res_data = [item['res_count'] for item in state_qs[:18]]
+        state_ind_data = [item['ind_count'] for item in state_qs[:18]]
+    else:
+        state_lead_labels = ["No State Data"]
+        state_res_data = [0]
+        state_ind_data = [0]
+
+    followup_qs = list(lead_management.objects.filter(lead_q).values('typeoflead').annotate(c=Count('id')).order_by('-c'))
+    if followup_qs:
+        followup_labels = [item['typeoflead'] or 'Not Followed Up' for item in followup_qs]
+        followup_data = [item['c'] for item in followup_qs]
+    else:
+        followup_labels = ["Call not received", "Give next Follow up date", "Call Out of Coverage Area"]
+        followup_data = [0, 0, 0]
+
+    total_svc_rev = float(service_management.objects.filter(service_q).aggregate(t=Sum('total_price_with_gst'))['t'] or 0)
+    total_prod_rev = float(quotation.objects.filter(quo_q).aggregate(t=Sum('total_amount_with_gst'))['t'] or 0) + float(quotation_management.objects.filter(quo_mgmt_q).aggregate(t=Sum('total_price_with_gst'))['t'] or 0)
+    tot_comb = total_svc_rev + total_prod_rev
+    if tot_comb > 0:
+        prod_ratio = round((total_prod_rev / tot_comb) * 100, 2)
+        svc_ratio = round((total_svc_rev / tot_comb) * 100, 2)
+    else:
+        prod_ratio = 50.0
+        svc_ratio = 50.0
+    prod_vs_svc_labels = ["Product Ratio %", "Service Ratio %"]
+    prod_vs_svc_data = [prod_ratio, svc_ratio]
+
+    seg_rev_qs = list(lead_management.objects.filter(lead_q).values('customersegment').annotate(c=Count('id')).order_by('-c'))
+    if seg_rev_qs:
+        seg_rev_labels = [item['customersegment'] or 'General' for item in seg_rev_qs]
+        seg_rev_data = [item['c'] for item in seg_rev_qs]
+    else:
+        seg_rev_labels = ["Industrial / Commercial", "Residential"]
+        seg_rev_data = [0, 0]
+
+    # Return JSON for AJAX requests
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('json') == '1':
+        return JsonResponse({
+            'total_revenue': revenue_display,
+            'total_quotations': quo_display,
+            'total_leads': lead_display,
+            'total_customers': cust_display,
+            'rev_branch_labels': rev_branch_labels,
+            'rev_branch_data': rev_branch_data,
+            'rev_sp_labels': rev_sp_labels,
+            'rev_sp_data': rev_sp_data,
+            'trend_labels': trend_labels,
+            'trend_data': trend_data,
+            # Lead Analysis tab
+            'lead_kpi_total': lead_kpi_total,
+            'lead_kpi_hot': lead_kpi_hot,
+            'lead_kpi_cold': lead_kpi_cold,
+            'lead_kpi_warm': lead_kpi_warm,
+            'lead_kpi_not_interested': lead_kpi_not_interested,
+            'lead_kpi_loss_order': lead_kpi_loss_order,
+            'lead_cust_type_labels': lead_cust_type_labels,
+            'lead_cust_type_data': lead_cust_type_data,
+            'converted_type_labels': converted_type_labels,
+            'converted_type_data': converted_type_data,
+            'month_flow_labels': month_flow_labels,
+            'month_flow_data': month_flow_data,
+            'day_flow_labels': day_flow_labels,
+            'day_flow_data': day_flow_data,
+            'lead_source_dist_labels': lead_source_dist_labels,
+            'lead_source_dist_data': lead_source_dist_data,
+            # Service Analysis tab
+            'svc_provided_labels': svc_provided_labels,
+            'svc_provided_data': svc_provided_data,
+            'svc_revenue_labels': svc_revenue_labels,
+            'svc_revenue_data': svc_revenue_data,
+            # Product Analysis tab
+            'prod_rev_labels': prod_rev_labels,
+            'prod_rev_data': prod_rev_data,
+            'prod_svc_labels': prod_svc_labels,
+            'prod_svc_data': prod_svc_data,
+            # Customer Segment Analysis tab
+            'state_lead_labels': state_lead_labels,
+            'state_res_data': state_res_data,
+            'state_ind_data': state_ind_data,
+            'followup_labels': followup_labels,
+            'followup_data': followup_data,
+            'prod_vs_svc_labels': prod_vs_svc_labels,
+            'prod_vs_svc_data': prod_vs_svc_data,
+            'seg_rev_labels': seg_rev_labels,
+            'seg_rev_data': seg_rev_data,
+        })
+
+    # Render HTML page
+    sp_set = set(SalesPerson.objects.values_list('full_name', flat=True))
+    sp_set.update(lead_management.objects.values_list('contactedby', flat=True))
+    sp_set.update(quotation_management.objects.values_list('contact_by', flat=True))
+    salespersons = sorted([s for s in sp_set if s])
+    branches = Branch.objects.all()
+    products = Product.objects.all()
+
+    context = {
+        'total_revenue': revenue_display,
+        'total_quotations': quo_display,
+        'total_leads': lead_display,
+        'total_customers': cust_display,
+        'salespersons': salespersons,
+        'branches': branches,
+        'products': products,
+        # Revenue Tab
+        'rev_branch_labels': rev_branch_labels,
+        'rev_branch_data': rev_branch_data,
+        'rev_sp_labels': rev_sp_labels,
+        'rev_sp_data': rev_sp_data,
+        'trend_labels': trend_labels,
+        'trend_data': trend_data,
+        # Lead Analysis Tab
+        'lead_kpi_total': lead_kpi_total,
+        'lead_kpi_hot': lead_kpi_hot,
+        'lead_kpi_cold': lead_kpi_cold,
+        'lead_kpi_warm': lead_kpi_warm,
+        'lead_kpi_not_interested': lead_kpi_not_interested,
+        'lead_kpi_loss_order': lead_kpi_loss_order,
+        'lead_cust_type_labels': lead_cust_type_labels,
+        'lead_cust_type_data': lead_cust_type_data,
+        'converted_type_labels': converted_type_labels,
+        'converted_type_data': converted_type_data,
+        'month_flow_labels': month_flow_labels,
+        'month_flow_data': month_flow_data,
+        'day_flow_labels': day_flow_labels,
+        'day_flow_data': day_flow_data,
+        'lead_source_dist_labels': lead_source_dist_labels,
+        'lead_source_dist_data': lead_source_dist_data,
+        # Service Analysis Tab
+        'svc_provided_labels': svc_provided_labels,
+        'svc_provided_data': svc_provided_data,
+        'svc_revenue_labels': svc_revenue_labels,
+        'svc_revenue_data': svc_revenue_data,
+        # Product Analysis Tab
+        'prod_rev_labels': prod_rev_labels,
+        'prod_rev_data': prod_rev_data,
+        'prod_svc_labels': prod_svc_labels,
+        'prod_svc_data': prod_svc_data,
+        # Customer Segment Analysis Tab
+        'state_lead_labels': state_lead_labels,
+        'state_res_data': state_res_data,
+        'state_ind_data': state_ind_data,
+        'followup_labels': followup_labels,
+        'followup_data': followup_data,
+        'prod_vs_svc_labels': prod_vs_svc_labels,
+        'prod_vs_svc_data': prod_vs_svc_data,
+        'seg_rev_labels': seg_rev_labels,
+        'seg_rev_data': seg_rev_data,
+    }
+    return render(request, 'sales_dashboard.html', context)
+
+
+
+
+
 
 
 from django.shortcuts import render

@@ -133,3 +133,14 @@ textarea:required:invalid {
     border-color: #dc3545 !important;
     box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.15);
 }
+
+/* Red border on Search Address field */
+#location-search {
+    border: 1px solid #dc3545 !important;
+    border-left: 3px solid #dc3545 !important;
+}
+
+#location-search:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.25) !important;
+}

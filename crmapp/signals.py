@@ -5,7 +5,7 @@ from django.dispatch import receiver, Signal
 from django.db import transaction
 from django.contrib.auth.models import User
 from .models import UserProfile, TechWorkList, TechnicianProfile, service_management,WorkAllocation,MessageTemplates, SalesPerson,lead_management
-from crmapp.tasks import send_email_task,send_whatsapp_task
+from crmapp.tasks import send_email_task  # , send_whatsapp_task
 
 
 @receiver(post_save, sender=User)
@@ -127,16 +127,16 @@ def send_service_scheduled_email(sender, service_id, created, **kwargs):
             print("📧 Email queued for:", customer.primaryemail)
 
     # ------------------- WhatsApp -------------------
-    if customer.primarycontact:
-        whatsapp_template = MessageTemplates.objects.filter(
-            message_type="whatsapp", category="service"
-        ).first()
-        if whatsapp_template:
-            whatsapp_body = whatsapp_template.body
-            for key, value in placeholders.items():
-                whatsapp_body = whatsapp_body.replace(f"{{{key}}}", str(value))
+    # if customer.primarycontact:
+    #     whatsapp_template = MessageTemplates.objects.filter(
+    #         message_type="whatsapp", category="service"
+    #     ).first()
+    #     if whatsapp_template:
+    #         whatsapp_body = whatsapp_template.body
+    #         for key, value in placeholders.items():
+    #             whatsapp_body = whatsapp_body.replace(f"{{{key}}}", str(value))
 
-            mobile = f"91{customer.primarycontact}"
-            send_whatsapp_task.delay(mobile, whatsapp_body)
-            print("📲 WhatsApp queued for:", mobile)
+    #         mobile = f"91{customer.primarycontact}"
+    #         send_whatsapp_task.delay(mobile, whatsapp_body)
+    #         print("📲 WhatsApp queued for:", mobile)
   

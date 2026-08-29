@@ -1,0 +1,164 @@
+<!-- SweetAlert2 Library CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  .swal2-popup {
+    font-family: 'Roboto', 'Segoe UI', sans-serif !important;
+    border-radius: 16px !important;
+    padding: 2rem !important;
+  }
+  .swal2-title {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    color: #333333 !important;
+  }
+  .swal2-html-container {
+    font-size: 1rem !important;
+    color: #666666 !important;
+    margin: 1rem 0 1.5rem 0 !important;
+  }
+  .swal2-confirm {
+    background-color: #635BFF !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 0.6rem 2rem !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    box-shadow: 0 4px 12px rgba(99, 91, 255, 0.24) !important;
+  }
+  .swal2-confirm:focus {
+    box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.4) !important;
+  }
+  .swal2-icon.swal2-error {
+    border-color: #f27474 !important;
+    color: #f27474 !important;
+  }
+</style>
+
+<script>
+  function showValidationAlert(message, title = "Validation") {
+    return Swal.fire({
+      icon: 'error',
+      title: title,
+      text: message,
+      confirmButtonText: 'OK',
+      customClass: {
+        confirmButton: 'swal2-confirm'
+      }
+    });
+  }
+
+  function showSuccessAlert(message, title = "Success", callback = null) {
+    return Swal.fire({
+      icon: 'success',
+      title: title,
+      text: message,
+      confirmButtonText: 'OK',
+      customClass: {
+        confirmButton: 'swal2-confirm'
+      }
+    }).then((result) => {
+      if (result.isConfirmed && typeof callback === 'function') {
+        callback();
+      }
+    });
+  }
+
+  function showErrorAlert(message, title = "Error") {
+    return Swal.fire({
+      icon: 'error',
+      title: title,
+      text: message,
+      confirmButtonText: 'OK',
+      customClass: {
+        confirmButton: 'swal2-confirm'
+      }
+    });
+  }
+
+  function showWarningAlert(message, title = "Warning") {
+    return Swal.fire({
+      icon: 'warning',
+      title: title,
+      text: message,
+      confirmButtonText: 'OK',
+      customClass: {
+        confirmButton: 'swal2-confirm'
+      }
+    });
+  }
+
+  // Handle Django backend flash messages (works even if DOMContentLoaded already fired)
+  function checkAndShowMessages() {
+    {% if messages %}
+      {% for message in messages %}
+        {% if message.tags == 'error' or message.tags == 'danger' %}
+          showErrorAlert("{{ message|escapejs }}");
+        {% elif message.tags == 'warning' %}
+          showWarningAlert("{{ message|escapejs }}");
+        {% else %}
+          showSuccessAlert("{{ message|escapejs }}");
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkAndShowMessages);
+  } else {
+    checkAndShowMessages();
+  }
+
+  // Helper to find field label
+  function getGlobalFieldLabel(input) {
+    let labelElement = document.querySelector(`label[for="${input.id}"]`);
+    if (!labelElement) {
+      const parentCol = input.closest('.col-4, .col-6, .col-md-4, .col-md-6, .col-md-12, .form-group, div');
+      if (parentCol) labelElement = parentCol.querySelector('label');
+    }
+    if (!labelElement) {
+      let prev = input.previousElementSibling;
+      while (prev && prev.tagName !== 'LABEL') {
+        prev = prev.previousElementSibling;
+      }
+      labelElement = prev;
+    }
+    if (labelElement) {
+      return labelElement.innerText.replace('*', '').trim();
+    }
+    return input.name || input.placeholder || "Field";
+  }
+
+  // Intercept form submissions globally for validation popups
+  document.addEventListener('submit', function(e) {
+    const form = e.target;
+    if (!form || form.getAttribute('novalidate') === 'custom-bypass') return;
+
+    const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+    for (let field of requiredFields) {
+      if (field.type === 'hidden') continue;
+      if (!field.value || !field.value.trim()) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // If field is in a hidden step, make that step visible
+        const stepParent = field.closest('.form-step, .step-content, .tab-pane');
+        if (stepParent && (stepParent.classList.contains('d-none') || stepParent.style.display === 'none')) {
+          const allSteps = Array.from(form.querySelectorAll('.form-step, .step-content, .tab-pane'));
+          allSteps.forEach(s => {
+            s.classList.add('d-none');
+            s.style.display = 'none';
+          });
+          stepParent.classList.remove('d-none');
+          stepParent.style.display = 'block';
+        }
+
+        const labelName = getGlobalFieldLabel(field);
+        showValidationAlert(`${labelName} is required`);
+        field.focus();
+        return false;
+      }
+    }
+  }, true);
+</script>

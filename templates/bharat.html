@@ -1724,13 +1724,13 @@
                 })
                     .then(data => {
                         if (data.status === 'already_approved') {
-                            alert("ℹ️ This service is already approved.");
+                            showWarningAlert("This service is already approved.");
                             return;
                         }
 
                         if (data.status === 'blocked' || data.status === 'insufficient_stock') {
-                            alert(
-                                "❌ APPROVAL BLOCKED — Insufficient Stock!\n\n" +
+                            showErrorAlert(
+                                "APPROVAL BLOCKED — Insufficient Stock!\n\n" +
                                 (data.errors || []).join("\n") +
                                 "\n\nPlease add or transfer stock to this branch/HO first, then retry."
                             );
@@ -1738,16 +1738,15 @@
                         }
 
                         // ✅ Full success
-                        alert("✅ Service Approved! Stock deducted from inventory.");
-                        location.reload();
+                        showSuccessAlert("Service Approved! Stock deducted from inventory.", "Success", () => location.reload());
                     })
                     .catch(err => {
                         console.error(err);
                         if (err.message === 'SESSION_EXPIRED') {
-                            alert("⚠️ Your session has expired. Please log in again.");
+                            showWarningAlert("Your session has expired. Please log in again.", "Session Expired");
                             window.location.href = '/login/';
                         } else {
-                            alert("❌ Error approving service. Please try again.\n" + err.message);
+                            showErrorAlert("Error approving service. Please try again.\n" + err.message);
                         }
                     });
             }

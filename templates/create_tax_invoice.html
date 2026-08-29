@@ -1114,7 +1114,7 @@ showStep(currentStep);
         const hsn = container.querySelector('input.product-hsn-sac').value || '';
 
         if (quantity <= 0) {
-            alert('Quantity must be greater than zero.');
+            showValidationAlert('Quantity must be greater than zero.');
             return;
         }
 
@@ -1253,7 +1253,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     })
                     .then(data => {
                         if (data.error) {
-                            alert(data.error);
+                            showErrorAlert(data.error);
                             return;
                         }
 
@@ -1326,7 +1326,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    showErrorAlert(data.error);
                     return;
                 }
 
@@ -1339,7 +1339,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => {
                 console.error('Error fetching branch details:', error);
-                alert('Error fetching branch details');
+                showErrorAlert('Error fetching branch details');
             });
     }
 </script>
@@ -1382,7 +1382,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    showErrorAlert(data.error);
                     return;
                 }
 

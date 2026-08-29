@@ -357,6 +357,7 @@
     .btn-email { background: #e0f7fb; color: #0097a7; }
     .btn-email:hover { background: #0097a7; color: #fff; }
 
+    /* WhatsApp Button Style */
     .btn-whatsapp { background: #e6f9ef; color: #1a9e57; }
     .btn-whatsapp:hover { background: #25D366; color: #fff; }
 
@@ -642,9 +643,8 @@
                 <i class="bi bi-envelope-at"></i>
               </a>
 
-              <!-- WhatsApp -->
-              <a href="https://wa.me/?text=Delivery%20Challan%20{{ dc.dc_no }}%20-%20View%20here:%20{{ request.build_absolute_uri }}{% url 'dc_detail_view' dc.id %}"
-                 target="_blank"
+              <!-- WhatsApp - Backend Disabled -->
+              <a href="#" onclick="alert('WhatsApp feature is currently disabled'); return false;"
                  class="action-btn btn-whatsapp"
                  title="Share on WhatsApp"
                  data-bs-toggle="tooltip"
