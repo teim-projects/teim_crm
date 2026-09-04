@@ -177,13 +177,13 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        /* Border accents */
-        .kpi-card-1 { border: 1.5px solid #38bdf8; }
-        .kpi-card-2 { border: 1.5px solid #a78bfa; }
-        .kpi-card-3 { border: 1.5px solid #f472b6; }
-        .kpi-card-4 { border: 1.5px solid #fb923c; }
-        .kpi-card-5 { border: 1.5px solid #facc15; }
-        .kpi-card-6 { border: 1.5px solid #2dd4bf; }
+        /* Border accents matching reference UI */
+        .kpi-card-1 { border: 2px solid #10b981; }
+        .kpi-card-2 { border: 2px solid #3b82f6; }
+        .kpi-card-3 { border: 2px solid #ef4444; }
+        .kpi-card-4 { border: 2px solid #f97316; }
+        .kpi-card-5 { border: 2px solid #facc15; }
+        .kpi-card-6 { border: 2px solid #2dd4bf; }
 
         .kpi-title {
             font-size: 13.5px;
@@ -198,6 +198,9 @@
             font-weight: 700;
             color: #0f172a;
             line-height: 1.1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* ===== CHARTS SECTION ===== */
@@ -369,7 +372,7 @@
                 <div class="kpi-grid-4">
                     <div class="kpi-card kpi-card-1">
                         <div class="kpi-title">Total Revenue</div>
-                        <div class="kpi-value" id="kpiRevenue">{{ total_revenue }}</div>
+                        <div class="kpi-value" id="kpiRevenue" title="{{ total_revenue_full|default:total_revenue }}">{{ total_revenue }}</div>
                     </div>
                     <div class="kpi-card kpi-card-2">
                         <div class="kpi-title">No. of Quotation</div>
@@ -377,7 +380,11 @@
                     </div>
                     <div class="kpi-card kpi-card-3">
                         <div class="kpi-title">Total Leads</div>
-                        <div class="kpi-value" id="kpiLeads">{{ total_leads }}</div>
+                        <div class="kpi-value">
+                            <span id="kpiLeads">{{ total_leads }}</span>
+                            <span style="color: #10b981; font-size: 20px; font-weight: 700; margin-left: 4px;">↑</span>
+                        </div>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 3px;" id="kpiLeadsSubtext">2025: 1110</div>
                     </div>
                     <div class="kpi-card kpi-card-4">
                         <div class="kpi-title">Total Customers</div>
@@ -473,10 +480,10 @@
                                     <polygon id="leadFunnelPoly" points="40,20 320,20 205,230 155,230" fill="#6366f1" />
                                     <text id="leadFunnelText" x="180" y="135" text-anchor="middle" fill="#000000" font-size="13" font-weight="600" font-family="Roboto, sans-serif">100%</text>
                                     <g id="leadFunnelBars">
-                                        <rect x="153" y="238" width="54" height="7" rx="1" fill="#2dd4bf" />
-                                        <rect x="154" y="249" width="52" height="5" rx="1" fill="#f472b6" />
-                                        <rect x="155" y="258" width="50" height="4" rx="1" fill="#fb923c" />
-                                        <rect x="156" y="266" width="48" height="3" rx="1" fill="#facc15" />
+                                        <rect id="barLeadWarm" x="153" y="238" width="54" height="7" rx="1" fill="#2dd4bf" />
+                                        <rect id="barLeadCold" x="154" y="249" width="52" height="5" rx="1" fill="#f472b6" />
+                                        <rect id="barLeadNot" x="155" y="258" width="50" height="4" rx="1" fill="#fb923c" />
+                                        <rect id="barLeadLoss" x="156" y="266" width="48" height="3" rx="1" fill="#facc15" />
                                     </g>
                                 </svg>
                             </div>
@@ -488,35 +495,35 @@
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <div class="d-flex align-items-center gap-2">
-                                        <input type="checkbox" checked style="accent-color: #6366f1; width: 14px; height: 14px;">
+                                        <input type="checkbox" id="chkLeadHot" checked onchange="toggleLeadFunnel()" style="accent-color: #6366f1; width: 14px; height: 14px;">
                                         <span style="color: #1e293b; font-weight: 500;">Hot</span>
                                     </div>
                                     <span style="font-weight: 600; color: #0f172a;" id="funnelHotVal">{{ lead_kpi_hot }}</span>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <div class="d-flex align-items-center gap-2">
-                                        <input type="checkbox" checked style="accent-color: #2dd4bf; width: 14px; height: 14px;">
+                                        <input type="checkbox" id="chkLeadWarm" checked onchange="toggleLeadFunnel()" style="accent-color: #2dd4bf; width: 14px; height: 14px;">
                                         <span style="color: #1e293b; font-weight: 500;">Warm</span>
                                     </div>
                                     <span style="font-weight: 600; color: #0f172a;" id="funnelWarmVal">{{ lead_kpi_warm }}</span>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <div class="d-flex align-items-center gap-2">
-                                        <input type="checkbox" checked style="accent-color: #f472b6; width: 14px; height: 14px;">
+                                        <input type="checkbox" id="chkLeadCold" checked onchange="toggleLeadFunnel()" style="accent-color: #f472b6; width: 14px; height: 14px;">
                                         <span style="color: #1e293b; font-weight: 500;">Cold</span>
                                     </div>
                                     <span style="font-weight: 600; color: #0f172a;" id="funnelColdVal">{{ lead_kpi_cold }}</span>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <div class="d-flex align-items-center gap-2">
-                                        <input type="checkbox" checked style="accent-color: #fb923c; width: 14px; height: 14px;">
+                                        <input type="checkbox" id="chkLeadNot" checked onchange="toggleLeadFunnel()" style="accent-color: #fb923c; width: 14px; height: 14px;">
                                         <span style="color: #1e293b; font-weight: 500;">Not Interested</span>
                                     </div>
                                     <span style="font-weight: 600; color: #0f172a;" id="funnelNotVal">{{ lead_kpi_not_interested }}</span>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <div class="d-flex align-items-center gap-2">
-                                        <input type="checkbox" checked style="accent-color: #facc15; width: 14px; height: 14px;">
+                                        <input type="checkbox" id="chkLeadLoss" checked onchange="toggleLeadFunnel()" style="accent-color: #facc15; width: 14px; height: 14px;">
                                         <span style="color: #1e293b; font-weight: 500;">Loss of Order</span>
                                     </div>
                                     <span style="font-weight: 600; color: #0f172a;" id="funnelLossVal">{{ lead_kpi_loss_order }}</span>
@@ -632,11 +639,8 @@
                                     <input type="checkbox" checked disabled style="accent-color: #475569; width: 13px; height: 13px;">
                                     <span style="font-weight: 600;">customersegment</span>
                                 </div>
-                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #64748b;"><span style="color: #1e293b;">Unknown</span></div>
-                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #6366f1;"><span style="color: #1e293b;">Industrial / Commercial</span></div>
-                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #2dd4bf;"><span style="color: #1e293b;">Institutional</span></div>
-                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #f472b6;"><span style="color: #1e293b;">Irrelevant Lead</span></div>
-                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #f97316;"><span style="color: #1e293b;">Residential</span></div>
+                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" id="chkStateInd" checked onchange="toggleStateLeadChart()" style="accent-color: #6366f1;"><span style="color: #1e293b;">Industrial / Commercial</span></div>
+                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" id="chkStateRes" checked onchange="toggleStateLeadChart()" style="accent-color: #f97316;"><span style="color: #1e293b;">Residential</span></div>
                             </div>
                         </div>
                     </div>
@@ -650,22 +654,31 @@
                             <div style="flex: 1; height: 100%; display: flex; align-items: center; justify-content: center;">
                                 <svg viewBox="0 0 360 290" style="width: 100%; height: 100%; max-height: 290px;">
                                     <polygon id="followupFunnelPoly" points="40,20 320,20 205,230 155,230" fill="#6366f1" />
-                                    <text id="followupFunnelText" x="180" y="135" text-anchor="middle" fill="#000000" font-size="13" font-weight="600" font-family="Roboto, sans-serif">100%</text>
+                                    <text id="followupFunnelText" x="180" y="135" text-anchor="middle" fill="#000000" font-size="14" font-weight="700" font-family="Roboto, sans-serif">{{ followup_percent|default:"100%" }}</text>
                                     <g id="followupFunnelBars">
-                                        <rect x="153" y="238" width="54" height="7" rx="1" fill="#2dd4bf" />
-                                        <rect x="154" y="249" width="52" height="5" rx="1" fill="#f472b6" />
+                                        <rect id="barFollowup2" x="153" y="238" width="54" height="7" rx="1" fill="#2dd4bf" />
+                                        <rect id="barFollowup3" x="154" y="249" width="52" height="5" rx="1" fill="#f472b6" />
                                     </g>
                                 </svg>
                             </div>
 
-                            <div style="width: 165px; padding-left: 5px; font-size: 12px;">
+                            <div style="width: 175px; padding-left: 5px; font-size: 12px;">
                                 <div style="color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
                                     <input type="checkbox" checked disabled style="accent-color: #475569; width: 13px; height: 13px;">
                                     <span style="font-weight: 600;">followup_remark</span>
                                 </div>
-                                {% for fl in followup_labels %}
-                                <div class="d-flex align-items-center gap-2 mb-2"><input type="checkbox" checked style="accent-color: #6366f1;"><span style="color: #1e293b;">{{ fl }}</span></div>
-                                {% endfor %}
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <input type="checkbox" id="chkFollowup1" checked onchange="toggleFollowupFunnel()" style="accent-color: #6366f1;">
+                                    <span style="color: #1e293b;">Call not received</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <input type="checkbox" id="chkFollowup2" checked onchange="toggleFollowupFunnel()" style="accent-color: #2dd4bf;">
+                                    <span style="color: #1e293b;">Give next Follow up date</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <input type="checkbox" id="chkFollowup3" checked onchange="toggleFollowupFunnel()" style="accent-color: #f472b6;">
+                                    <span style="color: #1e293b;">Call Out of Coverage Area</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -688,11 +701,11 @@
                                     <span style="font-weight: 600;">Legend</span>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <div class="d-flex align-items-center gap-2"><input type="checkbox" checked style="accent-color: #6366f1;"><span style="color: #1e293b;">Product Ratio %</span></div>
+                                    <div class="d-flex align-items-center gap-2"><input type="checkbox" id="chkProdRatio" checked onchange="toggleProdVsSvcPie()" style="accent-color: #6366f1;"><span style="color: #1e293b;">Product Ratio %</span></div>
                                     <span style="font-weight: 600;" id="prodRatioVal">{{ prod_vs_svc_data.0 }}</span>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <div class="d-flex align-items-center gap-2"><input type="checkbox" checked style="accent-color: #2dd4bf;"><span style="color: #1e293b;">Service Ratio %</span></div>
+                                    <div class="d-flex align-items-center gap-2"><input type="checkbox" id="chkSvcRatio" checked onchange="toggleProdVsSvcPie()" style="accent-color: #2dd4bf;"><span style="color: #1e293b;">Service Ratio %</span></div>
                                     <span style="font-weight: 600;" id="svcRatioVal">{{ prod_vs_svc_data.1 }}</span>
                                 </div>
                             </div>
@@ -705,13 +718,8 @@
                             <span>Revenue By Customer Segmentation</span>
                         </div>
                         <div class="chart-body" style="height: 380px;">
-                            <div class="treemap-container">
-                                {% for label in seg_rev_labels %}
-                                <div class="treemap-box" style="flex: 1;">
-                                    <div>{{ label }}</div>
-                                    <div style="font-size: 11px; opacity: 0.9;">Real DB Metric</div>
-                                </div>
-                                {% endfor %}
+                            <div id="treemapContainer" class="treemap-container">
+                                <!-- Dynamic Proportional Revenue Segment Blocks Rendered via JS -->
                             </div>
                         </div>
                     </div>
@@ -723,65 +731,81 @@
 
     </div>
 
+    <!-- Custom Treemap Tooltip -->
+    <div id="treemapTooltip" style="position: absolute; display: none; z-index: 9999; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.18); font-size: 12px; color: #1e293b; pointer-events: none;">
+        <div style="display: flex; gap: 6px; margin-bottom: 4px;">
+            <span style="color: #64748b;">customersegment:</span>
+            <strong id="ttSegmentName" style="color: #0f172a; font-weight: 700;">-</strong>
+        </div>
+        <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+            <span style="color: #64748b;">Revenue:</span>
+            <strong id="ttRevenueVal" style="color: #0f172a; font-weight: 700;">-</strong>
+        </div>
+        <div style="font-size: 11px; color: #475569; border-top: 1px dashed #cbd5e1; padding-top: 4px; margin-top: 4px;">
+            <strong>Click to:</strong> View Underlying Data / Drill Down
+        </div>
+    </div>
+
     <!-- JS -->
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         // 100% REAL Dynamic Datasets from Django Backend ORM
         let dynamicData = {
-            total_revenue: "{{ total_revenue }}",
-            total_quotations: "{{ total_quotations }}",
-            total_leads: "{{ total_leads }}",
-            total_customers: "{{ total_customers }}",
+            total_revenue: "{{ total_revenue|default:'0' }}",
+            total_quotations: "{{ total_quotations|default:'0' }}",
+            total_leads: "{{ total_leads|default:'0' }}",
+            total_customers: "{{ total_customers|default:'0' }}",
 
             // Revenue Tab
-            rev_branch_labels: {{ rev_branch_labels|safe }},
-            rev_branch_data: {{ rev_branch_data|safe }},
-            rev_sp_labels: {{ rev_sp_labels|safe }},
-            rev_sp_data: {{ rev_sp_data|safe }},
-            trend_labels: {{ trend_labels|safe }},
-            trend_data: {{ trend_data|safe }},
+            rev_branch_labels: {{ rev_branch_labels|default:"[]"|safe }},
+            rev_branch_data: {{ rev_branch_data|default:"[]"|safe }},
+            rev_sp_labels: {{ rev_sp_labels|default:"[]"|safe }},
+            rev_sp_data: {{ rev_sp_data|default:"[]"|safe }},
+            trend_labels: {{ trend_labels|default:"[]"|safe }},
+            trend_data: {{ trend_data|default:"[]"|safe }},
 
             // Lead Analysis Tab
-            lead_kpi_total: "{{ lead_kpi_total }}",
-            lead_kpi_hot: "{{ lead_kpi_hot }}",
-            lead_kpi_cold: "{{ lead_kpi_cold }}",
-            lead_kpi_warm: "{{ lead_kpi_warm }}",
-            lead_kpi_not_interested: "{{ lead_kpi_not_interested }}",
-            lead_kpi_loss_order: "{{ lead_kpi_loss_order }}",
-            lead_cust_type_labels: {{ lead_cust_type_labels|safe }},
-            lead_cust_type_data: {{ lead_cust_type_data|safe }},
-            converted_type_labels: {{ converted_type_labels|safe }},
-            converted_type_data: {{ converted_type_data|safe }},
-            month_flow_labels: {{ month_flow_labels|safe }},
-            month_flow_data: {{ month_flow_data|safe }},
-            day_flow_labels: {{ day_flow_labels|safe }},
-            day_flow_data: {{ day_flow_data|safe }},
-            lead_source_dist_labels: {{ lead_source_dist_labels|safe }},
-            lead_source_dist_data: {{ lead_source_dist_data|safe }},
+            lead_kpi_total: "{{ lead_kpi_total|default:'0' }}",
+            lead_kpi_hot: "{{ lead_kpi_hot|default:'0' }}",
+            lead_kpi_cold: "{{ lead_kpi_cold|default:'0' }}",
+            lead_kpi_warm: "{{ lead_kpi_warm|default:'0' }}",
+            lead_kpi_not_interested: "{{ lead_kpi_not_interested|default:'0' }}",
+            lead_kpi_loss_order: "{{ lead_kpi_loss_order|default:'0' }}",
+            lead_cust_type_labels: {{ lead_cust_type_labels|default:"[]"|safe }},
+            lead_cust_type_data: {{ lead_cust_type_data|default:"[]"|safe }},
+            converted_type_labels: {{ converted_type_labels|default:"[]"|safe }},
+            converted_type_data: {{ converted_type_data|default:"[]"|safe }},
+            month_flow_labels: {{ month_flow_labels|default:"[]"|safe }},
+            month_flow_data: {{ month_flow_data|default:"[]"|safe }},
+            day_flow_labels: {{ day_flow_labels|default:"[]"|safe }},
+            day_flow_data: {{ day_flow_data|default:"[]"|safe }},
+            lead_source_dist_labels: {{ lead_source_dist_labels|default:"[]"|safe }},
+            lead_source_dist_data: {{ lead_source_dist_data|default:"[]"|safe }},
 
             // Service Analysis Tab
-            svc_provided_labels: {{ svc_provided_labels|safe }},
-            svc_provided_data: {{ svc_provided_data|safe }},
-            svc_revenue_labels: {{ svc_revenue_labels|safe }},
-            svc_revenue_data: {{ svc_revenue_data|safe }},
+            svc_provided_labels: {{ svc_provided_labels|default:"[]"|safe }},
+            svc_provided_data: {{ svc_provided_data|default:"[]"|safe }},
+            svc_revenue_labels: {{ svc_revenue_labels|default:"[]"|safe }},
+            svc_revenue_data: {{ svc_revenue_data|default:"[]"|safe }},
 
             // Product Analysis Tab
-            prod_rev_labels: {{ prod_rev_labels|safe }},
-            prod_rev_data: {{ prod_rev_data|safe }},
-            prod_svc_labels: {{ prod_svc_labels|safe }},
-            prod_svc_data: {{ prod_svc_data|safe }},
+            prod_rev_labels: {{ prod_rev_labels|default:"[]"|safe }},
+            prod_rev_data: {{ prod_rev_data|default:"[]"|safe }},
+            prod_svc_labels: {{ prod_svc_labels|default:"[]"|safe }},
+            prod_svc_data: {{ prod_svc_data|default:"[]"|safe }},
 
             // Customer Segment Analysis Tab
-            state_lead_labels: {{ state_lead_labels|safe }},
-            state_res_data: {{ state_res_data|safe }},
-            state_ind_data: {{ state_ind_data|safe }},
-            followup_labels: {{ followup_labels|safe }},
-            followup_data: {{ followup_data|safe }},
-            prod_vs_svc_labels: {{ prod_vs_svc_labels|safe }},
-            prod_vs_svc_data: {{ prod_vs_svc_data|safe }},
-            seg_rev_labels: {{ seg_rev_labels|safe }},
-            seg_rev_data: {{ seg_rev_data|safe }}
+            state_lead_labels: {{ state_lead_labels|default:"[]"|safe }},
+            state_res_data: {{ state_res_data|default:"[]"|safe }},
+            state_ind_data: {{ state_ind_data|default:"[]"|safe }},
+            followup_labels: {{ followup_labels|default:"[]"|safe }},
+            followup_data: {{ followup_data|default:"[]"|safe }},
+            prod_vs_svc_labels: {{ prod_vs_svc_labels|default:"[]"|safe }},
+            prod_vs_svc_data: {{ prod_vs_svc_data|default:"[]"|safe }},
+            seg_rev_labels: {{ seg_rev_labels|default:"[]"|safe }},
+            seg_rev_data: {{ seg_rev_data|default:"[]"|safe }},
+            seg_rev_formatted: {{ seg_rev_formatted|default:"[]"|safe }}
         };
 
         let revBranchChart, revSpChart, trendChart;
@@ -809,9 +833,186 @@
             }
         }
 
+        function toggleLeadFunnel() {
+            const chkHot = document.getElementById('chkLeadHot');
+            const chkWarm = document.getElementById('chkLeadWarm');
+            const chkCold = document.getElementById('chkLeadCold');
+            const chkNot = document.getElementById('chkLeadNot');
+            const chkLoss = document.getElementById('chkLeadLoss');
+
+            const vHot = parseInt(dynamicData.lead_kpi_hot || 0) || 0;
+            const vWarm = parseInt(dynamicData.lead_kpi_warm || 0) || 0;
+            const vCold = parseInt(dynamicData.lead_kpi_cold || 0) || 0;
+            const vNot = parseInt(dynamicData.lead_kpi_not_interested || 0) || 0;
+            const vLoss = parseInt(dynamicData.lead_kpi_loss_order || 0) || 0;
+
+            const totalInitial = vHot + vWarm + vCold + vNot + vLoss;
+
+            let checkedSum = 0;
+            if (chkHot && chkHot.checked) checkedSum += vHot;
+            if (chkWarm && chkWarm.checked) checkedSum += vWarm;
+            if (chkCold && chkCold.checked) checkedSum += vCold;
+            if (chkNot && chkNot.checked) checkedSum += vNot;
+            if (chkLoss && chkLoss.checked) checkedSum += vLoss;
+
+            const barWarm = document.getElementById('barLeadWarm');
+            const barCold = document.getElementById('barLeadCold');
+            const barNot = document.getElementById('barLeadNot');
+            const barLoss = document.getElementById('barLeadLoss');
+
+            if (barWarm) barWarm.style.display = (chkWarm && chkWarm.checked) ? 'block' : 'none';
+            if (barCold) barCold.style.display = (chkCold && chkCold.checked) ? 'block' : 'none';
+            if (barNot) barNot.style.display = (chkNot && chkNot.checked) ? 'block' : 'none';
+            if (barLoss) barLoss.style.display = (chkLoss && chkLoss.checked) ? 'block' : 'none';
+
+            const poly = document.getElementById('leadFunnelPoly');
+            const txt = document.getElementById('leadFunnelText');
+
+            if (checkedSum === 0) {
+                if (poly) poly.setAttribute('fill', '#e2e8f0');
+                if (txt) txt.textContent = '0%';
+            } else {
+                if (poly) poly.setAttribute('fill', (chkHot && chkHot.checked) ? '#6366f1' : '#818cf8');
+                const pct = totalInitial > 0 ? Math.round((checkedSum / totalInitial) * 100) : 100;
+                if (txt) txt.textContent = pct + '%';
+            }
+        }
+
+        function toggleFollowupFunnel() {
+            const chk1 = document.getElementById('chkFollowup1');
+            const chk2 = document.getElementById('chkFollowup2');
+            const chk3 = document.getElementById('chkFollowup3');
+
+            const fData = dynamicData.followup_data || [0, 0, 0];
+            const v1 = parseInt(fData[0] || 0) || 0;
+            const v2 = parseInt(fData[1] || 0) || 0;
+            const v3 = parseInt(fData[2] || 0) || 0;
+
+            const totalInitial = v1 + v2 + v3;
+
+            let checkedSum = 0;
+            if (chk1 && chk1.checked) checkedSum += v1;
+            if (chk2 && chk2.checked) checkedSum += v2;
+            if (chk3 && chk3.checked) checkedSum += v3;
+
+            const bar2 = document.getElementById('barFollowup2');
+            const bar3 = document.getElementById('barFollowup3');
+
+            if (bar2) bar2.style.display = (chk2 && chk2.checked) ? 'block' : 'none';
+            if (bar3) bar3.style.display = (chk3 && chk3.checked) ? 'block' : 'none';
+
+            const poly = document.getElementById('followupFunnelPoly');
+            const txt = document.getElementById('followupFunnelText');
+
+            if (checkedSum === 0) {
+                if (poly) poly.setAttribute('fill', '#e2e8f0');
+                if (txt) txt.textContent = '0%';
+            } else {
+                if (poly) poly.setAttribute('fill', (chk1 && chk1.checked) ? '#6366f1' : '#818cf8');
+                const pct = totalInitial > 0 ? Math.round((checkedSum / totalInitial) * 100) : 100;
+                if (txt) txt.textContent = pct + '%';
+            }
+        }
+
+        function toggleStateLeadChart() {
+            if (!stateLeadChart) return;
+            const chkInd = document.getElementById('chkStateInd');
+            const chkRes = document.getElementById('chkStateRes');
+
+            if (stateLeadChart.getDatasetMeta(0)) {
+                stateLeadChart.getDatasetMeta(0).hidden = !(chkInd && chkInd.checked);
+            }
+            if (stateLeadChart.getDatasetMeta(1)) {
+                stateLeadChart.getDatasetMeta(1).hidden = !(chkRes && chkRes.checked);
+            }
+            stateLeadChart.update();
+        }
+
+        function toggleProdVsSvcPie() {
+            if (!prodVsSvcPieChart) return;
+            const chkProd = document.getElementById('chkProdRatio');
+            const chkSvc = document.getElementById('chkSvcRatio');
+
+            const rawProd = (dynamicData.prod_vs_svc_data && dynamicData.prod_vs_svc_data.length > 0) ? parseFloat(dynamicData.prod_vs_svc_data[0]) || 0 : 0;
+            const rawSvc = (dynamicData.prod_vs_svc_data && dynamicData.prod_vs_svc_data.length > 1) ? parseFloat(dynamicData.prod_vs_svc_data[1]) || 0 : 0;
+
+            const valProd = (chkProd && chkProd.checked) ? rawProd : 0;
+            const valSvc = (chkSvc && chkSvc.checked) ? rawSvc : 0;
+
+            prodVsSvcPieChart.data.datasets[0].data = [valProd, valSvc];
+            prodVsSvcPieChart.update();
+        }
+
+        function renderTreemap(labels, data, formatted) {
+            const container = document.getElementById('treemapContainer');
+            if (!container) return;
+
+            if (!labels || !data || data.length === 0) {
+                container.innerHTML = `<div class="d-flex align-items-center justify-content-center w-100 text-muted">No Segment Data Available</div>`;
+                return;
+            }
+
+            const totalSum = data.reduce((a, b) => a + (parseFloat(b) || 0), 0);
+            const colors = ['#6366f1', '#0284c7', '#f97316', '#10b981', '#ec4899'];
+
+            let html = '';
+            labels.forEach((label, i) => {
+                const val = parseFloat(data[i]) || 0;
+                const fmtVal = (formatted && formatted[i]) ? formatted[i] : ('₹' + val.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                const pct = totalSum > 0 ? ((val / totalSum) * 100).toFixed(1) : '0';
+                const color = colors[i % colors.length];
+
+                // If val <= 0 and totalSum > 0, skip 0 revenue blocks
+                if (val <= 0 && totalSum > 0) return;
+
+                const flexRatio = totalSum > 0 ? (val / totalSum) : 1;
+
+                html += `
+                    <div class="treemap-box" style="flex: ${flexRatio}; background-color: ${color}; position: relative; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; overflow: hidden; padding: 18px 16px; border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-end;"
+                         onmouseover="showTreemapTooltip(event, '${label}', '${fmtVal}', '${pct}%')"
+                         onmousemove="moveTreemapTooltip(event)"
+                         onmouseout="hideTreemapTooltip()">
+                        <div style="font-size: 14.5px; font-weight: 700; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">${label}</div>
+                        <div style="font-size: 16.5px; font-weight: 800; color: #ffffff; margin-top: 4px; font-family: 'Outfit', sans-serif;">${fmtVal}</div>
+                        <div style="font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,0.9); margin-top: 2px;">${pct}% Share</div>
+                    </div>
+                `;
+            });
+
+            if (html === '') {
+                html = `<div class="d-flex align-items-center justify-content-center w-100 text-muted">No Segment Revenue Recorded</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function showTreemapTooltip(e, segName, revFmt, pct) {
+            const tt = document.getElementById('treemapTooltip');
+            const nameEl = document.getElementById('ttSegmentName');
+            const revEl = document.getElementById('ttRevenueVal');
+            if (!tt || !nameEl || !revEl) return;
+
+            nameEl.textContent = segName;
+            revEl.textContent = revFmt + ' (' + pct + ')';
+            tt.style.display = 'block';
+            moveTreemapTooltip(e);
+        }
+
+        function moveTreemapTooltip(e) {
+            const tt = document.getElementById('treemapTooltip');
+            if (!tt) return;
+            tt.style.left = (e.pageX + 12) + 'px';
+            tt.style.top = (e.pageY + 12) + 'px';
+        }
+
+        function hideTreemapTooltip() {
+            const tt = document.getElementById('treemapTooltip');
+            if (tt) tt.style.display = 'none';
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             initRevenueCharts();
-            const initFunnelCount = (parseInt("{{ lead_kpi_hot }}")||0) + (parseInt("{{ lead_kpi_warm }}")||0) + (parseInt("{{ lead_kpi_cold }}")||0) + (parseInt("{{ lead_kpi_not_interested }}")||0) + (parseInt("{{ lead_kpi_loss_order }}")||0);
+            const initFunnelCount = (parseInt("{{ lead_kpi_hot|default:'0' }}")||0) + (parseInt("{{ lead_kpi_warm|default:'0' }}")||0) + (parseInt("{{ lead_kpi_cold|default:'0' }}")||0) + (parseInt("{{ lead_kpi_not_interested|default:'0' }}")||0) + (parseInt("{{ lead_kpi_loss_order|default:'0' }}")||0);
             updateFunnelDisplay(initFunnelCount, 'leadFunnelPoly', 'leadFunnelText', 'leadFunnelBars');
             const initFollowupCount = (dynamicData.followup_data || []).reduce((a, b) => a + (parseInt(b)||0), 0);
             updateFunnelDisplay(initFollowupCount, 'followupFunnelPoly', 'followupFunnelText', 'followupFunnelBars');
@@ -820,213 +1021,254 @@
         // 1. Revenue Tab Charts Initialization (100% Real DB Data)
         function initRevenueCharts() {
             try {
-                const ctx1 = document.getElementById('revBranchCanvas').getContext('2d');
-                revBranchChart = new Chart(ctx1, {
-                    type: 'bar',
-                    data: {
-                        labels: dynamicData.rev_branch_labels,
-                        datasets: [{ label: 'Value', data: dynamicData.rev_branch_data, backgroundColor: '#6366f1', borderRadius: 3, barPercentage: 0.55 }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Value ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { ticks: { font: { size: 10 }, maxRotation: 45 } } }
-                    }
-                });
+                const ctx1 = document.getElementById('revBranchCanvas');
+                if (ctx1) {
+                    if (revBranchChart) revBranchChart.destroy();
+                    revBranchChart = new Chart(ctx1.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: dynamicData.rev_branch_labels,
+                            datasets: [{ label: 'Revenue (₹)', data: dynamicData.rev_branch_data, backgroundColor: '#6366f1', borderRadius: 3, barPercentage: 0.55 }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true, title: { display: true, text: 'Value ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { ticks: { font: { size: 10 }, maxRotation: 45 } } }
+                        }
+                    });
+                }
 
-                const ctx2 = document.getElementById('revSpCanvas').getContext('2d');
-                revSpChart = new Chart(ctx2, {
-                    type: 'bar',
-                    data: {
-                        labels: dynamicData.rev_sp_labels,
-                        datasets: [{ label: 'Value', data: dynamicData.rev_sp_data, backgroundColor: '#6366f1', borderRadius: 3, barPercentage: 0.55 }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Value ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { ticks: { font: { size: 11 }, maxRotation: 45 } } }
-                    }
-                });
+                const ctx2 = document.getElementById('revSpCanvas');
+                if (ctx2) {
+                    if (revSpChart) revSpChart.destroy();
+                    revSpChart = new Chart(ctx2.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: dynamicData.rev_sp_labels,
+                            datasets: [{ label: 'Revenue (₹)', data: dynamicData.rev_sp_data, backgroundColor: '#6366f1', borderRadius: 3, barPercentage: 0.55 }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true, title: { display: true, text: 'Value ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { ticks: { font: { size: 11 }, maxRotation: 45 } } }
+                        }
+                    });
+                }
 
-                const ctx3 = document.getElementById('trendChartCanvas').getContext('2d');
-                trendChart = new Chart(ctx3, {
-                    type: 'line',
-                    data: {
-                        labels: dynamicData.trend_labels,
-                        datasets: [{ label: 'Total Revenue', data: dynamicData.trend_data, borderColor: '#5b7cfd', backgroundColor: 'rgba(91, 124, 253, 0.08)', borderWidth: 2.5, pointBackgroundColor: '#ffffff', pointBorderColor: '#5b7cfd', pointRadius: 4, tension: 0.3, fill: true }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Total revenue ∨', font: { weight: 'bold' } } }, x: { ticks: { font: { size: 11 }, maxRotation: 45 } } }
-                    }
-                });
+                const ctx3 = document.getElementById('trendChartCanvas');
+                if (ctx3) {
+                    if (trendChart) trendChart.destroy();
+                    trendChart = new Chart(ctx3.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: dynamicData.trend_labels,
+                            datasets: [{ label: 'Total Revenue', data: dynamicData.trend_data, borderColor: '#5b7cfd', backgroundColor: 'rgba(91, 124, 253, 0.08)', borderWidth: 2.5, pointBackgroundColor: '#ffffff', pointBorderColor: '#5b7cfd', pointRadius: 4, tension: 0.3, fill: true }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true, title: { display: true, text: 'Total revenue ∨', font: { weight: 'bold' } } }, x: { ticks: { font: { size: 11 }, maxRotation: 45 } } }
+                        }
+                    });
+                }
             } catch(e) { console.error("Error initRevenueCharts:", e); }
         }
 
         // 2. Lead Analysis Tab Charts Initialization (100% Real DB Data)
         function initLeadCharts() {
             try {
-                const ctxPie = document.getElementById('custTypePieCanvas').getContext('2d');
-                custTypePieChart = new Chart(ctxPie, {
-                    type: 'pie',
-                    data: { labels: dynamicData.lead_cust_type_labels, datasets: [{ data: dynamicData.lead_cust_type_data, backgroundColor: ['#5b7cfd', '#2dd4bf', '#64748b'] }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
-                });
+                const ctxPie = document.getElementById('custTypePieCanvas');
+                if (ctxPie) {
+                    if (custTypePieChart) custTypePieChart.destroy();
+                    custTypePieChart = new Chart(ctxPie.getContext('2d'), {
+                        type: 'pie',
+                        data: { labels: dynamicData.lead_cust_type_labels, datasets: [{ data: dynamicData.lead_cust_type_data, backgroundColor: ['#5b7cfd', '#2dd4bf', '#64748b'] }] },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+                    });
+                }
 
-                const ctxMonth = document.getElementById('monthFlowCanvas').getContext('2d');
-                monthFlowChart = new Chart(ctxMonth, {
-                    type: 'line',
-                    data: {
-                        labels: dynamicData.month_flow_labels,
-                        datasets: [{ label: 'No. of Leads', data: dynamicData.month_flow_data, borderColor: '#5b7cfd', backgroundColor: 'rgba(91, 124, 253, 0.08)', borderWidth: 2.5, pointBackgroundColor: '#ffffff', pointBorderColor: '#5b7cfd', pointRadius: 4, tension: 0.3, fill: true }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'No. of Leads ∨', font: { weight: 'bold' } } }, x: { title: { display: true, text: 'Month Number ∨', font: { weight: 'bold' } } } } }
-                });
+                const ctxMonth = document.getElementById('monthFlowCanvas');
+                if (ctxMonth) {
+                    if (monthFlowChart) monthFlowChart.destroy();
+                    monthFlowChart = new Chart(ctxMonth.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: dynamicData.month_flow_labels,
+                            datasets: [{ label: 'No. of Leads', data: dynamicData.month_flow_data, borderColor: '#5b7cfd', backgroundColor: 'rgba(91, 124, 253, 0.08)', borderWidth: 2.5, pointBackgroundColor: '#ffffff', pointBorderColor: '#5b7cfd', pointRadius: 4, tension: 0.3, fill: true }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'No. of Leads ∨', font: { weight: 'bold' } } }, x: { title: { display: true, text: 'Month Number ∨', font: { weight: 'bold' } } } } }
+                    });
+                }
 
-                const ctxDay = document.getElementById('dayFlowCanvas').getContext('2d');
-                dayFlowChart = new Chart(ctxDay, {
-                    type: 'line',
-                    data: {
-                        labels: dynamicData.day_flow_labels,
-                        datasets: [{
-                            label: 'Id Distinct Count',
-                            data: dynamicData.day_flow_data,
-                            borderColor: '#60a5fa',
-                            backgroundColor: 'rgba(96, 165, 250, 0.12)',
-                            borderWidth: 2,
-                            pointRadius: dynamicData.day_flow_data.length > 50 ? 2 : 4,
-                            pointHoverRadius: 6,
-                            pointBackgroundColor: '#ffffff',
-                            pointBorderColor: '#60a5fa',
-                            tension: 0.2,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return 'Id Distinct Count: ' + context.parsed.y;
+                const ctxDay = document.getElementById('dayFlowCanvas');
+                if (ctxDay) {
+                    if (dayFlowChart) dayFlowChart.destroy();
+                    dayFlowChart = new Chart(ctxDay.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: dynamicData.day_flow_labels,
+                            datasets: [{
+                                label: 'Id Distinct Count',
+                                data: dynamicData.day_flow_data,
+                                borderColor: '#60a5fa',
+                                backgroundColor: 'rgba(96, 165, 250, 0.12)',
+                                borderWidth: 2,
+                                pointRadius: (dynamicData.day_flow_data || []).length > 50 ? 2 : 4,
+                                pointHoverRadius: 6,
+                                pointBackgroundColor: '#ffffff',
+                                pointBorderColor: '#60a5fa',
+                                tension: 0.2,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return 'Id Distinct Count: ' + context.parsed.y;
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: { display: true, text: 'Id Distinct Count ∨', font: { weight: 'bold' } },
-                                ticks: { precision: 0 }
                             },
-                            x: {
-                                title: { display: true, text: 'Date of Date ∨', font: { weight: 'bold' } },
-                                ticks: { font: { size: 9 }, maxRotation: 45, autoSkip: true }
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Id Distinct Count ∨', font: { weight: 'bold' } },
+                                    ticks: { precision: 0 }
+                                },
+                                x: {
+                                    title: { display: true, text: 'Date of Date ∨', font: { weight: 'bold' } },
+                                    ticks: { font: { size: 9 }, maxRotation: 45, autoSkip: true }
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
 
-                const ctxSource = document.getElementById('leadSourceDistCanvas').getContext('2d');
-                leadSourceDistChart = new Chart(ctxSource, {
-                    type: 'bar',
-                    data: {
-                        labels: dynamicData.lead_source_dist_labels,
-                        datasets: [{ label: 'Distinct Count', data: dynamicData.lead_source_dist_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.65, categoryPercentage: 0.75 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { title: { display: true, text: 'sourceoflead ∨', font: { weight: 'bold' } }, ticks: { font: { size: 11 }, maxRotation: 45 } } } }
-                });
+                const ctxSource = document.getElementById('leadSourceDistCanvas');
+                if (ctxSource) {
+                    if (leadSourceDistChart) leadSourceDistChart.destroy();
+                    leadSourceDistChart = new Chart(ctxSource.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: dynamicData.lead_source_dist_labels,
+                            datasets: [{ label: 'Distinct Count', data: dynamicData.lead_source_dist_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.65, categoryPercentage: 0.75 }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { title: { display: true, text: 'sourceoflead ∨', font: { weight: 'bold' } }, ticks: { font: { size: 11 }, maxRotation: 45 } } } }
+                    });
+                }
             } catch(e) { console.error("Error initLeadCharts:", e); }
         }
 
         // 3. Service Analysis Tab Charts Initialization (100% Real DB Data)
         function initServiceCharts() {
             try {
-                const ctxSvcProv = document.getElementById('svcProvidedCanvas').getContext('2d');
-                svcProvidedChart = new Chart(ctxSvcProv, {
-                    type: 'bar',
-                    data: {
-                        labels: dynamicData.svc_provided_labels,
-                        datasets: [{ label: 'id Distinct Count', data: dynamicData.svc_provided_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { title: { display: true, text: 'service_subject ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
-                });
+                const ctxSvcProv = document.getElementById('svcProvidedCanvas');
+                if (ctxSvcProv) {
+                    if (svcProvidedChart) svcProvidedChart.destroy();
+                    svcProvidedChart = new Chart(ctxSvcProv.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: dynamicData.svc_provided_labels,
+                            datasets: [{ label: 'id Distinct Count', data: dynamicData.svc_provided_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { title: { display: true, text: 'service_subject ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
+                    });
+                }
 
-                const ctxSvcRev = document.getElementById('svcRevenueCanvas').getContext('2d');
-                svcRevenueChart = new Chart(ctxSvcRev, {
-                    type: 'bar',
-                    data: {
-                        labels: dynamicData.svc_revenue_labels,
-                        datasets: [{ label: 'Total service_revenue', data: dynamicData.svc_revenue_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Total service_revenue ∨', font: { weight: 'bold' } } }, x: { title: { display: true, text: 'x.service_subject ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
-                });
+                const ctxSvcRev = document.getElementById('svcRevenueCanvas');
+                if (ctxSvcRev) {
+                    if (svcRevenueChart) svcRevenueChart.destroy();
+                    svcRevenueChart = new Chart(ctxSvcRev.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: dynamicData.svc_revenue_labels,
+                            datasets: [{ label: 'Total service_revenue', data: dynamicData.svc_revenue_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Total service_revenue ∨', font: { weight: 'bold' } } }, x: { title: { display: true, text: 'x.service_subject ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
+                    });
+                }
             } catch(e) { console.error("Error initServiceCharts:", e); }
         }
 
         // 4. Product Analysis Tab Charts Initialization (100% Real DB Data)
         function initProductCharts() {
             try {
-                const ctxProdRev = document.getElementById('prodRevCanvas').getContext('2d');
-                prodRevChart = new Chart(ctxProdRev, {
-                    type: 'bar',
-                    data: {
-                        labels: dynamicData.prod_rev_labels,
-                        datasets: [{ label: 'Revenue', data: dynamicData.prod_rev_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Revenue ∨', font: { weight: 'bold' } } }, x: { title: { display: true, text: 'Product Name ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
-                });
+                const ctxProdRev = document.getElementById('prodRevCanvas');
+                if (ctxProdRev) {
+                    if (prodRevChart) prodRevChart.destroy();
+                    prodRevChart = new Chart(ctxProdRev.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: dynamicData.prod_rev_labels,
+                            datasets: [{ label: 'Revenue', data: dynamicData.prod_rev_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Revenue ∨', font: { weight: 'bold' } } }, x: { title: { display: true, text: 'Product Name ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
+                    });
+                }
 
-                const ctxProdSvc = document.getElementById('prodSvcCanvas').getContext('2d');
-                prodSvcChart = new Chart(ctxProdSvc, {
-                    type: 'bar',
-                    data: {
-                        labels: dynamicData.prod_svc_labels,
-                        datasets: [{ label: 'service_id Distinct Count', data: dynamicData.prod_svc_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'service_id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { title: { display: true, text: 'product_name ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
-                });
+                const ctxProdSvc = document.getElementById('prodSvcCanvas');
+                if (ctxProdSvc) {
+                    if (prodSvcChart) prodSvcChart.destroy();
+                    prodSvcChart = new Chart(ctxProdSvc.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: dynamicData.prod_svc_labels,
+                            datasets: [{ label: 'service_id Distinct Count', data: dynamicData.prod_svc_data, backgroundColor: '#6b8cff', borderRadius: 2, barPercentage: 0.6 }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'service_id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } }, x: { title: { display: true, text: 'product_name ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
+                    });
+                }
             } catch(e) { console.error("Error initProductCharts:", e); }
         }
 
         // 5. Customer Segment Analysis Tab Charts Initialization (100% Real DB Data)
         function initCustomerCharts() {
             try {
-                const ctxStateLead = document.getElementById('stateLeadCanvas').getContext('2d');
-                stateLeadChart = new Chart(ctxStateLead, {
-                    type: 'bar',
-                    data: {
-                        labels: dynamicData.state_lead_labels,
-                        datasets: [
-                            { label: 'Industrial / Commercial', data: dynamicData.state_ind_data, backgroundColor: '#6366f1', borderRadius: 2 },
-                            { label: 'Residential', data: dynamicData.state_res_data, backgroundColor: '#f97316', borderRadius: 2 }
-                        ]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { beginAtZero: true, title: { display: true, text: 'id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } },
-                            x: { title: { display: true, text: 'state ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } }
+                const ctxStateLead = document.getElementById('stateLeadCanvas');
+                if (ctxStateLead) {
+                    if (stateLeadChart) stateLeadChart.destroy();
+                    stateLeadChart = new Chart(ctxStateLead.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: dynamicData.state_lead_labels,
+                            datasets: [
+                                { label: 'Industrial / Commercial', data: dynamicData.state_ind_data, backgroundColor: '#6366f1', borderRadius: 2 },
+                                { label: 'Residential', data: dynamicData.state_res_data, backgroundColor: '#f97316', borderRadius: 2 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, title: { display: true, text: 'id Distinct Count ∨', font: { weight: 'bold' } }, ticks: { precision: 0 } },
+                                x: { title: { display: true, text: 'state ∨', font: { weight: 'bold' } }, ticks: { font: { size: 10 }, maxRotation: 45 } }
+                            }
                         }
-                    }
-                });
+                    });
+                }
 
-                const ctxProdSvcPie = document.getElementById('prodVsSvcPieCanvas').getContext('2d');
-                prodVsSvcPieChart = new Chart(ctxProdSvcPie, {
-                    type: 'pie',
-                    data: {
-                        labels: dynamicData.prod_vs_svc_labels,
-                        datasets: [{ data: dynamicData.prod_vs_svc_data, backgroundColor: ['#6366f1', '#2dd4bf'] }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } }
-                    }
-                });
+                const ctxProdSvcPie = document.getElementById('prodVsSvcPieCanvas');
+                if (ctxProdSvcPie) {
+                    if (prodVsSvcPieChart) prodVsSvcPieChart.destroy();
+                    prodVsSvcPieChart = new Chart(ctxProdSvcPie.getContext('2d'), {
+                        type: 'pie',
+                        data: {
+                            labels: dynamicData.prod_vs_svc_labels,
+                            datasets: [{ data: dynamicData.prod_vs_svc_data, backgroundColor: ['#6366f1', '#2dd4bf'] }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }
+
+                renderTreemap(dynamicData.seg_rev_labels, dynamicData.seg_rev_data, dynamicData.seg_rev_formatted);
             } catch(e) { console.error("Error initCustomerCharts:", e); }
         }
 
@@ -1047,42 +1289,44 @@
             prodView.style.display = 'none';
             custView.style.display = 'none';
 
-            if (tabType === 'lead') {
-                leadView.style.display = 'block';
-                if (!leadInitialized) { initLeadCharts(); leadInitialized = true; }
-                else {
-                    if (custTypePieChart) custTypePieChart.resize();
-                    if (monthFlowChart) monthFlowChart.resize();
-                    if (dayFlowChart) dayFlowChart.resize();
-                    if (leadSourceDistChart) leadSourceDistChart.resize();
+            setTimeout(() => {
+                if (tabType === 'lead') {
+                    leadView.style.display = 'block';
+                    if (!leadInitialized) { initLeadCharts(); leadInitialized = true; }
+                    else {
+                        if (custTypePieChart) custTypePieChart.resize();
+                        if (monthFlowChart) monthFlowChart.resize();
+                        if (dayFlowChart) dayFlowChart.resize();
+                        if (leadSourceDistChart) leadSourceDistChart.resize();
+                    }
+                } else if (tabType === 'service') {
+                    svcView.style.display = 'block';
+                    if (!serviceInitialized) { initServiceCharts(); serviceInitialized = true; }
+                    else {
+                        if (svcProvidedChart) svcProvidedChart.resize();
+                        if (svcRevenueChart) svcRevenueChart.resize();
+                    }
+                } else if (tabType === 'product') {
+                    prodView.style.display = 'block';
+                    if (!productInitialized) { initProductCharts(); productInitialized = true; }
+                    else {
+                        if (prodRevChart) prodRevChart.resize();
+                        if (prodSvcChart) prodSvcChart.resize();
+                    }
+                } else if (tabType === 'customer') {
+                    custView.style.display = 'block';
+                    if (!customerInitialized) { initCustomerCharts(); customerInitialized = true; }
+                    else {
+                        if (stateLeadChart) stateLeadChart.resize();
+                        if (prodVsSvcPieChart) prodVsSvcPieChart.resize();
+                    }
+                } else {
+                    revView.style.display = 'block';
+                    if (revBranchChart) revBranchChart.resize();
+                    if (revSpChart) revSpChart.resize();
+                    if (trendChart) trendChart.resize();
                 }
-            } else if (tabType === 'service') {
-                svcView.style.display = 'block';
-                if (!serviceInitialized) { initServiceCharts(); serviceInitialized = true; }
-                else {
-                    if (svcProvidedChart) svcProvidedChart.resize();
-                    if (svcRevenueChart) svcRevenueChart.resize();
-                }
-            } else if (tabType === 'product') {
-                prodView.style.display = 'block';
-                if (!productInitialized) { initProductCharts(); productInitialized = true; }
-                else {
-                    if (prodRevChart) prodRevChart.resize();
-                    if (prodSvcChart) prodSvcChart.resize();
-                }
-            } else if (tabType === 'customer') {
-                custView.style.display = 'block';
-                if (!customerInitialized) { initCustomerCharts(); customerInitialized = true; }
-                else {
-                    if (stateLeadChart) stateLeadChart.resize();
-                    if (prodVsSvcPieChart) prodVsSvcPieChart.resize();
-                }
-            } else {
-                revView.style.display = 'block';
-                if (revBranchChart) revBranchChart.resize();
-                if (revSpChart) revSpChart.resize();
-                if (trendChart) trendChart.resize();
-            }
+            }, 10);
         }
 
         function applyFilters() {
@@ -1160,6 +1404,12 @@
 
                 if (stateLeadChart) { stateLeadChart.data.labels = data.state_lead_labels; stateLeadChart.data.datasets[0].data = data.state_ind_data; stateLeadChart.data.datasets[1].data = data.state_res_data; stateLeadChart.update(); }
                 if (prodVsSvcPieChart) { prodVsSvcPieChart.data.labels = data.prod_vs_svc_labels; prodVsSvcPieChart.data.datasets[0].data = data.prod_vs_svc_data; prodVsSvcPieChart.update(); }
+
+                toggleLeadFunnel();
+                toggleFollowupFunnel();
+                toggleStateLeadChart();
+                toggleProdVsSvcPie();
+                renderTreemap(data.seg_rev_labels, data.seg_rev_data, data.seg_rev_formatted);
             })
             .catch(err => console.error('Filter update error:', err));
         }

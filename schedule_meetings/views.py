@@ -3,8 +3,9 @@ import requests
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from .models import Meeting
-from crmapp.models import customer_details
+from crmapp.models import customer_details, SalesPerson, BranchManager
 
 
 
@@ -56,8 +57,31 @@ def meeting_list(request):
 #     context['data'] =m
 #     return render(request , 'schedule_meetings/display_meeting.html' , context)
 
+@login_required
 def display_meeting(request):
-    m = Meeting.objects.all()  # Fetch all meetings by default
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
+
+    if is_admin:
+        m = Meeting.objects.all()
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(mobile_no=request.user.username).first()
+        if bm:
+            m = Meeting.objects.filter(customer__branch_id=bm.branch)
+        else:
+            m = Meeting.objects.none()
+    elif user_role == 'sales':
+        sp = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if sp:
+            m = Meeting.objects.filter(
+                Q(customer__contactperson__iexact=sp.full_name) | Q(customer__primarycontact=sp.mobile_no)
+            )
+        else:
+            m = Meeting.objects.none()
+    else:
+        m = Meeting.objects.none()
 
     # Check if the user has submitted a search query
     customer_id = request.GET.get('customer_id')
