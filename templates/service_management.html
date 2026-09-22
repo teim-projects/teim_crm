@@ -18,9 +18,9 @@
 
     <style>
         body {
-            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            font-family: 'Roboto', sans-serif;
             background-color: #f0fbff;
-            color: #333333;
+            color: #333;
         }
 
         #map {
@@ -40,9 +40,9 @@
         }
 
         .card-registration {
-            border-radius: 18px;
+            border-radius: 15px;
             background-color: #ffffff;
-            box-shadow: 0 8px 28px rgba(3, 174, 210, 0.16);
+            box-shadow: 0 4px 20px rgba(3, 174, 210, 0.2);
             width: 100%;
             max-width: 860px;
             margin-top: 70px;
@@ -111,6 +111,31 @@
             font-weight: 600;
             font-size: 14px;
             color: #2b2b2b;
+        }
+
+        /* Month Chips Grid Styling */
+        .btn-month-chip {
+            background-color: #f8fafc;
+            color: #475569;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            font-size: 0.82rem !important;
+            white-space: nowrap !important;
+            padding: 6px 4px !important;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+        }
+        .btn-month-chip:hover {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+        .btn-check:checked + .btn-month-chip {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+            color: #ffffff !important;
+            border-color: #0d6efd !important;
+            box-shadow: 0 3px 8px rgba(13, 110, 253, 0.25) !important;
         }
 
         input[type="number"],
@@ -678,7 +703,7 @@
         </div>
     </div>
 
-    <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:200px;">
+    <div class="container-fluid footer  " style="background-color: #f7f7f7; width:100%; margin-top:200px;">
         <div class="row p-3">
             <div class="col-md-12 text-center">
                 <p style="margin: 0; font-weight: 600; word-wrap: break-word;color:#000000">
@@ -1025,6 +1050,61 @@
                                    id="duration-${product.product_id}">
                         </div>
                     </div>
+
+                    <!-- ✅ Service Months Selection (Zero-scroll jump enabled) -->
+                    <div class="mt-3 p-3 bg-light border rounded-3 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                            <label class="small fw-bold text-dark mb-0 d-flex align-items-center gap-1">
+                                <i class="fas fa-calendar-alt text-primary me-1"></i> Service Months Schedule
+                            </label>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0.5" style="font-size: 0.75rem; font-weight: 600;" onclick="toggleAllMonths(${product.product_id}, true, event)">
+                                    Select All
+                                </button>
+                                <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-2 py-0.5" style="font-size: 0.75rem; font-weight: 600;" onclick="toggleAllMonths(${product.product_id}, false, event)">
+                                    Clear All
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="month-chips-grid mt-2" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px;">
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-jan-${product.product_id}" value="Jan" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-jan-${product.product_id}" onclick="toggleMonthChip('m-jan-${product.product_id}', event)">Jan</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-feb-${product.product_id}" value="Feb" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-feb-${product.product_id}" onclick="toggleMonthChip('m-feb-${product.product_id}', event)">Feb</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-mar-${product.product_id}" value="Mar" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-mar-${product.product_id}" onclick="toggleMonthChip('m-mar-${product.product_id}', event)">Mar</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-apr-${product.product_id}" value="Apr" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-apr-${product.product_id}" onclick="toggleMonthChip('m-apr-${product.product_id}', event)">Apr</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-may-${product.product_id}" value="May" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-may-${product.product_id}" onclick="toggleMonthChip('m-may-${product.product_id}', event)">May</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-jun-${product.product_id}" value="Jun" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-jun-${product.product_id}" onclick="toggleMonthChip('m-jun-${product.product_id}', event)">Jun</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-jul-${product.product_id}" value="Jul" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-jul-${product.product_id}" onclick="toggleMonthChip('m-jul-${product.product_id}', event)">Jul</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-aug-${product.product_id}" value="Aug" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-aug-${product.product_id}" onclick="toggleMonthChip('m-aug-${product.product_id}', event)">Aug</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-sep-${product.product_id}" value="Sep" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-sep-${product.product_id}" onclick="toggleMonthChip('m-sep-${product.product_id}', event)">Sep</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-oct-${product.product_id}" value="Oct" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-oct-${product.product_id}" onclick="toggleMonthChip('m-oct-${product.product_id}', event)">Oct</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-nov-${product.product_id}" value="Nov" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-nov-${product.product_id}" onclick="toggleMonthChip('m-nov-${product.product_id}', event)">Nov</label>
+
+                            <input type="checkbox" class="btn-check month-check-${product.product_id}" id="m-dec-${product.product_id}" value="Dec" autocomplete="off">
+                            <label class="btn btn-month-chip w-100 text-center" for="m-dec-${product.product_id}" onclick="toggleMonthChip('m-dec-${product.product_id}', event)">Dec</label>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="items-box" id="items-section-${product.product_id}">
@@ -1143,6 +1223,42 @@
             });
         }
 
+        function toggleMonthChip(checkboxId, e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            const cb = document.getElementById(checkboxId);
+            if (cb) {
+                const container = document.getElementById('products-container');
+                const prevScroll = container ? container.scrollTop : 0;
+                const prevWin = window.scrollY;
+
+                cb.checked = !cb.checked;
+
+                if (container) container.scrollTop = prevScroll;
+                window.scrollTo(0, prevWin);
+            }
+            return false;
+        }
+
+        function toggleAllMonths(productId, isCheck, e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            const container = document.getElementById('products-container');
+            const prevScroll = container ? container.scrollTop : 0;
+            const prevWin = window.scrollY;
+
+            const checkboxes = document.querySelectorAll(`.month-check-${productId}`);
+            checkboxes.forEach(cb => cb.checked = isCheck);
+
+            if (container) container.scrollTop = prevScroll;
+            window.scrollTo(0, prevWin);
+            return false;
+        }
+
         function collectProductData(productId, addedVia = 'detailed') {
             const product = productsCache[productId];
             if (!product) return null;
@@ -1156,6 +1272,10 @@
 
             // ✅ NEW: extract duration_months
             const durationMonths = parseInt(document.getElementById(`duration-${productId}`)?.value || 12, 10);
+
+            // ✅ NEW: extract selected_months (Jan, Feb, Mar...)
+            const monthCheckboxes = document.querySelectorAll(`.month-check-${productId}:checked`);
+            const selectedMonths = Array.from(monthCheckboxes).map(cb => cb.value).join(', ');
 
             const freqMeta = normalizeFrequency(frequencyLabelRaw, null);
 
@@ -1194,7 +1314,8 @@
                 frequency_label: freqMeta.label || 'Default',
                 added_via: addedVia,
                 items: items,
-                duration_months: durationMonths   // ✅ Added
+                duration_months: durationMonths,
+                selected_months: selectedMonths
             };
         }
 

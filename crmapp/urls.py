@@ -16,9 +16,11 @@ urlpatterns = [
     path('sales-persons/', views.sales_person_list, name='sales_person_list'),
     path('edit-sales-person/<int:pk>/', views.edit_sales_person, name='edit_sales_person'),
     path('delete-sales-person/<int:pk>/', views.delete_sales_person, name='delete_sales_person'),
+    path('toggle-sales-person-status/<int:pk>/', views.toggle_sales_person_status, name='toggle_sales_person_status'),
     path('sales-persons/export/', views.export_sales_person_csv, name='export_sales_person_csv'),
     path('customer_details_create',views.customer_details_create, name='customer_details_create'),
     path('service_management_create',views.service_management_create, name='service_management_create'),
+    path('create_complaint_service', views.create_complaint_service, name='create_complaint_service'),
     path('sales_dashboard/', views.sales_dashboard, name='sales_dashboard'),
     path('invetory_dashbord/', views.invetory_dashbord, name='invetory_dashbord'),
 
@@ -63,12 +65,14 @@ urlpatterns = [
     path('branch-manager-list/', views.branch_manager_list, name='branch_manager_list'),
     path('edit-branch-manager/<int:pk>/', views.edit_branch_manager, name='edit_branch_manager'),
     path('delete-branch-manager/<int:pk>/', views.delete_branch_manager, name='delete_branch_manager'),
+    path('toggle-branch-manager-status/<int:pk>/', views.toggle_branch_manager_status, name='toggle_branch_manager_status'),
 
     # Operation person 
     path('operation-person-list/', views.operation_person_list, name='operation_person_list'),
     path('add-operation-person/',views.add_operation_person, name='add_operation_person'),
     path('edit-operation-person/<int:pk>/',views.edit_operation_person, name='edit_operation_person'),
     path('delete-operation-person/<int:pk>/', views.delete_operation_person, name='delete_operation_person'),
+    path('toggle-operation-person-status/<int:pk>/', views.toggle_operation_person_status, name='toggle_operation_person_status'),
 
      # Quotation Terms
     path('add_quotation_term/', views.add_quotation_term, name='add_quotation_term'),
@@ -149,6 +153,7 @@ urlpatterns = [
     path('technicians/', views.display_technician, name='display_technician'),
     path('technicians/edit/<int:technician_id>/', views.edit_technician, name='edit_technician'),
     path('technicians/delete/<int:technician_id>/', views.delete_technician, name='delete_technician'),
+    path('technicians/toggle/<int:technician_id>/', views.toggle_technician_status, name='toggle_technician_status'),
     path('technician_login/', views.technician_login, name='technician_login'), 
     path('not_authorized/', views.not_authorized, name='not_authorized'),
     path('technician_dashboard/', views.technician_dashboard, name='technician_dashboard'),

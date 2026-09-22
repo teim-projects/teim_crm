@@ -52,6 +52,20 @@
             <div class="detail-box">{{lead.customername}}</div>
         </div>
         <div class="detail-item">
+            <strong>Customer Type:</strong>
+            <div class="detail-box">{{lead.customer_type|default:"Individual"}}</div>
+        </div>
+        {% if lead.customer_type == 'Organization' %}
+        <div class="detail-item">
+            <strong>Org. Contact Person Name(s):</strong>
+            <div class="detail-box">{{lead.or_name|default:"N/A"}}</div>
+        </div>
+        <div class="detail-item">
+            <strong>Org. Contact Person Number(s):</strong>
+            <div class="detail-box">{{lead.or_contact|default:"N/A"}}</div>
+        </div>
+        {% endif %}
+        <div class="detail-item">
             <strong>Customer Segment:</strong>
             <div class="detail-box">{{lead.customersegment}}</div>
         </div>

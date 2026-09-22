@@ -773,6 +773,18 @@
             <a class="navbar-brand me-3" href="https://sevafacility.com/" target="_blank">
                 <img src="{% static 'images/Logo2.webp' %}" alt="Logo" style="height: 70px; margin-bottom: 5px;">
             </a>
+
+            <!-- Page Title Section -->
+            <div class="d-flex align-items-center ms-2 ps-3 border-start" style="border-left: 2px solid #cbd5e1 !important;">
+                <div>
+                    <h5 class="m-0 fw-bold text-dark" id="page-nav-title" style="font-size: 1.1rem; font-weight: 700 !important; color: #0f172a !important; line-height: 1.2;">
+                        {% block page_title %}{{ page_title|default:"" }}{% endblock %}
+                    </h5>
+                    <small class="text-muted d-block" id="page-nav-subtitle" style="font-size: 0.75rem; color: #64748b !important; line-height: 1.1; margin-top: 1px;">
+                        {% block page_subtitle %}{{ page_subtitle|default:"" }}{% endblock %}
+                    </small>
+                </div>
+            </div>
         </div>
 
         <div class="d-flex align-items-center">
@@ -1347,6 +1359,131 @@
                 this.classList.toggle('open');
             });
         });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const titleEl = document.getElementById("page-nav-title");
+        const subtitleEl = document.getElementById("page-nav-subtitle");
+        
+        if (titleEl && (!titleEl.innerText.trim() || titleEl.innerText.trim() === "{{ page_title|default:'' }}")) {
+            const path = window.location.pathname.toLowerCase();
+            let mainTitle = "";
+            let subTitle = "";
+            let subtitleText = "Real-time business overview";
+
+            const routes = [
+                { path: "/display_lead_management", main: "CRM", sub: "Lead Management", subtitle: "Manage leads, enquiries & follow-ups" },
+                { path: "/lead_management_create", main: "CRM", sub: "Lead Management", subtitle: "Create new lead entry" },
+                { path: "/edit_lead_management", main: "CRM", sub: "Edit Lead", subtitle: "Update lead details" },
+                
+                { path: "/display_quotation", main: "CRM", sub: "Quotation Management", subtitle: "Quotations & pricing estimates" },
+                { path: "/create_quotation", main: "CRM", sub: "Create Quotation", subtitle: "Generate pricing quotation" },
+                { path: "/edit_quotation", main: "CRM", sub: "Edit Quotation", subtitle: "Modify quotation details" },
+                
+                { path: "/display_customer", main: "CRM", sub: "Customer Management", subtitle: "Client directory & customer details" },
+                { path: "/customer_details_create", main: "CRM", sub: "Customer Details", subtitle: "Create customer profile" },
+                { path: "/customer_details", main: "CRM", sub: "Customer Details", subtitle: "View customer details" },
+                { path: "/edit_customer", main: "CRM", sub: "Edit Customer", subtitle: "Update customer profile" },
+                
+                { path: "/display_invoice", main: "CRM", sub: "Invoice Management", subtitle: "Billing, tax invoices & payments" },
+                { path: "/tax-invoice", main: "CRM", sub: "Tax Invoice", subtitle: "Billing & tax invoice records" },
+                { path: "/create_tax_invoice", main: "CRM", sub: "Create Tax Invoice", subtitle: "Generate new tax invoice" },
+                { path: "/payment-records", main: "CRM", sub: "Payment Records", subtitle: "Payment tracking & history" },
+                
+                { path: "/display_service_management", main: "Service", sub: "Service Management", subtitle: "Service requests & maintenance" },
+                { path: "/service_management_create", main: "Service", sub: "Service Management", subtitle: "Create service entry" },
+                { path: "/service", main: "Service", sub: "Service Issue", subtitle: "Service material issue" },
+                { path: "/display_reschedule", main: "Service", sub: "Reschedule Log", subtitle: "Manage work reschedule requests" },
+                { path: "/site-list", main: "Service", sub: "Site Directory", subtitle: "Customer service sites" },
+                { path: "/site_list", main: "Service", sub: "Site Directory", subtitle: "Customer service sites" },
+                { path: "/display_allocation", main: "Service", sub: "Work Allocation", subtitle: "Assign & track work orders" },
+                
+                { path: "/amc/dashboard", main: "AMC", sub: "AMC Dashboard", subtitle: "Annual Maintenance Overview" },
+                { path: "/amc/create", main: "AMC", sub: "Create AMC", subtitle: "Create new maintenance contract" },
+                { path: "/amc/renewal-requests", main: "AMC", sub: "Renewal Requests", subtitle: "AMC renewal tracking" },
+                { path: "/amc", main: "AMC", sub: "All AMCs", subtitle: "Annual Maintenance Contracts" },
+                
+                { path: "/add_product", main: "Products", sub: "Add Products", subtitle: "Create new inventory item" },
+                { path: "/products", main: "Products", sub: "All Products", subtitle: "Stock levels & product catalog" },
+                { path: "/product-items", main: "Products", sub: "Product Items", subtitle: "Item stock & variations" },
+                { path: "/display_inventory", main: "Products", sub: "Inventory Management", subtitle: "Stock levels & inventory" },
+                
+                { path: "/today-work", main: "Workdesk", sub: "Today's Work", subtitle: "Daily tasks & schedules" },
+                { path: "/today_work", main: "Workdesk", sub: "Today's Work", subtitle: "Daily tasks & schedules" },
+                { path: "/pending-followups", main: "Workdesk", sub: "Pending Follow Up", subtitle: "Followup tasks & reminders" },
+                { path: "/pending_followups", main: "Workdesk", sub: "Pending Follow Up", subtitle: "Followup tasks & reminders" },
+                { path: "/schedule_meetings", main: "Workdesk", sub: "Schedule Meet", subtitle: "Meetings & appointments" },
+                
+                { path: "/sales_dashboard", main: "Dashboard", sub: "Sales Dashboard", subtitle: "Sales metrics & revenue overview" },
+                { path: "/invetory_dashbord", main: "Dashboard", sub: "Inventory Dashboard", subtitle: "Inventory status & analytics" },
+                
+                { path: "/sales_person_list", main: "Team", sub: "Sales Team", subtitle: "Sales staff directory & roles" },
+                { path: "/operation_person_list", main: "Team", sub: "Operations Team", subtitle: "Operations staff & workflow" },
+                { path: "/branch_manager_list", main: "Team", sub: "Branch Managers", subtitle: "Branch managers directory" },
+                { path: "/display_technician", main: "Team", sub: "Technician Management", subtitle: "Technicians & field staff directory" },
+                { path: "/create_technician_profile", main: "Team", sub: "Create Technician", subtitle: "Register new technician profile" },
+                { path: "/branch_list", main: "Team", sub: "Branch Directory", subtitle: "Company branches & offices" },
+                { path: "/chat_bot", main: "AI Assistant", sub: "CRM Chatbot", subtitle: "Smart AI CRM Assistant" },
+            ];
+
+            for (const r of routes) {
+                if (path.includes(r.path.toLowerCase())) {
+                    mainTitle = r.main;
+                    subTitle = r.sub;
+                    subtitleText = r.subtitle;
+                    break;
+                }
+            }
+
+            // Fallback: Check active item in DOM sidebar
+            if (!subTitle) {
+                const links = document.querySelectorAll('.sidebar a');
+                for (let link of links) {
+                    const href = link.getAttribute('href');
+                    if (href && href !== '#' && path.includes(href.toLowerCase())) {
+                        subTitle = link.innerText.trim();
+                        const parentHasSubmenu = link.closest('.has-submenu');
+                        if (parentHasSubmenu) {
+                            // Extract main title text of parent menu item
+                            const nodes = Array.from(parentHasSubmenu.childNodes);
+                            for (let n of nodes) {
+                                if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
+                                    mainTitle = n.textContent.trim();
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Final fallback
+            if (!subTitle) {
+                if (path === "/" || path === "/index" || path.includes("index")) {
+                    subTitle = "Dashboard";
+                    subtitleText = "Real-time business overview";
+                } else {
+                    let seg = path.split('/').filter(Boolean).pop() || "Dashboard";
+                    seg = seg.replace("display_", "").replace("add_", "Add ").replace("create_", "Create ").replace("edit_", "Edit ");
+                    seg = seg.replace(/_/g, " ");
+                    subTitle = seg.charAt(0).toUpperCase() + seg.slice(1);
+                }
+            }
+
+            // Format title display: Main Category > Sub Title
+            if (mainTitle && subTitle) {
+                titleEl.innerHTML = `<span class="text-secondary me-1" style="font-weight: 500; font-size: 0.95rem; color: #64748b !important;">${mainTitle} <i class="fas fa-chevron-right mx-1" style="font-size: 0.72rem; color: #94a3b8;"></i></span> <span class="fw-bold" style="color: #0f172a !important;">${subTitle}</span>`;
+            } else {
+                titleEl.innerHTML = `<span class="fw-bold" style="color: #0f172a !important;">${subTitle}</span>`;
+            }
+
+            if (subtitleEl) {
+                subtitleEl.innerText = subtitleText;
+            }
+        }
     });
 </script>
 

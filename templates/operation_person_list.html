@@ -67,6 +67,7 @@
             <th>Email</th>
             <th>Joining</th>
             <th>DOB</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -78,18 +79,31 @@
             <td>{{ person.email }}</td>
             <td>{{ person.date_of_joining }}</td>
             <td>{{ person.date_of_birth }}</td>
-            <td >
-              <a href="{% url 'edit_operation_person' person.id %}" class="btn btn-sm btn-warning me-1">
+            <td>
+              {% if person.is_active %}
+                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
+              {% else %}
+                <span class="badge bg-danger"><i class="bi bi-slash-circle me-1"></i>Disabled</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'edit_operation_person' person.id %}" class="btn btn-sm btn-warning me-1" title="Edit Staff">
                 <i class="bi bi-pencil-square"></i> 
               </a>
-              <a  href="{% url 'delete_operation_person' person.id %}" class="btn btn-sm btn-danger">
-                <i class="bi bi-trash"></i> 
-              </a>
+              {% if person.is_active %}
+                <a href="{% url 'toggle_operation_person_status' person.id %}" class="btn btn-sm btn-outline-danger" title="Disable Staff (Preserves Linked Data)" onclick="return confirm('Are you sure you want to DISABLE {{ person.full_name }}? They will not be able to log in, but all linked data will be preserved.')">
+                  <i class="bi bi-person-x-fill"></i> Disable
+                </a>
+              {% else %}
+                <a href="{% url 'toggle_operation_person_status' person.id %}" class="btn btn-sm btn-outline-success" title="Enable Staff" onclick="return confirm('Enable {{ person.full_name }} account?')">
+                  <i class="bi bi-person-check-fill"></i> Enable
+                </a>
+              {% endif %}
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="6" class="text-center text-muted">No operation person found.</td>
+            <td colspan="7" class="text-center text-muted">No operation person found.</td>
           </tr>
           {% endfor %}
         </tbody>

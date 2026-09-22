@@ -616,6 +616,13 @@
                                                 <i class="fa fa-download"></i>
                                             </a>
 
+                                            <!-- Raise Complaint Service -->
+                                            <a href="{% url 'create_complaint_service' %}?parent_service_id={{ x.id }}"
+                                               class="btn btn-sm btn-outline-warning mb-1"
+                                               title="Raise Complaint Service (₹0)">
+                                                <i class="fa fa-exclamation-triangle"></i>
+                                            </a>
+
                                         </td>
                                         <!-- ========== End Actions column ========== -->
                                         <td>
@@ -628,7 +635,15 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{{ x.customer.fullname }}</td>
+                                        <td>
+                                            {{ x.customer.fullname }}
+                                            {% if x.is_complaint or x.contract_type == 'Complaint' %}
+                                                <br><span class="badge bg-danger text-white" style="font-size: 11px;"><i class="fa fa-shield-alt"></i> Complaint Service (₹0)</span>
+                                                {% if x.complaint_reason %}
+                                                    <br><small class="text-danger" style="font-size: 11px;"><strong>Reason:</strong> {{ x.complaint_reason|truncatechars:35 }}</small>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
                                         <td>{{ x.customer.primarycontact }}</td>
                                         <td>{{ x.customer.primaryemail }}</td>
                                         <td>{{ x.total_price }}</td>

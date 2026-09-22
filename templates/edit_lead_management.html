@@ -225,14 +225,17 @@
                   </option>
                 </select>
               </div>
-              <div class="or_name col-md-4 mb-4" style="display: none;">
-                <label>Name <span class="star">*</span></label>
-                <input type="text" name="uor_name" class="form-control" value="{{ x.or_name }}">
-
-              </div>
-              <div class="or_contact col-md-4 mb-4" style="display: none;">
-                <label>Contact <span class="star">*</span></label>
-                <input type="number" name="uor_contact" class="form-control" value="{{ x.or_contact }}">
+              <div class="or_name col-md-12 mb-4" style="display: none;">
+                <div class="card p-3" style="background-color: #f8fdff; border: 1px solid #b2e4ef; border-radius: 10px;">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <label class="mb-0 font-weight-bold" style="color: #027994; font-size: 1rem;">Organization Contact Persons</label>
+                    <button type="button" class="btn btn-sm btn-info text-white" onclick="addOrgContactRow()">
+                      + Add Contact
+                    </button>
+                  </div>
+                  <div id="org_contacts_container">
+                  </div>
+                </div>
               </div>
 
               <div class="col-md-4 mb-4">
@@ -428,17 +431,93 @@ document.addEventListener("DOMContentLoaded", () => showStep(0));
     });
   </script>
   <script>
+    const savedOrName = "{{ x.or_name|default:''|escapejs }}";
+    const savedOrContact = "{{ x.or_contact|default:''|escapejs }}";
+    const savedOrEmail = "{{ x.or_email|default:''|escapejs }}";
+
     function toggleOrganizationFields() {
       const selectValue = document.getElementById('customer_type_select').value;
-      const orgFields = document.querySelectorAll('.or_name, .or_contact');
+      const orgFields = document.querySelectorAll('.or_name');
 
       orgFields.forEach(field => {
         field.style.display = (selectValue === 'Organization') ? 'block' : 'none';
       });
     }
 
-    // Run on page load to set correct visibility
+    function addOrgContactRow(nameVal = '', contactVal = '', emailVal = '') {
+      const container = document.getElementById('org_contacts_container');
+      if (!container) return;
+      const cleanVal = (v) => (!v || ['none', 'null', 'undefined', 'n/a', ''].includes(String(v).trim().toLowerCase())) ? '' : String(v).trim();
+      nameVal = cleanVal(nameVal);
+      contactVal = cleanVal(contactVal);
+      emailVal = cleanVal(emailVal);
+      const newRow = document.createElement('div');
+      newRow.className = 'org-contact-row row mb-2 align-items-end';
+      newRow.innerHTML = `
+        <div class="col-md-4 mb-2 mb-md-0">
+          <label>Name <span class="star">*</span></label>
+          <input type="text" name="uor_name" class="form-control" placeholder="Contact Person Name" value="${nameVal}">
+        </div>
+        <div class="col-md-3 mb-2 mb-md-0">
+          <label>Contact <span class="star">*</span></label>
+          <input type="text" name="uor_contact" class="form-control" placeholder="10-digit Phone Number" maxlength="10" value="${contactVal}" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+        </div>
+        <div class="col-md-4 mb-2 mb-md-0">
+          <label>Email</label>
+          <input type="text" name="uor_email" class="form-control" placeholder="Contact Person Email" value="${emailVal}">
+        </div>
+        <div class="col-md-1 text-end text-md-center">
+          <button type="button" class="btn btn-sm btn-danger remove-org-btn" onclick="removeOrgContactRow(this)">
+            Remove
+          </button>
+        </div>
+      `;
+      container.appendChild(newRow);
+      updateRemoveButtons();
+    }
+
+    function removeOrgContactRow(button) {
+      const row = button.closest('.org-contact-row');
+      if (row) {
+        row.remove();
+        updateRemoveButtons();
+      }
+    }
+
+    function updateRemoveButtons() {
+      const container = document.getElementById('org_contacts_container');
+      if (!container) return;
+      const rows = container.querySelectorAll('.org-contact-row');
+      rows.forEach((row) => {
+        const removeBtn = row.querySelector('.remove-org-btn');
+        if (removeBtn) {
+          if (rows.length > 1) {
+            removeBtn.style.display = 'inline-block';
+          } else {
+            removeBtn.style.display = 'none';
+          }
+        }
+      });
+    }
+
+    function initOrgContacts() {
+      const container = document.getElementById('org_contacts_container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const names = savedOrName ? savedOrName.split(',').map(s => s.trim()) : [];
+      const contacts = savedOrContact ? savedOrContact.split(',').map(s => s.trim()) : [];
+      const emails = savedOrEmail ? savedOrEmail.split(',').map(s => s.trim()) : [];
+
+      const count = Math.max(names.length, contacts.length, emails.length, 1);
+      for (let i = 0; i < count; i++) {
+        addOrgContactRow(names[i] || '', contacts[i] || '', emails[i] || '');
+      }
+    }
+
+    // Run on page load to set correct visibility and populate contacts
     window.onload = function () {
+      initOrgContacts();
       toggleOrganizationFields();
     };
   </script>

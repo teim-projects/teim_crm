@@ -70,6 +70,7 @@
             <th>Branch</th>
             <th>Joining</th>
             <th>DOB</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -82,19 +83,31 @@
             <td>{{ person.branch.branch_name }}</td>
             <td>{{ person.date_of_joining }}</td>
             <td>{{ person.date_of_birth }}</td>
-            <td >
-              <a href="{% url 'edit_branch_manager' person.id %}" class="btn btn-sm btn-warning me-1">
+            <td>
+              {% if person.is_active %}
+                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
+              {% else %}
+                <span class="badge bg-danger"><i class="bi bi-slash-circle me-1"></i>Disabled</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'edit_branch_manager' person.id %}" class="btn btn-sm btn-warning me-1" title="Edit Manager">
                 <i class="bi bi-pencil-square"></i> 
               </a>
-              <button class="btn btn-sm btn-danger delete-link" data-url="{% url 'delete_branch_manager' person.id %}">
-                <i class="bi bi-trash"></i>
-              </button>
-
+              {% if person.is_active %}
+                <a href="{% url 'toggle_branch_manager_status' person.id %}" class="btn btn-sm btn-outline-danger" title="Disable Staff (Preserves Linked Data)" onclick="return confirm('Are you sure you want to DISABLE {{ person.full_name }}? They will not be able to log in, but all linked data will be preserved.')">
+                  <i class="bi bi-person-x-fill"></i> Disable
+                </a>
+              {% else %}
+                <a href="{% url 'toggle_branch_manager_status' person.id %}" class="btn btn-sm btn-outline-success" title="Enable Staff" onclick="return confirm('Enable {{ person.full_name }} account?')">
+                  <i class="bi bi-person-check-fill"></i> Enable
+                </a>
+              {% endif %}
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="6" class="text-center text-muted">No branch managers found.</td>
+            <td colspan="8" class="text-center text-muted">No branch managers found.</td>
           </tr>
           {% endfor %}
         </tbody>

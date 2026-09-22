@@ -223,12 +223,36 @@
                 </select>
               </div>
 
-              <div class="or_name col-md-6 mb-4" style="display: none;">
-                <label>Name <span class="star">*</span></label>
-                <input type="text" name="or_name"  class="form-control">
-              
-                <label>Contact <span class="star">*</span></label>
-                <input type="number" name="or_contact" class="form-control">
+              <div class="or_name col-md-12 mb-4" style="display: none;">
+                <div class="card p-3" style="background-color: #f8fdff; border: 1px solid #b2e4ef; border-radius: 10px;">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <label class="mb-0 font-weight-bold" style="color: #027994; font-size: 1rem;">Organization Contact Persons</label>
+                    <button type="button" class="btn btn-sm btn-info text-white" onclick="addOrgContactRow()">
+                      + Add Contact
+                    </button>
+                  </div>
+                  <div id="org_contacts_container">
+                    <div class="org-contact-row row mb-2 align-items-end">
+                      <div class="col-md-4 mb-2 mb-md-0">
+                        <label>Name <span class="star">*</span></label>
+                        <input type="text" name="or_name" class="form-control" placeholder="Contact Person Name">
+                      </div>
+                      <div class="col-md-3 mb-2 mb-md-0">
+                        <label>Contact <span class="star">*</span></label>
+                        <input type="text" name="or_contact" class="form-control" placeholder="10-digit Phone Number" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                      </div>
+                      <div class="col-md-4 mb-2 mb-md-0">
+                        <label>Email</label>
+                        <input type="text" name="or_email" class="form-control" placeholder="Contact Person Email">
+                      </div>
+                      <div class="col-md-1 text-end text-md-center">
+                        <button type="button" class="btn btn-sm btn-danger remove-org-btn" style="display: none;" onclick="removeOrgContactRow(this)">
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
 
@@ -404,9 +428,65 @@
       }
     }
 
-    // Optional: Run on page load if editing form
+    function addOrgContactRow(nameVal = '', contactVal = '', emailVal = '') {
+      const container = document.getElementById('org_contacts_container');
+      if (!container) return;
+      const cleanVal = (v) => (!v || ['none', 'null', 'undefined', 'n/a', ''].includes(String(v).trim().toLowerCase())) ? '' : String(v).trim();
+      nameVal = cleanVal(nameVal);
+      contactVal = cleanVal(contactVal);
+      emailVal = cleanVal(emailVal);
+      const newRow = document.createElement('div');
+      newRow.className = 'org-contact-row row mb-2 align-items-end';
+      newRow.innerHTML = `
+        <div class="col-md-4 mb-2 mb-md-0">
+          <label>Name <span class="star">*</span></label>
+          <input type="text" name="or_name" class="form-control" placeholder="Contact Person Name" value="${nameVal}">
+        </div>
+        <div class="col-md-3 mb-2 mb-md-0">
+          <label>Contact <span class="star">*</span></label>
+          <input type="text" name="or_contact" class="form-control" placeholder="10-digit Phone Number" maxlength="10" value="${contactVal}" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+        </div>
+        <div class="col-md-4 mb-2 mb-md-0">
+          <label>Email</label>
+          <input type="text" name="or_email" class="form-control" placeholder="Contact Person Email" value="${emailVal}">
+        </div>
+        <div class="col-md-1 text-end text-md-center">
+          <button type="button" class="btn btn-sm btn-danger remove-org-btn" onclick="removeOrgContactRow(this)">
+            Remove
+          </button>
+        </div>
+      `;
+      container.appendChild(newRow);
+      updateRemoveButtons();
+    }
+
+    function removeOrgContactRow(button) {
+      const row = button.closest('.org-contact-row');
+      if (row) {
+        row.remove();
+        updateRemoveButtons();
+      }
+    }
+
+    function updateRemoveButtons() {
+      const container = document.getElementById('org_contacts_container');
+      if (!container) return;
+      const rows = container.querySelectorAll('.org-contact-row');
+      rows.forEach((row) => {
+        const removeBtn = row.querySelector('.remove-org-btn');
+        if (removeBtn) {
+          if (rows.length > 1) {
+            removeBtn.style.display = 'inline-block';
+          } else {
+            removeBtn.style.display = 'none';
+          }
+        }
+      });
+    }
+
     window.onload = function () {
       toggleOrganizationFields();
+      updateRemoveButtons();
     }
 </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

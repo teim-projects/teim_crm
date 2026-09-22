@@ -5,6 +5,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models import Q
 from crmapp.models import TechnicianProfile
 from crmapp.models import TechWorkList
 from .models import AMCContract, AMCServiceVisit, AMCServiceSchedule
@@ -241,7 +242,26 @@ def amc_detail(request, pk):
         AMCServiceVisit.objects
         .filter(amc=amc)
         .order_by("service_date")
-        .prefetch_related("technicians")
+        .select_related("product", "complaint_service")
+        .prefetch_related(
+            "technicians",
+            "complaint_service__technicians",
+            "complaint_service__work_allocations"
+        )
+    )
+
+    complaint_services = (
+        service_management.objects
+        .filter(Q(parent_amc=amc) | Q(parent_amc_visit__amc=amc))
+        .distinct()
+        .select_related("customer", "branch", "parent_amc_visit")
+        .prefetch_related(
+            "technicians",
+            "work_allocations",
+            "work_allocations__technician",
+            "service_products__product"
+        )
+        .order_by("-id")
     )
 
     # 🔥 NEW: PRODUCT FREQUENCY FETCH
@@ -256,8 +276,9 @@ def amc_detail(request, pk):
     return render(request, "amc/detail.html", {
         "amc": amc,
         "visits": visits,
+        "complaint_services": complaint_services,
         "allocated_services": allocated_services,
-        "product_freq": product_freq   # ✅ ADD THIS
+        "product_freq": product_freq
     })
 
 # -------------------------------------------------------------------
@@ -827,7 +848,8 @@ def get_amc_details(request):
             "branch": str(amc.branch) if amc.branch else "",
             "start_date": amc.start_date.strftime("%d-%m-%Y"),
             "end_date": amc.end_date.strftime("%d-%m-%Y"),
-            "frequency": amc.frequency,
+            "frequency": amc.display_frequency,
+            "display_frequency": amc.display_frequency,
             "total_amount": float(amc.total_amount),
             "per_visit_amount": float(amc.per_visit_amount),
             "amc_type": amc.amc_type,

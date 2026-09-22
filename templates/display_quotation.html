@@ -484,6 +484,8 @@
                                             {% endif %}
                                         </a>
                                     </th>
+                                    <th>Version</th>
+                                    <th>History</th>
                                     <th>Quotation Date</th>
                                     <th>
                                         <a href="?sort_by=customer_full_name&order={% if current_sort_by == 'customer_full_name' and current_order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
@@ -521,6 +523,22 @@
                                         <a href="#" onclick="alert('WhatsApp feature is currently disabled'); return false;" class="btn btn-sm btn-success"><i class="fa-brands fa-whatsapp"></i></a>
                                     </td>
                                     <td>{{ x.quotation_no }}</td>
+                                    <td>
+                                        <span class="badge bg-success rounded-pill px-3 py-1 fw-semibold" style="background-color: #10b981 !important;">
+                                            V{{ x.version }} Latest
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% with prev_versions=x.get_previous_versions %}
+                                        {% if prev_versions %}
+                                        <button class="btn btn-sm fw-bold rounded-pill px-3 py-1" style="background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe;" type="button" data-bs-toggle="collapse" data-bs-target="#version-history-{{ x.id }}" aria-expanded="false">
+                                            <i class="fa-solid fa-clock-rotate-left me-1"></i> {{ prev_versions|length }} <i class="fa-solid fa-chevron-down ms-1" style="font-size: 10px;"></i>
+                                        </button>
+                                        {% else %}
+                                        <span class="text-muted small">Single Version</span>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </td>
                                     <td>{{ x.quotation_date }}</td>
                                     <td>{{ x.customer.fullname }}</td>
                                     <td>{{ x.customer.primarycontact }}</td>
@@ -550,6 +568,53 @@
                                     <td>{{ x.total_price_with_gst|floatformat:2 }}</td>
                                     <td>{{ x.subject|truncatechars:25 }}</td>
                                 </tr>
+
+                                <!-- Expandable Sub-Row for Previous Versions -->
+                                {% with prev_versions=x.get_previous_versions %}
+                                {% if prev_versions %}
+                                <tr id="version-history-{{ x.id }}" class="collapse">
+                                    <td colspan="19" class="p-3" style="background-color: #f8fafc; border: 1px solid #7c7c7c;">
+                                        <div class="p-2" style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px;">
+                                            <div class="d-flex align-items-center gap-2 mb-2 text-primary fw-bold text-start">
+                                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                                <span>PREVIOUS VERSIONS ({{ prev_versions|length }})</span>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-sm align-middle text-nowrap mb-0 text-center">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Version</th>
+                                                            <th>Quotation Date</th>
+                                                            <th>Total Price (with GST)</th>
+                                                            <th>GST Status</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for v in prev_versions %}
+                                                        <tr>
+                                                            <td><span class="badge bg-secondary">V{{ v.version }}</span></td>
+                                                            <td>{{ v.quotation_date }}</td>
+                                                            <td class="fw-bold">₹{{ v.total_price_with_gst|floatformat:2 }}</td>
+                                                            <td>{{ v.gst_status }}</td>
+                                                            <td>
+                                                                <a href="{% url 'view_quotation_pdf' v.id %}?download=true" class="btn btn-sm btn-primary" title="Download"><i class="fa-solid fa-download"></i></a>
+                                                                <a href="{% url 'view_quotation_pdf' v.id %}" class="btn btn-sm btn-secondary" title="View"><i class="fa-solid fa-eye"></i></a>
+                                                                <a href="{% url 'send_quotation_email' v.id %}" class="btn btn-sm btn-primary" title="Email"><i class="fa-solid fa-envelope"></i></a>
+                                                                <a href="#" onclick="alert('WhatsApp feature is currently disabled'); return false;" class="btn btn-sm btn-success" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                                                                <a href="/delete_quotation/{{ v.id }}" class="btn btn-sm btn-danger delete-link" title="Delete Version"><i class="fa-solid fa-trash"></i></a>
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endwith %}
+
                                 {% endfor %}
                             </tbody>
                         </table>

@@ -415,7 +415,7 @@
                     </span>
                     <span class="meta-pill">
                         <i class="bi bi-arrow-repeat me-1"></i>
-                        {{ amc.frequency }} visits / year
+                        {{ amc.display_frequency }}
                     </span>
                 </div>
             </div>
@@ -452,7 +452,7 @@
                                 </tr>
                                 <tr>
                                     <th>Frequency</th>
-                                    <td>{{ amc.frequency }} visits / year</td>
+                                    <td>{{ amc.display_frequency }}</td>
                                     <th>Status</th>
                                     <td>
                                         {% if amc.status == 'Active' %}
@@ -487,6 +487,23 @@
                                         {% endif %}
                                     </td>
                                 </tr>
+                                {% if product_freq %}
+                                <tr>
+                                    <th>Service Products & Months</th>
+                                    <td colspan="3">
+                                        {% for pf in product_freq %}
+                                            <div class="mb-1">
+                                                <span class="fw-bold text-dark">{{ pf.product.product_name }}</span>: 
+                                                <span class="badge bg-light text-dark border">{{ pf.frequency }} visits/yr</span>
+                                                {% if pf.duration_months %}<span class="badge bg-light text-dark border">{{ pf.duration_months }} months</span>{% endif %}
+                                                {% if pf.selected_months %}
+                                                    <span class="badge bg-primary text-white ms-1"><i class="bi bi-calendar-event me-1"></i>Months: {{ pf.selected_months }}</span>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                {% endif %}
                                 <tr>
                                     <th>Service Description</th>
                                     <td colspan="3" class="muted-value">
@@ -507,21 +524,28 @@
                     <div class="action-bar">
                         <div class="action-card">
                             <div class="row g-3 justify-content-center">
-                                <div class="col-12 col-md-4 col-lg-3">
+                                <div class="col-12 col-md-3 col-lg-3">
                                     <a href="{% url 'amc:edit' amc.pk %}" class="btn btn-primary action-btn w-100">
                                         <i class="bi bi-pencil-square me-2"></i>
                                         Edit AMC
                                     </a>
                                 </div>
 
-                                <div class="col-12 col-md-4 col-lg-3">
+                                <div class="col-12 col-md-3 col-lg-3">
+                                    <a href="{% url 'create_complaint_service' %}?parent_amc_id={{ amc.id }}" class="btn btn-warning text-dark action-btn w-100 fw-bold">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        Raise Complaint (₹0)
+                                    </a>
+                                </div>
+
+                                <div class="col-12 col-md-3 col-lg-3">
                                     <a href="{% url 'amc:list' %}" class="btn btn-outline-secondary action-btn w-100">
                                         <i class="bi bi-arrow-left me-2"></i>
                                         Back to List
                                     </a>
                                 </div>
 
-                                <div class="col-12 col-md-4 col-lg-3">
+                                <div class="col-12 col-md-3 col-lg-3">
                                     <form method="POST" action="{% url 'amc:delete' amc.pk %}" class="d-grid">
                                         {% csrf_token %}
                                         <button type="submit"
@@ -623,6 +647,12 @@
                                                         Edit
                                                     </a>
 
+                                                    <a href="{% url 'create_complaint_service' %}?parent_visit_id={{ v.id }}"
+                                                       class="btn btn-sm btn-outline-warning text-dark"
+                                                       title="Raise Complaint Service for this visit">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i> Complaint
+                                                    </a>
+
                                                     {% if v.allocation_status == "ALLOCATED" %}
                                                         <span class="status-pill status-allocated">
                                                             Work Allocated
@@ -638,6 +668,11 @@
                                                         </form>
                                                     {% endif %}
                                                 {% else %}
+                                                    <a href="{% url 'create_complaint_service' %}?parent_visit_id={{ v.id }}"
+                                                       class="btn btn-sm btn-outline-warning text-dark"
+                                                       title="Raise Complaint Service for this completed visit">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i> Complaint
+                                                    </a>
                                                     <span class="small text-muted">
                                                         <i class="bi bi-check-circle me-1 text-success"></i>
                                                         Completed
@@ -649,6 +684,85 @@
                                             </div>
                                         </td>
                                     </tr>
+
+                                    <!-- Complaint Service Row (Column Aligned) -->
+                                    {% if v.has_complaint or v.complaint_service %}
+                                        {% with cs=v.complaint_service %}
+                                            <tr style="background-color: #fff5f5; border-left: 4px solid #dc3545;">
+                                                <td class="text-center">
+                                                    <span class="badge bg-danger text-white font-monospace" style="font-size: 11px;">
+                                                        #{{ cs.id|default:v.id }}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <div class="fw-bold text-danger">
+                                                        <i class="bi bi-calendar-check-fill me-1"></i>
+                                                        {% if cs.service_date %}
+                                                            {{ cs.service_date|date:"d M Y" }}
+                                                        {% elif v and v.service_date %}
+                                                            {{ v.service_date|date:"d M Y" }}
+                                                        {% elif cs.lead_date %}
+                                                            {{ cs.lead_date|date:"d M Y" }}
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </div>
+                                                    {% if cs.delivery_time %}
+                                                        <small class="text-muted font-monospace d-block">({{ cs.delivery_time }})</small>
+                                                    {% endif %}
+                                                    <span class="badge bg-danger text-white mt-1" style="font-size: 9px;">Complaint (₹0)</span>
+                                                </td>
+
+                                                <td>
+                                                    <div class="small text-danger fw-semibold">
+                                                        <i class="bi bi-info-circle me-1"></i> <strong>Reason:</strong> {{ v.complaint_reason|default:cs.complaint_reason|default:"Complaint logged" }}
+                                                    </div>
+                                                    {% if cs.lead_date %}
+                                                        <small class="text-muted d-block mt-1">Logged: {{ cs.lead_date|date:"d M Y" }}</small>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td>
+                                                    {% if cs and cs.technicians.all.count > 0 %}
+                                                        {% for tech in cs.technicians.all %}
+                                                            <span class="tech-badge success">
+                                                                <i class="bi bi-person-check"></i>
+                                                                {{ tech.first_name }} {{ tech.last_name }}
+                                                            </span>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <span class="remarks-empty">Not assigned</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td class="text-center">
+                                                    {% if cs and cs.work_allocations.all %}
+                                                        <span class="status-pill status-allocated">Allocated</span>
+                                                    {% else %}
+                                                        <span class="status-pill status-pending">Pending</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td>
+                                                    <div class="table-actions">
+                                                        {% if cs %}
+                                                            <a href="{% url 'allocate_work' cs.id %}" class="btn btn-sm btn-primary">
+                                                                <i class="bi bi-send-check me-1"></i> Allocate Work
+                                                            </a>
+                                                            <a href="{% url 'edit_service_records' cs.id %}" class="btn btn-sm btn-outline-secondary">
+                                                                <i class="bi bi-pencil-square me-1"></i> Edit
+                                                            </a>
+                                                        {% else %}
+                                                            <a href="{% url 'create_complaint_service' %}?parent_visit_id={{ v.id }}" class="btn btn-sm btn-outline-danger">
+                                                                <i class="bi bi-exclamation-triangle me-1"></i> Manage Complaint
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endwith %}
+                                    {% endif %}
                                 {% empty %}
                                     <tr>
                                         <td colspan="6">
@@ -659,6 +773,77 @@
                                             </div>
                                         </td>
                                     </tr>
+                                {% endfor %}
+
+                                <!-- Contract Level Complaint Services (if any) -->
+                                {% for cs in complaint_services %}
+                                    {% if not cs.parent_amc_visit %}
+                                        <tr style="background-color: #fff5f5; border-left: 4px solid #dc3545;">
+                                            <td class="text-center">
+                                                <span class="badge bg-danger text-white font-monospace" style="font-size: 11px;">
+                                                    #{{ cs.id }}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <div class="fw-bold text-danger">
+                                                    <i class="bi bi-calendar-check-fill me-1"></i>
+                                                    {% if cs.service_date %}
+                                                        {{ cs.service_date|date:"d M Y" }}
+                                                    {% elif cs.lead_date %}
+                                                        {{ cs.lead_date|date:"d M Y" }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+                                                </div>
+                                                {% if cs.delivery_time %}
+                                                    <small class="text-muted font-monospace d-block">({{ cs.delivery_time }})</small>
+                                                {% endif %}
+                                                <span class="badge bg-danger text-white mt-1" style="font-size: 9px;">AMC Complaint (₹0)</span>
+                                            </td>
+
+                                            <td>
+                                                <div class="small text-danger fw-semibold">
+                                                    <i class="bi bi-info-circle me-1"></i> <strong>Reason:</strong> {{ cs.complaint_reason|default:"Contract Level Complaint" }}
+                                                </div>
+                                                {% if cs.lead_date %}
+                                                    <small class="text-muted d-block mt-1">Logged: {{ cs.lead_date|date:"d M Y" }}</small>
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                {% if cs.technicians.all.count > 0 %}
+                                                    {% for tech in cs.technicians.all %}
+                                                        <span class="tech-badge success">
+                                                            <i class="bi bi-person-check"></i>
+                                                            {{ tech.first_name }} {{ tech.last_name }}
+                                                        </span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="remarks-empty">Not assigned</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td class="text-center">
+                                                {% if cs.work_allocations.all %}
+                                                    <span class="status-pill status-allocated">Allocated</span>
+                                                {% else %}
+                                                    <span class="status-pill status-pending">Pending</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                <div class="table-actions">
+                                                    <a href="{% url 'allocate_work' cs.id %}" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-send-check me-1"></i> Allocate Work
+                                                    </a>
+                                                    <a href="{% url 'edit_service_records' cs.id %}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="bi bi-pencil-square me-1"></i> Edit
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>

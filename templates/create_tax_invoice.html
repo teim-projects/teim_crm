@@ -201,11 +201,19 @@
                         <!-- Org-specific fields (hidden by default via JS) -->
                         <div class="col-md-3 org-fields">
                             <label>Sub-Name</label>
-                            <input type="text" name="or_name" id="or_name" value="{{ form_data.or_name }}" class="form-control">
+                            <select id="sub_name_dropdown" class="form-control" onchange="handleSubNameDropdownChange(this)">
+                                <option value="">Select Sub-Name</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <input type="text" name="or_name" id="or_name" value="{{ form_data.or_name }}" class="form-control mt-2" placeholder="Enter Sub-Name" style="display: none;">
                         </div>
                         <div class="col-md-3 org-fields">
                             <label>Sub-Contact No</label>
-                            <input type="text" name="or_contact" id="or_contact" value="{{ form_data.or_contact }}" class="form-control" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+                            <input type="text" name="or_contact" id="or_contact" value="{{ form_data.or_contact }}" class="form-control" placeholder="Sub-Contact Phone Number" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+                        </div>
+                        <div class="col-md-3 org-fields">
+                            <label>Sub-Email</label>
+                            <input type="text" name="or_email" id="or_email" value="{% if form_data.or_email and form_data.or_email.strip.lower != 'none' and form_data.or_email.strip.lower != 'null' %}{{ form_data.or_email }}{% endif %}" class="form-control" placeholder="Sub-Contact Email Address">
                         </div>
                     </div>
                     
@@ -1293,12 +1301,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             toggleOrgFieldsByCustomerType(); 
                         }
 
-                        if (or_nameField && !or_nameField.value && data.or_name) {
-                            or_nameField.value = data.or_name;
-                        }
-
-                        if (or_contactField && !or_contactField.value && data.or_contact) {
-                            or_contactField.value = data.or_contact;
+                        if (data.or_name || data.or_contact || data.or_email) {
+                            populateSubNameOptions(data.or_name, data.or_contact, or_nameField ? or_nameField.value : '', or_contactField ? or_contactField.value : '', data.or_email);
                         }
                     })
                     .catch(error => {
@@ -1307,6 +1311,122 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
+
+function populateSubNameOptions(or_name_str, or_contact_str, defaultName = '', defaultContact = '', or_email_str = '', defaultEmail = '') {
+    const dropdown = document.getElementById('sub_name_dropdown');
+    const nameInput = document.getElementById('or_name');
+    const contactInput = document.getElementById('or_contact');
+    const emailInput = document.getElementById('or_email');
+    if (!dropdown || !nameInput || !contactInput) return;
+
+    dropdown.innerHTML = '<option value="">Select Sub-Name</option>';
+
+    const cleanVal = (v) => {
+        if (!v) return '';
+        const s = String(v).trim();
+        return ['none', 'null', 'undefined', 'n/a', ''].includes(s.toLowerCase()) ? '' : s;
+    };
+
+    const names = or_name_str ? String(or_name_str).split(',').map(s => cleanVal(s)).filter(Boolean) : [];
+    const contacts = or_contact_str ? String(or_contact_str).split(',').map(s => cleanVal(s)).filter(Boolean) : [];
+    const emails = or_email_str ? String(or_email_str).split(',').map(s => cleanVal(s)).filter(Boolean) : [];
+
+    const targetName = cleanVal(defaultName);
+    const targetContact = cleanVal(defaultContact);
+    const targetEmail = cleanVal(defaultEmail);
+
+    let matched = false;
+    const maxLen = Math.max(names.length, contacts.length, emails.length);
+
+    for (let idx = 0; idx < maxLen; idx++) {
+        const contact = contacts[idx] || (contacts.length === 1 ? contacts[0] : '');
+        const email = emails[idx] || (emails.length === 1 ? emails[0] : '');
+        const rawName = names[idx] || (names.length === 1 ? names[0] : '');
+        const name = rawName || contact || email || `Contact ${idx + 1}`;
+
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.setAttribute('data-contact', contact);
+        opt.setAttribute('data-email', email);
+        
+        let label = name;
+        if (rawName) {
+            if (contact && email) {
+                label = `${rawName} (${contact} - ${email})`;
+            } else if (contact) {
+                label = `${rawName} (${contact})`;
+            } else if (email) {
+                label = `${rawName} (${email})`;
+            }
+        } else {
+            if (contact && email) {
+                label = `${contact} (${email})`;
+            } else if (contact) {
+                label = contact;
+            } else if (email) {
+                label = email;
+            }
+        }
+        opt.textContent = label;
+
+        if ((targetName && targetName.toLowerCase() === name.toLowerCase()) || (!targetName && idx === 0)) {
+            opt.selected = true;
+            matched = true;
+            nameInput.value = name;
+            contactInput.value = contact || '';
+            if (emailInput) emailInput.value = email || '';
+        }
+        dropdown.appendChild(opt);
+    }
+
+    const otherOpt = document.createElement('option');
+    otherOpt.value = 'Other';
+    otherOpt.textContent = 'Other';
+    dropdown.appendChild(otherOpt);
+
+    if (targetName && !matched) {
+        otherOpt.selected = true;
+        nameInput.value = targetName;
+        contactInput.value = targetContact || '';
+        if (emailInput) emailInput.value = targetEmail || '';
+        nameInput.style.display = 'block';
+    } else {
+        nameInput.style.display = 'none';
+    }
+}
+
+function handleSubNameDropdownChange(dropdown) {
+    const selectedVal = dropdown.value;
+    const nameInput = document.getElementById('or_name');
+    const contactInput = document.getElementById('or_contact');
+    const emailInput = document.getElementById('or_email');
+    if (!nameInput || !contactInput) return;
+
+    if (selectedVal === 'Other') {
+        nameInput.style.display = 'block';
+        nameInput.value = '';
+        contactInput.value = '';
+        if (emailInput) emailInput.value = '';
+        nameInput.focus();
+    } else if (selectedVal === '') {
+        nameInput.style.display = 'none';
+        nameInput.value = '';
+        contactInput.value = '';
+        if (emailInput) emailInput.value = '';
+    } else {
+        nameInput.style.display = 'none';
+        nameInput.value = selectedVal;
+        const selectedOpt = dropdown.options[dropdown.selectedIndex];
+        const contactVal = selectedOpt ? selectedOpt.getAttribute('data-contact') : '';
+        const emailVal = selectedOpt ? selectedOpt.getAttribute('data-email') : '';
+        if (contactVal) {
+            contactInput.value = contactVal;
+        }
+        if (emailInput) {
+            emailInput.value = emailVal || '';
+        }
+    }
+}
 </script>  
 
 <!-- Branch details -->
