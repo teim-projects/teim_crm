@@ -1,0 +1,366 @@
+{% load static %}
+{% include 'sidebar.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Complaint Service (₹0) - TEIM CRM</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="{% static 'images/crono.png' %}" type="image/png">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            color: #212529;
+        }
+
+        .main-container {
+            max-width: 1100px;
+            margin: 95px auto 50px auto;
+            padding: 0 15px;
+        }
+
+        .complaint-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+        }
+
+        .complaint-header {
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+            color: #ffffff;
+            padding: 25px 30px;
+        }
+
+        .complaint-header h3 {
+            font-weight: 700;
+            margin: 0 0 5px 0;
+            font-size: 1.6rem;
+        }
+
+        .complaint-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .zero-cost-badge {
+            background: #ffffff;
+            color: #198754;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 8px 18px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .complaint-body {
+            padding: 30px;
+        }
+
+        .parent-info-card {
+            background-color: #eef6ff;
+            border: 1px solid #b6d4fe;
+            border-left: 5px solid #0d6efd;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #495057;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #dc3545;
+        }
+
+        .required-star {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 10px 14px;
+            border: 1px solid #ced4da;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.15);
+        }
+
+        .complaint-textarea {
+            border: 2px solid #f5c2c7;
+            background-color: #fff8f8;
+        }
+
+        .box-list {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #dc3545, #b02a37);
+            color: #ffffff;
+            font-weight: 700;
+            padding: 12px 35px;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #bb2d3b, #842029);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="complaint-card">
+        
+        <!-- Header Banner -->
+        <div class="complaint-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h3><i class="fa-solid fa-triangle-exclamation me-2"></i> Create Complaint Service</h3>
+                <p>Log a zero-cost complaint / callback service for warranty or problem resolution.</p>
+            </div>
+            <div>
+                <span class="zero-cost-badge">
+                    <i class="fa-solid fa-circle-check text-success fs-5"></i> Service Cost: ₹0.00 (Free)
+                </span>
+            </div>
+        </div>
+
+        <div class="complaint-body">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Parent Origin Info Card -->
+            {% if parent_type_label %}
+                <div class="parent-info-card">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h6 class="text-primary mb-1"><i class="fa-solid fa-link me-2"></i> Linked Service Origin:</h6>
+                            <h5 class="fw-bold mb-0 text-dark">{{ parent_type_label }}</h5>
+                        </div>
+                        <div>
+                            <span class="badge bg-primary fs-6 px-3 py-2"><i class="fa-solid fa-user me-1"></i> {{ customer.fullname }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'create_complaint_service' %}" id="complaintForm">
+                {% csrf_token %}
+                {% if parent_service %}<input type="hidden" name="parent_service_id" value="{{ parent_service.id }}">{% endif %}
+                {% if parent_amc %}<input type="hidden" name="parent_amc_id" value="{{ parent_amc.id }}">{% endif %}
+                {% if parent_visit %}<input type="hidden" name="parent_visit_id" value="{{ parent_visit.id }}">{% endif %}
+
+                <!-- Section 1: Basic Information -->
+                <div class="section-title">
+                    <i class="fa-solid fa-id-card"></i> 1. Customer & Branch Information
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="customer_id" class="form-label fw-bold">Customer <span class="required-star">*</span></label>
+                        <select class="form-select" id="customer_id" name="customer_id" required>
+                            <option value="">-- Select Customer --</option>
+                            {% for c in customers %}
+                                <option value="{{ c.id }}" {% if customer and customer.id == c.id %}selected{% endif %}>
+                                    {{ c.fullname }} ({{ c.primarycontact }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="branch_id" class="form-label fw-bold">Branch</label>
+                        <select class="form-select" id="branch_id" name="branch_id">
+                            <option value="">-- Select Branch --</option>
+                            {% for b in branches %}
+                                <option value="{{ b.id }}" {% if branch and branch.id == b.id %}selected{% endif %}>
+                                    {{ b.branch_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 2: Complaint Information -->
+                <div class="section-title">
+                    <i class="fa-solid fa-comment-dots"></i> 2. Complaint Details
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <label for="subject" class="form-label fw-bold">Service Title / Subject <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" id="subject" name="subject" 
+                               value="Complaint Service - {% if customer %}{{ customer.fullname }}{% else %}{{ parent_title }}{% endif %}" required>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label for="complaint_reason" class="form-label fw-bold text-danger">Complaint Reason / Issue Description <span class="required-star">*</span></label>
+                        <textarea class="form-control complaint-textarea" id="complaint_reason" name="complaint_reason" rows="3" 
+                                  placeholder="Describe the complaint, customer feedback, or issue reported in detail..." required></textarea>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="complaint_reported_by" class="form-label fw-bold">Reported By</label>
+                        <select class="form-select" id="complaint_reported_by" name="complaint_reported_by">
+                            <option value="Customer" selected>Customer</option>
+                            <option value="Sales Person">Sales Person</option>
+                            <option value="Technician">Technician</option>
+                            <option value="Branch Manager">Branch Manager</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="service_date" class="form-label fw-bold">Scheduled Service Date <span class="required-star">*</span></label>
+                        <input type="date" class="form-control" id="service_date" name="service_date" value="{{ today_date }}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="delivery_time" class="form-label fw-bold">Preferred Time</label>
+                        <input type="time" class="form-control" id="delivery_time" name="delivery_time" value="10:00">
+                    </div>
+                </div>
+
+                <!-- Section 3: Address & Location -->
+                <div class="section-title">
+                    <i class="fa-solid fa-location-dot"></i> 3. Address & Location
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <label for="address" class="form-label fw-bold">Service Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="2">{{ address }}</textarea>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label for="gps_location" class="form-label fw-bold">GPS Location Link (Optional)</label>
+                        <input type="url" class="form-control" id="gps_location" name="gps_location" value="{{ gps_location }}" placeholder="https://maps.google.com/...">
+                    </div>
+                </div>
+
+                <!-- Section 4: Products & Technician Selection -->
+                <div class="section-title">
+                    <i class="fa-solid fa-boxes-stacked"></i> 4. Products & Technicians Assignment
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <!-- Products Involved -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Products Involved (Zero Charge ₹0)</label>
+                        <div class="box-list">
+                            {% for prod in all_products %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="products" value="{{ prod.product_id }}" id="prod_{{ prod.product_id }}"
+                                           {% if prod in preselected_products %}checked{% endif %}>
+                                    <label class="form-check-label fw-medium text-dark" for="prod_{{ prod.product_id }}">
+                                        {{ prod.product_name }}
+                                    </label>
+                                </div>
+                            {% empty %}
+                                <span class="text-muted">No products available.</span>
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">Pre-selected from original service. You can modify as needed.</small>
+                    </div>
+
+                    <!-- Technicians Assignment -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Assign / Change Technicians</label>
+                        <div class="box-list">
+                            {% for tech in technicians %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="technicians" value="{{ tech.id }}" id="tech_{{ tech.id }}"
+                                           {% if tech in preselected_techs %}checked{% endif %}>
+                                    <label class="form-check-label fw-medium text-dark" for="tech_{{ tech.id }}">
+                                        <i class="fa-solid fa-user-gear text-secondary me-1"></i>
+                                        {{ tech.user.get_full_name|default:tech.user.username }} 
+                                        {% if tech.branch %}<small class="text-muted">({{ tech.branch.branch_name }})</small>{% endif %}
+                                    </label>
+                                </div>
+                            {% empty %}
+                                <span class="text-muted">No technicians available.</span>
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">Select technicians to allocate this complaint work to.</small>
+                    </div>
+                </div>
+
+                <!-- Section 5: Sales Person Details -->
+                <div class="section-title">
+                    <i class="fa-solid fa-user-tie"></i> 5. Sales Person Information
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label for="sales_person_name" class="form-label fw-bold">Sales Person Name</label>
+                        <input type="text" class="form-control" id="sales_person_name" name="sales_person_name" value="{{ sales_person_name }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="sales_person_contact_no" class="form-label fw-bold">Sales Person Mobile</label>
+                        <input type="text" class="form-control" id="sales_person_contact_no" name="sales_person_contact_no" value="{{ sales_person_contact }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="sales_person_email" class="form-label fw-bold">Sales Person Email</label>
+                        <input type="email" class="form-control" id="sales_person_email" name="sales_person_email" value="{{ sales_person_email }}">
+                    </div>
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 py-2 rounded-3">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="fa-solid fa-check-circle me-2"></i> Submit Complaint Service (₹0)
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

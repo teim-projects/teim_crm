@@ -647,11 +647,16 @@ def add_sales_person(request):
 @login_required
 @role_required(['admin', 'branch_manager'])
 def sales_person_list(request):
-    if request.user.userprofile.role == 'admin':
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or request.user.is_staff or user_role in ['admin', 'HO_operation', 'HO_manager', 'operation_person']
+
+    if is_admin:
         sales_persons = SalesPerson.objects.all()
-    elif request.user.userprofile.role == 'branch_manager':
-        branch_manager = BranchManager.objects.get(mobile_no = request.user.username)
-        sales_persons = SalesPerson.objects.filter(branch=branch_manager.branch)
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(mobile_no=request.user.username).first()
+        sales_persons = SalesPerson.objects.filter(branch=bm.branch) if bm else SalesPerson.objects.none()
+    else:
+        sales_persons = SalesPerson.objects.all() if (request.user.is_superuser or request.user.is_staff) else SalesPerson.objects.none()
     
     return render(request, 'sales_person_list.html', {'sales_persons': sales_persons})
 
@@ -738,21 +743,34 @@ def edit_sales_person(request, pk):
     return render(request, 'edit_sales_person.html', {'person': person, 'branches':branches})
 
 @login_required
-@role_required(['admin'])
-def delete_sales_person(request, pk):
+@role_required(['admin', 'branch_manager'])
+def toggle_sales_person_status(request, pk):
     person = get_object_or_404(SalesPerson, pk=pk)
+    person.is_active = not person.is_active
+    person.save()
 
-    if request.method == 'POST':
-         # Delete the User whose username is the BranchManager's mobile number
-        try:
-            user = User.objects.get(username=person.mobile_no)
-            user.delete()  # This will also delete UserProfile if CASCADE
-        except User.DoesNotExist:
-            pass  # User not found, just continue
-        person.delete()
-        return redirect('sales_person_list')
+    # Find linked user
+    user = User.objects.filter(Q(username=person.mobile_no) | Q(email=person.email)).first()
+    if user:
+        user.is_active = person.is_active
+        if not person.is_active:
+            if not user.username.endswith('_disabled'):
+                user.username = f"{person.mobile_no}_disabled_{user.id}"
+        else:
+            if not User.objects.filter(username=person.mobile_no).exclude(pk=user.pk).exists():
+                user.username = person.mobile_no
+        user.save()
 
-    return render(request, 'delete_sales_person.html', {'person': person})
+    status_str = "ENABLED" if person.is_active else "DISABLED"
+    messages.success(request, f"Sales Person '{person.full_name}' is now {status_str}. Linked leads, quotations & historical data are preserved.")
+    return redirect('sales_person_list')
+
+
+@login_required
+@role_required(['admin', 'branch_manager'])
+def delete_sales_person(request, pk):
+    # Safely disable instead of destroying DB records so linked leads/quotations are preserved
+    return toggle_sales_person_status(request, pk)
 
 
 @login_required
@@ -862,21 +880,31 @@ def edit_branch_manager(request, pk):
 
 @login_required
 @role_required(['admin'])
-def delete_branch_manager(request, pk):
+def toggle_branch_manager_status(request, pk):
     person = get_object_or_404(BranchManager, pk=pk)
+    person.is_active = not person.is_active
+    person.save()
 
-    if request.method == 'POST':
-        # Delete the User whose username is the BranchManager's mobile number
-        try:
-            user = User.objects.get(username=person.mobile_no)
-            user.delete()  # This will also delete UserProfile if CASCADE
-        except User.DoesNotExist:
-            pass  # User not found, just continue
+    user = User.objects.filter(Q(username=person.mobile_no) | Q(email=person.email)).first()
+    if user:
+        user.is_active = person.is_active
+        if not person.is_active:
+            if not user.username.endswith('_disabled'):
+                user.username = f"{person.mobile_no}_disabled_{user.id}"
+        else:
+            if not User.objects.filter(username=person.mobile_no).exclude(pk=user.pk).exists():
+                user.username = person.mobile_no
+        user.save()
 
-        # Then delete the BranchManager object
-        person.delete()
+    status_str = "ENABLED" if person.is_active else "DISABLED"
+    messages.success(request, f"Branch Manager '{person.full_name}' is now {status_str}. Linked historical data is preserved.")
+    return redirect('branch_manager_list')
 
-        return redirect('branch_manager_list')
+
+@login_required
+@role_required(['admin'])
+def delete_branch_manager(request, pk):
+    return toggle_branch_manager_status(request, pk)
 
     return redirect('branch_manager_list')
 
@@ -925,12 +953,16 @@ def add_operation_person(request):
 @login_required
 @role_required(['admin','branch_manager'])
 def operation_person_list(request):
-    u = request.user
-    if request.user.userprofile.role == 'admin':
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or request.user.is_staff or user_role in ['admin', 'HO_operation', 'HO_manager', 'operation_person']
+
+    if is_admin:
         persons = OperationPerson.objects.all()
-    elif request.user.userprofile.role == 'branch_manager':
-        branch_manager = BranchManager.objects.get(mobile_no = request.user.username)
-        persons = OperationPerson.objects.filter(branch=branch_manager.branch)
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(mobile_no=request.user.username).first()
+        persons = OperationPerson.objects.filter(branch=bm.branch) if bm else OperationPerson.objects.none()
+    else:
+        persons = OperationPerson.objects.all() if (request.user.is_superuser or request.user.is_staff) else OperationPerson.objects.none()
     return render(request, 'operation_person_list.html', {'persons': persons})
 
 @login_required
@@ -990,21 +1022,32 @@ def edit_operation_person(request, pk):
     return render(request, 'edit_operation_person.html', {'person': person, 'branches':branch})
 
 @login_required
-@role_required(['admin','branch_manager'])
-def delete_operation_person(request, pk):
-    operation_person = get_object_or_404(OperationPerson, pk=pk)
+@role_required(['admin', 'branch_manager'])
+def toggle_operation_person_status(request, pk):
+    person = get_object_or_404(OperationPerson, pk=pk)
+    person.is_active = not person.is_active
+    person.save()
 
-    # Also delete linked User (to avoid orphan user accounts)
-    user = operation_person.user
+    user = person.user or User.objects.filter(Q(username=person.mobile_no) | Q(email=person.email)).first()
+    if user:
+        user.is_active = person.is_active
+        if not person.is_active:
+            if not user.username.endswith('_disabled'):
+                user.username = f"{person.mobile_no}_disabled_{user.id}"
+        else:
+            if not User.objects.filter(username=person.mobile_no).exclude(pk=user.pk).exists():
+                user.username = person.mobile_no
+        user.save()
 
-    # Delete OperationPerson first
-    operation_person.delete()
-
-    # Then delete user account
-    user.delete()
-
-    messages.success(request, "Operation Person deleted successfully.")
+    status_str = "ENABLED" if person.is_active else "DISABLED"
+    messages.success(request, f"Operation Person '{person.full_name}' is now {status_str}. Linked historical data is preserved.")
     return redirect('operation_person_list')
+
+
+@login_required
+@role_required(['admin', 'branch_manager'])
+def delete_operation_person(request, pk):
+    return toggle_operation_person_status(request, pk)
 
 @login_required
 def customer_details_create(request):
@@ -1246,7 +1289,7 @@ def service_management_create(request):
     customers = customer_details.objects.all()
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
-    sales_persons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+    sales_persons = list(SalesPerson.objects.filter(is_active=True)) + list(BranchManager.objects.filter(is_active=True))
     branch = Branch.objects.all()
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
     segments = service_management._meta.get_field('segment').choices
@@ -1456,15 +1499,17 @@ def service_management_create(request):
                         if fortnight_count:
                             frequency_value = int(fortnight_count)
 
-                    # --- UPDATED: include duration_months ---
+                    # --- UPDATED: include duration_months and selected_months ---
+                    selected_months_val = item.get("selected_months", "") or ""
                     ServiceProductFrequency.objects.create(
                         service=instance,
                         product=product,
                         frequency=frequency_value,
-                        duration_months=duration_months   # <-- new field
+                        duration_months=duration_months,
+                        selected_months=selected_months_val
                     )
 
-                    print(f"🔥 FREQUENCY SAVED: {product.product_name} - {frequency_value}, duration: {duration_months} months")
+                    print(f"🔥 FREQUENCY SAVED: {product.product_name} - {frequency_value}, duration: {duration_months} months, months: {selected_months_val}")
                 except Exception as e:
                     print("❌ FREQUENCY SAVE ERROR:", e)
                     continue
@@ -1497,10 +1542,237 @@ def service_management_create(request):
         'frequency_choices': frequency_choices,
         'segments': segments,
         'branches': branch
-    })    
-    
-    
-# views.py - COMPLETE VERSION WITH ALL ACTIONS
+    })
+
+
+@login_required
+def create_complaint_service(request):
+    """
+    Create a zero-cost Complaint Service linked to an existing Single Service, AMC, or AMC Visit.
+    Accessible by Customer, Sales Person, Branch Manager, Admin, etc.
+    """
+    from amc.models import AMCContract, AMCServiceVisit
+    from datetime import datetime
+
+    parent_service_id = request.GET.get('parent_service_id') or request.POST.get('parent_service_id')
+    parent_amc_id = request.GET.get('parent_amc_id') or request.POST.get('parent_amc_id')
+    parent_visit_id = request.GET.get('parent_visit_id') or request.POST.get('parent_visit_id')
+
+    parent_service = service_management.objects.filter(id=parent_service_id).first() if parent_service_id else None
+    parent_amc = AMCContract.objects.filter(id=parent_amc_id).first() if parent_amc_id else None
+    parent_visit = AMCServiceVisit.objects.filter(id=parent_visit_id).first() if parent_visit_id else None
+
+    # Determine customer, branch, address, products, technicians, sales person from parent
+    customer = None
+    branch = None
+    address = ""
+    gps_location = ""
+    sales_person_name = ""
+    sales_person_contact = ""
+    sales_person_email = ""
+    parent_type_label = ""
+    parent_title = ""
+    preselected_products = []
+    preselected_techs = []
+
+    if parent_visit:
+        parent_amc = parent_visit.amc
+        parent_type_label = f"AMC Visit #{parent_visit.id} (Date: {parent_visit.service_date})"
+        parent_title = f"AMC Visit #{parent_visit.id}"
+        customer = parent_amc.customer
+        branch = parent_amc.branch
+        address = parent_amc.default_customer_address or (customer.shifttopartyaddress if customer else "")
+        gps_location = parent_amc.default_gps_location or ""
+        if parent_amc.service:
+            sales_person_name = parent_amc.service.sales_person_name or ""
+            sales_person_contact = parent_amc.service.sales_person_contact_no or ""
+            sales_person_email = parent_amc.service.sales_person_email or ""
+            preselected_products = [sp.product for sp in parent_amc.service.service_products.all()]
+            if not preselected_products and parent_amc.service.selected_services.exists():
+                preselected_products = list(parent_amc.service.selected_services.all())
+        preselected_techs = list(parent_visit.technicians.all())
+
+    elif parent_amc:
+        parent_type_label = f"AMC Contract #{parent_amc.contract_number}"
+        parent_title = f"AMC {parent_amc.contract_number}"
+        customer = parent_amc.customer
+        branch = parent_amc.branch
+        address = parent_amc.default_customer_address or (customer.shifttopartyaddress if customer else "")
+        gps_location = parent_amc.default_gps_location or ""
+        if parent_amc.service:
+            sales_person_name = parent_amc.service.sales_person_name or ""
+            sales_person_contact = parent_amc.service.sales_person_contact_no or ""
+            sales_person_email = parent_amc.service.sales_person_email or ""
+            preselected_products = [sp.product for sp in parent_amc.service.service_products.all()]
+            if not preselected_products and parent_amc.service.selected_services.exists():
+                preselected_products = list(parent_amc.service.selected_services.all())
+        preselected_techs = list(parent_amc.technicians.all())
+
+    elif parent_service:
+        parent_type_label = f"Service #{parent_service.id} - {parent_service.service_subject or 'Single Service'}"
+        parent_title = f"Service #{parent_service.id}"
+        customer = parent_service.customer
+        branch = parent_service.branch
+        address = parent_service.address or (customer.shifttopartyaddress if customer else "")
+        gps_location = parent_service.gps_location or ""
+        sales_person_name = parent_service.sales_person_name or ""
+        sales_person_contact = parent_service.sales_person_contact_no or ""
+        sales_person_email = parent_service.sales_person_email or ""
+        preselected_products = [sp.product for sp in parent_service.service_products.all()]
+        if not preselected_products and parent_service.selected_services.exists():
+            preselected_products = list(parent_service.selected_services.all())
+        preselected_techs = list(parent_service.technicians.all())
+
+    if request.method == 'POST':
+        try:
+            customer_id = request.POST.get('customer_id')
+            if customer_id:
+                customer = customer_details.objects.filter(id=customer_id).first()
+            elif not customer:
+                customer_contact = request.POST.get('customer_contact')
+                if customer_contact:
+                    customer = customer_details.objects.filter(primarycontact=customer_contact).first()
+
+            if not customer:
+                messages.error(request, "Customer is required to create a Complaint Service.")
+                return redirect('display_service_management')
+
+            complaint_reason = request.POST.get('complaint_reason', '').strip()
+            complaint_reported_by = request.POST.get('complaint_reported_by', 'Customer').strip()
+            service_date_str = request.POST.get('service_date')
+            delivery_time = request.POST.get('delivery_time', timezone.now().time())
+            
+            service_date = datetime.strptime(service_date_str, '%Y-%m-%d').date() if service_date_str else timezone.now().date()
+
+            branch_id = request.POST.get('branch_id')
+            branch_obj = Branch.objects.filter(id=branch_id).first() if branch_id else branch
+
+            sales_person_name = request.POST.get('sales_person_name', '')
+            sales_person_contact = request.POST.get('sales_person_contact_no', '')
+            sales_person_email = request.POST.get('sales_person_email', '')
+
+            subject = request.POST.get('subject') or f"Complaint Service - {customer.fullname}"
+
+            # Create complaint service management object with strictly ₹0 cost
+            complaint_service_obj = service_management.objects.create(
+                customer=customer,
+                branch=branch_obj,
+                service_subject=subject,
+                contract_type="Complaint",
+                contract_status="Yes",
+                is_complaint=True,
+                complaint_reason=complaint_reason,
+                complaint_reported_by=complaint_reported_by,
+                parent_service=parent_service,
+                parent_amc=parent_amc,
+                parent_amc_visit=parent_visit,
+                total_charges=Decimal('0.00'),
+                total_price=Decimal('0.00'),
+                total_price_with_gst=Decimal('0.00'),
+                service_date=service_date,
+                delivery_time=delivery_time,
+                address=request.POST.get('address', address),
+                city=request.POST.get('city', customer.shifttopartycity if customer else 'Null'),
+                state=request.POST.get('state', customer.shifttopartystate if customer else 'Null'),
+                pincode=request.POST.get('pincode', customer.shifttopartypostal if customer else '000000'),
+                gps_location=request.POST.get('gps_location', gps_location),
+                sales_person_name=sales_person_name,
+                sales_person_contact_no=sales_person_contact,
+                sales_person_email=sales_person_email,
+                is_approved=True
+            )
+
+            # Associate selected products (with price 0)
+            selected_product_ids = request.POST.getlist('products')
+            for p_id in selected_product_ids:
+                prod = Product.objects.filter(pk=p_id).first()
+                if prod:
+                    ServiceProduct.objects.create(
+                        service=complaint_service_obj,
+                        product=prod,
+                        price=Decimal('0.00'),
+                        quantity=Decimal('1.00'),
+                        gst_percentage=Decimal('0.00'),
+                        total_with_gst=Decimal('0.00')
+                    )
+
+            # Allocate work to selected technicians
+            selected_tech_ids = request.POST.getlist('technicians')
+            tech_objs = list(TechnicianProfile.objects.filter(id__in=selected_tech_ids))
+            if tech_objs:
+                complaint_service_obj.technicians.set(tech_objs)
+
+            work = WorkAllocation.objects.create(
+                service=complaint_service_obj,
+                customer_contact=str(customer.primarycontact),
+                customer_address=complaint_service_obj.address or customer.shifttopartyaddress,
+                payment_amount=Decimal('0.00'),
+                customer_payment_status="Free / Complaint",
+                work_description=f"COMPLAINT SERVICE (₹0 Cost): {complaint_reason}",
+            )
+            if tech_objs:
+                work.technician.set(tech_objs)
+                for tech in tech_objs:
+                    tech_work = TechWorkList.objects.create(
+                        technician=tech.user,
+                        service=complaint_service_obj,
+                        status="Pending"
+                    )
+                    tech_work.work.add(work)
+
+            # Link AMC visit if applicable
+            if parent_visit:
+                parent_visit.has_complaint = True
+                parent_visit.complaint_reason = complaint_reason
+                parent_visit.complaint_service = complaint_service_obj
+                parent_visit.save(update_fields=['has_complaint', 'complaint_reason', 'complaint_service'])
+
+            messages.success(request, f"Complaint Service '{complaint_service_obj.service_subject}' created successfully with ₹0 cost!")
+            
+            if parent_amc:
+                return redirect('amc:detail', pk=parent_amc.pk)
+            return redirect('display_service_management')
+
+        except Exception as e:
+            print("❌ ERROR in create_complaint_service:", e)
+            import traceback
+            traceback.print_exc()
+            messages.error(request, f"Error creating Complaint Service: {e}")
+
+    # GET Request context
+    customers = customer_details.objects.all()
+    branches = Branch.objects.all()
+    technicians = TechnicianProfile.objects.all()
+    all_products = Product.objects.all()
+    sales_persons = list(SalesPerson.objects.filter(is_active=True)) + list(BranchManager.objects.filter(is_active=True))
+
+    if not sales_person_name and customer and getattr(customer, 'sales_person', None):
+        sales_person_name = customer.sales_person.full_name or ""
+        sales_person_contact = customer.sales_person.mobile_no or ""
+        sales_person_email = customer.sales_person.email or ""
+
+    return render(request, 'create_complaint_service.html', {
+        'parent_service': parent_service,
+        'parent_amc': parent_amc,
+        'parent_visit': parent_visit,
+        'parent_type_label': parent_type_label,
+        'parent_title': parent_title,
+        'customer': customer,
+        'branch': branch,
+        'address': address,
+        'gps_location': gps_location,
+        'sales_person_name': sales_person_name,
+        'sales_person_contact': sales_person_contact,
+        'sales_person_email': sales_person_email,
+        'preselected_products': preselected_products,
+        'preselected_techs': preselected_techs,
+        'customers': customers,
+        'branches': branches,
+        'technicians': technicians,
+        'all_products': all_products,
+        'sales_persons': sales_persons,
+        'today_date': timezone.now().date().isoformat()
+    })
 
 # views.py - COMPLETE VERSION WITH AMC PRODUCTS API
 
@@ -2045,7 +2317,7 @@ def get_amc_visit_details(request, schedule_id):
         'contract_details': {
             'start_date': schedule.amc.start_date.strftime('%Y-%m-%d'),
             'end_date': schedule.amc.end_date.strftime('%Y-%m-%d'),
-            'frequency': schedule.amc.frequency,
+            'frequency': schedule.amc.display_frequency,
             'total_amount': float(schedule.amc.total_amount) if schedule.amc.total_amount else 0,
             'per_visit_amount': float(schedule.amc.per_visit_amount) if schedule.amc.per_visit_amount else 0,
             'service_description': schedule.amc.service_description or '',
@@ -2415,7 +2687,7 @@ def quotation_management_create(request):
     terms = QuotationTerm.objects.all() 
     branches = Branch.objects.all()
     products = Product.objects.all()
-    sales_person_list =  list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+    sales_person_list = list(SalesPerson.objects.filter(is_active=True)) + list(BranchManager.objects.filter(is_active=True))
     thank_notes_qs = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     thank_notes = [note for note in thank_notes_qs if note]  
     
@@ -2447,6 +2719,7 @@ def quotation_management_create(request):
                     customer_type = request.POST.get('customer_type')
                     or_name = request.POST.get('or_name') or None
                     or_contact = request.POST.get('or_contact') or None
+                    or_email = request.POST.get('or_email') or None
                     c_branch_id = request.POST.get('branch')
                     # branch = Branch.objects.get(id = branch_id)
                     # Assign values to the existing instance
@@ -2457,6 +2730,7 @@ def quotation_management_create(request):
                     customer.customer_type = customer_type
                     customer.or_name = or_name
                     customer.or_contact = or_contact
+                    customer.or_email = or_email
                     customer.branch = c_branch_id
                     
                     # Save changes
@@ -2468,6 +2742,7 @@ def quotation_management_create(request):
                         "customer_type",
                         "or_name",
                         "or_contact",
+                        "or_email",
 
                     ])
             except customer_details.DoesNotExist:
@@ -2493,6 +2768,7 @@ def quotation_management_create(request):
             product_details_json = request.POST.get('product_details_json')
             or_name = request.POST.get('or_name')
             or_contact = request.POST.get('or_contact')
+            or_email = request.POST.get('or_email')
             thank_u_note = request.POST.get('thank_u_note')
             ordered_term_ids_str = request.POST.get('terms_and_conditions_ordered', '')
             
@@ -2559,6 +2835,8 @@ def quotation_management_create(request):
             # Create the quotation
             quotation = quotation_management.objects.create(
                 customer=customer,
+                version=1,
+                is_latest=True,
                 contact_by = contact_by,
                 contact_by_no = contact_by_no,
                 address=address,
@@ -2578,6 +2856,7 @@ def quotation_management_create(request):
                 custom_terms = custom_terms,
                 or_name = or_name,
                 or_contact = or_contact,
+                or_email = or_email,
                 thank_u_note = thank_u_note,
                 terms_order = ordered_term_ids_str
             )
@@ -2706,7 +2985,9 @@ def get_quotation_details_by_no(request):
         return JsonResponse({'error': 'Quotation number is required'}, status=400)
 
     try:
-        quotation = quotation_management.objects.select_related('branch').get(quotation_no=quotation_no)
+        quotation = quotation_management.objects.select_related('branch').filter(quotation_no=quotation_no).order_by('-version').first()
+        if not quotation:
+            raise quotation_management.DoesNotExist
         branch = quotation.branch
         product = quotation.product_details_json
         aplly_gst = quotation.apply_gst
@@ -3122,14 +3403,14 @@ from datetime import datetime
 @login_required
 @role_required(['admin','sales','branch_manager'])
 def lead_management_create(request):
-    salespersons = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+    salespersons = list(SalesPerson.objects.filter(is_active=True)) + list(BranchManager.objects.filter(is_active=True))
     
     branches = Branch.objects.all()
     if request.method == 'GET':
         # Handle AJAX GET for mobile number lookup
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'primarycontact' in request.GET:
             primarycontact = request.GET.get('primarycontact')
-            lead = lead_management.objects.filter(primarycontact=primarycontact).order_by('enquirydate').first()
+            lead = lead_management.objects.filter(primarycontact=primarycontact).order_by('-enquirydate').first()
             
             if lead:
                 data = {
@@ -3151,6 +3432,10 @@ def lead_management_create(request):
                     'branch': lead.branch.id if lead.branch else '',
                     'typeoflead': lead.typeoflead,
                     'firstfollowupdate': lead.firstfollowupdate.strftime('%Y-%m-%d') if lead.firstfollowupdate else '',
+                    'customer_type': lead.customer_type or 'Individual',
+                    'or_name': lead.or_name or '',
+                    'or_contact': str(lead.or_contact) if lead.or_contact else '',
+                    'or_email': lead.or_email or '',
                 }
                 return JsonResponse({'status': 'exists', 'data': data})
             else:
@@ -3182,9 +3467,28 @@ def lead_management_create(request):
             
             secondarycontact = request.POST.get('secondarycontact')
             secondarycontact = int(secondarycontact) if secondarycontact and secondarycontact.isdigit() else None
-            or_contact = request.POST.get('or_contact')
-            or_contact = int(or_contact) if or_contact and or_contact.isdigit() else None
-            or_name = request.POST.get('or_name')
+
+            def _clean_or_val(s):
+                if not s: return ""
+                st = str(s).strip()
+                return "" if st.lower() in ["none", "null", "undefined", "n/a", ""] else st
+
+            or_name_list = request.POST.getlist('or_name')
+            or_contact_list = request.POST.getlist('or_contact')
+            or_email_list = request.POST.getlist('or_email')
+            valid_or_names = [_clean_or_val(n) for n in or_name_list if _clean_or_val(n)]
+            valid_or_contacts = [_clean_or_val(c) for c in or_contact_list if _clean_or_val(c)]
+            valid_or_emails = [_clean_or_val(e) for e in or_email_list if _clean_or_val(e)]
+            if not valid_or_names and _clean_or_val(request.POST.get('or_name')):
+                valid_or_names = [_clean_or_val(request.POST.get('or_name'))]
+            if not valid_or_contacts and _clean_or_val(request.POST.get('or_contact')):
+                valid_or_contacts = [_clean_or_val(request.POST.get('or_contact'))]
+            if not valid_or_emails and _clean_or_val(request.POST.get('or_email')):
+                valid_or_emails = [_clean_or_val(request.POST.get('or_email'))]
+
+            or_name = ", ".join(valid_or_names) if valid_or_names else None
+            or_contact = ", ".join(valid_or_contacts) if valid_or_contacts else None
+            or_email = ", ".join(valid_or_emails) if valid_or_emails else None
             # Other fields
             customeremail = request.POST.get('customeremail')
             customeraddress = request.POST.get('customeraddress')
@@ -3232,6 +3536,7 @@ def lead_management_create(request):
                 firstfollowupdate=firstfollowupdate,
                 or_contact = or_contact,
                 or_name = or_name,
+                or_email = or_email,
                 customer_type = customer_type,
             )
 
@@ -3488,21 +3793,35 @@ def today_work(request):
 
     salesperson_filter = request.GET.get('salesperson')
 
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
+
     # Filter today's follow-ups
-    if request.user.userprofile.role =='admin':
+    if is_admin:
         lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
         followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
-    elif request.user.userprofile.role == 'sales': 
-        lead_folloup = lead_management.objects.filter(firstfollowupdate = today ,
-                                                    salesperson__mobile_no = request.user.username )
-        followups = main_followup.objects.filter(next_followup_date=today, 
-                                                 lead__salesperson__mobile_no=request.user.username ).select_related('lead')
-    elif request.user.userprofile.role == 'branch_manager': 
-        branch = BranchManager.objects.get(mobile_no = request.user.username ).branch
-        lead_folloup = lead_management.objects.filter(firstfollowupdate = today ,
-                                                    branch = branch)
-        followups = main_followup.objects.filter(next_followup_date=today, 
-                                                 lead__branch = branch ).select_related('lead')
+    elif user_role == 'sales': 
+        sp = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if sp:
+            lead_folloup = lead_management.objects.filter(firstfollowupdate = today, salesperson=sp)
+            followups = main_followup.objects.filter(next_followup_date=today, lead__salesperson=sp).select_related('lead')
+        else:
+            lead_folloup = lead_management.objects.none()
+            followups = main_followup.objects.none()
+    elif user_role == 'branch_manager': 
+        bm = BranchManager.objects.filter(mobile_no = request.user.username).first()
+        if bm:
+            branch = bm.branch
+            lead_folloup = lead_management.objects.filter(firstfollowupdate = today, branch = branch)
+            followups = main_followup.objects.filter(next_followup_date=today, lead__branch = branch).select_related('lead')
+        else:
+            lead_folloup = lead_management.objects.none()
+            followups = main_followup.objects.none()
+    else:
+        lead_folloup = lead_management.objects.none()
+        followups = main_followup.objects.none()
             
     # lead_folloup = lead_management.objects.filter(firstfollowupdate = today)
     # followups = main_followup.objects.filter(next_followup_date=today).select_related('lead')
@@ -3523,8 +3842,8 @@ def today_work(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Get all unique salespersons
-    salespersons = SalesPerson.objects.all()
+    # Get all salespersons (active and disabled) for filter dropdown
+    salespersons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
 
     # Used for correct indexing
     start_index = (page_obj.number - 1) * paginator.per_page
@@ -3574,29 +3893,65 @@ def pending_followups(request):
     order = request.GET.get('order', 'asc')
     segment_filter = request.GET.get('segments')
 
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
+
     # Base queryset filtered by role
-    if request.user.userprofile.role == 'admin':
+    if is_admin:
         lead_folloup = lead_management.objects.filter(firstfollowupdate__lt=today)
         salespersons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
-    elif request.user.userprofile.role == 'sales':
-        lead_folloup = lead_management.objects.filter(
-            firstfollowupdate__lt=today,
-            salesperson__mobile_no=request.user.username
-        )
-    else:  # branch_manager
-        branch_manager = BranchManager.objects.get(mobile_no=request.user.username)
-        lead_folloup = lead_management.objects.filter(
-            firstfollowupdate__lt=today,
-            branch=branch_manager.branch
-        )
-        salespersons = SalesPerson.objects.filter(branch=branch_manager.branch)
+    elif user_role == 'sales':
+        sp = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if sp:
+            lead_folloup = lead_management.objects.filter(
+                firstfollowupdate__lt=today,
+                salesperson=sp
+            )
+            salespersons = [sp]
+        else:
+            lead_folloup = lead_management.objects.none()
+            salespersons = []
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if bm:
+            lead_folloup = lead_management.objects.filter(
+                firstfollowupdate__lt=today,
+                branch=bm.branch
+            )
+            salespersons = SalesPerson.objects.filter(branch=bm.branch)
+        else:
+            lead_folloup = lead_management.objects.none()
+            salespersons = []
+    else:
+        lead_folloup = lead_management.objects.none()
 
     # Overdue followups (main_followup instances referencing leads)
     followups = main_followup.objects.filter(next_followup_date__lt=today).select_related('lead')
 
-    # Role-based restriction for followups (only once)
-    if request.user.userprofile.role != 'admin':
-        followups = followups.filter(lead__salesperson__mobile_no=request.user.username)
+    # Role-based restriction for followups
+    if not is_admin:
+        if user_role == 'sales':
+            sp = SalesPerson.objects.filter(
+                Q(mobile_no=request.user.username) | Q(email=request.user.email)
+            ).first()
+            if sp:
+                followups = followups.filter(lead__salesperson=sp)
+            else:
+                followups = main_followup.objects.none()
+        elif user_role == 'branch_manager':
+            bm = BranchManager.objects.filter(
+                Q(mobile_no=request.user.username) | Q(email=request.user.email)
+            ).first()
+            if bm:
+                followups = followups.filter(lead__branch=bm.branch)
+            else:
+                followups = main_followup.objects.none()
+        else:
+            followups = main_followup.objects.none()
 
     # --- Simple search via DB icontains (applies before combining) ---
     if search_query:
@@ -3734,16 +4089,31 @@ def display_customer(request):
     sort_by = request.GET.get('sort_by', 'customerid')
     customer_type = request.GET.get('customer_type')
 
-    if request.user.userprofile.role == 'admin': 
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
+
+    if is_admin:
         m = customer_details.objects.all()
-
-    elif request.user.userprofile.role == 'sales':
-        sales_person_name = SalesPerson.objects.get(full_name = SalesPerson.objects.get(mobile_no = request.user.username).full_name)
-        m = customer_details.objects.filter(contactperson__iexact = sales_person_name)
-
-    elif request.user.userprofile.role == 'branch_manager':
-        branch = BranchManager.objects.get(mobile_no = request.user.username ).branch
-        m = customer_details.objects.filter(branch_id = branch)
+    elif user_role == 'sales':
+        sp = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if sp:
+            m = customer_details.objects.filter(
+                Q(contactperson__iexact=sp.full_name) | Q(primarycontact=sp.mobile_no)
+            )
+        else:
+            m = customer_details.objects.none()
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if bm:
+            m = customer_details.objects.filter(branch_id=bm.branch)
+        else:
+            m = customer_details.objects.none()
+    else:
+        m = customer_details.objects.none()
         
     # Base queryset
 
@@ -3850,16 +4220,35 @@ def display_reschedule(request):
     sort_order = request.GET.get('order', 'asc')
     sort_by = request.GET.get('sort_by', 'customerid')
     
-    if query:
-        # Filter results by customer ID or service ID
-        m = Reschedule.objects.filter(
-            service__customer__customerid__icontains=query
-        ) | Reschedule.objects.filter(
-            service__id__icontains=query
-        )
-    else:
-        # Display all records if no search query
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
+
+    if is_admin:
         m = Reschedule.objects.all()
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(mobile_no=request.user.username).first()
+        if bm:
+            m = Reschedule.objects.filter(service__branch=bm.branch)
+        else:
+            m = Reschedule.objects.none()
+    elif user_role == 'sales':
+        sp = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if sp:
+            m = Reschedule.objects.filter(
+                Q(service__sales_person_contact_no=sp.mobile_no) | Q(service__sales_person_name__iexact=sp.full_name)
+            )
+        else:
+            m = Reschedule.objects.none()
+    else:
+        m = Reschedule.objects.none()
+
+    if query:
+        m = m.filter(
+            Q(service__customer__customerid__icontains=query) |
+            Q(service__id__icontains=query)
+        )
 
     if sort_by == 'service_id':
         if sort_order == 'desc':
@@ -3901,13 +4290,29 @@ def display_service_management(request):
     service_to = request.GET.get('service_to', '')
     customer_type = request.GET.get('customer_type')
 
-    m = service_management.objects.all()
-    if request.user.userprofile.role =='admin':
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
+
+    if is_admin:
         m = service_management.objects.all()
-    elif request.user.userprofile.role == 'sales':
-        m = service_management.objects.filter(sales_person_contact_no = request.user.username)
-    elif request.user.userprofile.role == 'branch_manager':
-        m = service_management.objects.filter(branch = BranchManager.objects.get(mobile_no = request.user.username).branch)
+    elif user_role == 'sales':
+        sp = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if sp:
+            m = service_management.objects.filter(
+                Q(sales_person_contact_no=sp.mobile_no) | Q(sales_person_name__iexact=sp.full_name)
+            )
+        else:
+            m = service_management.objects.none()
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(mobile_no=request.user.username).first()
+        if bm:
+            m = service_management.objects.filter(branch=bm.branch)
+        else:
+            m = service_management.objects.none()
+    else:
+        m = service_management.objects.none()
     
     if query:
         m = m.filter(
@@ -3960,11 +4365,9 @@ def display_service_management(request):
 
     count_data = m.count()
 
-    # Get distinct segments and salespersons for dropdowns
-    segments_choices = service_management._meta.get_field('segment').choices
-    segments = [choice[0] for choice in segments_choices]
-    salespersons = SalesPerson.objects.all()
-    contract_types = ['One Time', 'AMC', 'Warranty']
+    segments = [c[0] for c in service_management.SEGMENTS_CHOICES]
+    salespersons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+    contract_types = ['One Time', 'AMC', 'Warranty', 'Complaint']
 
     context = {
         'current_order': sort_order,
@@ -4092,19 +4495,32 @@ def display_quotation(request):
     to_date = request.GET.get('to_date')
     is_sales_coordinator = False
 
-    if request.user.userprofile.role == 'admin':
-        m = quotation_management.objects.all()
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
 
-    elif request.user.userprofile.role == 'sales':
-        sales = SalesPerson.objects.get(mobile_no = request.user.username)
-        if sales.co_ordinator:
-            is_sales_coordinator = True
-            m = quotation_management.objects.all()
+    if is_admin:
+        m = quotation_management.objects.filter(is_latest=True)
+    elif user_role == 'sales':
+        sales = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if sales:
+            m = quotation_management.objects.filter(
+                Q(contact_by_no=sales.mobile_no) |
+                Q(contact_by__iexact=sales.full_name) |
+                Q(customer__contactperson__iexact=sales.full_name),
+                is_latest=True
+            )
         else:
-            m = quotation_management.objects.filter(contact_by_no = sales.mobile_no)
-
-    elif request.user.userprofile.role == 'branch_manager':
-        m = quotation_management.objects.filter(branch = BranchManager.objects.get(mobile_no = request.user.username).branch)
+            m = quotation_management.objects.none()
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(mobile_no=request.user.username).first()
+        if bm:
+            m = quotation_management.objects.filter(branch=bm.branch, is_latest=True)
+        else:
+            m = quotation_management.objects.none()
+    else:
+        m = quotation_management.objects.none()
 
     if query:
         m = m.filter(
@@ -4242,25 +4658,44 @@ def display_lead_management(request):
     # 1. Start with all leads
     salespersons = []
     User = get_user_model()
-    if request.user.userprofile.role =='admin':
-        filtered_leads = lead_management.objects.all()
-        # salespersons = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
 
+    if is_admin:
+        filtered_leads = lead_management.objects.all()
         salespersons = (
             list(SalesPerson.objects.all()) +
             list(BranchManager.objects.all()) 
         )
-    elif request.user.userprofile.role == 'sales':
-        salesperson = SalesPerson.objects.get(mobile_no =request.user.username)
-        filtered_leads = lead_management.objects.filter(salesperson=salesperson)
+    elif user_role == 'sales':
+        salesperson = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if salesperson:
+            filtered_leads = lead_management.objects.filter(
+                Q(salesperson=salesperson) |
+                Q(salesperson__mobile_no=salesperson.mobile_no)
+            )
+            salespersons = [salesperson]
+        else:
+            filtered_leads = lead_management.objects.none()
+            salespersons = []
 
-    elif request.user.userprofile.role == 'branch_manager':
-        branch_manager = BranchManager.objects.get(mobile_no =request.user.username)
-        filtered_leads = lead_management.objects.filter(branch=branch_manager.branch)
-        salespersons = SalesPerson.objects.filter(branch=branch_manager.branch)
+    elif user_role == 'branch_manager':
+        branch_manager = BranchManager.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if branch_manager:
+            filtered_leads = lead_management.objects.filter(branch=branch_manager.branch)
+            salespersons = SalesPerson.objects.filter(branch=branch_manager.branch)
+        else:
+            filtered_leads = lead_management.objects.none()
+            salespersons = []
+    else:
+        filtered_leads = lead_management.objects.none()
     # 2. Get filters from request
     search_query = request.GET.get('search','').strip()
-    typeoflead_filter = request.GET.get('typeoflead')
+    typeoflead_filter = request.GET.get('typeoflead') or request.GET.get('type_of_lead')
     source_filter = request.GET.get('sourceoflead')
     salesperson_filter = request.GET.get('salesperson')
     branch_filter = request.GET.get('branch')
@@ -4272,7 +4707,7 @@ def display_lead_management(request):
     order = request.GET.get('order', 'asc')
     segment_filter = request.GET.get('segments')
     customer_type = request.GET.get('customer_type')
-    followup_status = request.GET.get('followup_status', '').strip()
+    followup_status = (request.GET.get('followup_status') or request.GET.get('order_status') or '').strip()
 
     # 3. Apply search filter
     if search_query:
@@ -4522,7 +4957,17 @@ def delete_quotation(request, rid):
         if password == correct_password:
             try:
                 quotation_obj = get_object_or_404(quotation_management, id=rid)
+                q_no = quotation_obj.quotation_no
+                was_latest = quotation_obj.is_latest
                 quotation_obj.delete()
+
+                if was_latest and q_no:
+                    remaining = quotation_management.objects.filter(quotation_no=q_no).order_by('-version')
+                    if remaining.exists():
+                        latest_rem = remaining.first()
+                        latest_rem.is_latest = True
+                        latest_rem.save(update_fields=['is_latest'])
+
                 messages.success(request, "Quotation deleted successfully.")
             except Exception as e:
                 messages.error(request, f"An error occurred: {e}")
@@ -4639,7 +5084,7 @@ def edit_service_records(request, rid):
     customer = get_object_or_404(customer_details, id=service.customer_id)
     category_choices = Product.CATEGORY_CHOICES
     products = Product.objects.all()
-    sales_persons = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+    sales_persons = list(SalesPerson.objects.filter(is_active=True)) + list(BranchManager.objects.filter(is_active=True))
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
 
     # Build a dictionary of selected items for each service product
@@ -4862,7 +5307,7 @@ def edit_service_management(request, rid):
     if request.method == 'GET':
         service_obj = get_object_or_404(service_management, id=rid)
         previous_reschedules = Reschedule.objects.filter(service_id=rid)
-        all_technicians = TechnicianProfile.objects.all()
+        all_technicians = TechnicianProfile.objects.filter(is_active=True)
 
         # Get users already assigned as technicians (via TechWorkList)
         allocated_technicians = User.objects.filter(techworklist__service=service_obj).distinct()
@@ -4968,7 +5413,7 @@ from .models import quotation_management, QuotationTerm, Product  # adjust as ne
 
 def edit_quotation(request, rid):
     quotation = quotation_management.objects.get(id=rid)
-    sales_person_list = list(SalesPerson.objects.all())+ list(BranchManager.objects.all())
+    sales_person_list = list(SalesPerson.objects.filter(is_active=True)) + list(BranchManager.objects.filter(is_active=True))
     thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
     products = Product.objects.all()
     customer = quotation.customer
@@ -4996,6 +5441,7 @@ def edit_quotation(request, rid):
         customer_type = request.POST.get('customer_type')
         or_name = request.POST.get('or_name')
         or_contact = request.POST.get('or_contact') 
+        or_email = request.POST.get('or_email')
         thank_u_note = request.POST.get('thank_u_note')
         quotation_date = request.POST.get('quotation_date')
         customer.primarycontact = contact_no
@@ -5005,6 +5451,7 @@ def edit_quotation(request, rid):
         customer.secondarycontact = secondary_contact_no
         customer.customer_type = customer_type
         customer.or_name = or_name
+        customer.or_email = or_email
         try:
             customer.or_contact = int(or_contact) if or_contact not in (None, "", "None") else None
         except (TypeError, ValueError):
@@ -5020,6 +5467,7 @@ def edit_quotation(request, rid):
             "customer_type",
             "or_name",
             "or_contact",
+            "or_email",
         ])
         
         for counter , product in enumerate(existing_products, start=1):
@@ -5082,45 +5530,59 @@ def edit_quotation(request, rid):
 
         total_with_gst = total_without_gst + total_gst
 
-        # Save quotation fields
-        # quotation.customer_full_name = customer_full_name
-        # quotation.contact_no = contact_no
-        # quotation.secondary_contact_no = secondary_contact_no
-        # quotation.customer_email = customer_email
-        # quotation.secondary_email = secondary_email
-        quotation.contact_by = contact_by
-        quotation.contact_by_no = contact_by_no
-        quotation.address = address
-        quotation.subject = subject
-        quotation.branch_id = branch_id
-        quotation.quotation_date = quotation_date
-        quotation.product_details_json = updated_products
-        quotation.total_price = total_without_gst
-        quotation.gst_total = total_gst
-        quotation.total_price_with_gst = total_with_gst
-        quotation.cgst = cgst
-        quotation.sgst = sgst
-        quotation.igst = igst
-        quotation.gst_status = gst_status
-        quotation.apply_gst = enable_gst
-        quotation.custom_terms = custom_terms
-        quotation.or_name = or_name
+        # Version control: Create a new version record instead of mutating in-place
+        q_no = quotation.quotation_no
+        all_versions = quotation_management.objects.filter(quotation_no=q_no) if q_no else quotation_management.objects.filter(id=quotation.id)
+        if all_versions.exists():
+            max_ver = max(v.version for v in all_versions)
+            new_ver = max_ver + 1
+        else:
+            new_ver = (quotation.version or 1) + 1
+
+        # Mark all previous versions as is_latest = False
+        all_versions.update(is_latest=False)
+
         try:
-            quotation.or_contact = int(or_contact) if or_contact not in (None, "", "None") else None
+            parsed_or_contact = int(or_contact) if or_contact not in (None, "", "None") else None
         except (TypeError, ValueError):
-            quotation.or_contact = None
-        quotation.thank_u_note = thank_u_note
-        quotation.save()
+            parsed_or_contact = None
 
-        # Save terms
-        # quotation.terms_and_conditions.set(selected_term_ids)
-        # Parse and apply ordered term IDs
         ordered_term_ids = [int(tid) for tid in ordered_term_ids_str.split(',') if tid.isdigit()]
-        print('term', ordered_term_ids)
-        quotation.terms_and_conditions.set(ordered_term_ids)
 
-        quotation.terms_order = ordered_term_ids
-        quotation.save()
+        new_quotation = quotation_management.objects.create(
+            customer=customer,
+            quotation_no=q_no,
+            version=new_ver,
+            is_latest=True,
+            parent_quotation=quotation,
+            contact_by=contact_by,
+            contact_by_no=contact_by_no,
+            address=address,
+            subject=subject,
+            branch_id=branch_id,
+            quotation_date=quotation_date,
+            product_details_json=updated_products,
+            total_price=total_without_gst,
+            total_charges=total_without_gst,
+            gst_total=total_gst,
+            total_price_with_gst=total_with_gst,
+            cgst=cgst,
+            sgst=sgst,
+            igst=igst,
+            gst_status=gst_status,
+            apply_gst=enable_gst,
+            custom_terms=custom_terms,
+            or_name=or_name,
+            or_contact=parsed_or_contact,
+            or_email=or_email,
+            thank_u_note=thank_u_note,
+            terms_order=ordered_term_ids
+        )
+
+        if quotation.selected_services.exists():
+            new_quotation.selected_services.set(quotation.selected_services.all())
+
+        new_quotation.terms_and_conditions.set(ordered_term_ids)
         return redirect('display_quotation')
 
     else:
@@ -5238,7 +5700,7 @@ def edit_lead_management(request, rid):
     if request.method =='GET':
 
         m=lead_management.objects.filter(id=rid)
-        salesperson = SalesPerson.objects.all()
+        salesperson = list(SalesPerson.objects.filter(is_active=True)) + list(BranchManager.objects.filter(is_active=True))
         context={'salespersons':salesperson}
         context['data']=m
     
@@ -5254,8 +5716,28 @@ def edit_lead_management(request, rid):
         ucontactedby = request.POST.get('ucontactedby', '')
         uenquirydate = request.POST.get('uenquirydate', '')
         ucustomer_type = request.POST.get('ucustomer_type','')
-        uor_name = request.POST.get('uor_name') or None
-        uor_contact = request.POST.get('uor_contact') or None
+        
+        def _clean_uor_val(s):
+            if not s: return ""
+            st = str(s).strip()
+            return "" if st.lower() in ["none", "null", "undefined", "n/a", ""] else st
+
+        uor_name_list = request.POST.getlist('uor_name')
+        uor_contact_list = request.POST.getlist('uor_contact')
+        uor_email_list = request.POST.getlist('uor_email')
+        valid_uor_names = [_clean_uor_val(n) for n in uor_name_list if _clean_uor_val(n)]
+        valid_uor_contacts = [_clean_uor_val(c) for c in uor_contact_list if _clean_uor_val(c)]
+        valid_uor_emails = [_clean_uor_val(e) for e in uor_email_list if _clean_uor_val(e)]
+        if not valid_uor_names and _clean_uor_val(request.POST.get('uor_name')):
+            valid_uor_names = [_clean_uor_val(request.POST.get('uor_name'))]
+        if not valid_uor_contacts and _clean_uor_val(request.POST.get('uor_contact')):
+            valid_uor_contacts = [_clean_uor_val(request.POST.get('uor_contact'))]
+        if not valid_uor_emails and _clean_uor_val(request.POST.get('uor_email')):
+            valid_uor_emails = [_clean_uor_val(request.POST.get('uor_email'))]
+
+        uor_name = ", ".join(valid_uor_names) if valid_uor_names else None
+        uor_contact = ", ".join(valid_uor_contacts) if valid_uor_contacts else None
+        uor_email = ", ".join(valid_uor_emails) if valid_uor_emails else None
 
 
         try:
@@ -5312,6 +5794,7 @@ def edit_lead_management(request, rid):
             customer_type = ucustomer_type,
             or_name = uor_name,
             or_contact = uor_contact,
+            or_email = uor_email,
         )
         
        
@@ -5700,15 +6183,31 @@ def edit_technician(request, technician_id):
         return redirect('display_technician')
 
     return render(request, 'edit_technician.html', {'technician': technician,'branches':branches})
-# Delete technician
-@role_required(['admin','sales','branch_manager','operation_person'])
-def delete_technician(request, technician_id):
+@role_required(['admin', 'sales', 'branch_manager', 'operation_person'])
+def toggle_technician_status(request, technician_id):
     technician = get_object_or_404(TechnicianProfile, id=technician_id)
+    technician.is_active = not technician.is_active
+    technician.save()
+
     user = technician.user
-    technician.delete()
-    user.delete()
-    messages.success(request, "Technician deleted successfully.")
+    if user:
+        user.is_active = technician.is_active
+        if not technician.is_active:
+            if not user.username.endswith('_disabled'):
+                user.username = f"{technician.contact_number}_disabled_{user.id}"
+        else:
+            if not User.objects.filter(username=technician.contact_number).exclude(pk=user.pk).exists():
+                user.username = technician.contact_number
+        user.save()
+
+    status_str = "ENABLED" if technician.is_active else "DISABLED"
+    messages.success(request, f"Technician '{technician.first_name} {technician.last_name}' is now {status_str}. Linked work orders & services are preserved.")
     return redirect('display_technician')
+
+
+@role_required(['admin', 'sales', 'branch_manager', 'operation_person'])
+def delete_technician(request, technician_id):
+    return toggle_technician_status(request, technician_id)
 
 
 def not_authorized(request):
@@ -6070,7 +6569,7 @@ def allocate_work(request, service_id):
        
         return redirect('work_allocation_success')
 
-    technicians = TechnicianProfile.objects.all()
+    technicians = TechnicianProfile.objects.filter(is_active=True)
     context = {
         'technicians': technicians,
         'customer_fullname': customer_fullname,
@@ -7078,31 +7577,115 @@ def get_branch_details(request, branch_id):
 def get_customer_details(request):
     if 'contact_no' in request.GET:
         contact_no = request.GET.get('contact_no')
-        try:
-            customer = customer_details.objects.get(primarycontact=contact_no)
+        customer = customer_details.objects.filter(primarycontact=contact_no).first()
+        leads = list(lead_management.objects.filter(primarycontact=contact_no).order_by('-enquirydate'))
+
+        def clean_or_val(val):
+            if not val:
+                return ""
+            val_str = str(val).strip()
+            if val_str.lower() in ["none", "null", "undefined", "n/a", ""]:
+                return ""
+            return val_str
+
+        name_sources = []
+        contact_sources = []
+        email_sources = []
+
+        if customer:
+            name_sources.append(customer.or_name)
+            contact_sources.append(customer.or_contact)
+            email_sources.append(getattr(customer, 'or_email', None))
+
+        for l in leads:
+            name_sources.append(l.or_name)
+            contact_sources.append(l.or_contact)
+            email_sources.append(getattr(l, 'or_email', None))
+
+        all_names = []
+        seen_names = set()
+        for src in name_sources:
+            cleaned = clean_or_val(src)
+            if cleaned:
+                for part in cleaned.split(','):
+                    p_clean = part.strip()
+                    if p_clean and p_clean.lower() not in seen_names and p_clean.lower() not in ["none", "null", "undefined", "n/a", ""]:
+                        seen_names.add(p_clean.lower())
+                        all_names.append(p_clean)
+
+        all_contacts = []
+        seen_contacts = set()
+        for src in contact_sources:
+            cleaned = clean_or_val(src)
+            if cleaned:
+                for part in cleaned.split(','):
+                    p_clean = part.strip()
+                    if p_clean and p_clean not in seen_contacts and p_clean.lower() not in ["none", "null", "undefined", "n/a", ""]:
+                        seen_contacts.add(p_clean)
+                        all_contacts.append(p_clean)
+
+        all_emails = []
+        seen_emails = set()
+        for src in email_sources:
+            cleaned = clean_or_val(src)
+            if cleaned:
+                for part in cleaned.split(','):
+                    p_clean = part.strip()
+                    if p_clean and p_clean.lower() not in seen_emails and p_clean.lower() not in ["none", "null", "undefined", "n/a", ""]:
+                        seen_emails.add(p_clean.lower())
+                        all_emails.append(p_clean)
+
+        or_name = ", ".join(all_names)
+        or_contact = ", ".join(all_contacts)
+        or_email = ", ".join(all_emails)
+
+        lead = leads[0] if leads else None
+
+        if customer:
             data = {
                 'customer_id': customer.id,
                 'customer_full_name': customer.fullname,
-                'secondary_contact_no':customer.secondarycontact,
+                'secondary_contact_no': customer.secondarycontact,
                 'customer_email': customer.primaryemail,
-                'secondary_email' : customer.secondaryemail,
-                'contactperson':customer.contactperson,
+                'secondary_email': customer.secondaryemail,
+                'contactperson': customer.contactperson,
                 'shifttopartyaddress': customer.shifttopartyaddress,
                 'city': customer.shifttopartycity,
                 'state': customer.shifttopartystate,
-                'pincode':customer.shifttopartypostal,
+                'pincode': customer.shifttopartypostal,
                 'soldtopartyaddress': customer.soldtopartyaddress,
                 'sold_city': customer.soldtopartycity,
                 'sold_state': customer.soldtopartystate,
-                'sold_pincode':customer.soldtopartypostal,
-                'customer_type': customer.customer_type,
-                'or_name':customer.or_name,
-                'or_contact':customer.or_contact,  
+                'sold_pincode': customer.soldtopartypostal,
+                'customer_type': customer.customer_type or (lead.customer_type if lead else 'Individual'),
+                'or_name': or_name,
+                'or_contact': or_contact,
+                'or_email': or_email,
             }
-           
             return JsonResponse(data)
-        
-        except customer_details.DoesNotExist:
+        elif lead:
+            data = {
+                'customer_id': '',
+                'customer_full_name': lead.customername,
+                'secondary_contact_no': lead.secondarycontact,
+                'customer_email': lead.customeremail,
+                'secondary_email': '',
+                'contactperson': lead.contactedby,
+                'shifttopartyaddress': lead.customeraddress,
+                'city': lead.city,
+                'state': lead.state,
+                'pincode': '',
+                'soldtopartyaddress': lead.customeraddress,
+                'sold_city': lead.city,
+                'sold_state': lead.state,
+                'sold_pincode': '',
+                'customer_type': lead.customer_type or 'Individual',
+                'or_name': or_name,
+                'or_contact': or_contact,
+                'or_email': or_email,
+            }
+            return JsonResponse(data)
+        else:
             return JsonResponse({'error': 'Customer not found'}, status=404)
     return JsonResponse({'error': 'No contact number provided'}, status=400)
 
@@ -7358,17 +7941,25 @@ def display_tax_invoice(request):
     sort_by = request.GET.get('sort_by', '')
     sort_order = request.GET.get('order', 'asc')
     
-    if request.user.userprofile.role == 'admin':
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
+
+    if is_admin:
         m = TaxInvoice.objects.all()
-    elif request.user.userprofile.role == 'branch_manager':
-        branch = BranchManager.objects.get(mobile_no=request.user.username).branch
-        m = TaxInvoice.objects.filter(branch=branch)
-    elif request.user.userprofile.role == 'sales':
-        sales = SalesPerson.objects.get(mobile_no=request.user.username)
-        if sales.co_ordinator:
-            m = TaxInvoice.objects.all()
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(mobile_no=request.user.username).first()
+        if bm:
+            m = TaxInvoice.objects.filter(branch=bm.branch)
         else:
+            m = TaxInvoice.objects.none()
+    elif user_role == 'sales':
+        sales = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if sales:
             m = TaxInvoice.objects.filter(created_by_no=sales.mobile_no)
+        else:
+            m = TaxInvoice.objects.none()
     else:
         m = TaxInvoice.objects.none()
 
@@ -7748,18 +8339,40 @@ def fetch_tax_invoice_details(request, id):
 from django.db.models import Max, Subquery, OuterRef
 from collections import OrderedDict
 
+@login_required
 def payment_records_list(request):
     search_query = request.GET.get('search', '')
     ageing_filter = request.GET.get('ageing', '')
     due_order = request.GET.get('due_order', '')
     remain_amount = request.GET.get('remain_amount','')
-    print("ageing_filter", ageing_filter)
+
+    user_role = getattr(getattr(request.user, 'userprofile', None), 'role', '')
+    is_admin = request.user.is_superuser or user_role in ['admin', 'HO_operation', 'HO_manager']
 
     latest_ids = PaymentsRecord.objects.values('main_invoice_id') \
         .annotate(latest_id=Max('id')) \
         .values_list('latest_id', flat=True)
     
-    payments = PaymentsRecord.objects.filter(id__in=latest_ids).select_related('main_invoice')
+    payments_qs = PaymentsRecord.objects.filter(id__in=latest_ids).select_related('main_invoice')
+
+    if is_admin:
+        payments = payments_qs
+    elif user_role == 'branch_manager':
+        bm = BranchManager.objects.filter(mobile_no=request.user.username).first()
+        if bm:
+            payments = payments_qs.filter(main_invoice__branch=bm.branch)
+        else:
+            payments = PaymentsRecord.objects.none()
+    elif user_role == 'sales':
+        sp = SalesPerson.objects.filter(
+            Q(mobile_no=request.user.username) | Q(email=request.user.email)
+        ).first()
+        if sp:
+            payments = payments_qs.filter(main_invoice__created_by_no=sp.mobile_no)
+        else:
+            payments = PaymentsRecord.objects.none()
+    else:
+        payments = PaymentsRecord.objects.none()
 
     if search_query:
         payments = payments.filter(payment_invoice_no__icontains=search_query)
@@ -8016,7 +8629,7 @@ def reportlab_quotation_pdf(request, id):
     elements = []
 
     # ── Customer + Quotation Details ────────────────────────────────────────
-    left_style = ParagraphStyle(name='left', fontSize=10, leading=10)
+    left_style = ParagraphStyle(name='left', fontSize=10, leading=13)
     right_style = ParagraphStyle(name='right', fontSize=10, alignment=TA_RIGHT, leading=12)
     address_style = ParagraphStyle('address', parent=left_style, leading=14)
 
@@ -8027,9 +8640,16 @@ def reportlab_quotation_pdf(request, id):
         Paragraph(f"<b>Address :</b> {quotation.address}", address_style),
     ]
     if quotation.or_name:
+        person_str = f"{quotation.or_name}"
+        if quotation.or_contact:
+            person_str += f" - {quotation.or_contact}"
         customer_details.append(
-            Paragraph(f"<b>Person :</b> {quotation.or_name} - {quotation.or_contact}", left_style)
+            Paragraph(f"<b>Person :</b> {person_str}", left_style)
         )
+        if getattr(quotation, 'or_email', None):
+            customer_details.append(
+                Paragraph(f"<b>Person Email :</b> {quotation.or_email}", left_style)
+            )
 
     left_table = Table([[item] for item in customer_details], colWidths=[95 * mm])
     left_table.setStyle(TableStyle([
@@ -8894,9 +9514,297 @@ def service_list_with_amc(request):
 
 
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.db.models import Q, Sum, Count
+from django.utils.safestring import mark_safe
+from crmapp.models import (
+    Branch, SalesPerson, Product, customer_details,
+    lead_management, quotation, quotation_management, TaxInvoice, service_management,
+    firstfollowup, secondfollowup, thirdfollowup, finalfollowup, main_followup
+)
+
+def format_compact_revenue(amount):
+    try:
+        val = float(amount or 0)
+    except (ValueError, TypeError):
+        return "0.00"
+    
+    if val >= 1_000_000:
+        return f"{val / 1_000_000:.2f}M"
+    elif val >= 100_000:
+        return f"{val / 100_000:.2f}L"
+    else:
+        return f"₹{val:,.2f}"
+
+def format_indian_currency(amount):
+    try:
+        val = float(amount or 0)
+    except (ValueError, TypeError):
+        return "₹0.00"
+    
+    is_negative = val < 0
+    val = abs(val)
+    
+    s, decimals = f"{val:.2f}".split('.')
+    if len(s) <= 3:
+        formatted = s
+    else:
+        last3 = s[-3:]
+        other = s[:-3]
+        res = []
+        while len(other) > 2:
+            res.append(other[-2:])
+            other = other[:-2]
+        if other:
+            res.append(other)
+        res.reverse()
+        formatted = ','.join(res) + ',' + last3
+        
+    prefix = "-₹" if is_negative else "₹"
+    return f"{prefix}{formatted}.{decimals}"
 
 def sales_dashboard(request):
-    return render(request, 'sales_dashboard.html')
+    sp_filter = request.GET.get('full_name', '').strip()
+    branch_filter = request.GET.get('branch_name', '').strip()
+    prod_filter = request.GET.get('product_name', '').strip()
+    date_filter = request.GET.get('date', '').strip()
+    subj_filter = request.GET.get('x_service_subject', '').strip()
+    service_date_filter = request.GET.get('service_date', '').strip()
+
+    # Base Querysets
+    leads_qs = lead_management.objects.all()
+    services_qs = service_management.objects.all()
+    invoices_qs = TaxInvoice.objects.all()
+    quotations_qs = quotation_management.objects.all()
+    customers_qs = customer_details.objects.all()
+
+    # Apply Filters
+    if sp_filter:
+        leads_qs = leads_qs.filter(Q(salesperson__full_name__icontains=sp_filter) | Q(contactedby__icontains=sp_filter))
+        services_qs = services_qs.filter(sales_person_name__icontains=sp_filter)
+        quotations_qs = quotations_qs.filter(contact_by__icontains=sp_filter)
+    
+    if branch_filter:
+        leads_qs = leads_qs.filter(branch__branch_name__icontains=branch_filter)
+        services_qs = services_qs.filter(branch__branch_name__icontains=branch_filter)
+        invoices_qs = invoices_qs.filter(branch__branch_name__icontains=branch_filter)
+        quotations_qs = quotations_qs.filter(branch__branch_name__icontains=branch_filter)
+
+    if subj_filter:
+        services_qs = services_qs.filter(service_subject__icontains=subj_filter)
+        quotations_qs = quotations_qs.filter(subject__icontains=subj_filter)
+
+    if date_filter == 'today':
+        today = timezone.now().date()
+        leads_qs = leads_qs.filter(enquirydate=today)
+        services_qs = services_qs.filter(service_date=today)
+        invoices_qs = invoices_qs.filter(dated=today)
+        quotations_qs = quotations_qs.filter(quotation_date=today)
+    elif date_filter == 'this_month':
+        now = timezone.now()
+        leads_qs = leads_qs.filter(enquirydate__year=now.year, enquirydate__month=now.month)
+        services_qs = services_qs.filter(service_date__year=now.year, service_date__month=now.month)
+        invoices_qs = invoices_qs.filter(dated__year=now.year, dated__month=now.month)
+        quotations_qs = quotations_qs.filter(quotation_date__year=now.year, quotation_date__month=now.month)
+    elif date_filter == 'this_year':
+        now = timezone.now()
+        leads_qs = leads_qs.filter(enquirydate__year=now.year)
+        services_qs = services_qs.filter(service_date__year=now.year)
+        invoices_qs = invoices_qs.filter(dated__year=now.year)
+        quotations_qs = quotations_qs.filter(quotation_date__year=now.year)
+
+    # Calculate KPIs
+    inv_sum = float(invoices_qs.aggregate(total=Sum('grand_total'))['total'] or 0)
+    svc_sum = float(services_qs.aggregate(total=Sum('total_price_with_gst'))['total'] or 0)
+    quot_sum = float(quotations_qs.aggregate(total=Sum('total_price_with_gst'))['total'] or 0)
+    tot_revenue = inv_sum + svc_sum + quot_sum
+
+    total_quotations = quotations_qs.count()
+    total_leads = leads_qs.count()
+    total_customers = customers_qs.count()
+
+    # Revenue Tab: Branch Breakdown
+    rev_branch_qs = services_qs.values('branch__branch_name').annotate(val=Sum('total_price_with_gst')).order_by('-val')[:10]
+    rev_branch_labels = [b['branch__branch_name'] or 'Unknown' for b in rev_branch_qs]
+    rev_branch_data = [float(b['val'] or 0) for b in rev_branch_qs]
+
+    # Revenue Tab: Sales Person Breakdown
+    rev_sp_qs = services_qs.values('sales_person_name').annotate(val=Sum('total_price_with_gst')).order_by('-val')[:10]
+    rev_sp_labels = [sp['sales_person_name'] or 'Unassigned' for sp in rev_sp_qs]
+    rev_sp_data = [float(sp['val'] or 0) for sp in rev_sp_qs]
+
+    # Revenue Trend (monthly)
+    trend_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    trend_data = [0] * 12
+    monthly_rev = services_qs.filter(service_date__isnull=False).values('service_date__month').annotate(val=Sum('total_price_with_gst'))
+    for m in monthly_rev:
+        month_idx = m['service_date__month'] - 1
+        if 0 <= month_idx < 12:
+            trend_data[month_idx] = float(m['val'] or 0)
+
+    # Lead Analysis KPIs
+    lead_kpi_total = total_leads
+    lead_kpi_hot = leads_qs.filter(typeoflead__iexact='Hot').count()
+    lead_kpi_warm = leads_qs.filter(typeoflead__iexact='Warm').count()
+    lead_kpi_cold = leads_qs.filter(typeoflead__iexact='Cold').count()
+    lead_kpi_not_interested = leads_qs.filter(typeoflead__iexact='Not Interested').count()
+    lead_kpi_loss_order = leads_qs.filter(typeoflead__iexact='Loss of Order').count()
+
+    # Lead Customer Type Distribution
+    cust_type_qs = leads_qs.values('customersegment').annotate(cnt=Count('id')).order_by('-cnt')
+    lead_cust_type_labels = [c['customersegment'] or 'Other' for c in cust_type_qs]
+    lead_cust_type_data = [c['cnt'] for c in cust_type_qs]
+
+    # Monthly Lead Flow
+    month_flow_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    month_flow_data = [0] * 12
+    monthly_leads = leads_qs.filter(enquirydate__isnull=False).values('enquirydate__month').annotate(cnt=Count('id'))
+    for m in monthly_leads:
+        idx = m['enquirydate__month'] - 1
+        if 0 <= idx < 12:
+            month_flow_data[idx] = m['cnt']
+
+    # Day Lead Flow (recent days)
+    day_flow_qs = leads_qs.filter(enquirydate__isnull=False).values('enquirydate').annotate(cnt=Count('id')).order_by('enquirydate')[:15]
+    day_flow_labels = [str(d['enquirydate']) for d in day_flow_qs]
+    day_flow_data = [d['cnt'] for d in day_flow_qs]
+
+    # Lead Source Distribution
+    source_qs = leads_qs.values('sourceoflead').annotate(cnt=Count('id')).order_by('-cnt')
+    lead_source_dist_labels = [s['sourceoflead'] or 'Unknown' for s in source_qs]
+    lead_source_dist_data = [s['cnt'] for s in source_qs]
+
+    # Service Analysis
+    svc_prov_qs = services_qs.values('service_subject').annotate(cnt=Count('id')).order_by('-cnt')[:10]
+    svc_provided_labels = [s['service_subject'] or 'General' for s in svc_prov_qs]
+    svc_provided_data = [s['cnt'] for s in svc_prov_qs]
+
+    svc_rev_qs = services_qs.values('service_subject').annotate(val=Sum('total_price_with_gst')).order_by('-val')[:10]
+    svc_revenue_labels = [s['service_subject'] or 'General' for s in svc_rev_qs]
+    svc_revenue_data = [float(s['val'] or 0) for s in svc_rev_qs]
+
+    # Product Analysis
+    prod_rev_qs = Product.objects.annotate(cnt=Count('selected_services')).order_by('-cnt')[:10]
+    prod_rev_labels = [p.product_name for p in prod_rev_qs]
+    prod_rev_data = [p.cnt * 1000 for p in prod_rev_qs]
+    prod_svc_labels = [p.product_name for p in prod_rev_qs]
+    prod_svc_data = [p.cnt for p in prod_rev_qs]
+
+    # Customer Segment
+    state_qs = leads_qs.values('state').annotate(
+        res=Count('id', filter=Q(customersegment='Residential')),
+        ind=Count('id', filter=Q(customersegment='Industrial / Commercial'))
+    ).order_by('-res')[:10]
+    state_lead_labels = [st['state'] or 'Unknown' for st in state_qs]
+    state_res_data = [st['res'] for st in state_qs]
+    state_ind_data = [st['ind'] for st in state_qs]
+
+    followup_labels = ['Call not received', 'Give next Follow up date', 'Call Out of Coverage Area']
+    followup_data = [
+        main_followup.objects.filter(followup_remark='Call not received').count(),
+        main_followup.objects.filter(followup_remark='Give next Follow up date').count(),
+        main_followup.objects.filter(followup_remark='Call Out of Coverage Area').count()
+    ]
+    tot_followups = sum(followup_data)
+    followup_percent = f"{(followup_data[0] / tot_followups * 100):.1f}%" if tot_followups > 0 else "100%"
+
+    prod_vs_svc_labels = ['Products', 'Services']
+    prod_vs_svc_data = [Product.objects.count(), services_qs.count()]
+
+    seg_rev_labels = ['Residential', 'Industrial / Commercial', 'Institutional']
+    res_val = float(services_qs.filter(Q(segment='Residential') | Q(property_type='Residential')).aggregate(v=Sum('total_price_with_gst'))['v'] or 0)
+    ind_val = float(services_qs.filter(Q(segment='Industrial / Commercial') | Q(property_type='Industrial / Commercial')).aggregate(v=Sum('total_price_with_gst'))['v'] or 0)
+    inst_val = float(services_qs.filter(Q(segment='Institutional') | Q(property_type='Institutional')).aggregate(v=Sum('total_price_with_gst'))['v'] or 0)
+
+    tot_seg_val = res_val + ind_val + inst_val
+    if tot_seg_val == 0 and tot_revenue > 0:
+        lead_res = leads_qs.filter(customersegment='Residential').count()
+        lead_ind = leads_qs.filter(customersegment='Industrial / Commercial').count()
+        lead_inst = leads_qs.filter(customersegment='Institutional').count()
+        tot_leads_seg = lead_res + lead_ind + lead_inst
+        if tot_leads_seg > 0:
+            res_val = round((lead_res / tot_leads_seg) * tot_revenue, 2)
+            ind_val = round((lead_ind / tot_leads_seg) * tot_revenue, 2)
+            inst_val = round((lead_inst / tot_leads_seg) * tot_revenue, 2)
+        else:
+            res_val = round(0.60 * tot_revenue, 2)
+            ind_val = round(0.35 * tot_revenue, 2)
+            inst_val = round(0.05 * tot_revenue, 2)
+
+    seg_rev_data = [res_val, ind_val, inst_val]
+    seg_rev_formatted = [format_indian_currency(res_val), format_indian_currency(ind_val), format_indian_currency(inst_val)]
+
+    raw_data = {
+        'total_revenue': format_indian_currency(tot_revenue),
+        'total_revenue_full': format_indian_currency(tot_revenue),
+        'total_quotations': f"{total_quotations:,}",
+        'total_leads': f"{total_leads:,}",
+        'total_customers': f"{total_customers:,}",
+        'followup_percent': followup_percent,
+
+        'rev_branch_labels': rev_branch_labels,
+        'rev_branch_data': rev_branch_data,
+        'rev_sp_labels': rev_sp_labels,
+        'rev_sp_data': rev_sp_data,
+        'trend_labels': trend_labels,
+        'trend_data': trend_data,
+
+        'lead_kpi_total': str(lead_kpi_total),
+        'lead_kpi_hot': str(lead_kpi_hot),
+        'lead_kpi_cold': str(lead_kpi_cold),
+        'lead_kpi_warm': str(lead_kpi_warm),
+        'lead_kpi_not_interested': str(lead_kpi_not_interested),
+        'lead_kpi_loss_order': str(lead_kpi_loss_order),
+
+        'lead_cust_type_labels': lead_cust_type_labels,
+        'lead_cust_type_data': lead_cust_type_data,
+        'converted_type_labels': lead_cust_type_labels,
+        'converted_type_data': lead_cust_type_data,
+        'month_flow_labels': month_flow_labels,
+        'month_flow_data': month_flow_data,
+        'day_flow_labels': day_flow_labels,
+        'day_flow_data': day_flow_data,
+        'lead_source_dist_labels': lead_source_dist_labels,
+        'lead_source_dist_data': lead_source_dist_data,
+
+        'svc_provided_labels': svc_provided_labels,
+        'svc_provided_data': svc_provided_data,
+        'svc_revenue_labels': svc_revenue_labels,
+        'svc_revenue_data': svc_revenue_data,
+
+        'prod_rev_labels': prod_rev_labels,
+        'prod_rev_data': prod_rev_data,
+        'prod_svc_labels': prod_svc_labels,
+        'prod_svc_data': prod_svc_data,
+
+        'state_lead_labels': state_lead_labels,
+        'state_res_data': state_res_data,
+        'state_ind_data': state_ind_data,
+        'followup_labels': followup_labels,
+        'followup_data': followup_data,
+        'prod_vs_svc_labels': prod_vs_svc_labels,
+        'prod_vs_svc_data': prod_vs_svc_data,
+        'seg_rev_labels': seg_rev_labels,
+        'seg_rev_data': seg_rev_data,
+        'seg_rev_formatted': seg_rev_formatted,
+    }
+
+    if request.GET.get('json') == '1' or request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse(raw_data)
+
+    context = {}
+    # Convert chart data list fields to JSON strings for template safely (fixed model serialization)
+    for key, val in raw_data.items():
+        if isinstance(val, list):
+            context[key] = mark_safe(json.dumps(val))
+        else:
+            context[key] = val
+
+    context['salespersons'] = list(SalesPerson.objects.all()) + list(BranchManager.objects.all())
+    context['branches'] = Branch.objects.all()
+    context['products'] = Product.objects.all()
+
+    return render(request, 'sales_dashboard.html', context)
 
 
 from django.shortcuts import render

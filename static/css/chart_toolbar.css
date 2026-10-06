@@ -1,0 +1,281 @@
+/* ===== CHART TOOLBAR & MAXIMIZE CSS ===== */
+
+/* Toolbar Pill Container */
+.chart-actions-toolbar {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #fff9e6;
+    border: 1px solid #f0e2b6;
+    border-radius: 5px;
+    padding: 2px 6px;
+    margin-left: auto;
+    position: relative;
+    z-index: 10;
+}
+
+/* Individual Toolbar Action Button */
+.chart-actions-toolbar .chart-btn {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #475569;
+    font-size: 14px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s, transform 0.1s;
+    position: relative;
+    line-height: 1;
+}
+
+.chart-actions-toolbar .chart-btn:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+.chart-actions-toolbar .chart-btn:active {
+    transform: scale(0.95);
+}
+
+/* Specific Maximize Blue Icon */
+.chart-actions-toolbar .chart-btn-maximize {
+    color: #2563eb !important; /* Vibrant Blue */
+    font-weight: bold;
+}
+
+.chart-actions-toolbar .chart-btn-maximize svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: #2563eb;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Custom Tooltip Styling matching user reference image */
+.chart-btn[data-tooltip] {
+    position: relative;
+}
+
+.chart-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    background-color: #2b2d31;
+    color: #ffffff;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    white-space: nowrap;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index: 1000;
+}
+
+/* Tooltip Little Arrow */
+.chart-btn[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(1px);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent #2b2d31 transparent;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s;
+    z-index: 1001;
+}
+
+.chart-btn[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(8px);
+}
+
+.chart-btn[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Options Dropdown Menu */
+.chart-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 6px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    min-width: 160px;
+    display: none;
+    flex-direction: column;
+    z-index: 1050;
+    overflow: hidden;
+    padding: 4px 0;
+}
+
+.chart-menu-dropdown.show {
+    display: flex;
+}
+
+.chart-menu-dropdown .chart-menu-item {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #334155;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    transition: background-color 0.15s;
+}
+
+.chart-menu-dropdown .chart-menu-item:hover {
+    background-color: #f1f5f9;
+    color: #0284c7;
+}
+
+/* Header Integration Alignment */
+.chart-card-header, .chart-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* FULLSCREEN OVERLAY MODAL */
+.chart-fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+.chart-fullscreen-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.chart-fullscreen-container {
+    background: #ffffff;
+    border-radius: 12px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+}
+
+.chart-fullscreen-header {
+    background: #1e293b;
+    color: #ffffff;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.chart-fullscreen-header h4 {
+    margin: 0;
+    font-size: 18px;
+    color: #ffffff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-fullscreen-close {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.chart-fullscreen-close:hover {
+    background: #ef4444;
+    transform: scale(1.05);
+}
+
+.chart-fullscreen-body {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: auto;
+    background: #ffffff;
+    width: 100%;
+    height: calc(100% - 56px);
+    box-sizing: border-box;
+}
+
+.chart-fullscreen-body canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+.chart-fullscreen-body img {
+    max-width: 98% !important;
+    max-height: 98% !important;
+    object-fit: contain !important;
+}
+
+.chart-fullscreen-body .treemap-container {
+    display: flex !important;
+    gap: 8px !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 10px !important;
+    box-sizing: border-box !important;
+}
+
+.chart-fullscreen-body .treemap-box {
+    min-width: 85px !important;
+    padding: 16px 12px !important;
+    box-sizing: border-box !important;
+}

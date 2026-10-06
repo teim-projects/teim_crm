@@ -6,8 +6,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}"> <!-- Optional custom styles -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chart_toolbar.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/chart_toolbar.js' %}"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
     <title>Technician Dashboard</title>
@@ -275,10 +278,22 @@
       <!-- second -->
       <div class="col-md-8 col-12">
         <div class="chartcontainer" style="margin-top: 110px;">
-          <div class="buttoncontainer">
-            <button class="btn btn-outline-primary my-2 my-sm-0" onclick="changeMonth('{{ previous_month.month }}', '{{ previous_month.year }}')">Previous Month</button>
-            <span>{{ selected_month }}/{{ selected_year }}</span>
-            <button class="btn btn-outline-primary my-2 my-sm-0" onclick="changeMonth('{{ next_month.month }}', '{{ next_month.year }}')">Next Month</button>
+          <div class="buttoncontainer d-flex align-items-center justify-content-between">
+            <div>
+              <button class="btn btn-outline-primary my-2 my-sm-0" onclick="changeMonth('{{ previous_month.month }}', '{{ previous_month.year }}')">Previous Month</button>
+              <span class="mx-2">{{ selected_month }}/{{ selected_year }}</span>
+              <button class="btn btn-outline-primary my-2 my-sm-0" onclick="changeMonth('{{ next_month.month }}', '{{ next_month.year }}')">Next Month</button>
+            </div>
+            <div class="chart-actions-toolbar">
+                <button type="button" class="chart-btn chart-btn-popout" onclick="popoutChart('weeklyChart')" data-tooltip="Open in new window"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('weeklyChart')" data-tooltip="Maximize"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" data-tooltip="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <div class="chart-menu-dropdown" style="display: none;">
+                    <button type="button" class="chart-menu-item" onclick="maximizeChart('weeklyChart')"><i class="fa-solid fa-expand me-1"></i> Fullscreen</button>
+                    <button type="button" class="chart-menu-item" onclick="downloadChartImage('weeklyChart')"><i class="fa-solid fa-download me-1"></i> Download PNG</button>
+                    <button type="button" class="chart-menu-item" onclick="popoutChart('weeklyChart')"><i class="fa-solid fa-external-link-alt me-1"></i> Popout Window</button>
+                </div>
+            </div>
           </div>
           <canvas id="weeklyChart"></canvas>
         </div>

@@ -22,10 +22,44 @@
         href="https://fonts.googleapis.com/css2?family=Bona+Nova+SC:ital,wght@0,400;0,700;1,400&family=Cardo:ital@0;1&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Outfit:wght@100..900&display=swap"
         rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/chart_toolbar.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/chart_toolbar.js' %}"></script>
     <link rel="icon" href="{% static 'images/crono.png' %}" type="image/png">
     <title>TEIM CRM</title>
     <style>
+        .chart-actions-toolbar {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            background-color: #fff9e6 !important;
+            border: 1px solid #f0e2b6 !important;
+            border-radius: 5px !important;
+            padding: 2px 6px !important;
+            margin-left: auto !important;
+            position: relative !important;
+            z-index: 10 !important;
+        }
+        .chart-menu-dropdown {
+            position: absolute !important;
+            top: 100% !important;
+            right: 0 !important;
+            margin-top: 6px !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+            min-width: 160px !important;
+            display: none;
+            flex-direction: column !important;
+            z-index: 1050 !important;
+            overflow: hidden !important;
+            padding: 4px 0 !important;
+        }
+        .chart-menu-dropdown.show {
+            display: flex !important;
+        }
         body {
             background-color: rgba(0, 0, 0, 0.8) !important;
             color: #F4F4F5 !important;
@@ -420,8 +454,19 @@
             <div class="col-md-4 col-12 col-sm-12 col-lg-4 col-xl-4 mt-3 ">
                 <div class="pie-chart-container  cards car  "  >
                     <!-- Pie Chart for Lead Distribution -->
-                    
-                    <h3 class="ml-5 mt-1">Lead Status</h3>
+                    <div class="d-flex align-items-center justify-content-between px-2 pt-2">
+                        <h3 class="m-0">Lead Status</h3>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn chart-btn-popout" onclick="popoutChart('leadChart')" data-tooltip="Open in new window"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('leadChart')" data-tooltip="Maximize"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" data-tooltip="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown" style="display: none;">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('leadChart')"><i class="fa-solid fa-expand me-1"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('leadChart')"><i class="fa-solid fa-download me-1"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="popoutChart('leadChart')"><i class="fa-solid fa-external-link-alt me-1"></i> Popout Window</button>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Date Range Filter with Styling -->
                     <div class="date-filter-container">
 
@@ -527,7 +572,19 @@
 <div class="col-md-4 col-12 col-sm-12 col-lg-4 col-xl-4 mt-3 ">
     <div class="pie-chart-container cards car">
         <!-- Pie Chart for Order Status -->
-        <h3 class="ml-5 mt-1">Order Status</h3>
+        <div class="d-flex align-items-center justify-content-between px-2 pt-2">
+            <h3 class="m-0">Order Status</h3>
+            <div class="chart-actions-toolbar">
+                <button type="button" class="chart-btn chart-btn-popout" onclick="popoutChart('orderStatusChart')" data-tooltip="Open in new window"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('orderStatusChart')" data-tooltip="Maximize"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" data-tooltip="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <div class="chart-menu-dropdown" style="display: none;">
+                    <button type="button" class="chart-menu-item" onclick="maximizeChart('orderStatusChart')"><i class="fa-solid fa-expand me-1"></i> Fullscreen</button>
+                    <button type="button" class="chart-menu-item" onclick="downloadChartImage('orderStatusChart')"><i class="fa-solid fa-download me-1"></i> Download PNG</button>
+                    <button type="button" class="chart-menu-item" onclick="popoutChart('orderStatusChart')"><i class="fa-solid fa-external-link-alt me-1"></i> Popout Window</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Optional: Date Range Filter -->
         <div class="date-filter-container">
@@ -591,7 +648,7 @@
                             if (elements.length > 0) {
                                 const index = elements[0].index;
                                 const status = labels[index];
-                                window.location.href = `/display_main_followup?order_status=${encodeURIComponent(status)}`;
+                                window.location.href = `/display_lead_management?followup_status=${encodeURIComponent(status)}`;
                             }
                         }
                     }
@@ -638,7 +695,19 @@
 
             <div class="col-md-4 col-12 col-sm-12 col-lg-4 col-xl-4 mt-3">
                 <div class="quote-vs-order-container cards ">
-                    <h3 class="mt-1">Quotation vs Order </h3>
+                    <div class="d-flex align-items-center justify-content-between px-2 pt-2">
+                        <h3 class="m-0">Quotation vs Order</h3>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn chart-btn-popout" onclick="popoutChart('quotationOrderChart')" data-tooltip="Open in new window"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('quotationOrderChart')" data-tooltip="Maximize"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" data-tooltip="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown" style="display: none;">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('quotationOrderChart')"><i class="fa-solid fa-expand me-1"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('quotationOrderChart')"><i class="fa-solid fa-download me-1"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="popoutChart('quotationOrderChart')"><i class="fa-solid fa-external-link-alt me-1"></i> Popout Window</button>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Date Range Filter -->
                     <div class="date-filter-container ">
 
@@ -777,7 +846,19 @@
         <div class="row mt-0">
             <div class="col-md-6 col-12 col-sm-12 col-lg-6 col-xl-6 mt-3">
                 <div class="contractTypeChart-container cards ">
-                    <h3 class="mt-1">Contract Type Status</h3>
+                    <div class="d-flex align-items-center justify-content-between px-2 pt-2">
+                        <h3 class="m-0">Contract Type Status</h3>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn chart-btn-popout" onclick="popoutChart('contractTypeChart')" data-tooltip="Open in new window"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('contractTypeChart')" data-tooltip="Maximize"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" data-tooltip="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown" style="display: none;">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('contractTypeChart')"><i class="fa-solid fa-expand me-1"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('contractTypeChart')"><i class="fa-solid fa-download me-1"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="popoutChart('contractTypeChart')"><i class="fa-solid fa-external-link-alt me-1"></i> Popout Window</button>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Date Range Filter -->
                     <div class="date-filter-container">
 
@@ -897,7 +978,19 @@
             <div class="col-md-6 col-12 col-sm-12 col-lg-6 col-xl-6 mt-3">
                 <div class="bar-chart-container cards ">
                     <!-- Bar Chart for Product Categories -->
-                    <h3 class="mt-1">Products by Category</h3>
+                    <div class="d-flex align-items-center justify-content-between px-2 pt-2">
+                        <h3 class="m-0">Products by Category</h3>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn chart-btn-popout" onclick="popoutChart('barChart')" data-tooltip="Open in new window"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('barChart')" data-tooltip="Maximize"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" data-tooltip="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown" style="display: none;">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('barChart')"><i class="fa-solid fa-expand me-1"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('barChart')"><i class="fa-solid fa-download me-1"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="popoutChart('barChart')"><i class="fa-solid fa-external-link-alt me-1"></i> Popout Window</button>
+                            </div>
+                        </div>
+                    </div>
                     <canvas id="barChart"></canvas>
                     <script>
 

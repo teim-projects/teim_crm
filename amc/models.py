@@ -224,11 +224,23 @@ class AMCContract(models.Model):
             visit_date = self.start_date
             duration_days = duration_months * 30  # approximate
 
+            # Parse selected months (e.g., "Jan, Feb, Mar")
+            month_map = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+                         "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
+            selected_months_str = getattr(pf, "selected_months", "") or ""
+            allowed_months = []
+            if selected_months_str:
+                for m in selected_months_str.split(","):
+                    m_clean = m.strip().lower()[:3]
+                    if m_clean in month_map:
+                        allowed_months.append(month_map[m_clean])
+
             while visit_date <= self.start_date + timedelta(days=duration_days):
-                date_product_pairs.append({
-                    "date": visit_date,
-                    "product": pf.product
-                })
+                if not allowed_months or visit_date.month in allowed_months:
+                    date_product_pairs.append({
+                        "date": visit_date,
+                        "product": pf.product
+                    })
                 visit_date += timedelta(days=gap_days)
 
         # Fallback if no product frequencies exist
@@ -276,6 +288,37 @@ class AMCContract(models.Model):
         ])
 
     # ---------------------------------
+    @property
+    def display_frequency(self):
+        """
+        Returns dynamic frequency string based on ServiceProductFrequency, total visits, or fallback frequency field.
+        """
+        if self.service:
+            pf_qs = ServiceProductFrequency.objects.filter(service=self.service).select_related("product")
+            if pf_qs.exists():
+                parts = []
+                for pf in pf_qs:
+                    freq = pf.frequency or 0
+                    pname = pf.product.product_name if pf.product else "Product"
+                    parts.append(f"{freq} visits/yr ({pname})" if len(pf_qs) > 1 else f"{freq}")
+                if len(pf_qs) == 1:
+                    freq = pf_qs.first().frequency or 0
+                    return f"{freq} visits / year" if freq != 1 else "1 visit / year"
+                else:
+                    return ", ".join(parts)
+
+        visit_count = self.visits.count()
+        if visit_count > 0:
+            return f"{visit_count} visits / year" if visit_count != 1 else "1 visit / year"
+
+        if self.frequency:
+            freq_str = str(self.frequency).strip()
+            if "visit" in freq_str.lower() or "year" in freq_str.lower():
+                return freq_str
+            return f"{freq_str} visits / year"
+
+        return "1 visit / year"
+
     @property
     def next_service_date(self):
         next_visit = self.visits.filter(
@@ -349,6 +392,15 @@ class AMCServiceVisit(models.Model):
     )
     auto_allocation_done = models.BooleanField(default=False)
     allocation_cancelled_reason = models.TextField(blank=True, null=True)
+    has_complaint = models.BooleanField(default=False)
+    complaint_reason = models.TextField(blank=True, null=True)
+    complaint_service = models.ForeignKey(
+        service_management,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="linked_amc_visits"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def stop_future_visits_for_product(self):

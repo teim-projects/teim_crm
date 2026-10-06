@@ -122,6 +122,7 @@
                         <th>Contact</th>
                         <th>City</th>
                         <th>Date of Joining</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -134,12 +135,27 @@
                         <td>{{ tech.city }}</td>
                         <td>{{ tech.date_of_joining }}</td>
                         <td>
-                            <a href="{% url 'edit_technician' tech.id %}" class="btn btn-success edit-btn" ><i class="fa-solid fa-pen-to-square"></i></a>
-                            <a href="#" class="btn btn-danger delete-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="{{ tech.id }}"><i class="fa-solid fa-trash"></i></a>
+                          {% if tech.is_active %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
+                          {% else %}
+                            <span class="badge bg-danger"><i class="bi bi-slash-circle me-1"></i>Disabled</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'edit_technician' tech.id %}" class="btn btn-success edit-btn" title="Edit Technician"><i class="fa-solid fa-pen-to-square"></i></a>
+                            {% if tech.is_active %}
+                              <a href="{% url 'toggle_technician_status' tech.id %}" class="btn btn-danger btn-sm text-white me-1" title="Disable Technician (Preserves Work Data)" onclick="return confirm('Are you sure you want to DISABLE technician {{ tech.first_name }}? They cannot log in, but all linked work history will be preserved.')">
+                                <i class="fa-solid fa-user-slash"></i> Disable
+                              </a>
+                            {% else %}
+                              <a href="{% url 'toggle_technician_status' tech.id %}" class="btn btn-primary btn-sm text-white me-1" title="Enable Technician" onclick="return confirm('Enable technician {{ tech.first_name }} account?')">
+                                <i class="fa-solid fa-user-check"></i> Enable
+                              </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="text-dark">No technicians available.</td></tr>
+                    <tr><td colspan="7" class="text-dark">No technicians available.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -670,7 +670,8 @@
                                     <i class="fa-solid fa-envelope"></i>
                                 </a>
 
-                                <a href="#" id="sendGroupWhatsappBtn" class="btn btn-sm btn-success">
+                                <!-- WhatsApp - Backend Disabled -->
+                                <a href="#" id="sendGroupWhatsappBtn" onclick="alert('WhatsApp feature is currently disabled'); return false;" class="btn btn-sm btn-success">
                                     <i class="fa-brands fa-whatsapp"></i>
                                 </a>
 
@@ -761,7 +762,8 @@
                                                         <i class="fa-solid fa-envelope"></i>
                                                     </a>
 
-                                                    <a href="{% url 'send_lead_whatsapp' x.id %}" class="btn btn-sm btn-success" title="WhatsApp">
+                                                    <!-- WhatsApp - Backend Disabled -->
+                                                    <a href="#" onclick="alert('WhatsApp feature is currently disabled'); return false;" class="btn btn-sm btn-success" title="WhatsApp">
                                                         <i class="fa-brands fa-whatsapp"></i>
                                                     </a>
                                                 {% endif %}
@@ -877,16 +879,10 @@
             window.location.href = `/send-group-email/${leadType}/`;
         });
 
+        // WhatsApp button kept for UI but disabled
         document.getElementById("sendGroupWhatsappBtn").addEventListener("click", function (e) {
             e.preventDefault();
-            let leadType = document.getElementById("lead_type").value;
-
-            if (!leadType) {
-                alert("Please select a lead type first!");
-                return;
-            }
-
-            window.location.href = `/send-group-whatsapp/${leadType}/`;
+            alert("WhatsApp feature is currently disabled");
         });
     </script>
 

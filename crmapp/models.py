@@ -59,6 +59,7 @@ class SalesPerson(models.Model):
     date_of_birth = models.DateField()
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True,related_name="sales_person")
     co_ordinator = models.BooleanField(blank=True, null=True, default=False)
+    is_active = models.BooleanField(default=True)
     
 
     def __str__(self):
@@ -74,6 +75,7 @@ class BranchManager(models.Model):
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField()
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL,blank=True, null=True, related_name='branch_manager')
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.full_name
@@ -86,6 +88,7 @@ class OperationPerson(models.Model):
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField()
     branch = models.ForeignKey(Branch,on_delete=models.SET_NULL, blank=True, null=True, related_name='operation_person')
+    is_active = models.BooleanField(default=True)
 
 from django.db import models
 class QuotationTerm(models.Model):
@@ -119,8 +122,9 @@ class customer_details(models.Model):
     soldtopartypostal=models.CharField(max_length=100)
     customerid = models.CharField(max_length=255, unique=True, null=True, blank=True)
     customer_type = models.CharField(max_length=100, null=True, blank=True)
-    or_name = models.CharField(max_length=100, null=True, blank=True)
-    or_contact = models.BigIntegerField(null=True, blank=True)
+    or_name = models.CharField(max_length=500, null=True, blank=True)
+    or_contact = models.CharField(max_length=500, null=True, blank=True)
+    or_email = models.CharField(max_length=500, null=True, blank=True)
 
 
    
@@ -419,8 +423,9 @@ class lead_management(models.Model):
     primarycontact = models.BigIntegerField(null=True, blank=True)
     secondarycontact = models.BigIntegerField(null=True, blank=True)
     customeremail = models.EmailField(null=True, blank=True)
-    or_name = models.CharField(max_length=100, null=True, blank=True)
-    or_contact = models.BigIntegerField(null=True, blank=True)
+    or_name = models.CharField(max_length=500, null=True, blank=True)
+    or_contact = models.CharField(max_length=500, null=True, blank=True)
+    or_email = models.CharField(max_length=500, null=True, blank=True)
     customeraddress = models.CharField(max_length=1000, null=True, blank=True)
     location = models.URLField(null=True, blank=True)
     city = models.CharField(max_length=100, default="Unknown City")
@@ -587,6 +592,7 @@ class TechnicianProfile(models.Model):
     postal_code = models.CharField(max_length=20)
     date_of_joining = models.DateField(default=timezone.now)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='technician')
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -609,7 +615,7 @@ class service_management(models.Model):
     total_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price_with_gst = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)    
-    contract_type = models.CharField(max_length=50, choices=[('One Time', 'One Time'), ('AMC', 'AMC'), ('Warranty', 'Warranty')], default="NOT SELECTED")
+    contract_type = models.CharField(max_length=50, choices=[('One Time', 'One Time'), ('AMC', 'AMC'), ('Warranty', 'Warranty'), ('Complaint', 'Complaint')], default="NOT SELECTED")
     contract_status = models.CharField(max_length=100, choices=[('Yes', 'Yes'), ('No', 'No')], default="NOT SELECTED")
     property_type = models.TextField(null=True, blank=True)
     warranty_period = models.CharField(max_length=50, null=True, blank=True)
@@ -636,6 +642,23 @@ class service_management(models.Model):
         choices=[('GST', 'GST'), ('NON-GST', 'NON-GST')],
         default='GST'
     )
+
+    # Complaint Service fields
+    is_complaint = models.BooleanField(default=False)
+    complaint_reason = models.TextField(blank=True, null=True)
+    complaint_reported_by = models.CharField(max_length=100, blank=True, null=True)
+    parent_service = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='complaint_services')
+    parent_amc = models.ForeignKey('amc.AMCContract', on_delete=models.SET_NULL, null=True, blank=True, related_name='complaint_services')
+    parent_amc_visit = models.ForeignKey('amc.AMCServiceVisit', on_delete=models.SET_NULL, null=True, blank=True, related_name='complaint_services')
+
+    def save(self, *args, **kwargs):
+        if self.is_complaint or self.contract_type == 'Complaint':
+            self.total_charges = 0
+            self.total_price = 0
+            self.total_price_with_gst = 0
+            self.is_complaint = True
+            self.contract_type = 'Complaint'
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return (
@@ -685,7 +708,10 @@ from django.db.models import Sum
 # New ----------
 class quotation_management(models.Model):
     customer = models.ForeignKey(customer_details, on_delete = models.CASCADE, null=True, blank=True)
-    quotation_no = models.CharField(max_length=20, blank=True, null=True, unique=True)  
+    quotation_no = models.CharField(max_length=50, blank=True, null=True)  
+    version = models.IntegerField(default=1)
+    is_latest = models.BooleanField(default=True)
+    parent_quotation = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='child_versions')
     contact_by = models.CharField(max_length=100 , null=True, blank=True)
     contact_by_no = models.CharField(max_length=11,null=True,blank=True)
     address = models.TextField(null=True, blank=True)
@@ -709,6 +735,7 @@ class quotation_management(models.Model):
     custom_terms = models.TextField(blank=True, null=True)
     or_name = models.CharField(max_length=100, null=True, blank=True)
     or_contact = models.CharField(max_length=10, null=True, blank=True)
+    or_email = models.CharField(max_length=500, null=True, blank=True)
 
     
     terms_and_conditions = models.ManyToManyField(QuotationTerm, blank=True)
@@ -724,7 +751,21 @@ class quotation_management(models.Model):
     def __str__(self):
         selected_services = ', '.join([str(service) for service in self.selected_services.all()])
         customer_name = self.customer.fullname if self.customer else "No Customer"
-        return f'Quotation Management - {customer_name} ({selected_services})'
+        return f'Quotation Management V{self.version} - {customer_name} ({selected_services})'
+
+
+    def get_previous_versions(self):
+        if not self.quotation_no:
+            return quotation_management.objects.none()
+        return quotation_management.objects.filter(
+            quotation_no=self.quotation_no
+        ).exclude(id=self.id).order_by('-version')
+
+    @property
+    def total_versions_count(self):
+        if not self.quotation_no:
+            return 1
+        return quotation_management.objects.filter(quotation_no=self.quotation_no).count()
 
 
     def save(self, *args, **kwargs):
@@ -1192,6 +1233,13 @@ class ServiceProductFrequency(models.Model):
         blank=True,
         null=True,
         help_text="Duration in months"
+    )
+
+    selected_months = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Selected service months e.g. Jan, Feb, Mar"
     )
 
     created_at = models.DateTimeField(

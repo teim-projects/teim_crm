@@ -456,9 +456,10 @@
                                                 <i class="fa-solid fa-envelope"></i>
                                             </a> 
 
-                                            <a href="#" class="btn btn-sm btn-success">
+                                            <!-- WhatsApp - Backend Disabled -->
+                                            <a href="#" onclick="alert('WhatsApp feature is currently disabled'); return false;" class="btn btn-sm btn-success">
                                                 <i class="fa-brands fa-whatsapp"></i>
-                                            </a> 
+                                            </a>
                                         </td>
                                         <td class="text-center">
                                             <a href="{% url 'grn_create' po.id %}" title="Create GRN">

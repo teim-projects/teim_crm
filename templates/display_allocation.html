@@ -502,7 +502,12 @@
                                         <td><a href="/delete_service_management/{{ x.id }}"
                                                 class="btn btn-danger delete-link" role="button"><i class="fa-solid fa-trash"></i></a></td>
                                         <td>{{ x.customer }}</td>
-                                        <td>{{ x.customer.fullname }}</td>
+                                        <td>
+                                            {{ x.customer.fullname }}
+                                            {% if x.is_complaint or x.contract_type == 'Complaint' %}
+                                                <br><span class="badge bg-danger text-white" style="font-size: 11px;">Complaint Service (₹0)</span>
+                                            {% endif %}
+                                        </td>
                                         <td>{{ x.customer.primarycontact }}</td>
                                         <td>{{ x.total_price }}</td>
                                         <td>{{ x.total_price_with_gst }}</td>
