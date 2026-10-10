@@ -42,7 +42,10 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.template.loader import get_template
-from xhtml2pdf import pisa  # Library to convert HTML to PDF
+try:
+    from xhtml2pdf import pisa  # Library to convert HTML to PDF
+except Exception:
+    pisa = None
 from crmapp.models import quotation_management
 from io import BytesIO
 from PyPDF2 import PdfReader, PdfWriter

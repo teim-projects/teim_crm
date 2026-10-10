@@ -264,13 +264,15 @@
 
                     <div class="col-md-6">
                         <label>Type of Lead:</label>
+                        {% with current_lead_type=previous_followup.typeoflead|default:lead.typeoflead %}
                         <select name="typeoflead" class="form-control">
-                            <option value="Hot" {% if previous_followup.typeoflead == "Hot" %}selected{% endif %}>Hot</option>
-                            <option value="Warm" {% if previous_followup.typeoflead == "Warm" %}selected{% endif %}>Warm</option>
-                            <option value="Cold" {% if previous_followup.typeoflead == "Cold" %}selected{% endif %}>Cold</option>
-                            <option value="Not Interested" {% if previous_followup.typeoflead == "Not Interested" %}selected{% endif %}>Not Interested</option>
-                            <option value="Loss of Order" {% if previous_followup.typeoflead == "Loss of Order" %}selected{% endif %}>Loss of Order</option>
+                            <option value="Hot" {% if current_lead_type == "Hot" %}selected{% endif %}>Hot</option>
+                            <option value="Warm" {% if current_lead_type == "Warm" %}selected{% endif %}>Warm</option>
+                            <option value="Cold" {% if current_lead_type == "Cold" %}selected{% endif %}>Cold</option>
+                            <option value="Not Interested" {% if current_lead_type == "Not Interested" or current_lead_type == "NotInterested" %}selected{% endif %}>Not Interested</option>
+                            <option value="Loss of Order" {% if current_lead_type == "Loss of Order" or current_lead_type == "LossOfOrder" %}selected{% endif %}>Loss of Order</option>
                         </select>
+                        {% endwith %}
                     </div>
 
                     <div class="col-md-6">

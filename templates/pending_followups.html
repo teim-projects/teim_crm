@@ -162,7 +162,7 @@
                             <select name="typeoflead" class="form-control custom-select">
                                 <option value="">All Lead Types</option>
                                 {% for type in lead_types %}
-                                <option value="{{ type }}" {% if request.GET.typeoflead == type %}selected{% endif %}>
+                                <option value="{{ type }}" {% if request.GET.typeoflead == type or request.GET.lead_type == type or request.GET.type_of_lead == type or selected_lead_type == type %}selected{% endif %}>
                                     {{ type }}</option>
                                 {% endfor %}
                             </select>
@@ -301,7 +301,7 @@
                 <select name="lead_type" id="lead_type" class="form-control" style="width: 200px;">
                     <option value="">Select Lead Type</option>
                     {% for i in lead_types %}
-                        <option value="{{ i }}">{{ i }}</option>
+                        <option value="{{ i }}" {% if request.GET.typeoflead == i or request.GET.lead_type == i or request.GET.type_of_lead == i or selected_lead_type == i %}selected{% endif %}>{{ i }}</option>
                     {% endfor %}
                 </select>
             
@@ -395,7 +395,7 @@
                                     <td>{{ x.lead.customername }}</td>
                                     <td>{{ x.lead.primarycontact }}</td>
                                     <td>{{ x.lead.customersegment }}</td>
-                                    <td>{{ x.lead.typeoflead }}</td>
+                                    <td>{{ x.typeoflead|default:x.lead.typeoflead }}</td>
                                     <td>{{ x.lead.enquirydate }}</td>
                                     <td>{{ x.lead.branch }}</td>
                                     <td>{{ x.lead.customeraddress|truncatewords:3 }}</td>
@@ -448,7 +448,9 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="13" class="text-center">No Data Available for Today.</td>
+                                <td colspan="13" class="text-center py-4 text-muted">
+                                    <i class="fa-solid fa-circle-exclamation me-1"></i> No follow-ups found for the selected lead type or filters.
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -532,8 +534,25 @@
             -webkit-text-fill-color: transparent; font-size: 1.1rem;">TEIM</a> All Rights Reserved.
         </p>
     </div>
-    <!-- Group Email Modal -->
+    <!-- Group Email Modal & Lead Type Filter -->
     <script>
+        const leadTypeSelect = document.getElementById("lead_type");
+        if (leadTypeSelect) {
+            leadTypeSelect.addEventListener("change", function () {
+                const val = this.value;
+                const currentUrl = new URL(window.location.href);
+                if (val) {
+                    currentUrl.searchParams.set("typeoflead", val);
+                } else {
+                    currentUrl.searchParams.delete("typeoflead");
+                }
+                currentUrl.searchParams.delete("type_of_lead");
+                currentUrl.searchParams.delete("lead_type");
+                currentUrl.searchParams.delete("page");
+                window.location.href = currentUrl.toString();
+            });
+        }
+
         document.getElementById("sendGroupEmailBtn").addEventListener("click", function (e) {
             e.preventDefault();
             let leadType = document.getElementById("lead_type").value;

@@ -16,7 +16,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.http import urlencode
 from django.template.loader import get_template
-from xhtml2pdf import pisa
+try:
+    from xhtml2pdf import pisa
+except Exception:
+    pisa = None
 from django.http import HttpResponse
 from decimal import Decimal
 from django.db.models import Sum
