@@ -186,10 +186,8 @@
                   <option value="Hot" {% if x.typeoflead == "Hot" %}selected{% endif %}>Hot</option>
                   <option value="Warm" {% if x.typeoflead == "Warm" %}selected{% endif %}>Warm</option>
                   <option value="Cold" {% if x.typeoflead == "Cold" %}selected{% endif %}>Cold</option>
-                  <option value="NotInterested" {% if x.typeoflead == "NotInterested" %}selected{% endif %}>Not Interested
-                  </option>
-                  <option value="LossOfOrder" {% if x.typeoflead == "LossOfOrder" %}selected{% endif %}>Loss Of Order
-                  </option>
+                  <option value="Not Interested" {% if x.typeoflead == "Not Interested" or x.typeoflead == "NotInterested" %}selected{% endif %}>Not Interested</option>
+                  <option value="Loss of Order" {% if x.typeoflead == "Loss of Order" or x.typeoflead == "LossOfOrder" %}selected{% endif %}>Loss of Order</option>
                 </select>
               </div>
               <div class="col-md-4 mb-4">

@@ -507,7 +507,19 @@
                                                 <option value="Organization" {% if request.GET.customer_type == 'Organization' %}selected{% endif %}>Organization</option>
                                             </select>
                                         </div>
-                                                                    
+
+                                        <!-- Branch Filter -->
+                                        <div class="col-md-3">
+                                            <label>Branch</label>
+                                            <select name="branch" class="form-control custom-select">
+                                                <option value="">All Branches</option>
+                                                {% for b in branches %}
+                                                <option value="{{ b.id }}" {% if request.GET.branch == b.id|stringformat:"i" or selected_branch == b.id|stringformat:"i" %}selected{% endif %}>
+                                                    {{ b.branch_name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
                                     </div>
                                 
                                     <div class="row mt-3">

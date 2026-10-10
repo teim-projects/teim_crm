@@ -434,6 +434,18 @@
                             </div>
                             {% endif %}
 
+                            <!-- Manager Name Filter -->
+                            <div class="col-md-2">
+                                <select class="form-select" name="manager">
+                                    <option value="">All Managers</option>
+                                    {% for mgr in managers %}
+                                    <option value="{{ mgr.id }}" {% if request.GET.manager == mgr.id|stringformat:"s" or request.GET.manager == mgr.full_name or selected_manager == mgr.id|stringformat:"s" or selected_manager == mgr.full_name %}selected{% endif %}>
+                                        {{ mgr.full_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
                             <!-- Date Filter Button -->
                             <div class="col-md-2">
                                 <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
@@ -458,7 +470,7 @@
                         <!-- Export Button (outside the form) -->
                         <div class="row mb-3">
                             <div class="col-md-12 text-end">
-                                <a href="{% url 'export_quotation' %}?{{ request.GET.urlencode }}">
+                                <a href="{% url 'export_quotation' %}?{{ request.GET.urlencode }}" id="exportQuotationLink" onclick="exportQuotationWithFilters(event)">
                                     <button type="button" class="btn btn-primary">📤 Export Excel</button>
                                 </a>
                             </div>
@@ -467,7 +479,17 @@
                     </div>
 
                     <div class="p mb-3">
-                        <p class="text-primary text-end">Total Quotation's : <strong>{{ filter_count }}</strong></p>
+                        <div class="d-flex flex-wrap justify-content-end align-items-center gap-2">
+                            <span class="badge bg-light text-primary border border-primary px-3 py-2 fs-6">
+                                <i class="fa-solid fa-file-invoice me-1"></i> Total Quotation's : <strong>{{ filter_count }}</strong>
+                            </span>
+                            <span class="badge bg-light text-secondary border border-secondary px-3 py-2 fs-6">
+                                <i class="fa-solid fa-calculator me-1"></i> Total Value Without GST : <strong class="text-dark">₹{{ total_without_gst_formatted }}</strong>
+                            </span>
+                            <span class="badge bg-light text-success border border-success px-3 py-2 fs-6">
+                                <i class="fa-solid fa-indian-rupee-sign me-1"></i> Total Value With GST : <strong class="text-success">₹{{ total_with_gst_formatted }}</strong>
+                            </span>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -540,7 +562,14 @@
                                         {% endwith %}
                                     </td>
                                     <td>{{ x.quotation_date }}</td>
-                                    <td>{{ x.customer.fullname }}</td>
+                                    <td>
+                                        {{ x.customer.fullname }}
+                                        {% if x.or_name %}
+                                            <br><small class="text-muted"><i class="fa-solid fa-building me-1"></i>{{ x.or_name }}</small>
+                                        {% elif x.customer.or_name %}
+                                            <br><small class="text-muted"><i class="fa-solid fa-building me-1"></i>{{ x.customer.or_name }}</small>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ x.customer.primarycontact }}</td>
                                     <td>{{ x.customer.primaryemail }}</td>
                                     <td>{{ x.address|truncatechars:20 }}</td>
@@ -693,9 +722,12 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="applyDateFilter()" data-bs-dismiss="modal">Apply</button>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearDateFilter()">Clear Filter</button>
+                <div>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="applyDateFilter()">Apply</button>
+                </div>
             </div>
         </div>
     </div>
@@ -750,29 +782,46 @@
 
     // Restore date range label and hidden inputs from current URL params on page load
     document.addEventListener("DOMContentLoaded", function() {
-        const fromDate = "{{ from_date }}";
-        const toDate = "{{ to_date }}";
-        if (fromDate && toDate) {
-            document.getElementById("selectedRange").innerText = fromDate + " → " + toDate;
-            document.getElementById("fromDate").value = fromDate;
-            document.getElementById("toDate").value = toDate;
+        const fromDate = "{{ from_date|default:'' }}";
+        const toDate = "{{ to_date|default:'' }}";
+        const rangeLabel = document.getElementById("selectedRange");
+
+        if (fromDate || toDate) {
+            if (fromDate && toDate) {
+                rangeLabel.innerText = fromDate + " → " + toDate;
+            } else if (fromDate) {
+                rangeLabel.innerText = "From " + fromDate;
+            } else if (toDate) {
+                rangeLabel.innerText = "Up to " + toDate;
+            }
+
+            if (fromDate) document.getElementById("fromDate").value = fromDate;
+            if (toDate) document.getElementById("toDate").value = toDate;
+
             const form = document.getElementById("mainFilterForm");
-            let fromInput = form.querySelector('input[name="from_date"]');
-            if (!fromInput) {
-                fromInput = document.createElement("input");
-                fromInput.type = "hidden";
-                fromInput.name = "from_date";
-                form.appendChild(fromInput);
+            if (fromDate) {
+                let fromInput = form.querySelector('input[name="from_date"]');
+                if (!fromInput) {
+                    fromInput = document.createElement("input");
+                    fromInput.type = "hidden";
+                    fromInput.name = "from_date";
+                    form.appendChild(fromInput);
+                }
+                fromInput.value = fromDate;
             }
-            fromInput.value = fromDate;
-            let toInput = form.querySelector('input[name="to_date"]');
-            if (!toInput) {
-                toInput = document.createElement("input");
-                toInput.type = "hidden";
-                toInput.name = "to_date";
-                form.appendChild(toInput);
+
+            if (toDate) {
+                let toInput = form.querySelector('input[name="to_date"]');
+                if (!toInput) {
+                    toInput = document.createElement("input");
+                    toInput.type = "hidden";
+                    toInput.name = "to_date";
+                    form.appendChild(toInput);
+                }
+                toInput.value = toDate;
             }
-            toInput.value = toDate;
+        } else {
+            rangeLabel.innerText = "Select Date Range";
         }
     });
 
@@ -800,28 +849,22 @@
     function setRange(range) {
         const today = new Date();
         let start, end;
-        const label = document.getElementById("selectedRange");
 
         if (range === 'today') {
             start = end = today;
-            label.innerText = "Today";
         } else if (range === 'yesterday') {
             const yesterday = new Date(today);
             yesterday.setDate(today.getDate() - 1);
             start = end = yesterday;
-            label.innerText = "Yesterday";
         } else if (range === 'this_month') {
             start = new Date(today.getFullYear(), today.getMonth(), 1);
             end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            label.innerText = "This Month";
         } else if (range === 'last_month') {
             start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
             end = new Date(today.getFullYear(), today.getMonth(), 0);
-            label.innerText = "Past Month";
         } else if (range === 'last_3') {
             start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
             end = today;
-            label.innerText = "Past 3 Months";
         }
 
         document.getElementById("fromDate").value = formatDate(start);
@@ -831,29 +874,67 @@
     function applyDateFilter() {
         const from = document.getElementById("fromDate").value;
         const to = document.getElementById("toDate").value;
+        const form = document.getElementById("mainFilterForm");
 
-        if (from && to) {
-            document.getElementById("selectedRange").innerText = from + " → " + to;
-            const form = document.getElementById("mainFilterForm");
-
-            let fromInput = form.querySelector('input[name="from_date"]');
-            if (!fromInput) {
-                fromInput = document.createElement("input");
-                fromInput.type = "hidden";
-                fromInput.name = "from_date";
-                form.appendChild(fromInput);
-            }
-            fromInput.value = from;
-
-            let toInput = form.querySelector('input[name="to_date"]');
-            if (!toInput) {
-                toInput = document.createElement("input");
-                toInput.type = "hidden";
-                toInput.name = "to_date";
-                form.appendChild(toInput);
-            }
-            toInput.value = to;
+        let fromInput = form.querySelector('input[name="from_date"]');
+        if (!fromInput) {
+            fromInput = document.createElement("input");
+            fromInput.type = "hidden";
+            fromInput.name = "from_date";
+            form.appendChild(fromInput);
         }
+        fromInput.value = from || '';
+
+        let toInput = form.querySelector('input[name="to_date"]');
+        if (!toInput) {
+            toInput = document.createElement("input");
+            toInput.type = "hidden";
+            toInput.name = "to_date";
+            form.appendChild(toInput);
+        }
+        toInput.value = to || '';
+
+        form.submit();
+    }
+
+    function clearDateFilter() {
+        document.getElementById("fromDate").value = "";
+        document.getElementById("toDate").value = "";
+        const form = document.getElementById("mainFilterForm");
+        let fromInput = form.querySelector('input[name="from_date"]');
+        if (fromInput) fromInput.value = "";
+        let toInput = form.querySelector('input[name="to_date"]');
+        if (toInput) toInput.value = "";
+        form.submit();
+    }
+
+    function exportQuotationWithFilters(e) {
+        if (e) e.preventDefault();
+        const form = document.getElementById('mainFilterForm');
+        const params = new URLSearchParams();
+
+        if (form) {
+            const formData = new FormData(form);
+            for (const [key, value] of formData.entries()) {
+                const trimmed = String(value || '').trim();
+                if (trimmed) {
+                    params.append(key, trimmed);
+                }
+            }
+        }
+
+        const fromDateEl = document.getElementById('fromDate');
+        const toDateEl = document.getElementById('toDate');
+        if (fromDateEl && fromDateEl.value && !params.has('from_date')) {
+            params.append('from_date', fromDateEl.value.trim());
+        }
+        if (toDateEl && toDateEl.value && !params.has('to_date')) {
+            params.append('to_date', toDateEl.value.trim());
+        }
+
+        const qs = params.toString();
+        const exportUrl = "{% url 'export_quotation' %}";
+        window.location.href = qs ? (exportUrl + '?' + qs) : exportUrl;
     }
 </script>
 
