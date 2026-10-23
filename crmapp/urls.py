@@ -23,6 +23,7 @@ urlpatterns = [
     path('create_complaint_service', views.create_complaint_service, name='create_complaint_service'),
     path('sales_dashboard/', views.sales_dashboard, name='sales_dashboard'),
     path('invetory_dashbord/', views.invetory_dashbord, name='invetory_dashbord'),
+    path('product-recommendations/', views.product_recommendations, name='product_recommendations'),
 
 
     # path('approve/<int:id>/', views.approve_service),

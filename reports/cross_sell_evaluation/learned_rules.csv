@@ -1,0 +1,4 @@
+﻿antecedent,consequent,support,confidence,lift
+seva:32 (MBr Fumigation),seva:1 (Cockroach Management),0.0571,0.6667,1.2281
+seva:2 (Bed Bugs Management),seva:32 (MBr Fumigation),0.0571,0.2222,2.5926
+seva:32 (MBr Fumigation),seva:2 (Bed Bugs Management),0.0571,0.6667,2.5926

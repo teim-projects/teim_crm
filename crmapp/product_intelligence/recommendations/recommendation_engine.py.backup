@@ -1,0 +1,222 @@
+from crmapp.product_intelligence.crm_adapters.seva.product import SevaProductAdapter
+from crmapp.product_intelligence.crm_adapters.seva.service import SevaServiceAdapter
+from crmapp.product_intelligence.crm_adapters.seva.quotation import SevaQuotationAdapter
+from crmapp.product_intelligence.crm_adapters.seva.amc import SevaAMCAdapter
+
+from crmapp.product_intelligence.universal_features.customer_product_features import UniversalCustomerProductFeatures
+
+from crmapp.product_intelligence.recommendations.candidate_generator import ProductCandidateGenerator
+from crmapp.product_intelligence.recommendations.association_metrics import ProductAssociationMetrics
+from crmapp.product_intelligence.recommendations.scoring_engine import ProductScoringEngine
+from crmapp.product_intelligence.recommendations.output import ProductRecommendationOutput
+class ProductRecommendationEngine:
+    """
+    CRM-independent product recommendation pipeline.
+
+    Flow:
+
+        SEVA CRM Data
+              ?
+        CRM Adapters
+              ?
+        Universal Customer Features
+              ?
+        Candidate Generation
+              ?
+        Association Metrics
+              ?
+        Recommendation Scoring
+              ?
+        Standardized Output
+    """
+
+    def __init__(self):
+
+        self.product_adapter = (
+            SevaProductAdapter()
+        )
+
+        self.service_adapter = (
+            SevaServiceAdapter()
+        )
+
+        self.quotation_adapter = (
+            SevaQuotationAdapter()
+        )
+
+        self.amc_adapter = (
+            SevaAMCAdapter()
+        )
+
+        self.customer_feature_builder = (
+            UniversalCustomerProductFeatures()
+        )
+
+        self.candidate_generator = (
+            ProductCandidateGenerator()
+        )
+
+        self.association_metrics_engine = (
+            ProductAssociationMetrics()
+        )
+
+        self.scoring_engine = (
+            ProductScoringEngine()
+        )
+
+        self.output_formatter = (
+            ProductRecommendationOutput()
+        )
+
+    def recommend(self, customer_id):
+        """
+        Generate product recommendations for one customer.
+        """
+
+        # =================================================
+        # LOAD SEVA DATA THROUGH ADAPTERS
+        # =================================================
+
+        products = (
+            self.product_adapter
+            .get_universal_products()
+        )
+
+        service_products = (
+            self.service_adapter
+            .get_universal_service_products()
+        )
+
+        quotation_products = (
+            self.quotation_adapter
+            .get_universal_quotation_products()
+        )
+
+        amc_products = (
+            self.amc_adapter
+            .get_universal_amc_products()
+        )
+
+        # =================================================
+        # BUILD CUSTOMER-LEVEL UNIVERSAL FEATURES
+        # =================================================
+
+        customer_features = (
+            self.customer_feature_builder
+            .build_customer_features(
+                customer_id=customer_id,
+                service_products=service_products,
+                quotation_products=quotation_products,
+                amc_products=amc_products,
+            )
+        )
+
+        # =================================================
+        # BUILD GLOBAL PRODUCT ASSOCIATION METRICS
+        # =================================================
+
+        association_metrics = (
+            self.association_metrics_engine
+            .build(service_products)
+        )
+
+        # =================================================
+        # GENERATE CANDIDATES
+        # =================================================
+
+        candidates = (
+            self.candidate_generator
+            .generate(
+                customer_id=customer_id,
+                service_products=service_products,
+                quotation_products=quotation_products,
+                amc_products=amc_products,
+            )
+        )
+
+        # =================================================
+        # SCORE CANDIDATES
+        # =================================================
+
+        scored_candidates = (
+            self.scoring_engine
+            .score_candidates(
+                candidates=candidates,
+                customer_features=customer_features,
+                association_metrics_engine=(
+                    self.association_metrics_engine
+                ),
+                association_metrics=association_metrics,
+            )
+        )
+
+        # =================================================
+        # MAP PRODUCT INFORMATION
+        # =================================================
+
+        product_map = {
+            product["product_id"]: product
+            for product in products
+        }
+
+        recommendations = []
+
+        for candidate in scored_candidates:
+
+            product_id = candidate[
+                "product_id"
+            ]
+
+            product = product_map.get(
+                product_id
+            )
+
+            # Skip products that are not present
+            # in the current SEVA product master.
+            if product is None:
+                continue
+
+            recommendation = {
+                "product_id": product_id,
+                "product_name": product[
+                    "product_name"
+                ],
+                "category": product[
+                    "category"
+                ],
+                "candidate_type": candidate[
+                    "candidate_type"
+                ],
+                "score": candidate[
+                    "score"
+                ],
+                "reasons": candidate[
+                    "reasons"
+                ],
+                "source_products": candidate[
+                    "source_products"
+                ],
+                "co_occurrence_count": candidate[
+                    "co_occurrence_count"
+                ],
+                "quotation_interest": candidate[
+                    "quotation_interest"
+                ],
+            }
+
+            recommendations.append(
+                recommendation
+            )
+
+        # =================================================
+        # STANDARDIZE FINAL OUTPUT
+        # =================================================
+
+        return (
+            self.output_formatter
+            .format_recommendations(
+                customer_id=customer_id,
+                recommendations=recommendations,
+            )
+        )
+

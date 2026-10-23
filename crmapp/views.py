@@ -9814,7 +9814,7 @@ def invetory_dashbord(request):
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from weasyprint import HTML
+# from weasyprint import HTML
 
 from crmapp.models import (
     service_management,
@@ -9905,3 +9905,96 @@ def work_order_download_pdf(request, service_id):
     )
 
     return response
+
+
+
+def product_recommendations(request):
+    from django.shortcuts import render
+    from crmapp.models import customer_details
+
+    from crmapp.product_intelligence.recommendations.recommendation_engine import (
+        ProductRecommendationEngine,
+    )
+    from crmapp.product_intelligence.crm_adapters.seva.product import (
+        SevaProductAdapter,
+    )
+    from crmapp.product_intelligence.crm_adapters.seva.service import (
+        SevaServiceAdapter,
+    )
+    from crmapp.product_intelligence.crm_adapters.seva.quotation import (
+        SevaQuotationAdapter,
+    )
+    from crmapp.product_intelligence.crm_adapters.seva.amc import (
+        SevaAMCAdapter,
+    )
+    from crmapp.product_intelligence.crm_adapters.seva.recommendation_config import (
+        SEVA_PRODUCT_RELATIONSHIPS,
+    )
+
+    customers = customer_details.objects.only(
+        "id", "fullname", "customerid"
+    ).order_by("fullname")
+
+    context = {
+        "customers": customers,
+        "selected_customer_id": "",
+        "selected_customer": None,
+        "mode": "",
+        "recommendations": [],
+        "error_message": "",
+    }
+
+    if request.method == "POST":
+        customer_id = request.POST.get("customer_id", "").strip()
+        mode = request.POST.get("mode", "").strip().upper()
+
+        context["selected_customer_id"] = customer_id
+        context["mode"] = mode
+
+        if mode != "CROSS_SELL":
+            context["error_message"] = "Please select Cross-selling."
+        else:
+            try:
+                selected_customer = customer_details.objects.only(
+    "id", "fullname", "customerid"
+).get(id=int(customer_id))
+                context["selected_customer"] = selected_customer
+
+                engine = ProductRecommendationEngine(
+                source_crm="seva",
+                product_adapter=SevaProductAdapter(),
+                service_adapter=SevaServiceAdapter(),
+                quotation_adapter=SevaQuotationAdapter(),
+                amc_adapter=SevaAMCAdapter(),
+                product_relationships=SEVA_PRODUCT_RELATIONSHIPS,
+                allow_historical_cross_sell=True,
+                )
+                results = engine.recommend(selected_customer.id)
+                
+                def get_type(item):
+                    value = (
+                        item.get("recommendation_type")
+                        or item.get("candidate_type")
+                        or item.get("type")
+                        or ""
+                    )
+                    return str(value).upper().replace("-", "_")
+
+                accepted_types = {"CROSS_SELL", "CROSS_SELLING"}
+                        
+                context["recommendations"] = [
+                    item for item in results
+                    if get_type(item) in accepted_types
+                ]
+
+            except customer_details.DoesNotExist:
+                context["error_message"] = "The selected customer was not found."
+            except ValueError:
+                context["error_message"] = "Please select a valid customer."
+            except Exception as exc:
+                context["error_message"] = (
+                    f"Could not generate recommendations: {exc}"
+                )
+
+    return render(request, "product_recommendations.html", context)
+
