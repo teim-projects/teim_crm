@@ -2168,7 +2168,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
-from weasyprint import HTML
+# from weasyprint import HTML
 
 from .models import DeliveryChallan
 from .utils import get_destination_details
@@ -2176,6 +2176,7 @@ from .utils import get_destination_details
 
 @login_required
 def dc_pdf_view(request, pk):
+    from weasyprint import HTML
     # Get challan
     dc = get_object_or_404(DeliveryChallan, pk=pk)
 

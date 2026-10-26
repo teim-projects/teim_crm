@@ -944,6 +944,27 @@
         </li>
         {% endif %}
 
+
+        <!-- ========================================================= -->
+        <!-- PRODUCT INTELLIGENCE -->
+        <!-- ========================================================= -->
+        {% if role == 'admin' or role == 'branch_manager' or role == 'sales' %}
+        <li class="has-submenu">
+            <i class="fas fa-chart-line"></i> Product Intelligence
+            <span class="arrow-down"></span>
+            <div class="submenu">
+                <ul>
+                    <a href="/product-recommendations/">
+                        <li data-link="/product-recommendations/">
+                            Product Recommendations
+                        </li>
+                    </a>
+                </ul>
+            </div>
+        </li>
+        {% endif %}
+
+
         <!-- ========================================================= -->
         <!-- 7. ORGANIZATION (admin only) -->
         <!-- ========================================================= -->
