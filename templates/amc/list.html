@@ -1,0 +1,410 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>TEIMCRM - AMC Contracts</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .amc-table th {
+            background-color: #212529;
+            color: #fff;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 14px;
+            padding: 12px 8px;
+        }
+
+        .amc-table td {
+            vertical-align: middle;
+            font-size: 13.5px;
+            padding: 10px 8px;
+            text-align: center;
+        }
+
+        .badge-status {
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            font-size: 1.1rem;
+            line-height: 36px;
+            border-radius: 6px;
+            margin: 0 3px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-view    { background-color: #0d6efd; border-color: #0d6efd; color: white; }
+        .btn-edit    { background-color: #ffc107; border-color: #ffc107; color: #212529; }
+        .btn-delete  { background-color: #dc3545; border-color: #dc3545; color: white; }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f5ff;
+        }
+
+        .date-muted {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .actions-cell {
+            white-space: nowrap;
+            min-width: 140px;
+        }
+
+        .filter-panel {
+            background: linear-gradient(135deg, #ffffff, #f9fcff);
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+            padding: 1.25rem;
+            margin: 1rem 0 1.5rem;
+        }
+
+        .filter-group .form-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 0.4rem;
+        }
+
+        .filter-group .form-control,
+        .filter-group .form-select {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+        }
+
+        .input-group-text {
+            background: #f8f9fa;
+        }
+
+        .collapse.show .filter-panel {
+            animation: fadeInDown 0.3s ease;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 576px) {
+            .header-actions { flex-direction: column; align-items: stretch !important; gap: 0.75rem !important; }
+            .header-actions .btn { width: 100%; }
+        }
+    </style>
+</head>
+
+<body>
+
+    {% include 'sidebar.html' %}
+
+    <div class="main">
+        <div class="container">
+            <div class="row form-rowsales">
+                <div class="shadow-sm p-4 bg-white rounded">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3 header-actions">
+                        <h4 class="mb-0 text-dark fw-bold">AMC Contracts</h4>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-outline-primary btn-sm" 
+                                    type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#filterCollapse" 
+                                    aria-expanded="false" 
+                                    aria-controls="filterCollapse">
+                                <i class="bi bi-funnel me-1"></i> Filters
+                            </button>
+
+                            <a href="{% url 'amc:create' %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-lg me-1"></i> Create AMC
+                            </a>
+                        </div>
+                    </div>
+
+                    <hr class="mb-4">
+
+                    <!-- Collapsible Filters – no Apply/Clear buttons -->
+                    <div class="collapse show" id="filterCollapse">  <!-- Optional: show by default now -->
+                        <div class="filter-panel">
+                            <div class="row g-3">
+
+                                <div class="col-lg-3 col-md-6 filter-group">
+                                    <label for="filterCustomer" class="form-label">Customer</label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        <input type="text" id="filterCustomer" class="form-control" placeholder="Search customer...">
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-3 col-md-6 filter-group">
+                                    <label for="filterService" class="form-label">Service</label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="bi bi-tools"></i></span>
+                                        <input type="text" id="filterService" class="form-control" placeholder="Service subject...">
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-6 filter-group">
+                                    <label for="filterBranch" class="form-label">Branch</label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                        <input type="text" id="filterBranch" class="form-control" placeholder="Branch...">
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-6 filter-group">
+                                    <label for="filterAmcType" class="form-label">AMC Type</label>
+                                    <select id="filterAmcType" class="form-select form-select-sm">
+                                        <option value="">All Types</option>
+                                        <option value="Comprehensive">Comprehensive</option>
+                                        <option value="Non-Comprehensive">Non-Comprehensive</option>
+                                        <option value="Labour">Labour</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-lg-2 col-md-6 filter-group">
+                                    <label for="filterStatus" class="form-label">Status</label>
+                                    <select id="filterStatus" class="form-select form-select-sm">
+                                        <option value="">All</option>
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover amc-table" id="amcTable">
+                            <thead>
+                                <tr>
+                                    <th>Contract No</th>
+                                    <th>Customer</th>
+                                    <th>Service</th>
+                                    <th>Branch</th>
+                                    <th>AMC Type</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Next Visit</th>
+                                    <th>Status</th>
+                                    <th>Renewal</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for amc in contracts %}
+                                <tr class="{% if amc.is_active and amc.end_date and amc.end_date <= today|add:'15' %}table-warning{% endif %}">
+                                    <td class="fw-semibold">{{ amc.contract_number }}</td>
+                                    <td>{{ amc.customer }}</td>
+                                    <td>
+                                        {% if amc.service %}
+                                            {{ amc.service.service_subject }}
+                                        {% else %}
+                                            <span class="text-danger">Not Linked</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ amc.branch.branch_name }}</td>
+                                    <td>{{ amc.amc_type }}</td>
+                                    <td>{{ amc.start_date|date:"d M Y" }}</td>
+                                    <td>{{ amc.end_date|date:"d M Y" }}</td>
+                                    <td>
+                                        {% if amc.next_service_date %}
+                                            <strong>{{ amc.next_service_date|date:"d M Y" }}</strong>
+                                            <div class="date-muted">Upcoming</div>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if amc.is_active %}
+                                            <span class="badge bg-success badge-status">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-danger badge-status">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if amc.renewal_status == "PENDING" %}
+                                            <span class="badge bg-info badge-status">Pending</span>
+                                        {% elif amc.renewal_status == "REQUESTED" %}
+                                            <span class="badge bg-warning text-dark badge-status">Requested</span>
+                                        {% elif amc.renewal_status == "APPROVED" %}
+                                            <span class="badge bg-success badge-status">Approved</span>
+                                        {% elif amc.renewal_status == "REJECTED" %}
+                                            <span class="badge bg-danger badge-status">Rejected</span>
+                                        {% elif amc.renewal_status == "NOT_RENEWED" %}
+                                            <span class="badge bg-secondary badge-status">Not Renewed</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="actions-cell">
+                                        <a href="{% url 'amc:detail' amc.pk %}" class="btn btn-view action-btn" title="View Details">
+                                            <i class="bi bi-clipboard-check"></i>
+                                        </a>
+
+                                        {% if amc.renewal_status == "REQUESTED" %}
+                                            <button class="btn btn-edit action-btn" disabled title="Cannot edit during request">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        {% else %}
+                                            <a href="{% url 'amc:edit' amc.pk %}" class="btn btn-edit action-btn" title="Edit AMC">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        {% endif %}
+
+                                        <a href="{% url 'amc:delete' amc.pk %}" class="btn btn-delete action-btn delete-link" title="Delete AMC">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="11" class="text-center text-muted py-5">
+                                        No AMC Contracts Found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if contracts.paginator.num_pages > 1 %}
+                    <nav aria-label="AMC pagination">
+                        <ul class="pagination justify-content-center mt-4">
+                            {% if contracts.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ contracts.previous_page_number }}">&laquo;</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                            {% endif %}
+
+                            {% for num in contracts.paginator.page_range %}
+                                {% if num == contracts.number %}
+                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% elif num > contracts.number|add:"-3" and num < contracts.number|add:"3" %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if contracts.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ contracts.next_page_number }}">&raquo;</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-side filtering script -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const customerInput  = document.getElementById("filterCustomer");
+        const serviceInput   = document.getElementById("filterService");
+        const branchInput    = document.getElementById("filterBranch");
+        const amcTypeSelect  = document.getElementById("filterAmcType");
+        const statusSelect   = document.getElementById("filterStatus");
+
+        function filterTable() {
+            const customer = (customerInput?.value  || "").toLowerCase().trim();
+            const service  = (serviceInput?.value   || "").toLowerCase().trim();
+            const branch   = (branchInput?.value    || "").toLowerCase().trim();
+            const amcType  = (amcTypeSelect?.value  || "").toLowerCase();
+            const status   = (statusSelect?.value   || "").toLowerCase();
+
+            const rows = document.querySelectorAll("#amcTable tbody tr");
+
+            rows.forEach(row => {
+                if (row.cells.length < 9) return; // skip empty/no-records row
+
+                const customerText = (row.cells[1]?.innerText || "").toLowerCase();
+                const serviceText  = (row.cells[2]?.innerText  || "").toLowerCase();
+                const branchText   = (row.cells[3]?.innerText   || "").toLowerCase();
+                const amcTypeText  = (row.cells[4]?.innerText  || "").toLowerCase();
+                const statusText   = (row.cells[8]?.innerText  || "").toLowerCase();
+
+                const show =
+                    customerText.includes(customer) &&
+                    serviceText.includes(service) &&
+                    branchText.includes(branch) &&
+                    (amcType === "" || amcTypeText.includes(amcType)) &&
+                    (status === "" || statusText.includes(status));
+
+                row.style.display = show ? "" : "none";
+            });
+        }
+
+        // Events
+        customerInput.addEventListener("input", filterTable);
+        serviceInput.addEventListener("input", filterTable);
+        branchInput.addEventListener("input", filterTable);
+        amcTypeSelect.addEventListener("change", filterTable);
+        statusSelect.addEventListener("change", filterTable);
+
+        // Initial filter
+        filterTable();
+    });
+    </script>
+
+    <!-- Footer -->
+    <div class="container-fluid footer" style="background-color: #f7f7f7; width:100%; margin-top:120px;">
+        <div class="row p-3">
+            <div class="col-md-12 text-center">
+                <p style="margin: 0; font-weight: 600; word-wrap: break-word; color:#000000">
+                    © 2025. Powered by
+                    <img src="{% static 'images/crono.png' %}" alt="Chronoanalytics Logo" style="height: 20px; vertical-align: middle;">
+                    <a href="http://www.chronoanalytics.in/" style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">
+                        Chronoanalytics Solution
+                    </a>
+                    All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; word-wrap: break-word; color:#000000">
+                    © 2025. Marketed by
+                    <img src="{% static 'images/TeimLogo.png' %}" alt="Teim Logo" style="height: 20px; vertical-align: middle;">
+                    <a href="http://teim.in/" style="text-decoration: none; background: linear-gradient(to right, #2575fc, #6a11cb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.1rem;">
+                        TEIM
+                    </a>
+                    All Rights Reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

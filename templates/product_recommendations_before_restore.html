@@ -1,0 +1,203 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Product Intelligence | SEVA CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #eef2ff;
+            --teal: #0f766e;
+            --ink: #172033;
+            --muted: #718096;
+            --line: #e7eaf1;
+            --bg: #f5f7fb;
+            --white: #fff;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+        }
+        .layout { min-height: 100vh; }
+        .topbar {
+            height: 72px; background: white; border-bottom: 1px solid var(--line);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 36px; position: sticky; top: 0; z-index: 5;
+        }
+        .brand { display:flex; align-items:center; gap:12px; font-weight:800; font-size:19px; }
+        .brand-icon {
+            background: var(--primary); color:white; width:40px; height:40px;
+            border-radius:12px; display:grid; place-items:center;
+        }
+        .top-label { color:var(--muted); font-size:13px; }
+        .main { max-width:1250px; padding:34px 28px 60px; margin:auto; }
+        .heading { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+        .eyebrow { color:var(--primary); font-weight:700; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; }
+        h1 { margin:9px 0; font-size:30px; letter-spacing:-1px; }
+        .subtitle { color:var(--muted); margin:0; font-size:14px; line-height:1.7; }
+        .status {
+            background:#ecfdf5; color:#047857; padding:9px 13px; border-radius:20px;
+            font-size:12px; font-weight:700; white-space:nowrap;
+        }
+        .status i { margin-right:6px; }
+        .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; margin:28px 0; }
+        .stat, .panel {
+            background:white; border:1px solid var(--line); border-radius:16px;
+            box-shadow:0 4px 18px rgba(25,40,75,.035);
+        }
+        .stat { padding:20px; display:flex; align-items:center; gap:15px; }
+        .stat-icon { width:46px; height:46px; display:grid; place-items:center; border-radius:13px; font-size:19px; }
+        .purple { background:#eef2ff; color:#4f46e5; }
+        .green { background:#e6fffa; color:#0f766e; }
+        .orange { background:#fff7ed; color:#c2410c; }
+        .stat-label { color:var(--muted); font-size:12px; margin-bottom:7px; }
+        .stat-value { font-size:17px; font-weight:800; }
+        .panel { padding:26px; margin-bottom:22px; }
+        .panel-title { font-size:17px; font-weight:800; margin:0 0 7px; }
+        .panel-subtitle { color:var(--muted); font-size:13px; margin:0 0 23px; line-height:1.6; }
+        label { display:block; font-size:13px; font-weight:700; margin-bottom:9px; }
+        select {
+            width:100%; padding:14px; background:white; border:1px solid #d9deea;
+            border-radius:10px; color:var(--ink); font:inherit; font-size:14px; outline:none;
+        }
+        select:focus { border-color:var(--primary); box-shadow:0 0 0 3px #4f46e51a; }
+        .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:20px; }
+        .btn {
+            border:0; padding:13px 19px; border-radius:10px; font:inherit;
+            font-size:13px; font-weight:700; cursor:pointer; transition:.2s;
+        }
+        .btn:hover { transform:translateY(-1px); filter:brightness(.97); }
+        .btn-primary { background:var(--primary); color:white; }
+        .btn-teal { background:var(--teal); color:white; }
+        .btn-light { background:#f0f2f8; color:#344054; }
+        .customer-chip {
+            display:inline-flex; align-items:center; gap:8px; background:#eef2ff;
+            color:#4338ca; border-radius:9px; padding:9px 12px; font-size:13px; font-weight:700;
+        }
+        .results-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+        .result-count { color:var(--muted); font-size:12px; }
+        .recommendation {
+            border:1px solid var(--line); border-radius:13px; padding:20px;
+            margin-top:14px; display:grid; grid-template-columns:1fr auto; gap:14px;
+        }
+        .recommendation h3 { margin:0 0 10px; font-size:15px; }
+        .meta { color:var(--muted); font-size:12px; margin:7px 0; line-height:1.7; }
+        .score {
+            display:inline-block; padding:6px 10px; border-radius:20px;
+            background:#eef2ff; color:#4338ca; font-size:11px; font-weight:800;
+        }
+        .reason-list { color:#536176; font-size:13px; padding-left:19px; line-height:1.8; margin-bottom:0; }
+        .message { padding:15px 17px; border-radius:11px; margin-bottom:20px; font-size:13px; line-height:1.7; }
+        .error { background:#fff1f2; color:#be123c; border:1px solid #fecdd3; }
+        .empty { text-align:center; padding:35px 15px; color:var(--muted); }
+        .empty i { font-size:30px; color:#a5b4fc; margin-bottom:13px; }
+        .empty h3 { color:var(--ink); font-size:15px; }
+        .amc-note { display:flex; gap:14px; align-items:flex-start; }
+        .amc-note .stat-icon { flex-shrink:0; }
+        .footer { text-align:center; font-size:11px; color:#9aa3b3; padding:15px; }
+        @media(max-width:700px) {
+            .topbar { padding:0 16px; height:64px; }
+            .top-label { display:none; }
+            .main { padding:25px 14px 40px; }
+            h1 { font-size:25px; }
+            .stats { grid-template-columns:1fr; gap:10px; margin:22px 0; }
+            .panel { padding:19px; }
+            .actions { flex-direction:column; }
+            .btn { width:100%; }
+            .recommendation { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <span>SEVA <span style="color:#4f46e5">CRM</span></span>
+        </div>
+        <div class="top-label"><i class="fa-solid fa-chart-line"></i> Customer & Product Intelligence</div>
+    </header>
+
+    <main class="main">
+</div>
+
+
+        {% if selected_customer %}
+        <section class="panel">
+            <div class="results-head">
+                <div>
+                    <h2 class="panel-title">
+                        {% if mode == "UPSELL" %}Upselling Recommendations{% else %}Cross-selling Recommendations{% endif %}
+                    </h2>
+                    <p class="panel-subtitle" style="margin-bottom:12px">Results generated for the selected customer.</p>
+                </div>
+                <span class="customer-chip"><i class="fa-solid fa-user"></i> {{ selected_customer.fullname }}</span>
+            </div>
+
+            <p class="meta">
+                Customer ID: {{ selected_customer.customerid|default:"Not available" }}
+            </p>
+
+            {% if cross_sell_status %}
+<p class="meta">{{ cross_sell_status }}</p>
+{% endif %}
+
+{% if recommendations %}
+                <div class="result-count">{{ recommendations|length }} recommendation(s) returned</div>
+                {% for item in recommendations %}
+                    <article class="recommendation">
+                        <div>
+                            
+<h3><i class="fa-solid fa-cube" style="color:#6366f1;margin-right:8px"></i>{{ item.product_name|default:"Recommended Product" }}</h3>
+
+                            {% if item.category %}<p class="meta">Category: {{ item.category }}</p>{% endif %}
+                            {% if item.reasons %}
+                                <p class="meta"><strong>Why this is recommended</strong></p>
+                                <ul class="reason-list">
+                                    {% for reason in item.reasons %}<li>{{ reason }}</li>{% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="meta">The recommendation engine did not return an explanation for this item.</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if item.score != None %}<span class="score">Score: {{ item.score }}</span>{% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            {% else %}
+                <div class="empty">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                    <h3>No recommendations returned</h3>
+                    <p>No {{ mode|lower }} recommendations are currently available for this customer.</p>
+                    <p>Try another customer or verify the customer's product history and recommendation engine.</p>
+                </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <section class="panel">
+            <div class="amc-note">
+                <div class="stat-icon orange"><i class="fa-solid fa-calendar-check"></i></div>
+                <div>
+                    <h2 class="panel-title">AMC Recommendations</h2>
+                    <p class="panel-subtitle" style="margin-bottom:0">
+                        AMC renewal, upgrade, and expansion are part of the planned Product Intelligence workflow.
+                        This section will display live AMC results once connected to the AMC recommendation engine.
+                    </p>
+                </div>
+            </div>
+        </section>
+        <div class="footer">SEVA CRM Â· Product Intelligence Â· Customer-specific recommendations</div>
+    </main>
+</div>
+</body>
+</html>

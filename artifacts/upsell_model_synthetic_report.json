@@ -1,0 +1,33 @@
+{
+  "model_type": "random_forest",
+  "artifact_path": "artifacts\\upsell_model_synthetic.joblib",
+  "metrics": {
+    "train_samples": 150,
+    "test_samples": 50,
+    "accuracy": 0.62,
+    "precision": 0.24,
+    "recall": 1.0,
+    "f1_score": 0.3871,
+    "roc_auc": 0.7898,
+    "classification_report": "              precision    recall  f1-score   support\n\n  not_upsell       1.00      0.57      0.72        44\n      upsell       0.24      1.00      0.39         6\n\n    accuracy                           0.62        50\n   macro avg       0.62      0.78      0.56        50\nweighted avg       0.91      0.62      0.68        50\n"
+  },
+  "dataset_summary": {
+    "accepted_records": 200,
+    "excluded_records": 0,
+    "positive_records": 25,
+    "negative_records": 175,
+    "feature_names": [
+      "relationship_strength",
+      "customer_purchase_count",
+      "candidate_purchase_count",
+      "customer_product_frequency",
+      "candidate_product_frequency",
+      "days_since_last_purchase",
+      "candidate_price",
+      "current_product_price",
+      "price_increase_ratio",
+      "product_version_gap",
+      "customer_tenure_days"
+    ]
+  }
+}

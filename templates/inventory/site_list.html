@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Site List</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <style>
+    .sales-table th,
+    .sales-table td {
+      vertical-align: middle;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .sales-table tbody tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    @media (max-width: 768px) {
+      td {
+        min-width: 170px !important;
+      }
+    }
+
+    .salesrecordcon {
+      min-height: 40vh !important;
+    }
+
+    .pagination li {
+      list-style: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  {% include 'sidebar.html' %}
+
+  <div class="main">
+
+    <div class="container salesrecordcon bg-white p-4 rounded addnewshadow" style="margin-top: 100px;">
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-primary mb-0">Site List</h3>
+
+        <div class="d-flex gap-2">
+          <a href="{% url 'add_site' %}" class="btn btn-success d-flex align-items-center">
+            <i class="bi bi-plus-lg me-1"></i> Add
+          </a>
+        </div>
+      </div>
+
+      <!-- SEARCH -->
+      <form method="get" class="row g-2 mb-4">
+
+        <div class="col-md-10">
+          <input type="text" name="search" class="form-control"
+                 placeholder="Search by Name / Phone"
+                 value="{{ request.GET.search }}">
+        </div>
+
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+
+      </form>
+
+      <!-- TABLE -->
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped sales-table">
+          <thead class="table-dark">
+            <tr>
+              <th>Sr</th>
+              <th>Actions</th>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Contact Person</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for s in site %}
+
+            <tr>
+              <td>{{ forloop.counter|add:page_obj.start_index|add:-1 }}</td>
+
+              <td>
+                <a href="{% url 'site_edit' s.id %}" class="btn btn-sm btn-warning mb-1">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+
+                <a href="{% url 'site_delete' s.id %}" class="btn btn-sm btn-danger">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </td>
+
+              <td>{{ s.name }}</td>
+              <td title="{{ s.address }}">{{ s.address|truncatechars:20 }}</td>
+              <td>{{ s.contact_person }}</td>
+              <td>{{ s.phone }}</td>
+            </tr>
+
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">No sites found.</td>
+            </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination mt-3">
+
+        {% if page_obj.has_previous %}
+          <li><a href="?{{ querystring }}&page=1">&laquo; First</a></li>
+          <li><a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}">&lsaquo; Previous</a></li>
+        {% endif %}
+
+        <span class="current">{{ page_obj.number }}</span>
+
+        {% if page_obj.has_next %}
+          <li><a href="?{{ querystring }}&page={{ page_obj.next_page_number }}">Next &rsaquo;</a></li>
+          <li><a href="?{{ querystring }}&page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+        {% endif %}
+
+      </div>
+
+      {% include 'buttons.html' %}
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="container-fluid footer" style="background-color: #f7f7f7;">
+    <div class="row p-3">
+      <div class="col-md-12 text-center">
+        <p style="font-weight: 600;">© 2025. Powered by
+          <img src="{% static 'images/crono.png' %}" style="height: 20px;">
+          <a href="http://www.chronoanalytics.in/"
+            style="background: linear-gradient(to right, #2575fc, #6a11cb);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Chronoanalytics Solution
+          </a>
+          All Rights Reserved.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

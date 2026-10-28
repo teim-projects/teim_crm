@@ -1,0 +1,80 @@
+[
+  {
+    "product_key": "seva:1",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:10",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:13",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:2",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:32",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:34",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:4",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:57",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:64",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:70",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:71",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:8",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  },
+  {
+    "product_key": "seva:84",
+    "source_crm": "seva",
+    "is_synthetic": true,
+    "source": "observed_real_product_universe"
+  }
+]

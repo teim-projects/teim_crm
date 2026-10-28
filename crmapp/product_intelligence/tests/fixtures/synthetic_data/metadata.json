@@ -1,0 +1,56 @@
+{
+  "dataset_name": "SEVA synthetic cross-sell validation fixtures",
+  "is_synthetic": true,
+  "database_modified": false,
+  "real_source_purchase_records": 50,
+  "real_source_baskets": 42,
+  "real_source_multi_product_baskets": 5,
+  "real_source_single_product_baskets": 37,
+  "real_observed_multi_product_templates": [
+    {
+      "product_keys": [
+        "seva:1",
+        "seva:2",
+        "seva:32"
+      ],
+      "observed_baskets": 1
+    },
+    {
+      "product_keys": [
+        "seva:1",
+        "seva:32",
+        "seva:4"
+      ],
+      "observed_baskets": 1
+    },
+    {
+      "product_keys": [
+        "seva:2",
+        "seva:32"
+      ],
+      "observed_baskets": 1
+    },
+    {
+      "product_keys": [
+        "seva:1",
+        "seva:2"
+      ],
+      "observed_baskets": 1
+    },
+    {
+      "product_keys": [
+        "seva:34",
+        "seva:84"
+      ],
+      "observed_baskets": 1
+    }
+  ],
+  "synthetic_customers": 120,
+  "synthetic_products": 13,
+  "synthetic_baskets": 960,
+  "synthetic_multi_product_rate_requested": 0.75,
+  "actual_synthetic_multi_product_baskets": 735,
+  "seed": 20261025,
+  "generation_method": "Samples real SEVA basket templates with replacement; multi-product templates are intentionally oversampled to validate model behavior.",
+  "warning": "Synthetic data is for software validation only. It does not represent real purchase frequencies and must not be reported as real-world model accuracy."
+}

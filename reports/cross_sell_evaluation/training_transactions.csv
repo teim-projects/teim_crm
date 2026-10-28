@@ -1,0 +1,36 @@
+﻿service_id,customer_id,service_date,product_keys,product_names
+9,16,2025-06-30,seva:1,Cockroach Management
+19,35,2025-07-11,seva:2;seva:32,Bed Bugs Management;MBr Fumigation
+32,35,2025-07-24,seva:1;seva:2;seva:32,Cockroach Management;Bed Bugs Management;MBr Fumigation
+33,35,2025-07-24,seva:1;seva:32;seva:4,Cockroach Management;MBr Fumigation;Delfog
+41,66,2025-07-30,seva:1,Cockroach Management
+42,67,2025-07-30,seva:2,Bed Bugs Management
+45,75,2025-08-02,seva:1,Cockroach Management
+46,76,2025-08-02,seva:1,Cockroach Management
+44,71,2025-08-04,seva:2,Bed Bugs Management
+47,78,2025-08-05,seva:1,Cockroach Management
+48,79,2025-08-05,seva:13,Termite Management
+49,24,2025-08-05,seva:10,Lizard Management
+50,80,2025-08-07,seva:2,Bed Bugs Management
+51,85,2025-08-08,seva:8,Rodent Management
+52,88,2025-08-12,seva:1,Cockroach Management
+54,90,2025-08-13,seva:1,Cockroach Management
+55,94,2025-08-13,seva:2,Bed Bugs Management
+56,93,2025-08-13,seva:57,General Pest Control Services
+57,95,2025-08-13,seva:64,Mosquito Management Service
+58,96,2025-08-14,seva:2,Bed Bugs Management
+59,97,2025-08-14,seva:1,Cockroach Management
+60,98,2025-08-16,seva:1,Cockroach Management
+61,99,2025-08-16,seva:1,Cockroach Management
+62,102,2025-08-16,seva:1,Cockroach Management
+63,103,2025-08-17,seva:1,Cockroach Management
+64,104,2025-08-18,seva:70,Sanitization Service
+65,106,2025-08-18,seva:71,UV Fly Control Board
+66,100,2025-08-18,seva:34;seva:84,Rat Snap Trap;Transportation Charges
+53,35,2025-08-20,seva:1;seva:2,Cockroach Management;Bed Bugs Management
+67,112,2025-08-23,seva:1,Cockroach Management
+69,112,2025-08-23,seva:1,Cockroach Management
+68,113,2025-08-24,seva:1,Cockroach Management
+70,115,2025-08-30,seva:57,General Pest Control Services
+71,119,2025-08-31,seva:2,Bed Bugs Management
+72,120,2025-08-31,seva:1,Cockroach Management

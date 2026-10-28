@@ -1,0 +1,258 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+.sidebar {
+    height: 100%;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #a69cac;
+    padding-top: 20px;
+}
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+.sidebar ul li {
+    padding: 10px;
+    color: black;
+    cursor: pointer;
+    position: relative;
+}
+.sidebar ul li:hover {
+    background-color: #43a4ff;
+}
+.submenu {
+    display: none;
+    background-color: #dbc8c8;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 1;
+}
+.submenu ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+.submenu ul li {
+    padding: 8px 20px;
+    color: white;
+    cursor: pointer;
+}
+.submenu ul li:hover {
+    background-color: #777;
+}
+.arrow-down {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 10px solid blue;
+}
+.arrow-up {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%) rotate(180deg);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid white;
+}
+.logo {
+    text-align: center;
+    margin-bottom: 20px;
+    
+}
+.logo img {
+    margin-left: 40px;
+    max-width: 60%;
+    height: auto;
+    display: block;
+}
+
+
+.form-outline .form-control-lg{
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+}
+
+
+
+.gradient-custom {
+    
+    background-color: #a2ac9c;
+    
+    
+    .card-registration .select-input.form-control[readonly]:not([disabled]) {
+    font-size: 1rem;
+    line-height: 2.15;
+    padding-left: .75em;
+    padding-right: .75em;
+    }
+    .card-registration .select-arrow {
+    top: 13px;
+    }
+
+
+}
+
+/* ── Mandatory Field Highlighting ───────────────────────── */
+.star {
+    color: #dc3545;
+    font-weight: bold;
+    font-size: 14px;
+    margin-left: 2px;
+}
+
+/* Red left-border on required inputs/selects/textareas */
+label:has(.star) + input,
+label:has(.star) + select,
+label:has(.star) + textarea,
+label:has(.star) ~ input[required],
+label:has(.star) ~ select[required],
+label:has(.star) ~ textarea[required] {
+    border-left: 3px solid #dc3545 !important;
+}
+
+/* Highlight invalid required fields on submit attempt */
+input:required:invalid,
+select:required:invalid,
+textarea:required:invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.15);
+}
+
+/* Red border on Search Address field */
+#location-search {
+    border: 1px solid #dc3545 !important;
+    border-left: 3px solid #dc3545 !important;
+}
+
+#location-search:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* ===== CHART TOOLBAR & MAXIMIZE CSS ===== */
+.chart-actions-toolbar {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    background-color: #fff9e6 !important;
+    border: 1px solid #f0e2b6 !important;
+    border-radius: 5px !important;
+    padding: 2px 6px !important;
+    margin-left: auto !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.chart-actions-toolbar .chart-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #475569 !important;
+    font-size: 14px !important;
+    padding: 3px 6px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s, color 0.2s, transform 0.1s !important;
+    position: relative !important;
+    line-height: 1 !important;
+}
+
+.chart-actions-toolbar .chart-btn:hover {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.chart-actions-toolbar .chart-btn-maximize {
+    color: #2563eb !important;
+    font-weight: bold !important;
+}
+
+.chart-btn[data-tooltip] {
+    position: relative !important;
+}
+
+.chart-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    background-color: #2b2d31;
+    color: #ffffff;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: sans-serif;
+    white-space: nowrap;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index: 1000;
+}
+
+.chart-btn[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(8px);
+}
+
+.chart-menu-dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    margin-top: 6px !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    min-width: 160px !important;
+    display: none;
+    flex-direction: column !important;
+    z-index: 1050 !important;
+    overflow: hidden !important;
+    padding: 4px 0 !important;
+}
+
+.chart-menu-dropdown.show {
+    display: flex !important;
+}
+
+.chart-menu-dropdown .chart-menu-item {
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    color: #334155 !important;
+    background: transparent !important;
+    border: none !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+}
+
+.chart-menu-dropdown .chart-menu-item:hover {
+    background-color: #f1f5f9 !important;
+    color: #0284c7 !important;
+}
