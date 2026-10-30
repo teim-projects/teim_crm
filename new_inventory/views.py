@@ -280,7 +280,13 @@ def ho_edit(request, pk):
         if form.is_valid():
             ho_obj = form.save(commit=False)
 
+            UserModel = get_user_model()
             user = ho_obj.user
+            if not user and ho_obj.contact:
+                user = UserModel.objects.filter(username=ho_obj.contact).first()
+            if not user and ho_obj.email:
+                user = UserModel.objects.filter(email=ho_obj.email).first()
+
             password = form.cleaned_data.get("password")
 
             if user:
@@ -289,6 +295,7 @@ def ho_edit(request, pk):
                 if password:
                     user.set_password(password)
                 user.save()
+                ho_obj.user = user
 
             ho_obj.save()
             return redirect("ho_list")

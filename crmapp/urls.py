@@ -23,6 +23,7 @@ urlpatterns = [
     path('create_complaint_service', views.create_complaint_service, name='create_complaint_service'),
     path('sales_dashboard/', views.sales_dashboard, name='sales_dashboard'),
     path('invetory_dashbord/', views.invetory_dashbord, name='invetory_dashbord'),
+    path('inventory_dashboard/', views.invetory_dashbord, name='inventory_dashboard'),
 
 
     # path('approve/<int:id>/', views.approve_service),
@@ -130,6 +131,7 @@ urlpatterns = [
     path('delete-service-product/<int:pid>/', views.delete_service_product, name='delete_service_product'),
     path('delete_service_records/<int:rid>/', views.delete_service_records , name='delete_service_records'),
     path('edit_quotation/<int:rid>', views.edit_quotation, name="edit_quotation"),
+    path('clone_quotation/<int:rid>', views.clone_quotation, name="clone_quotation"),
     path('edit_invoice/<rid>', views.edit_invoice),
     # path('edit_inventory/<rid>', views.edit_inventory),
     path('edit_lead_management/<rid>', views.edit_lead_management,name='edit_lead_management'),

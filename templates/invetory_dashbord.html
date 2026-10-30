@@ -5,31 +5,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Dashboard</title>
+    <title>Inventory Dashboard - TEIM CRM</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/customer.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chart_toolbar.css' %}">
 
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Chart.js CDN & Toolbar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/chart_toolbar.js' %}"></script>
 
     <style>
         :root {
-            --primary: #03AED2;
-            --primary-dark: #0289a5;
-            --secondary-bg: #f0fbff;
-            --white: #ffffff;
-            --text-dark: #333333;
-            --text-muted: #6b7280;
-            --danger: #ef4444;
-            --shadow: 0 10px 30px rgba(3, 174, 210, 0.15);
-            --shadow-hover: 0 14px 35px rgba(3, 174, 210, 0.22);
-            --border-radius: 18px;
+            --primary-blue: #007DBE;
+            --header-bg: #ffffff;
+            --bg-canvas: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
         }
 
         * {
@@ -38,341 +39,2393 @@
             box-sizing: border-box;
         }
 
-        html,
         body {
-            width: 100%;
-            min-height: 100vh;
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #eefcff 0%, #f7fcff 100%);
+            background-color: var(--bg-canvas);
             color: var(--text-dark);
-        }
-
-        body {
             overflow-x: hidden;
         }
 
-        .main-container {
-            padding: 16px;
-            margin-top: 90px;
+        .inventory-dashboard-container {
+            margin-top: 85px;
+            padding: 15px 25px 40px 25px;
             width: 100%;
+            min-height: calc(100vh - 85px);
         }
 
-        .dashboard-wrapper {
-            width: 100%;
-            max-width: 100%;
-            margin: 0;
+        /* ===== SUB-TABS NAVIGATION ===== */
+        .dash-subtabs {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 15px;
+            padding-left: 5px;
+            background: transparent;
         }
 
-        .dashboard-card {
-            border-radius: var(--border-radius);
-            background: var(--white);
-            box-shadow: var(--shadow);
-            width: 100%;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(3, 174, 210, 0.08);
-        }
-
-        .dashboard-card:hover {
-            box-shadow: var(--shadow-hover);
-        }
-
-        .dashboard-body {
-            padding: 12px;
-        }
-
-        .iframe-container {
+        .subtab-item {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            padding: 8px 4px 10px 4px;
+            cursor: pointer;
             position: relative;
-            width: 100%;
-            height: calc(100vh - 140px);
-            min-height: 700px;
-            border-radius: 14px;
-            overflow: hidden;
-            background: #f9fdff;
-            border: 1px solid rgba(3, 174, 210, 0.12);
+            text-decoration: none;
+            transition: color 0.2s;
         }
 
-        iframe {
+        .subtab-item:hover {
+            color: #0284c7;
+        }
+
+        .subtab-item.active {
+            color: #0284c7;
+            font-weight: 600;
+        }
+
+        .subtab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
             width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
+            height: 2.5px;
+            background-color: #0284c7;
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* ===== FILTERS BAR ===== */
+        .dash-filter-bar {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 13px;
+        }
+
+        .filter-toggle-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #475569;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .filter-toggle-header i {
+            font-size: 11px;
+            transition: transform 0.2s ease;
+        }
+
+        .filter-toggle-header.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        .filter-fields-wrap {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-item label {
+            color: #475569;
+            font-size: 12.5px;
+            font-weight: 500;
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 12.5px;
+            color: #334155;
+            outline: none;
+            cursor: pointer;
+            min-width: 120px;
+            height: 30px;
+        }
+
+        .filter-select:focus {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+        }
+
+        .filter-reset-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 3px 10px;
+            font-size: 12px;
+            color: #475569;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: auto;
+            height: 30px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-reset-btn:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        /* ===== KPI METRIC CARDS GRID ===== */
+        .kpi-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .kpi-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 22px 15px;
+            position: relative;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Border accents matching reference UI exactly */
+        .kpi-card-1 { border: 2px solid #00c49f; } /* Total Stock In - Mint/Teal */
+        .kpi-card-2 { border: 2px solid #3b82f6; } /* Total Stock Out - Light Blue */
+        .kpi-card-3 { border: 2px solid #f43f5e; } /* Current Stock - Pink/Crimson */
+        .kpi-card-4 { border: 2px solid #f97316; } /* Inventory Value - Orange */
+
+        .kpi-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 34px;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: -0.5px;
+        }
+
+        /* ===== CHARTS SECTION ===== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+
+        .chart-card {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-card-header {
+            padding: 9px 16px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-yellow { background-color: #eb9800; }
+        .header-teal { background-color: #00b4d8; }
+        .header-blue { background-color: #1d72b8; }
+        .header-red { background-color: #e11d48; }
+        .header-green { background-color: #00c49f; }
+        .header-orange { background-color: #f97316; }
+
+        .chart-body {
+            padding: 16px 15px;
+            height: 380px;
+            position: relative;
             background: #ffffff;
         }
 
-        .top-buttons {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            right: 16px;
-            z-index: 5;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            pointer-events: none;
+        .chart-actions-toolbar {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            background-color: rgba(255, 255, 255, 0.22) !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            border-radius: 5px !important;
+            padding: 2px 6px !important;
+            margin-left: auto !important;
+            position: relative !important;
+            z-index: 10 !important;
         }
 
-        .action-btn {
-            width: 46px;
-            height: 46px;
+        .chart-actions-toolbar .chart-btn {
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            padding: 3px 5px !important;
+            font-size: 12px !important;
+            cursor: pointer !important;
+            border-radius: 3px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: background 0.15s ease !important;
+        }
+
+        .chart-actions-toolbar .chart-btn:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .chart-menu-dropdown {
+            position: absolute !important;
+            top: 100% !important;
+            right: 0 !important;
+            margin-top: 6px !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+            min-width: 160px !important;
+            display: none;
+            flex-direction: column !important;
+            z-index: 1050 !important;
+            overflow: hidden !important;
+            padding: 4px 0 !important;
+        }
+
+        .chart-menu-dropdown.show {
+            display: flex !important;
+        }
+
+        .chart-menu-item {
+            padding: 8px 14px;
+            font-size: 12.5px;
+            color: #334155;
+            background: transparent;
             border: none;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            text-align: left;
+            width: 100%;
             cursor: pointer;
-            font-size: 18px;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
-            text-decoration: none;
-            pointer-events: auto;
-        }
-
-        .home-btn {
-            background: rgba(3, 174, 210, 0.12);
-            color: var(--primary);
-        }
-
-        .home-btn:hover {
-            background: var(--primary);
-            color: var(--white);
-            transform: translateY(-2px);
-        }
-
-        .close-btn {
-            background: rgba(239, 68, 68, 0.12);
-            color: var(--danger);
-        }
-
-        .close-btn:hover {
-            background: var(--danger);
-            color: var(--white);
-            transform: translateY(-2px);
-        }
-
-        .iframe-loader {
-            position: absolute;
-            inset: 0;
-            z-index: 2;
             display: flex;
             align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            background: rgba(255, 255, 255, 0.92);
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            gap: 8px;
         }
 
-        .iframe-loader.hide {
-            opacity: 0;
-            visibility: hidden;
+        .chart-menu-item:hover {
+            background: #f1f5f9;
+            color: #0284c7;
         }
 
-        .spinner {
-            width: 52px;
-            height: 52px;
-            border: 5px solid #d8f5fb;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-            margin-bottom: 14px;
-        }
-
-        .loader-text {
-            font-size: 0.98rem;
-            font-weight: 500;
-            color: #4b5563;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .footer {
-            background-color: #f7f7f7;
+        /* ===== LOW STOCK ALERT TABLE STYLING ===== */
+        .table-container-scroll {
             width: 100%;
-            margin-top: 20px;
-            border-top: 1px solid #e5e7eb;
+            height: 100%;
+            max-height: 348px;
+            overflow-y: auto;
+            overflow-x: auto;
         }
 
-        .footer p {
-            margin: 0;
+        .dash-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            text-align: left;
+        }
+
+        .dash-table thead th {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            color: #475569;
             font-weight: 600;
-            color: #000000;
-            line-height: 1.8;
+            padding: 9px 12px;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+            z-index: 2;
         }
 
-        .footer a {
-            text-decoration: none;
-            background: linear-gradient(to right, #2575fc, #6a11cb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 1.05rem;
-            font-weight: 700;
+        .dash-table tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+            white-space: nowrap;
         }
 
-        .footer a:hover {
-            opacity: 0.85;
+        .dash-table tbody tr:hover {
+            background-color: #f8fafc;
         }
 
-        .footer-logo {
-            height: 20px;
-            vertical-align: middle;
-            margin: 0 4px;
+        .dash-table tbody tr.row-selected {
+            background-color: #e0f2fe !important;
         }
 
-        @media (max-width: 992px) {
-            .main-container {
-                padding: 12px;
-                margin-top: 85px;
-            }
+        .stock-badge {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.2px;
+        }
 
-            .iframe-container {
-                height: calc(100vh - 130px);
-                min-height: 620px;
-            }
+        .badge-available {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .badge-low {
+            background-color: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .badge-out {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        /* Table search in header */
+        .table-search-input {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 11.5px;
+            color: #1e293b;
+            outline: none;
+            width: 140px;
+        }
+
+        .table-search-input::placeholder {
+            color: #64748b;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1200px) {
+            .kpi-grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 768px) {
-            .main-container {
-                margin-top: 75px;
-                padding: 10px;
-            }
-
-            .dashboard-body {
-                padding: 10px;
-            }
-
-            .action-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 15px;
-            }
-
-            .top-buttons {
-                top: 12px;
-                left: 12px;
-                right: 12px;
-            }
-
-            .iframe-container {
-                height: calc(100vh - 120px);
-                min-height: 500px;
-            }
-
-            .footer p {
-                font-size: 0.92rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .iframe-container {
-                height: calc(100vh - 110px);
-                min-height: 430px;
-            }
-
-            .footer a {
-                font-size: 0.98rem;
-            }
+            .inventory-dashboard-container { padding: 10px; margin-top: 75px; }
+            .kpi-grid-4 { grid-template-columns: 1fr; }
+            .dash-subtabs { overflow-x: auto; white-space: nowrap; }
+            .dash-filter-bar { flex-direction: column; align-items: stretch; }
+            .filter-fields-wrap { flex-direction: column; align-items: stretch; }
+            .filter-item { flex-direction: column; align-items: stretch; }
+            .filter-select { width: 100%; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- SAME SIDEBAR + HEADER -->
+    <!-- SIDEBAR & HEADER INTEGRATION -->
     {% include 'sidebar.html' %}
 
-    <!-- MAIN CONTENT -->
-    <div class="main-container">
-        <div class="dashboard-wrapper">
-            <div class="dashboard-card">
-                <div class="dashboard-body">
+    <!-- MAIN DASHBOARD CONTENT -->
+    <div class="inventory-dashboard-container">
 
-                    <!-- ZOHO DASHBOARD -->
-                    <div class="iframe-container">
+        <!-- ===== SUB-TABS BAR ===== -->
+        <div class="dash-subtabs">
+            <a class="subtab-item active" id="tabOverviewBtn" onclick="switchTab(this, 'overview')">Overview Dashboard</a>
+            <a class="subtab-item" id="tabBranchBtn" onclick="switchTab(this, 'branch')">Branch Analysis</a>
+            <a class="subtab-item" id="tabProductBtn" onclick="switchTab(this, 'product')">Product Analysis</a>
+            <a class="subtab-item" id="tabMovementBtn" onclick="switchTab(this, 'movement')">Inventory Movement</a>
+        </div>
 
-                       
+        <!-- ===== FILTERS ROW ===== -->
+        <div class="dash-filter-bar">
+            <div class="filter-toggle-header" id="filterToggle" onclick="toggleFilterBar()">
+                <i class="fa-solid fa-chevron-down" id="filterChevron"></i>
+                <span>Filters</span>
+            </div>
 
-                        <div class="iframe-loader" id="iframeLoader">
-                            <div class="spinner"></div>
-                            <div class="loader-text">Loading dashboard...</div>
+            <div class="filter-fields-wrap" id="filterFieldsWrap">
+                <div class="filter-item">
+                    <label>branch_name:</label>
+                    <select class="filter-select" id="filterBranch" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        {% for b in branches %}
+                        <option value="{{ b.branch_name }}" {% if selected_branch == b.branch_name %}selected{% endif %}>{{ b.branch_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label>product_name:</label>
+                    <select class="filter-select" id="filterProduct" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        {% for p in products %}
+                        <option value="{{ p.product_name }}" {% if selected_product == p.product_name %}selected{% endif %}>{{ p.product_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label><i class="fa-regular fa-calendar me-1 text-muted"></i>created_at:</label>
+                    <select class="filter-select" id="filterDate" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        <option value="today" {% if selected_date == 'today' %}selected{% endif %}>Today</option>
+                        <option value="this_month" {% if selected_date == 'this_month' %}selected{% endif %}>This Month</option>
+                        <option value="this_year" {% if selected_date == 'this_year' %}selected{% endif %}>This Year</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label>Stock Status:</label>
+                    <select class="filter-select" id="filterStockStatus" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        <option value="Available" {% if selected_status == 'Available' %}selected{% endif %}>Available</option>
+                        <option value="Low Stock" {% if selected_status == 'Low Stock' %}selected{% endif %}>Low Stock</option>
+                        <option value="Out of Stock" {% if selected_status == 'Out of Stock' %}selected{% endif %}>Out of Stock</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label>transaction_type:</label>
+                    <select class="filter-select" id="filterTxnType" onchange="applyFilters()">
+                        <option value="">- Select -</option>
+                        <option value="GRN_IN" {% if selected_txn == 'GRN_IN' %}selected{% endif %}>GRN In</option>
+                        <option value="MTN_OUT" {% if selected_txn == 'MTN_OUT' %}selected{% endif %}>Material Transfer Out</option>
+                        <option value="MTN_IN" {% if selected_txn == 'MTN_IN' %}selected{% endif %}>Material Transfer In</option>
+                        <option value="SERVICE_OUT" {% if selected_txn == 'SERVICE_OUT' %}selected{% endif %}>Service Deduction</option>
+                        <option value="SERVICE_RETURN" {% if selected_txn == 'SERVICE_RETURN' %}selected{% endif %}>Service Return</option>
+                        <option value="ADJUST" {% if selected_txn == 'ADJUST' %}selected{% endif %}>Stock Adjustment</option>
+                    </select>
+                </div>
+
+                <button type="button" class="filter-reset-btn" onclick="resetFilters()">
+                    <i class="fa-solid fa-rotate-right"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 1. OVERVIEW DASHBOARD VIEW (MATCHING IMAGES EXACTLY) -->
+        <!-- ========================================================= -->
+        <div id="overviewDashboardView">
+
+            <!-- 4 KPI SUMMARY CARDS -->
+            <div class="kpi-grid-4">
+                <div class="kpi-card kpi-card-1">
+                    <div class="kpi-title">Total Stock in</div>
+                    <div class="kpi-value" id="kpiTotalStockIn">{{ total_stock_in }}</div>
+                </div>
+                <div class="kpi-card kpi-card-2">
+                    <div class="kpi-title">Total Stock out</div>
+                    <div class="kpi-value" id="kpiTotalStockOut">{{ total_stock_out }}</div>
+                </div>
+                <div class="kpi-card kpi-card-3">
+                    <div class="kpi-title">Current Stock</div>
+                    <div class="kpi-value" id="kpiCurrentStock">{{ current_stock }}</div>
+                </div>
+                <div class="kpi-card kpi-card-4">
+                    <div class="kpi-title">Inventory Value</div>
+                    <div class="kpi-value" id="kpiInventoryValue">{{ inventory_value }}</div>
+                </div>
+            </div>
+
+            <!-- ROW 1: AVAILABLE QUANTITY BY PRODUCT & TOP PRODUCTS BY USAGE -->
+            <div class="charts-grid">
+                <!-- CHART 1: Available Quantity by product (Yellow Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-yellow">
+                        <span>Available Quantity by product</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="sortAvailableChart()" title="Sort Asc/Desc"><i class="fa-solid fa-arrow-down-short-wide"></i></button>
+                            <button type="button" class="chart-btn" title="Bar Chart"><i class="fa-solid fa-chart-column"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('availQtyCanvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('availQtyCanvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('availQtyCanvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="sortAvailableChart()"><i class="fa-solid fa-sort"></i> Toggle Sorting</button>
+                            </div>
                         </div>
-
-                        <iframe
-                            id="dashboardFrame"
-                            frameborder="0"
-                            loading="lazy"
-                            src="https://analytics.zoho.in/open-view/533395000000028462"
-                            allowfullscreen>
-                        </iframe>
                     </div>
+                    <div class="chart-body">
+                        <canvas id="availQtyCanvas"></canvas>
+                    </div>
+                </div>
 
+                <!-- CHART 2: Top Products by Usage (Teal/Green Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-teal">
+                        <span>Top Products by Usage</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="sortUsageChart()" title="Sort Asc/Desc"><i class="fa-solid fa-arrow-down-short-wide"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('topUsageCanvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('topUsageCanvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('topUsageCanvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="sortUsageChart()"><i class="fa-solid fa-sort"></i> Toggle Sorting</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="topUsageCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: LOW STOCK ALERT (TABLE) & MONTHLY CONSUMPTION OUT TREND (LINE CHART) -->
+            <div class="charts-grid">
+                <!-- TABLE: Low Stock Alert (Blue Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-blue">
+                        <div class="d-flex align-items-center gap-2">
+                            <span>Low Stock Alert</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text" id="lowStockSearch" class="table-search-input" placeholder="Search product..." onkeyup="filterLowStockTable()">
+                            <div class="chart-actions-toolbar">
+                                <button type="button" class="chart-btn" onclick="exportLowStockCSV()" title="Export CSV"><i class="fa-solid fa-file-csv"></i></button>
+                                <button type="button" class="chart-btn" onclick="maximizeChart('lowStockTableWrap')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body p-0" id="lowStockTableWrap">
+                        <div class="table-container-scroll">
+                            <table class="dash-table" id="lowStockTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 45px;"><i class="fa-solid fa-list-ol text-muted me-1" style="font-size: 10px;"></i>#</th>
+                                        <th><i class="fa-solid fa-font text-muted me-1" style="font-size: 10px;"></i>branch_name</th>
+                                        <th><i class="fa-solid fa-font text-muted me-1" style="font-size: 10px;"></i>product_name</th>
+                                        <th style="text-align: right;"><i class="fa-solid fa-hashtag text-muted me-1" style="font-size: 10px;"></i>closing_stock</th>
+                                        <th style="text-align: center;"><i class="fa-solid fa-font text-muted me-1" style="font-size: 10px;"></i>Stock Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lowStockTableBody">
+                                    {% for row in low_stock_rows %}
+                                    <tr>
+                                        <td style="color: #64748b;">{{ row.id }}</td>
+                                        <td>{{ row.branch_name }}</td>
+                                        <td style="font-weight: 500;">{{ row.product_name }}</td>
+                                        <td style="text-align: right; font-weight: 600;">{{ row.closing_stock }}</td>
+                                        <td style="text-align: center;">
+                                            {% if row.status == 'Available' %}
+                                            <span class="stock-badge badge-available">Available</span>
+                                            {% elif row.status == 'Low Stock' %}
+                                            <span class="stock-badge badge-low">Low Stock</span>
+                                            {% else %}
+                                            <span class="stock-badge badge-out">Out of Stock</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHART 3: Monthly Consumption Out Trend (Red Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-red">
+                        <span>Monthly Consumption Out Trend</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('monthlyTrendCanvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('monthlyTrendCanvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('monthlyTrendCanvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="monthlyTrendCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 2. BRANCH ANALYSIS VIEW (MATCHING EXACT SCREENSHOTS) -->
+        <!-- ========================================================= -->
+        <div id="branchAnalysisView" style="display: none;">
+            
+            <!-- ROW 1: REVENUE BY BRANCH & BRANCH-WISE INVENTORY CONSUMPTION -->
+            <div class="charts-grid mb-4">
+                <!-- CHART 1: Revenue by Branch (Green/Teal Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-teal">
+                        <span>Revenue by Branch-Copy</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="sortBranchRevChart()" title="Sort Asc/Desc"><i class="fa-solid fa-arrow-down-short-wide"></i></button>
+                            <button type="button" class="chart-btn" title="Bar Chart"><i class="fa-solid fa-chart-column"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('branchRevenueCanvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('branchRevenueCanvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('branchRevenueCanvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="sortBranchRevChart()"><i class="fa-solid fa-sort"></i> Toggle Sorting</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="branchRevenueCanvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- CHART 2: Branch-wise Inventory Consumption (Blue Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-blue">
+                        <span>Branch-wise Inventory Consumption</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="sortBranchConsChart()" title="Sort Asc/Desc"><i class="fa-solid fa-arrow-down-short-wide"></i></button>
+                            <button type="button" class="chart-btn" title="Horizontal Bar"><i class="fa-solid fa-chart-bar"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('branchConsumptionCanvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('branchConsumptionCanvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('branchConsumptionCanvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="sortBranchConsChart()"><i class="fa-solid fa-sort"></i> Toggle Sorting</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="branchConsumptionCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: CURRENT STOCK BY BRANCH & BRANCH SUMMARY TABLE -->
+            <div class="charts-grid">
+                <!-- CHART 3: Current Stock by Branch (Red Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-red">
+                        <span>Current Stock by Branch</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="sortBranchStockChart()" title="Sort Asc/Desc"><i class="fa-solid fa-arrow-down-short-wide"></i></button>
+                            <button type="button" class="chart-btn" title="Horizontal Bar"><i class="fa-solid fa-chart-bar"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('branchCurrentStockCanvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('branchCurrentStockCanvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('branchCurrentStockCanvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="sortBranchStockChart()"><i class="fa-solid fa-sort"></i> Toggle Sorting</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="branchCurrentStockCanvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- TABLE: Branch Performance Summary (Yellow Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-yellow">
+                        <span>Branch Inventory Summary</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('branchTableWrap')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-body p-0" id="branchTableWrap">
+                        <div class="table-container-scroll">
+                            <table class="dash-table" id="branchSummaryTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;">#</th>
+                                        <th>Branch Name</th>
+                                        <th style="text-align: right;">Available Stock</th>
+                                        <th style="text-align: right;">Consumption</th>
+                                        <th style="text-align: right;">Total Revenue</th>
+                                        <th style="text-align: center;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in branch_table_rows %}
+                                    <tr>
+                                        <td style="color: #64748b;">{{ row.id }}</td>
+                                        <td style="font-weight: 500;">{{ row.name }}</td>
+                                        <td style="text-align: right; font-weight: 600;">{{ row.avail_stock }}</td>
+                                        <td style="text-align: right; color: #475569;">{{ row.consumption }}</td>
+                                        <td style="text-align: right; font-weight: 600; color: #0284c7;">{{ row.revenue }}</td>
+                                        <td style="text-align: center;">
+                                            <span class="stock-badge badge-available">{{ row.status }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 3. PRODUCT ANALYSIS VIEW -->
+        <!-- ========================================================= -->
+        <div id="productAnalysisView" style="display: none;">
+            <div class="kpi-grid-4">
+                <div class="kpi-card kpi-card-1">
+                    <div class="kpi-title">Total SKUs Tracked</div>
+                    <div class="kpi-value">{{ total_skus_tracked|default:products|length }}</div>
+                </div>
+                <div class="kpi-card kpi-card-2">
+                    <div class="kpi-title">Fast Moving Items</div>
+                    <div class="kpi-value">{{ fast_moving_items }}</div>
+                </div>
+                <div class="kpi-card kpi-card-3">
+                    <div class="kpi-title">Low Stock Alert Items</div>
+                    <div class="kpi-value">{{ low_stock_items_count }}</div>
+                </div>
+                <div class="kpi-card kpi-card-4">
+                    <div class="kpi-title">Critical / Zero Stock</div>
+                    <div class="kpi-value">{{ critical_stock_count }}</div>
+                </div>
+            </div>
+
+            <!-- ROW 1: AVAILABLE QUANTITY BY PRODUCT & TOP PRODUCT BY USAGE1 (MATCHING SCREENSHOT) -->
+            <div class="charts-grid mb-4">
+                <!-- CHART 1: Available Quantity by product (Teal/Green Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-teal">
+                        <span>Available Quantity by product</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="sortProdAvailChart()" title="Sort Asc/Desc"><i class="fa-solid fa-arrow-down-short-wide"></i></button>
+                            <button type="button" class="chart-btn" title="Bar Chart"><i class="fa-solid fa-chart-column"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('prodAvailCanvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('prodAvailCanvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('prodAvailCanvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="sortProdAvailChart()"><i class="fa-solid fa-sort"></i> Toggle Sorting</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="prodAvailCanvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- CHART 2: Top Product by Usage1 (Blue Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-blue">
+                        <span>Top Product by Usage1</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="sortProdUsage1Chart()" title="Sort Asc/Desc"><i class="fa-solid fa-arrow-down-short-wide"></i></button>
+                            <button type="button" class="chart-btn" title="Bar Chart"><i class="fa-solid fa-chart-column"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('prodUsage1Canvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('prodUsage1Canvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('prodUsage1Canvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="sortProdUsage1Chart()"><i class="fa-solid fa-sort"></i> Toggle Sorting</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="prodUsage1Canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: CATEGORY DISTRIBUTION & INVENTORY VALUATION -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-card-header header-yellow">
+                        <span>Category-wise Product Distribution</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="maximizeChart('catDistCanvas')"><i class="fa-solid fa-expand"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="catDistCanvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header header-green">
+                        <span>Top Inventory Valuation by Product</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="maximizeChart('prodValCanvas')"><i class="fa-solid fa-expand"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="prodValCanvas"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- FOOTER -->
-    <div class="container-fluid footer">
-        <div class="row p-3">
-
-            <div class="col-md-12 text-center mb-2">
-                <p>
-                    © 2025. Powered by
-
-                    <img src="{% static 'images/crono.png' %}"
-                        alt="Chronoanalytics Logo"
-                        class="footer-logo">
-
-                    <a href="http://www.chronoanalytics.in/" target="_blank">
-                        Chronoanalytics Solution
-                    </a>
-
-                    All Rights Reserved.
-                </p>
+        <!-- ========================================================= -->
+        <!-- 4. INVENTORY MOVEMENT VIEW -->
+        <!-- ========================================================= -->
+        <div id="movementAnalysisView" style="display: none;">
+            <div class="kpi-grid-4">
+                <div class="kpi-card kpi-card-1">
+                    <div class="kpi-title">Total Stock Movements</div>
+                    <div class="kpi-value">{{ total_movements_count }}</div>
+                </div>
+                <div class="kpi-card kpi-card-2">
+                    <div class="kpi-title">GRN Inflow Quantity</div>
+                    <div class="kpi-value">{{ grn_inflow_qty }}</div>
+                </div>
+                <div class="kpi-card kpi-card-3">
+                    <div class="kpi-title">Material Transfers (MTN)</div>
+                    <div class="kpi-value">{{ mtn_qty }}</div>
+                </div>
+                <div class="kpi-card kpi-card-4">
+                    <div class="kpi-title">Service Consumption (Out)</div>
+                    <div class="kpi-value">{{ service_out_qty }}</div>
+                </div>
             </div>
 
-            <div class="col-md-12 text-center">
-                <p>
-                    © 2025. Marketed by
+            <!-- ROW 1: MONTHLY INVENTORY MOVEMENT (STOCK IN/OUT) & MONTHLY CONSUMPTION OUT TREND -->
+            <div class="charts-grid mb-4">
+                <!-- CHART 1: Monthly Inventory Movement(Stock in/out) (Teal/Green Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-teal">
+                        <span>Monthly Inventory Movement(Stock in/out)</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="sortMovementFlowChart()" title="Sort Asc/Desc"><i class="fa-solid fa-arrow-down-short-wide"></i></button>
+                            <button type="button" class="chart-btn" title="Grouped Bar"><i class="fa-solid fa-chart-column"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('monthlyMovementCanvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('monthlyMovementCanvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('monthlyMovementCanvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="sortMovementFlowChart()"><i class="fa-solid fa-sort"></i> Toggle Sorting</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="monthlyMovementCanvas"></canvas>
+                    </div>
+                </div>
 
-                    <img src="{% static 'images/TeimLogo.png' %}"
-                        alt="Teim Logo"
-                        class="footer-logo">
-
-                    <a href="http://teim.in/" target="_blank">
-                        TEIM
-                    </a>
-
-                    All Rights Reserved.
-                </p>
+                <!-- CHART 2: Monthly Consumption Out Trend (Blue Header) -->
+                <div class="chart-card">
+                    <div class="chart-card-header header-blue">
+                        <span>Monthly Consumption Out Trend</span>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="sortMovementTrendChart()" title="Sort Asc/Desc"><i class="fa-solid fa-arrow-down-short-wide"></i></button>
+                            <button type="button" class="chart-btn" title="Line Chart"><i class="fa-solid fa-chart-line"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('movementTrendCanvas')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('movementTrendCanvas')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="downloadChartImage('movementTrendCanvas')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                                <button type="button" class="chart-menu-item" onclick="sortMovementTrendChart()"><i class="fa-solid fa-sort"></i> Toggle Sorting</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="movementTrendCanvas"></canvas>
+                    </div>
+                </div>
             </div>
 
+            <!-- ROW 2: INVENTORY TRANSACTION TABLE (Red Header) -->
+            <div class="chart-card mb-4">
+                <div class="chart-card-header header-red">
+                    <span>inventory transaction table.</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="table-search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="txnTableSearch" class="form-control form-control-sm" placeholder="Search transactions..." onkeyup="filterTxnTableLive()" style="height: 28px; font-size: 11.5px; border-radius: 4px; padding-left: 26px; width: 180px;">
+                        </div>
+                        <div class="chart-actions-toolbar">
+                            <button type="button" class="chart-btn" onclick="exportTxnTableCSV()" title="Export CSV"><i class="fa-solid fa-file-csv"></i></button>
+                            <button type="button" class="chart-btn chart-btn-maximize" onclick="maximizeChart('txnTableWrap')" title="Maximize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                            <button type="button" class="chart-btn chart-btn-options" onclick="toggleChartMenu(this)" title="Options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="chart-menu-dropdown">
+                                <button type="button" class="chart-menu-item" onclick="maximizeChart('txnTableWrap')"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                                <button type="button" class="chart-menu-item" onclick="exportTxnTableCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-body p-0" id="txnTableWrap">
+                    <div class="table-container-scroll">
+                        <table class="dash-table" id="txnTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px;"><i class="fa-solid fa-table-cells text-muted me-1" style="font-size: 10px;"></i>#</th>
+                                    <th><i class="fa-solid fa-font text-muted me-1" style="font-size: 10px;"></i>branch_name</th>
+                                    <th><i class="fa-solid fa-font text-muted me-1" style="font-size: 10px;"></i>product_name</th>
+                                    <th style="text-align: right;"><i class="fa-solid fa-hashtag text-muted me-1" style="font-size: 10px;"></i>in_qty</th>
+                                    <th style="text-align: right;"><i class="fa-solid fa-hashtag text-muted me-1" style="font-size: 10px;"></i>out_qty</th>
+                                    <th style="text-align: center;"><i class="fa-regular fa-calendar text-muted me-1" style="font-size: 10px;"></i>created_at <i class="fa-solid fa-arrow-up text-muted" style="font-size: 9px;"></i></th>
+                                    <th style="text-align: right;"><i class="fa-solid fa-hashtag text-muted me-1" style="font-size: 10px;"></i>closing_qty</th>
+                                    <th style="text-align: center;"><i class="fa-solid fa-font text-muted me-1" style="font-size: 10px;"></i>transaction_ty</th>
+                                </tr>
+                            </thead>
+                            <tbody id="txnTableBody">
+                                {% for row in txn_table_rows %}
+                                <tr onclick="highlightTxnRow(this)" {% if forloop.counter == 5 %}class="row-selected"{% endif %}>
+                                    <td style="color: #64748b;">{{ row.id }}</td>
+                                    <td>{{ row.branch_name }}</td>
+                                    <td style="font-weight: 500;">{{ row.product_name }}</td>
+                                    <td style="text-align: right; color: #64748b;">{{ row.in_qty }}</td>
+                                    <td style="text-align: right; font-weight: 600; color: #0284c7;">{{ row.out_qty }}</td>
+                                    <td style="text-align: center; color: #64748b; font-size: 12px;">{{ row.created_at }}</td>
+                                    <td style="text-align: right; font-weight: 600;">{{ row.closing_qty }}</td>
+                                    <td style="text-align: center;">
+                                        <span class="stock-badge badge-low" style="background: #f1f5f9; color: #334155; font-family: monospace; font-size: 11px;">{{ row.transaction_type }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
+
     </div>
 
-    <!-- JS -->
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <!-- JS LIBS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>window.bootstrap || document.write('<script src="{% static "js/bootstrap.bundle.min.js" %}"><\/script>')</script>
 
+    <!-- INVENTORY DASHBOARD JAVASCRIPT LOGIC -->
     <script>
-        const dashboardFrame = document.getElementById('dashboardFrame');
-        const iframeLoader = document.getElementById('iframeLoader');
+        // Global Data from Django Context
+        let availLabels = {{ avail_labels|default:"[]"|safe }};
+        let availData = {{ avail_data|default:"[]"|safe }};
 
-        dashboardFrame.addEventListener('load', function () {
-            iframeLoader.classList.add('hide');
+        let usageLabels = {{ usage_labels|default:"[]"|safe }};
+        let usageData = {{ usage_data|default:"[]"|safe }};
+
+        let trendMonths = {{ trend_months|default:"[]"|safe }};
+        let trendData = {{ trend_data|default:"[]"|safe }};
+
+        // Branch Analysis Global Data (matching exact screenshots)
+        let branchRevLabels = {{ branch_rev_labels|default:"[]"|safe }};
+        let branchRevData = {{ branch_rev_data|default:"[]"|safe }};
+
+        let branchConsLabels = {{ branch_cons_labels|default:"[]"|safe }};
+        let branchConsData = {{ branch_cons_data|default:"[]"|safe }};
+
+        let branchStockLabels = {{ branch_stock_labels|default:"[]"|safe }};
+        let branchStockData = {{ branch_stock_data|default:"[]"|safe }};
+
+        // Product Analysis Global Data (matching screenshot media_1791888004087.png)
+        let prodAvailLabels = {{ prod_avail_labels|default:"[]"|safe }};
+        let prodAvailData = {{ prod_avail_data|default:"[]"|safe }};
+
+        let prodUsage1Labels = {{ prod_usage1_labels|default:"[]"|safe }};
+        let prodUsage1Data = {{ prod_usage1_data|default:"[]"|safe }};
+
+        let prodValLabels = {{ prod_val_labels|default:"[]"|safe }};
+        let prodValData = {{ prod_val_data|default:"[]"|safe }};
+
+        let categoryLabels = {{ category_labels|default:"[]"|safe }};
+        let categoryData = {{ category_data|default:"[]"|safe }};
+
+        let txnLabels = {{ txn_labels|default:"[]"|safe }};
+        let txnData = {{ txn_data|default:"[]"|safe }};
+
+        // Movement Analysis Global Data (matching screenshots media_1791888839916.png & media_1791888851000.png)
+        let movementFlowMonths = {{ movement_flow_months|default:"[]"|safe }};
+        let movementFlowInData = {{ movement_flow_in_data|default:"[]"|safe }};
+        let movementFlowOutData = {{ movement_flow_out_data|default:"[]"|safe }};
+
+        let movementTrendMonths = {{ movement_trend_months|default:"[]"|safe }};
+        let movementTrendData = {{ movement_trend_data|default:"[]"|safe }};
+
+        // Chart Instances
+        let availQtyChart = null;
+        let topUsageChart = null;
+        let monthlyTrendChart = null;
+
+        let branchRevChart = null;
+        let branchConsChart = null;
+        let branchCurrentStockChart = null;
+
+        let prodAvailChart = null;
+        let prodUsage1Chart = null;
+
+        let catDistChart = null;
+        let prodValChart = null;
+        let txnTypeChart = null;
+        let inOutFlowChart = null;
+        let monthlyMovementChart = null;
+        let movementTrendChart = null;
+
+        let availSortAsc = false;
+        let usageSortAsc = false;
+        let branchRevSortAsc = false;
+        let branchConsSortAsc = false;
+        let branchStockSortAsc = false;
+        let prodAvailSortAsc = false;
+        let prodUsage1SortAsc = false;
+        let movementFlowSortAsc = false;
+        let movementTrendSortAsc = false;
+
+        // Initialize Charts on DOM Ready
+        document.addEventListener('DOMContentLoaded', function () {
+            initOverviewCharts();
         });
 
-        setTimeout(function () {
-            iframeLoader.classList.add('hide');
-        }, 8000);
-    </script>
+        // 1. Overview Charts Initialization
+        function initOverviewCharts() {
+            // Chart 1: Available Quantity by Product (Blue Bars, Dotted Grid, Tilted Labels)
+            const ctxAvail = document.getElementById('availQtyCanvas');
+            if (ctxAvail) {
+                availQtyChart = new Chart(ctxAvail, {
+                    type: 'bar',
+                    data: {
+                        labels: availLabels,
+                        datasets: [{
+                            label: 'Available Quantity',
+                            data: availData,
+                            backgroundColor: '#3b82f6',
+                            borderColor: '#2563eb',
+                            borderWidth: 1,
+                            borderRadius: 2,
+                            barPercentage: 0.65,
+                            categoryPercentage: 0.8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleFont: { size: 12, family: 'Roboto' },
+                                bodyFont: { size: 12, family: 'Roboto' },
+                                padding: 10,
+                                cornerRadius: 6
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    font: { size: 10.5, family: 'Roboto' },
+                                    color: '#475569',
+                                    maxRotation: 45,
+                                    minRotation: 45,
+                                    autoSkip: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                border: { dash: [4, 4] },
+                                grid: {
+                                    color: '#e2e8f0',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: { size: 11, family: 'Roboto' },
+                                    color: '#64748b'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Available Quantity',
+                                    font: { size: 11.5, weight: '500' },
+                                    color: '#64748b'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
 
+            // Chart 2: Top Products by Usage (Blue Bars, Dotted Grid, Tilted Labels)
+            const ctxUsage = document.getElementById('topUsageCanvas');
+            if (ctxUsage) {
+                topUsageChart = new Chart(ctxUsage, {
+                    type: 'bar',
+                    data: {
+                        labels: usageLabels,
+                        datasets: [{
+                            label: 'Total out_qty',
+                            data: usageData,
+                            backgroundColor: '#3b82f6',
+                            borderColor: '#2563eb',
+                            borderWidth: 1,
+                            borderRadius: 2,
+                            barPercentage: 0.65,
+                            categoryPercentage: 0.8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleFont: { size: 12, family: 'Roboto' },
+                                bodyFont: { size: 12, family: 'Roboto' },
+                                padding: 10,
+                                cornerRadius: 6,
+                                callbacks: {
+                                    label: function (ctx) {
+                                        return ' Total Out: ' + ctx.raw.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    font: { size: 10.5, family: 'Roboto' },
+                                    color: '#475569',
+                                    maxRotation: 45,
+                                    minRotation: 45,
+                                    autoSkip: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                border: { dash: [4, 4] },
+                                grid: {
+                                    color: '#e2e8f0',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: { size: 11, family: 'Roboto' },
+                                    color: '#64748b',
+                                    callback: function(val) {
+                                        return val >= 1000 ? (val / 1000) + 'k' : val;
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Total out_qty',
+                                    font: { size: 11.5, weight: '500' },
+                                    color: '#64748b'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Chart 3: Monthly Consumption Out Trend (Line with dots, tension 0.3)
+            const ctxTrend = document.getElementById('monthlyTrendCanvas');
+            if (ctxTrend) {
+                monthlyTrendChart = new Chart(ctxTrend, {
+                    type: 'line',
+                    data: {
+                        labels: trendMonths,
+                        datasets: [{
+                            label: 'Total out_qty',
+                            data: trendData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                            borderWidth: 2.5,
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#3b82f6',
+                            pointBorderWidth: 2.5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleFont: { size: 12, family: 'Roboto' },
+                                bodyFont: { size: 12, family: 'Roboto' },
+                                padding: 10,
+                                cornerRadius: 6,
+                                callbacks: {
+                                    label: function (ctx) {
+                                        return ' Consumption: ' + ctx.raw.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    font: { size: 11, family: 'Roboto' },
+                                    color: '#475569'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Month & Year',
+                                    font: { size: 11.5, weight: '500' },
+                                    color: '#64748b'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                border: { dash: [4, 4] },
+                                grid: {
+                                    color: '#e2e8f0',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: { size: 11, family: 'Roboto' },
+                                    color: '#64748b'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Total out_qty',
+                                    font: { size: 11.5, weight: '500' },
+                                    color: '#64748b'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 2. Tab Switching Logic
+        function switchTab(element, tabName) {
+            // Update Active Tab Button
+            document.querySelectorAll('.subtab-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // Hide all tab views
+            document.getElementById('overviewDashboardView').style.display = 'none';
+            document.getElementById('branchAnalysisView').style.display = 'none';
+            document.getElementById('productAnalysisView').style.display = 'none';
+            document.getElementById('movementAnalysisView').style.display = 'none';
+
+            // Show selected view
+            if (tabName === 'overview') {
+                document.getElementById('overviewDashboardView').style.display = 'block';
+                if (availQtyChart) availQtyChart.resize();
+                if (topUsageChart) topUsageChart.resize();
+                if (monthlyTrendChart) monthlyTrendChart.resize();
+            } else if (tabName === 'branch') {
+                document.getElementById('branchAnalysisView').style.display = 'block';
+                initBranchCharts();
+                if (branchRevChart) branchRevChart.resize();
+                if (branchConsChart) branchConsChart.resize();
+                if (branchCurrentStockChart) branchCurrentStockChart.resize();
+            } else if (tabName === 'product') {
+                document.getElementById('productAnalysisView').style.display = 'block';
+                initProductCharts();
+                if (prodAvailChart) prodAvailChart.resize();
+                if (prodUsage1Chart) prodUsage1Chart.resize();
+                if (catDistChart) catDistChart.resize();
+                if (prodValChart) prodValChart.resize();
+            } else if (tabName === 'movement') {
+                document.getElementById('movementAnalysisView').style.display = 'block';
+                initMovementCharts();
+                if (monthlyMovementChart) monthlyMovementChart.resize();
+                if (movementTrendChart) movementTrendChart.resize();
+            }
+        }
+
+        // 3. Branch Analysis Charts (matching exact user screenshots)
+        function initBranchCharts() {
+            // 1. Revenue by Branch (Vertical Bar Chart)
+            if (!branchRevChart) {
+                const ctxB1 = document.getElementById('branchRevenueCanvas');
+                if (ctxB1) {
+                    branchRevChart = new Chart(ctxB1, {
+                        type: 'bar',
+                        data: {
+                            labels: branchRevLabels,
+                            datasets: [{
+                                label: 'Total revenue',
+                                data: branchRevData,
+                                backgroundColor: '#6b8afd',
+                                borderColor: '#4f46e5',
+                                borderWidth: 1,
+                                borderRadius: 2,
+                                barPercentage: 0.45,
+                                categoryPercentage: 0.65
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                    callbacks: {
+                                        label: function (ctx) {
+                                            return ' Revenue: ₹' + ctx.raw.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { display: false },
+                                    ticks: {
+                                        font: { size: 10.5, family: 'Roboto' },
+                                        color: '#475569'
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'b.branch_name',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    border: { dash: [4, 4] },
+                                    grid: { color: '#e2e8f0', drawBorder: false },
+                                    ticks: {
+                                        font: { size: 11, family: 'Roboto' },
+                                        color: '#64748b',
+                                        callback: function (val) {
+                                            return val.toLocaleString();
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Total revenue',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                branchRevChart.resize();
+            }
+
+            // 2. Branch-wise Inventory Consumption (Horizontal Bar Chart)
+            if (!branchConsChart) {
+                const ctxB2 = document.getElementById('branchConsumptionCanvas');
+                if (ctxB2) {
+                    branchConsChart = new Chart(ctxB2, {
+                        type: 'bar',
+                        data: {
+                            labels: branchConsLabels,
+                            datasets: [{
+                                label: 'Total out_qty',
+                                data: branchConsData,
+                                backgroundColor: '#6b8afd',
+                                borderColor: '#4f46e5',
+                                borderWidth: 1,
+                                borderRadius: 2,
+                                barPercentage: 0.65,
+                                categoryPercentage: 0.8
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                    callbacks: {
+                                        label: function (ctx) {
+                                            return ' Total Out: ' + ctx.raw.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    border: { dash: [4, 4] },
+                                    grid: { color: '#e2e8f0', drawBorder: false },
+                                    ticks: {
+                                        font: { size: 11, family: 'Roboto' },
+                                        color: '#64748b',
+                                        callback: function (val) {
+                                            return val.toLocaleString();
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Total out_qty',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                },
+                                y: {
+                                    grid: { display: false },
+                                    ticks: {
+                                        font: { size: 10.5, family: 'Roboto' },
+                                        color: '#475569'
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Branch Name',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                branchConsChart.resize();
+            }
+
+            // 3. Current Stock by Branch (Horizontal Bar Chart)
+            if (!branchCurrentStockChart) {
+                const ctxB3 = document.getElementById('branchCurrentStockCanvas');
+                if (ctxB3) {
+                    branchCurrentStockChart = new Chart(ctxB3, {
+                        type: 'bar',
+                        data: {
+                            labels: branchStockLabels,
+                            datasets: [{
+                                label: 'Available Stock',
+                                data: branchStockData,
+                                backgroundColor: '#6b8afd',
+                                borderColor: '#4f46e5',
+                                borderWidth: 1,
+                                borderRadius: 2,
+                                barPercentage: 0.65,
+                                categoryPercentage: 0.8
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                    callbacks: {
+                                        label: function (ctx) {
+                                            return ' Available Stock: ' + ctx.raw.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    border: { dash: [4, 4] },
+                                    grid: { color: '#e2e8f0', drawBorder: false },
+                                    ticks: {
+                                        font: { size: 11, family: 'Roboto' },
+                                        color: '#64748b',
+                                        callback: function (val) {
+                                            return val.toLocaleString();
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Available Stock',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                },
+                                y: {
+                                    grid: { display: false },
+                                    ticks: {
+                                        font: { size: 10.5, family: 'Roboto' },
+                                        color: '#475569'
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Branch Name',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                branchCurrentStockChart.resize();
+            }
+        }
+
+        // 4. Product Analysis Charts (matching exact user screenshot media_1791888004087.png)
+        function initProductCharts() {
+            // Chart 1: Available Quantity by product (Teal/Green Card Header)
+            if (!prodAvailChart) {
+                const ctxPA = document.getElementById('prodAvailCanvas');
+                if (ctxPA) {
+                    prodAvailChart = new Chart(ctxPA, {
+                        type: 'bar',
+                        data: {
+                            labels: prodAvailLabels,
+                            datasets: [{
+                                label: 'Available Quantity',
+                                data: prodAvailData,
+                                backgroundColor: '#6b8afd',
+                                borderColor: '#4f46e5',
+                                borderWidth: 1,
+                                borderRadius: 2,
+                                barPercentage: 0.65,
+                                categoryPercentage: 0.8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                    titleFont: { size: 12, family: 'Roboto' },
+                                    bodyFont: { size: 12, family: 'Roboto' },
+                                    padding: 10,
+                                    cornerRadius: 6,
+                                    callbacks: {
+                                        label: function (ctx) {
+                                            return ' Available Quantity: ' + ctx.raw.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { display: false },
+                                    ticks: {
+                                        font: { size: 10, family: 'Roboto' },
+                                        color: '#475569',
+                                        maxRotation: 45,
+                                        minRotation: 45,
+                                        autoSkip: false
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Product Name',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    border: { dash: [4, 4] },
+                                    grid: {
+                                        color: '#e2e8f0',
+                                        drawBorder: false
+                                    },
+                                    ticks: {
+                                        font: { size: 11, family: 'Roboto' },
+                                        color: '#64748b',
+                                        callback: function (val) {
+                                            return val.toLocaleString();
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Available Quantity',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                prodAvailChart.resize();
+            }
+
+            // Chart 2: Top Product by Usage1 (Blue Card Header)
+            if (!prodUsage1Chart) {
+                const ctxPU = document.getElementById('prodUsage1Canvas');
+                if (ctxPU) {
+                    prodUsage1Chart = new Chart(ctxPU, {
+                        type: 'bar',
+                        data: {
+                            labels: prodUsage1Labels,
+                            datasets: [{
+                                label: 'Total out_qty',
+                                data: prodUsage1Data,
+                                backgroundColor: '#6b8afd',
+                                borderColor: '#4f46e5',
+                                borderWidth: 1,
+                                borderRadius: 2,
+                                barPercentage: 0.65,
+                                categoryPercentage: 0.8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                    titleFont: { size: 12, family: 'Roboto' },
+                                    bodyFont: { size: 12, family: 'Roboto' },
+                                    padding: 10,
+                                    cornerRadius: 6,
+                                    callbacks: {
+                                        label: function (ctx) {
+                                            return ' Total out_qty: ' + ctx.raw.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { display: false },
+                                    ticks: {
+                                        font: { size: 10, family: 'Roboto' },
+                                        color: '#475569',
+                                        maxRotation: 45,
+                                        minRotation: 45,
+                                        autoSkip: false
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'product_name',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    border: { dash: [4, 4] },
+                                    grid: {
+                                        color: '#e2e8f0',
+                                        drawBorder: false
+                                    },
+                                    ticks: {
+                                        font: { size: 11, family: 'Roboto' },
+                                        color: '#64748b',
+                                        callback: function (val) {
+                                            return val >= 1000 ? (val / 1000) + 'k' : val;
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Total out_qty',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                prodUsage1Chart.resize();
+            }
+
+            if (!catDistChart) {
+                const ctxP1 = document.getElementById('catDistCanvas');
+                if (ctxP1) {
+                    catDistChart = new Chart(ctxP1, {
+                        type: 'doughnut',
+                        data: {
+                            labels: categoryLabels,
+                            datasets: [{
+                                data: categoryData,
+                                backgroundColor: ['#007DBE', '#00c49f', '#eb9800', '#f43f5e']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'right' } }
+                        }
+                    });
+                }
+            } else {
+                catDistChart.resize();
+            }
+
+            if (!prodValChart) {
+                const ctxP2 = document.getElementById('prodValCanvas');
+                if (ctxP2) {
+                    prodValChart = new Chart(ctxP2, {
+                        type: 'bar',
+                        data: {
+                            labels: prodValLabels,
+                            datasets: [{
+                                label: 'Valuation (₹)',
+                                data: prodValData,
+                                backgroundColor: '#00c49f',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function (val) { return '₹' + (val / 1000) + 'k'; }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                prodValChart.resize();
+            }
+        }
+
+        // 5. Movement Analysis Charts (matching user screenshots media_1791888839916.png & media_1791888851000.png)
+        function initMovementCharts() {
+            // Chart 1: Monthly Inventory Movement(Stock in/out) (Grouped Bar Chart - Teal Card Header)
+            if (!monthlyMovementChart) {
+                const ctxMM = document.getElementById('monthlyMovementCanvas');
+                if (ctxMM) {
+                    monthlyMovementChart = new Chart(ctxMM, {
+                        type: 'bar',
+                        data: {
+                            labels: movementFlowMonths,
+                            datasets: [
+                                {
+                                    label: 'Total in_qty',
+                                    data: movementFlowInData,
+                                    backgroundColor: '#6b8afd',
+                                    borderColor: '#4f46e5',
+                                    borderWidth: 1,
+                                    borderRadius: 2,
+                                    barPercentage: 0.65,
+                                    categoryPercentage: 0.8
+                                },
+                                {
+                                    label: 'Total out_qty',
+                                    data: movementFlowOutData,
+                                    backgroundColor: '#2dd4bf',
+                                    borderColor: '#0d9488',
+                                    borderWidth: 1,
+                                    borderRadius: 2,
+                                    barPercentage: 0.65,
+                                    categoryPercentage: 0.8
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    align: 'end',
+                                    labels: {
+                                        usePointStyle: true,
+                                        pointStyle: 'circle',
+                                        boxWidth: 8,
+                                        font: { size: 11, family: 'Roboto' },
+                                        color: '#475569'
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                    titleFont: { size: 12, family: 'Roboto' },
+                                    bodyFont: { size: 12, family: 'Roboto' },
+                                    padding: 10,
+                                    cornerRadius: 6,
+                                    callbacks: {
+                                        label: function (ctx) {
+                                            return ' ' + ctx.dataset.label + ': ' + ctx.raw.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { display: false },
+                                    ticks: {
+                                        font: { size: 10.5, family: 'Roboto' },
+                                        color: '#475569'
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Month&Year of created_at ⌵',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    border: { dash: [4, 4] },
+                                    grid: {
+                                        color: '#e2e8f0',
+                                        drawBorder: false
+                                    },
+                                    ticks: {
+                                        font: { size: 11, family: 'Roboto' },
+                                        color: '#64748b',
+                                        callback: function (val) {
+                                            return val.toLocaleString();
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'in_qty , out_qty ⌵',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                monthlyMovementChart.resize();
+            }
+
+            // Chart 2: Monthly Consumption Out Trend (Line Chart - Blue Card Header)
+            if (!movementTrendChart) {
+                const ctxMT = document.getElementById('movementTrendCanvas');
+                if (ctxMT) {
+                    movementTrendChart = new Chart(ctxMT, {
+                        type: 'line',
+                        data: {
+                            labels: movementTrendMonths,
+                            datasets: [{
+                                label: 'Total out_qty',
+                                data: movementTrendData,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                                borderWidth: 2,
+                                tension: 0.1,
+                                fill: false,
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointBackgroundColor: '#ffffff',
+                                pointBorderColor: '#3b82f6',
+                                pointBorderWidth: 2.5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                    titleFont: { size: 12, family: 'Roboto' },
+                                    bodyFont: { size: 12, family: 'Roboto' },
+                                    padding: 10,
+                                    cornerRadius: 6,
+                                    callbacks: {
+                                        label: function (ctx) {
+                                            return ' Total Out: ' + ctx.raw.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { display: false },
+                                    ticks: {
+                                        font: { size: 10.5, family: 'Roboto' },
+                                        color: '#475569'
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Month & Year ⌵',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    border: { dash: [4, 4] },
+                                    grid: {
+                                        color: '#e2e8f0',
+                                        drawBorder: false
+                                    },
+                                    ticks: {
+                                        font: { size: 11, family: 'Roboto' },
+                                        color: '#64748b',
+                                        callback: function (val) {
+                                            return val.toLocaleString();
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Total out_qty ⌵',
+                                        font: { size: 11.5, weight: '500' },
+                                        color: '#64748b'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                movementTrendChart.resize();
+            }
+        }
+
+        // 6. Reactive AJAX Filter Application
+        function applyFilters() {
+            const branch = document.getElementById('filterBranch').value;
+            const prod = document.getElementById('filterProduct').value;
+            const date = document.getElementById('filterDate').value;
+            const status = document.getElementById('filterStockStatus').value;
+            const txn = document.getElementById('filterTxnType').value;
+
+            const params = new URLSearchParams({
+                json: '1',
+                branch_name: branch,
+                product_name: prod,
+                created_at: date,
+                stock_status: status,
+                transaction_type: txn
+            });
+
+            fetch('/invetory_dashbord/?' + params.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Update KPI Cards
+                if (document.getElementById('kpiTotalStockIn')) document.getElementById('kpiTotalStockIn').innerText = data.total_stock_in;
+                if (document.getElementById('kpiTotalStockOut')) document.getElementById('kpiTotalStockOut').innerText = data.total_stock_out;
+                if (document.getElementById('kpiCurrentStock')) document.getElementById('kpiCurrentStock').innerText = data.current_stock;
+                if (document.getElementById('kpiInventoryValue')) document.getElementById('kpiInventoryValue').innerText = data.inventory_value;
+
+                // Update Chart 1: Available Qty
+                if (availQtyChart && data.avail_labels) {
+                    availQtyChart.data.labels = data.avail_labels;
+                    availQtyChart.data.datasets[0].data = data.avail_data;
+                    availQtyChart.update();
+                }
+
+                // Update Chart 2: Top Products Usage
+                if (topUsageChart && data.usage_labels) {
+                    topUsageChart.data.labels = data.usage_labels;
+                    topUsageChart.data.datasets[0].data = data.usage_data;
+                    topUsageChart.update();
+                }
+
+                // Update Chart 3: Monthly Trend
+                if (monthlyTrendChart && data.trend_months) {
+                    monthlyTrendChart.data.labels = data.trend_months;
+                    monthlyTrendChart.data.datasets[0].data = data.trend_data;
+                    monthlyTrendChart.update();
+                }
+
+                // Update Low Stock Alert Table
+                if (data.low_stock_rows) {
+                    renderLowStockTable(data.low_stock_rows);
+                }
+
+                // Update Branch Analysis Charts
+                if (branchRevChart && data.branch_rev_labels) {
+                    branchRevChart.data.labels = data.branch_rev_labels;
+                    branchRevChart.data.datasets[0].data = data.branch_rev_data;
+                    branchRevChart.update();
+                }
+
+                if (branchConsChart && data.branch_cons_labels) {
+                    branchConsChart.data.labels = data.branch_cons_labels;
+                    branchConsChart.data.datasets[0].data = data.branch_cons_data;
+                    branchConsChart.update();
+                }
+
+                if (branchCurrentStockChart && data.branch_stock_labels) {
+                    branchCurrentStockChart.data.labels = data.branch_stock_labels;
+                    branchCurrentStockChart.data.datasets[0].data = data.branch_stock_data;
+                    branchCurrentStockChart.update();
+                }
+
+                // Update Product Analysis Charts
+                if (prodAvailChart && data.prod_avail_labels) {
+                    prodAvailChart.data.labels = data.prod_avail_labels;
+                    prodAvailChart.data.datasets[0].data = data.prod_avail_data;
+                    prodAvailChart.update();
+                }
+
+                if (prodUsage1Chart && data.prod_usage1_labels) {
+                    prodUsage1Chart.data.labels = data.prod_usage1_labels;
+                    prodUsage1Chart.data.datasets[0].data = data.prod_usage1_data;
+                    prodUsage1Chart.update();
+                }
+
+                if (prodValChart && data.prod_val_labels) {
+                    prodValChart.data.labels = data.prod_val_labels;
+                    prodValChart.data.datasets[0].data = data.prod_val_data;
+                    prodValChart.update();
+                }
+
+                // Update Movement Analysis Charts & Table
+                if (monthlyMovementChart && data.movement_flow_months) {
+                    monthlyMovementChart.data.labels = data.movement_flow_months;
+                    monthlyMovementChart.data.datasets[0].data = data.movement_flow_in_data;
+                    monthlyMovementChart.data.datasets[1].data = data.movement_flow_out_data;
+                    monthlyMovementChart.update();
+                }
+
+                if (movementTrendChart && data.movement_trend_months) {
+                    movementTrendChart.data.labels = data.movement_trend_months;
+                    movementTrendChart.data.datasets[0].data = data.movement_trend_data;
+                    movementTrendChart.update();
+                }
+
+                if (data.txn_table_rows) {
+                    renderTxnTable(data.txn_table_rows);
+                }
+            })
+            .catch(err => console.error('Filter update error:', err));
+        }
+
+        // Render Low Stock Table rows
+        function renderLowStockTable(rows) {
+            const tbody = document.getElementById('lowStockTableBody');
+            if (!tbody) return;
+
+            let html = '';
+            rows.forEach((row, idx) => {
+                let badgeClass = 'badge-available';
+                if (row.status === 'Low Stock') badgeClass = 'badge-low';
+                else if (row.status === 'Out of Stock') badgeClass = 'badge-out';
+
+                html += `
+                <tr>
+                    <td style="color: #64748b;">${idx + 1}</td>
+                    <td>${row.branch_name}</td>
+                    <td style="font-weight: 500;">${row.product_name}</td>
+                    <td style="text-align: right; font-weight: 600;">${row.closing_stock}</td>
+                    <td style="text-align: center;">
+                        <span class="stock-badge ${badgeClass}">${row.status}</span>
+                    </td>
+                </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // 7. Reset Filters
+        function resetFilters() {
+            document.getElementById('filterBranch').value = '';
+            document.getElementById('filterProduct').value = '';
+            document.getElementById('filterDate').value = '';
+            document.getElementById('filterStockStatus').value = '';
+            document.getElementById('filterTxnType').value = '';
+            document.getElementById('lowStockSearch').value = '';
+            applyFilters();
+        }
+
+        // 8. Filter Low Stock Table Live by search box
+        function filterLowStockTable() {
+            const input = document.getElementById('lowStockSearch');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('lowStockTable');
+            const trs = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < trs.length; i++) {
+                const tdProd = trs[i].getElementsByTagName('td')[2];
+                const tdBranch = trs[i].getElementsByTagName('td')[1];
+                if (tdProd || tdBranch) {
+                    const txtProd = tdProd ? tdProd.textContent || tdProd.innerText : '';
+                    const txtBranch = tdBranch ? tdBranch.textContent || tdBranch.innerText : '';
+                    if (txtProd.toLowerCase().indexOf(filter) > -1 || txtBranch.toLowerCase().indexOf(filter) > -1) {
+                        trs[i].style.display = '';
+                    } else {
+                        trs[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // 9. Sort Available Chart Toggle
+        function sortAvailableChart() {
+            if (!availQtyChart) return;
+            availSortAsc = !availSortAsc;
+            const currentLabels = [...availQtyChart.data.labels];
+            const currentData = [...availQtyChart.data.datasets[0].data];
+
+            const combined = currentLabels.map((lbl, idx) => ({ label: lbl, val: currentData[idx] }));
+            combined.sort((a, b) => availSortAsc ? a.val - b.val : b.val - a.val);
+
+            availQtyChart.data.labels = combined.map(c => c.label);
+            availQtyChart.data.datasets[0].data = combined.map(c => c.val);
+            availQtyChart.update();
+        }
+
+        // 10. Sort Usage Chart Toggle
+        function sortUsageChart() {
+            if (!topUsageChart) return;
+            usageSortAsc = !usageSortAsc;
+            const currentLabels = [...topUsageChart.data.labels];
+            const currentData = [...topUsageChart.data.datasets[0].data];
+
+            const combined = currentLabels.map((lbl, idx) => ({ label: lbl, val: currentData[idx] }));
+            combined.sort((a, b) => usageSortAsc ? a.val - b.val : b.val - a.val);
+
+            topUsageChart.data.labels = combined.map(c => c.label);
+            topUsageChart.data.datasets[0].data = combined.map(c => c.val);
+            topUsageChart.update();
+        }
+
+        // Branch Analysis Sorting Functions
+        function sortBranchRevChart() {
+            if (!branchRevChart) return;
+            branchRevSortAsc = !branchRevSortAsc;
+            const currentLabels = [...branchRevChart.data.labels];
+            const currentData = [...branchRevChart.data.datasets[0].data];
+            const combined = currentLabels.map((lbl, idx) => ({ label: lbl, val: currentData[idx] }));
+            combined.sort((a, b) => branchRevSortAsc ? a.val - b.val : b.val - a.val);
+            branchRevChart.data.labels = combined.map(c => c.label);
+            branchRevChart.data.datasets[0].data = combined.map(c => c.val);
+            branchRevChart.update();
+        }
+
+        function sortBranchConsChart() {
+            if (!branchConsChart) return;
+            branchConsSortAsc = !branchConsSortAsc;
+            const currentLabels = [...branchConsChart.data.labels];
+            const currentData = [...branchConsChart.data.datasets[0].data];
+            const combined = currentLabels.map((lbl, idx) => ({ label: lbl, val: currentData[idx] }));
+            combined.sort((a, b) => branchConsSortAsc ? a.val - b.val : b.val - a.val);
+            branchConsChart.data.labels = combined.map(c => c.label);
+            branchConsChart.data.datasets[0].data = combined.map(c => c.val);
+            branchConsChart.update();
+        }
+
+        function sortBranchStockChart() {
+            if (!branchCurrentStockChart) return;
+            branchStockSortAsc = !branchStockSortAsc;
+            const currentLabels = [...branchCurrentStockChart.data.labels];
+            const currentData = [...branchCurrentStockChart.data.datasets[0].data];
+            const combined = currentLabels.map((lbl, idx) => ({ label: lbl, val: currentData[idx] }));
+            combined.sort((a, b) => branchStockSortAsc ? a.val - b.val : b.val - a.val);
+            branchCurrentStockChart.data.labels = combined.map(c => c.label);
+            branchCurrentStockChart.data.datasets[0].data = combined.map(c => c.val);
+            branchCurrentStockChart.update();
+        }
+
+        // Product Analysis Sorting Functions
+        function sortProdAvailChart() {
+            if (!prodAvailChart) return;
+            prodAvailSortAsc = !prodAvailSortAsc;
+            const currentLabels = [...prodAvailChart.data.labels];
+            const currentData = [...prodAvailChart.data.datasets[0].data];
+            const combined = currentLabels.map((lbl, idx) => ({ label: lbl, val: currentData[idx] }));
+            combined.sort((a, b) => prodAvailSortAsc ? a.val - b.val : b.val - a.val);
+            prodAvailChart.data.labels = combined.map(c => c.label);
+            prodAvailChart.data.datasets[0].data = combined.map(c => c.val);
+            prodAvailChart.update();
+        }
+
+        function sortProdUsage1Chart() {
+            if (!prodUsage1Chart) return;
+            prodUsage1SortAsc = !prodUsage1SortAsc;
+            const currentLabels = [...prodUsage1Chart.data.labels];
+            const currentData = [...prodUsage1Chart.data.datasets[0].data];
+            const combined = currentLabels.map((lbl, idx) => ({ label: lbl, val: currentData[idx] }));
+            combined.sort((a, b) => prodUsage1SortAsc ? a.val - b.val : b.val - a.val);
+            prodUsage1Chart.data.labels = combined.map(c => c.label);
+            prodUsage1Chart.data.datasets[0].data = combined.map(c => c.val);
+            prodUsage1Chart.update();
+        }
+
+        // Movement Analysis Sorting Functions
+        function sortMovementFlowChart() {
+            if (!monthlyMovementChart) return;
+            movementFlowSortAsc = !movementFlowSortAsc;
+            const currentLabels = [...monthlyMovementChart.data.labels];
+            const currentInData = [...monthlyMovementChart.data.datasets[0].data];
+            const currentOutData = [...monthlyMovementChart.data.datasets[1].data];
+
+            const combined = currentLabels.map((lbl, idx) => ({
+                label: lbl,
+                inVal: currentInData[idx],
+                outVal: currentOutData[idx]
+            }));
+
+            combined.sort((a, b) => movementFlowSortAsc ? a.inVal - b.inVal : b.inVal - a.inVal);
+
+            monthlyMovementChart.data.labels = combined.map(c => c.label);
+            monthlyMovementChart.data.datasets[0].data = combined.map(c => c.inVal);
+            monthlyMovementChart.data.datasets[1].data = combined.map(c => c.outVal);
+            monthlyMovementChart.update();
+        }
+
+        function sortMovementTrendChart() {
+            if (!movementTrendChart) return;
+            movementTrendSortAsc = !movementTrendSortAsc;
+            const currentLabels = [...movementTrendChart.data.labels];
+            const currentData = [...movementTrendChart.data.datasets[0].data];
+
+            const combined = currentLabels.map((lbl, idx) => ({ label: lbl, val: currentData[idx] }));
+            combined.sort((a, b) => movementTrendSortAsc ? a.val - b.val : b.val - a.val);
+
+            movementTrendChart.data.labels = combined.map(c => c.label);
+            movementTrendChart.data.datasets[0].data = combined.map(c => c.val);
+            movementTrendChart.update();
+        }
+
+        // Transaction Table Functions (matching media_1791888851000.png)
+        function renderTxnTable(rows) {
+            const tbody = document.getElementById('txnTableBody');
+            if (!tbody) return;
+
+            let html = '';
+            rows.forEach((row, idx) => {
+                const selectedClass = idx === 4 ? 'row-selected' : '';
+                html += `
+                <tr onclick="highlightTxnRow(this)" class="${selectedClass}">
+                    <td style="color: #64748b;">${idx + 1}</td>
+                    <td>${row.branch_name}</td>
+                    <td style="font-weight: 500;">${row.product_name}</td>
+                    <td style="text-align: right; color: #64748b;">${row.in_qty}</td>
+                    <td style="text-align: right; font-weight: 600; color: #0284c7;">${row.out_qty}</td>
+                    <td style="text-align: center; color: #64748b; font-size: 12px;">${row.created_at}</td>
+                    <td style="text-align: right; font-weight: 600;">${row.closing_qty}</td>
+                    <td style="text-align: center;">
+                        <span class="stock-badge badge-low" style="background: #f1f5f9; color: #334155; font-family: monospace; font-size: 11px;">${row.transaction_type}</span>
+                    </td>
+                </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function highlightTxnRow(row) {
+            document.querySelectorAll('#txnTable tbody tr').forEach(r => r.classList.remove('row-selected'));
+            row.classList.add('row-selected');
+        }
+
+        function filterTxnTableLive() {
+            const input = document.getElementById('txnTableSearch');
+            if (!input) return;
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('txnTable');
+            const trs = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < trs.length; i++) {
+                const tdBranch = trs[i].getElementsByTagName('td')[1];
+                const tdProd = trs[i].getElementsByTagName('td')[2];
+                const tdTxn = trs[i].getElementsByTagName('td')[7];
+                if (tdBranch || tdProd || tdTxn) {
+                    const txtBranch = tdBranch ? tdBranch.textContent || tdBranch.innerText : '';
+                    const txtProd = tdProd ? tdProd.textContent || tdProd.innerText : '';
+                    const txtTxn = tdTxn ? tdTxn.textContent || tdTxn.innerText : '';
+                    if (txtBranch.toLowerCase().indexOf(filter) > -1 ||
+                        txtProd.toLowerCase().indexOf(filter) > -1 ||
+                        txtTxn.toLowerCase().indexOf(filter) > -1) {
+                        trs[i].style.display = '';
+                    } else {
+                        trs[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        function exportTxnTableCSV() {
+            let csv = "Index,Branch,Product,In Qty,Out Qty,Created At,Closing Qty,Transaction Type\n";
+            const rows = document.querySelectorAll("#txnTable tbody tr");
+            rows.forEach(tr => {
+                if (tr.style.display !== 'none') {
+                    const cols = tr.querySelectorAll("td");
+                    const rowData = Array.from(cols).map(c => '"' + c.innerText.trim().replace(/"/g, '""') + '"');
+                    csv += rowData.join(",") + "\n";
+                }
+            });
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "inventory_transactions_" + new Date().toISOString().slice(0, 10) + ".csv";
+            link.click();
+        }
+
+        // 11. Collapse / Expand Filters Bar
+        function toggleFilterBar() {
+            const wrap = document.getElementById('filterFieldsWrap');
+            const toggle = document.getElementById('filterToggle');
+            if (wrap.style.display === 'none') {
+                wrap.style.display = 'flex';
+                toggle.classList.remove('collapsed');
+            } else {
+                wrap.style.display = 'none';
+                toggle.classList.add('collapsed');
+            }
+        }
+
+        // 12. Toggle Chart Options Dropdown
+        function toggleChartMenu(button) {
+            const dropdown = button.nextElementSibling;
+            if (!dropdown) return;
+            const isVisible = dropdown.classList.contains('show');
+            document.querySelectorAll('.chart-menu-dropdown').forEach(d => d.classList.remove('show'));
+            if (!isVisible) dropdown.classList.add('show');
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.chart-actions-toolbar')) {
+                document.querySelectorAll('.chart-menu-dropdown').forEach(d => d.classList.remove('show'));
+            }
+        });
+
+        // 13. Export Low Stock CSV
+        function exportLowStockCSV() {
+            let csv = "Index,Branch,Product,Closing Stock,Stock Status\n";
+            const rows = document.querySelectorAll("#lowStockTable tbody tr");
+            rows.forEach(tr => {
+                if (tr.style.display !== 'none') {
+                    const cols = tr.querySelectorAll("td");
+                    const rowData = Array.from(cols).map(c => '"' + c.innerText.trim().replace(/"/g, '""') + '"');
+                    csv += rowData.join(",") + "\n";
+                }
+            });
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "low_stock_alert_" + new Date().toISOString().slice(0, 10) + ".csv";
+            link.click();
+        }
+    </script>
 </body>
 
 </html>

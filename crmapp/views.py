@@ -605,24 +605,39 @@ def user_logout(request):
 @role_required(['admin','branch_manager'])
 def add_sales_person(request):
     if request.method == 'POST':
-        full_name = request.POST.get('full_name')
+        full_name = request.POST.get('full_name', '').strip()
         date_of_joining = parse_date(request.POST.get('date_of_joining'))
-        mobile_no = request.POST.get('mobile_no')
-        email = request.POST.get('email')
+        mobile_no = request.POST.get('mobile_no', '').strip()
+        email = request.POST.get('email', '').strip()
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
         branch_id = request.POST.get('branch')
         branch = Branch.objects.get(id = branch_id)
-        co_ordinator = request.POST.get('co_ordinator') == True
-        # Create Django User (username as email or phone, password default or random)
-        username = mobile_no
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        co_ordinator = request.POST.get('co_ordinator') == 'True' or request.POST.get('co_ordinator') is True or request.POST.get('co_ordinator') == 'on'
+        
+        # Check if username (mobile_no) already exists in auth_user
+        existing_user = User.objects.filter(username=mobile_no).first()
+        if existing_user:
+            if existing_user.email == email or not existing_user.email:
+                user = existing_user
+                user.first_name = full_name
+                user.is_active = True
+                if password:
+                    user.set_password(password)
+                user.save()
+            else:
+                # Old user account had this phone number; archive old username so this new salesperson gets clean login
+                existing_user.username = f"{mobile_no}_archived_{existing_user.id}"
+                existing_user.save()
+                user = User.objects.create_user(username=mobile_no, password=password, email=email, first_name=full_name)
+        else:
+            user = User.objects.create_user(username=mobile_no, password=password, email=email, first_name=full_name)
+        
         user.is_staff = True
         user.save()
-        
 
         # Assign role to user via UserProfile
-        user_profile = user.userprofile  # auto-created by the signal
+        user_profile, _ = UserProfile.objects.get_or_create(user=user)
         user_profile.role = 'sales'
         user_profile.phone = mobile_no
         user_profile.save()
@@ -634,11 +649,12 @@ def add_sales_person(request):
             mobile_no=mobile_no,
             email=email,
             date_of_birth=date_of_birth,
-            branch = branch,
-            co_ordinator = co_ordinator
-            
+            branch=branch,
+            co_ordinator=co_ordinator,
+            is_active=True
         )
 
+        messages.success(request, f"Sales Person '{full_name}' added successfully.")
         return redirect('sales_person_list')
     branches = Branch.objects.all()
     return render(request, 'add_sales_person.html',{"branches":branches})
@@ -691,16 +707,21 @@ def edit_sales_person(request, pk):
     person = get_object_or_404(SalesPerson, pk=pk)
 
     if request.method == 'POST':
-        full_name = request.POST.get('full_name')
+        full_name = request.POST.get('full_name', '').strip()
         date_of_joining = parse_date(request.POST.get('date_of_joining'))
-        mobile_no = request.POST.get('mobile_no')
-        email = request.POST.get('email')
+        mobile_no = request.POST.get('mobile_no', '').strip()
+        email = request.POST.get('email', '').strip()
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
         password = request.POST.get('password')
         branch_id = request.POST.get('branch')
         branch = Branch.objects.get(id = branch_id)
-        co_ordinator = request.POST.get('co_ordinator')
-        # Update SalesPerson
+        co_ordinator = request.POST.get('co_ordinator') == 'True' or request.POST.get('co_ordinator') is True or request.POST.get('co_ordinator') == 'on'
+
+        old_mobile = person.mobile_no
+        old_name = person.full_name
+        old_email = person.email
+
+        # Update SalesPerson model
         person.full_name = full_name
         person.date_of_joining = date_of_joining
         person.mobile_no = mobile_no
@@ -710,27 +731,69 @@ def edit_sales_person(request, pk):
         person.co_ordinator = co_ordinator
         person.save()
 
-        # Check for existing user
-        user = User.objects.filter(email=email).first()
+        # If phone number or name changed, migrate historical data so past services/quotations remain with this salesperson
+        if (old_mobile and old_mobile != mobile_no) or (old_name and old_name != full_name):
+            # 1. Update services created by this person
+            service_management.objects.filter(
+                Q(sales_person_name__iexact=old_name) |
+                (Q(sales_person_contact_no=old_mobile) & (Q(sales_person_name__isnull=True) | Q(sales_person_name="") | Q(sales_person_name__iexact=old_name)))
+            ).update(
+                sales_person_name=full_name,
+                sales_person_contact_no=mobile_no,
+                sales_person_email=email
+            )
+
+            # 2. Update quotations created by this person
+            quotation_management.objects.filter(
+                Q(contact_by__iexact=old_name) |
+                (Q(contact_by_no=old_mobile) & (Q(contact_by__isnull=True) | Q(contact_by="") | Q(contact_by__iexact=old_name)))
+            ).update(
+                contact_by=full_name,
+                contact_by_no=mobile_no
+            )
+
+            # 3. Update customer_details contactperson
+            customer_details.objects.filter(contactperson__iexact=old_name).update(contactperson=full_name)
+
+            # 4. Update contactedby in lead_management if matching old_name
+            lead_management.objects.filter(salesperson=person, contactedby__iexact=old_name).update(contactedby=full_name)
+
+        # 5. Handle Django User update
+        user = None
+        if old_mobile:
+            user = User.objects.filter(username=old_mobile).first()
+        if not user and mobile_no:
+            user = User.objects.filter(username=mobile_no).first()
+        if not user and old_email:
+            user = User.objects.filter(email__iexact=old_email).first()
+        if not user and email:
+            user = User.objects.filter(email__iexact=email).first()
+
+        # Check if another user already has the new mobile_no as username
+        other_user = User.objects.filter(username=mobile_no).exclude(pk=user.pk if user else None).first()
+        if other_user:
+            other_user.username = f"{mobile_no}_archived_{other_user.id}"
+            other_user.save()
 
         if user:
-            # Update existing user
             user.first_name = full_name
             user.username = mobile_no
             user.email = email
             if password:
                 user.set_password(password)
+            user.is_staff = True
+            user.is_active = person.is_active
             user.save()
         else:
-            # Create new user
             user = User.objects.create_user(
                 username=mobile_no,
                 email=email,
                 password=password or User.objects.make_random_password(),
                 first_name=full_name
             )
-        user.is_staff = True
-        user.save()
+            user.is_staff = True
+            user.is_active = person.is_active
+            user.save()
 
         # Update or create UserProfile
         user_profile, created = UserProfile.objects.get_or_create(user=user)
@@ -738,6 +801,14 @@ def edit_sales_person(request, pk):
         user_profile.phone = mobile_no
         user_profile.save()
 
+        # If mobile number changed, free up old_mobile if any leftover user had it with this person's info
+        if old_mobile and old_mobile != mobile_no:
+            leftovers = User.objects.filter(username=old_mobile).exclude(pk=user.pk)
+            for lo in leftovers:
+                lo.username = f"{old_mobile}_archived_{lo.id}"
+                lo.save()
+
+        messages.success(request, f"Sales Person '{full_name}' updated successfully. Historical records preserved.")
         return redirect('sales_person_list')
     branches = Branch.objects.all()
     return render(request, 'edit_sales_person.html', {'person': person, 'branches':branches})
@@ -777,29 +848,43 @@ def delete_sales_person(request, pk):
 @role_required(['admin'])
 def add_branch_manager(request):
     if request.method == 'POST':
-        full_name = request.POST.get('full_name')
+        full_name = request.POST.get('full_name', '').strip()
         date_of_joining = parse_date(request.POST.get('date_of_joining'))
-        mobile_no = request.POST.get('mobile_no')
-        email = request.POST.get('email')
+        mobile_no = request.POST.get('mobile_no', '').strip()
+        email = request.POST.get('email', '').strip()
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
-        password = request.POST.get('password')
+        password = request.POST.get('password', '').strip()
         branch_id = request.POST.get('branch')
         branch_instance = Branch.objects.get(pk=branch_id)
 
-        # Create Django User (username as email or phone, password default or random)
+        # Check if username (mobile_no) already exists in auth_user
         username = mobile_no
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        existing_user = User.objects.filter(username=username).first()
+        if existing_user:
+            if existing_user.email == email or not existing_user.email:
+                user = existing_user
+                user.first_name = full_name
+                user.email = email
+                user.is_active = True
+                if password:
+                    user.set_password(password)
+                user.save()
+            else:
+                existing_user.username = f"{username}_archived_{existing_user.id}"
+                existing_user.save()
+                user = User.objects.create_user(username=username, password=password or User.objects.make_random_password(), email=email, first_name=full_name)
+        else:
+            user = User.objects.create_user(username=username, password=password or User.objects.make_random_password(), email=email, first_name=full_name)
         user.is_staff = True
         user.save()
-        
 
         # Assign role to user via UserProfile
-        user_profile = user.userprofile  # auto-created by the signal
+        user_profile, _ = UserProfile.objects.get_or_create(user=user)
         user_profile.role = 'branch_manager'
         user_profile.phone = mobile_no
         user_profile.save()
 
-        # Create SalesPerson record
+        # Create BranchManager record
         BranchManager.objects.create(
             full_name=full_name,
             date_of_joining=date_of_joining,
@@ -807,9 +892,9 @@ def add_branch_manager(request):
             email=email,
             date_of_birth=date_of_birth,
             branch=branch_instance
-            
         )
 
+        messages.success(request, f"Branch Manager '{full_name}' added successfully.")
         return redirect('branch_manager_list')
     
     branch = Branch.objects.all()
@@ -829,15 +914,19 @@ def edit_branch_manager(request, pk):
     person = get_object_or_404(BranchManager, pk=pk)
 
     if request.method == 'POST':
-        full_name = request.POST.get('full_name')
+        full_name = request.POST.get('full_name', '').strip()
         date_of_joining = parse_date(request.POST.get('date_of_joining'))
-        mobile_no = request.POST.get('mobile_no')
-        email = request.POST.get('email')
+        mobile_no = request.POST.get('mobile_no', '').strip()
+        email = request.POST.get('email', '').strip()
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
-        password = request.POST.get('password')
+        password = request.POST.get('password', '').strip()
         branch_id = request.POST.get('branch')
         branch_instance = Branch.objects.get(pk=branch_id)
-        # Update SalesPerson
+
+        old_mobile = person.mobile_no.strip() if person.mobile_no else ''
+        old_email = person.email.strip() if person.email else ''
+
+        # Update BranchManager
         person.full_name = full_name
         person.date_of_joining = date_of_joining
         person.mobile_no = mobile_no
@@ -847,7 +936,21 @@ def edit_branch_manager(request, pk):
         person.save()
 
         # Check for existing user
-        user = User.objects.filter(email=email).first()
+        user = None
+        if old_mobile:
+            user = User.objects.filter(username=old_mobile).first()
+        if not user and mobile_no:
+            user = User.objects.filter(username=mobile_no).first()
+        if not user and old_email:
+            user = User.objects.filter(email__iexact=old_email).first()
+        if not user and email:
+            user = User.objects.filter(email__iexact=email).first()
+
+        # Check if another user already has the new mobile_no as username
+        other_user = User.objects.filter(username=mobile_no).exclude(pk=user.pk if user else None).first()
+        if other_user:
+            other_user.username = f"{mobile_no}_archived_{other_user.id}"
+            other_user.save()
 
         if user:
             # Update existing user
@@ -856,6 +959,8 @@ def edit_branch_manager(request, pk):
             user.email = email
             if password:
                 user.set_password(password)
+            user.is_staff = True
+            user.is_active = person.is_active
             user.save()
         else:
             # Create new user
@@ -865,8 +970,9 @@ def edit_branch_manager(request, pk):
                 password=password or User.objects.make_random_password(),
                 first_name=full_name
             )
-        user.is_staff = True
-        user.save()
+            user.is_staff = True
+            user.is_active = person.is_active
+            user.save()
 
         # Update or create UserProfile
         user_profile, created = UserProfile.objects.get_or_create(user=user)
@@ -874,6 +980,14 @@ def edit_branch_manager(request, pk):
         user_profile.phone = mobile_no
         user_profile.save()
 
+        # Clean up old mobile username leftover if number changed
+        if old_mobile and old_mobile != mobile_no:
+            leftovers = User.objects.filter(username=old_mobile).exclude(pk=user.pk)
+            for lo in leftovers:
+                lo.username = f"{old_mobile}_archived_{lo.id}"
+                lo.save()
+
+        messages.success(request, f"Branch Manager '{full_name}' updated successfully.")
         return redirect('branch_manager_list')
     branch = Branch.objects.all()
     return render(request, 'edit_branch_manager.html', {'person': person, 'branch':branch})
@@ -912,28 +1026,43 @@ def delete_branch_manager(request, pk):
 @role_required(['admin','branch_manager'])
 def add_operation_person(request):
     if request.method == 'POST':
-        full_name = request.POST.get('full_name')
+        full_name = request.POST.get('full_name', '').strip()
         date_of_joining = parse_date(request.POST.get('date_of_joining'))
-        mobile_no = request.POST.get('mobile_no')
-        email = request.POST.get('email')
+        mobile_no = request.POST.get('mobile_no', '').strip()
+        email = request.POST.get('email', '').strip()
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
-        password = request.POST.get('password')
+        password = request.POST.get('password', '').strip()
         branch_id = request.POST.get('branch')
         branch = Branch.objects.get(id = branch_id)
-        # Create Django User (username as email or phone, password default or random)
+
+        # Check if username (mobile_no) already exists in auth_user
         username = mobile_no
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=full_name)
+        existing_user = User.objects.filter(username=username).first()
+        if existing_user:
+            if existing_user.email == email or not existing_user.email:
+                user = existing_user
+                user.first_name = full_name
+                user.email = email
+                user.is_active = True
+                if password:
+                    user.set_password(password)
+                user.save()
+            else:
+                existing_user.username = f"{username}_archived_{existing_user.id}"
+                existing_user.save()
+                user = User.objects.create_user(username=username, password=password or User.objects.make_random_password(), email=email, first_name=full_name)
+        else:
+            user = User.objects.create_user(username=username, password=password or User.objects.make_random_password(), email=email, first_name=full_name)
         user.is_staff = True
         user.save()
-        
 
         # Assign role to user via UserProfile
-        user_profile = user.userprofile  # auto-created by the signal
+        user_profile, _ = UserProfile.objects.get_or_create(user=user)
         user_profile.role = 'operation_person'
         user_profile.phone = mobile_no
         user_profile.save()
 
-        # Create SalesPerson record
+        # Create OperationPerson record
         OperationPerson.objects.create(
             user = user,
             full_name=full_name,
@@ -942,10 +1071,9 @@ def add_operation_person(request):
             email=email,
             date_of_birth=date_of_birth,
             branch = branch,
-           
-            
         )
 
+        messages.success(request, f"Operation Person '{full_name}' added successfully.")
         return redirect('operation_person_list')
     branches = Branch.objects.all()
     return render(request, 'add_operation_person.html',{"branches":branches})
@@ -971,25 +1099,42 @@ def edit_operation_person(request, pk):
     person = get_object_or_404(OperationPerson, pk=pk)
 
     if request.method == 'POST':
-        full_name = request.POST.get('full_name')
+        full_name = request.POST.get('full_name', '').strip()
         date_of_joining = parse_date(request.POST.get('date_of_joining'))
-        mobile_no = request.POST.get('mobile_no')
-        email = request.POST.get('email')
+        mobile_no = request.POST.get('mobile_no', '').strip()
+        email = request.POST.get('email', '').strip()
         date_of_birth = parse_date(request.POST.get('date_of_birth'))
-        password = request.POST.get('password')
+        password = request.POST.get('password', '').strip()
         branch_id = request.POST.get('branch')
         branch_instance = Branch.objects.get(pk=branch_id)
-        # Update SalesPerson
+
+        old_mobile = person.mobile_no.strip() if person.mobile_no else ''
+        old_email = person.email.strip() if person.email else ''
+
+        # Update OperationPerson
         person.full_name = full_name
         person.date_of_joining = date_of_joining
         person.mobile_no = mobile_no
         person.email = email
         person.date_of_birth = date_of_birth
         person.branch = branch_instance
-        person.save()
 
         # Check for existing user
-        user = User.objects.filter(email=email).first()
+        user = person.user
+        if not user and old_mobile:
+            user = User.objects.filter(username=old_mobile).first()
+        if not user and mobile_no:
+            user = User.objects.filter(username=mobile_no).first()
+        if not user and old_email:
+            user = User.objects.filter(email__iexact=old_email).first()
+        if not user and email:
+            user = User.objects.filter(email__iexact=email).first()
+
+        # Check if another user already has the new mobile_no as username
+        other_user = User.objects.filter(username=mobile_no).exclude(pk=user.pk if user else None).first()
+        if other_user:
+            other_user.username = f"{mobile_no}_archived_{other_user.id}"
+            other_user.save()
 
         if user:
             # Update existing user
@@ -998,6 +1143,8 @@ def edit_operation_person(request, pk):
             user.email = email
             if password:
                 user.set_password(password)
+            user.is_staff = True
+            user.is_active = person.is_active
             user.save()
         else:
             # Create new user
@@ -1007,9 +1154,12 @@ def edit_operation_person(request, pk):
                 password=password or User.objects.make_random_password(),
                 first_name=full_name
             )
-        user.is_staff = True
-        user.save()
+            user.is_staff = True
+            user.is_active = person.is_active
+            user.save()
+
         person.user = user
+        person.save()
 
         # Update or create UserProfile
         user_profile, created = UserProfile.objects.get_or_create(user=user)
@@ -1017,6 +1167,14 @@ def edit_operation_person(request, pk):
         user_profile.phone = mobile_no
         user_profile.save()
 
+        # Clean up old mobile username leftover if number changed
+        if old_mobile and old_mobile != mobile_no:
+            leftovers = User.objects.filter(username=old_mobile).exclude(pk=user.pk)
+            for lo in leftovers:
+                lo.username = f"{old_mobile}_archived_{lo.id}"
+                lo.save()
+
+        messages.success(request, f"Operation Person '{full_name}' updated successfully.")
         return redirect('operation_person_list')
     branch = Branch.objects.all()
     return render(request, 'edit_operation_person.html', {'person': person, 'branches':branch})
@@ -3050,9 +3208,9 @@ def export_quotation_excel(request):
         ).first()
         if sales:
             m = quotation_management.objects.filter(
-                Q(contact_by_no=sales.mobile_no) |
                 Q(contact_by__iexact=sales.full_name) |
-                Q(customer__contactperson__iexact=sales.full_name),
+                Q(customer__contactperson__iexact=sales.full_name) |
+                (Q(contact_by_no=sales.mobile_no) & (Q(contact_by__isnull=True) | Q(contact_by=""))),
                 is_latest=True
             )
         else:
@@ -3850,9 +4008,19 @@ def lead_management_create(request):
             bm = None
             ad = None
             if role == "sales":
-                sp = SalesPerson.objects.get(mobile_no = request.user.username)
+                sp = SalesPerson.objects.filter(
+                    Q(mobile_no=request.user.username) | Q(email=request.user.email),
+                    is_active=True
+                ).first() or SalesPerson.objects.filter(
+                    Q(mobile_no=request.user.username) | Q(email=request.user.email)
+                ).first()
             elif role == "branch_manager":
-                bm = BranchManager.objects.get(mobile_no = request.user.username)
+                bm = BranchManager.objects.filter(
+                    Q(mobile_no=request.user.username) | Q(email=request.user.email),
+                    is_active=True
+                ).first() or BranchManager.objects.filter(
+                    Q(mobile_no=request.user.username) | Q(email=request.user.email)
+                ).first()
             else: 
                 ad = request.user
             # Create new lead (duplicates allowed)
@@ -4527,7 +4695,7 @@ def display_customer(request):
         ).first()
         if sp:
             m = customer_details.objects.filter(
-                Q(contactperson__iexact=sp.full_name) | Q(primarycontact=sp.mobile_no)
+                contactperson__iexact=sp.full_name
             )
         else:
             m = customer_details.objects.none()
@@ -4664,7 +4832,8 @@ def display_reschedule(request):
         ).first()
         if sp:
             m = Reschedule.objects.filter(
-                Q(service__sales_person_contact_no=sp.mobile_no) | Q(service__sales_person_name__iexact=sp.full_name)
+                Q(service__sales_person_name__iexact=sp.full_name) |
+                (Q(service__sales_person_contact_no=sp.mobile_no) & (Q(service__sales_person_name__isnull=True) | Q(service__sales_person_name="")))
             )
         else:
             m = Reschedule.objects.none()
@@ -4728,7 +4897,8 @@ def display_service_management(request):
         ).first()
         if sp:
             m = service_management.objects.filter(
-                Q(sales_person_contact_no=sp.mobile_no) | Q(sales_person_name__iexact=sp.full_name)
+                Q(sales_person_name__iexact=sp.full_name) |
+                (Q(sales_person_contact_no=sp.mobile_no) & (Q(sales_person_name__isnull=True) | Q(sales_person_name="")))
             )
         else:
             m = service_management.objects.none()
@@ -4939,9 +5109,9 @@ def display_quotation(request):
         ).first()
         if sales:
             m = quotation_management.objects.filter(
-                Q(contact_by_no=sales.mobile_no) |
                 Q(contact_by__iexact=sales.full_name) |
-                Q(customer__contactperson__iexact=sales.full_name),
+                Q(customer__contactperson__iexact=sales.full_name) |
+                (Q(contact_by_no=sales.mobile_no) & (Q(contact_by__isnull=True) | Q(contact_by=""))),
                 is_latest=True
             )
         else:
@@ -5145,8 +5315,7 @@ def display_lead_management(request):
         ).first()
         if salesperson:
             filtered_leads = lead_management.objects.filter(
-                Q(salesperson=salesperson) |
-                Q(salesperson__mobile_no=salesperson.mobile_no)
+                salesperson=salesperson
             )
             salespersons = [salesperson]
         else:
@@ -5368,7 +5537,7 @@ def export_leads_excel(request):
         ).first()
         if sp:
             filtered_leads = lead_management.objects.filter(
-                Q(salesperson=sp) | Q(salesperson__mobile_no=sp.mobile_no)
+                salesperson=sp
             )
         else:
             filtered_leads = lead_management.objects.none()
@@ -5532,6 +5701,50 @@ def delete_quotation(request, rid):
             messages.error(request, "Invalid password. Deletion failed.")
     
     return redirect('/display_quotation')
+
+@login_required
+@role_required(['admin', 'sales', 'branch_manager'])
+def clone_quotation(request, rid):
+    original = get_object_or_404(quotation_management, id=rid)
+
+    cloned = quotation_management.objects.create(
+        customer=original.customer,
+        version=1,
+        is_latest=True,
+        parent_quotation=None,
+        contact_by=original.contact_by,
+        contact_by_no=original.contact_by_no,
+        address=original.address,
+        branch=original.branch,
+        product_details_json=original.product_details_json,
+        apply_gst=original.apply_gst,
+        gst_status=original.gst_status,
+        cgst=original.cgst,
+        sgst=original.sgst,
+        igst=original.igst,
+        gst_total=original.gst_total,
+        total_charges=original.total_charges,
+        total_price=original.total_price,
+        total_price_with_gst=original.total_price_with_gst,
+        subject=f"{original.subject or ''} (Copy)".strip(),
+        thank_u_note=original.thank_u_note,
+        quotation_date=timezone.now().date(),
+        custom_terms=original.custom_terms,
+        or_name=original.or_name,
+        or_contact=original.or_contact,
+        or_email=original.or_email,
+        terms_order=original.terms_order
+    )
+
+    if original.selected_services.exists():
+        cloned.selected_services.set(original.selected_services.all())
+
+    if hasattr(original, 'terms_and_conditions') and original.terms_and_conditions.exists():
+        cloned.terms_and_conditions.set(original.terms_and_conditions.all())
+
+    messages.success(request, f"Quotation '{original.quotation_no}' cloned successfully.")
+    return redirect('edit_quotation', rid=cloned.id)
+
 # Delete Invoice
 
 def delete_invoice(request , rid):
@@ -6369,9 +6582,19 @@ def edit_lead_management(request, rid):
         bm = None
         ad = None
         if role == "sales":
-            sp = SalesPerson.objects.get(mobile_no = request.user.username)
+            sp = SalesPerson.objects.filter(
+                Q(mobile_no=request.user.username) | Q(email=request.user.email),
+                is_active=True
+            ).first() or SalesPerson.objects.filter(
+                Q(mobile_no=request.user.username) | Q(email=request.user.email)
+            ).first()
         elif role == "branch_manager":
-            bm = BranchManager.objects.get(mobile_no = request.user.username)
+            bm = BranchManager.objects.filter(
+                Q(mobile_no=request.user.username) | Q(email=request.user.email),
+                is_active=True
+            ).first() or BranchManager.objects.filter(
+                Q(mobile_no=request.user.username) | Q(email=request.user.email)
+            ).first()
         else: 
             ad = request.user
 
@@ -6732,18 +6955,38 @@ def edit_technician(request, technician_id):
     branches = Branch.objects.all()
     if request.method == 'POST':
         # Collect POST data
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        contact_number = request.POST.get('contact_number')
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        contact_number = request.POST.get('contact_number', '').strip()
         address = request.POST.get('address')
         city = request.POST.get('city')
         state = request.POST.get('state')
         postal_code = request.POST.get('postal_code')
         date_of_joining = parse_date(request.POST.get('date_of_joining'))
-        password = request.POST.get('password')
+        password = request.POST.get('password', '').strip()
         branch_id = request.POST.get('branch')
         branch = Branch.objects.get(id = int(branch_id))
+
+        old_contact = technician.contact_number.strip() if technician.contact_number else ''
+        old_email = technician.email.strip() if technician.email else ''
+
+        # Locate linked user
+        if not user and old_contact:
+            user = User.objects.filter(username=old_contact).first()
+        if not user and contact_number:
+            user = User.objects.filter(username=contact_number).first()
+        if not user and old_email:
+            user = User.objects.filter(email__iexact=old_email).first()
+        if not user and email:
+            user = User.objects.filter(email__iexact=email).first()
+
+        # Check if another user already has the new contact_number as username
+        other_user = User.objects.filter(username=contact_number).exclude(pk=user.pk if user else None).first()
+        if other_user:
+            other_user.username = f"{contact_number}_archived_{other_user.id}"
+            other_user.save()
+
         # ✅ Create or update User
         if user:
             user.first_name = first_name
@@ -6752,6 +6995,7 @@ def edit_technician(request, technician_id):
             user.username = contact_number
             if password:
                 user.set_password(password)
+            user.is_active = technician.is_active
             user.save()
         else:
             user = User.objects.create_user(
@@ -6761,7 +7005,10 @@ def edit_technician(request, technician_id):
                 first_name=first_name,
                 last_name=last_name
             )
-            technician.user = user  # Link new user to technician
+            user.is_active = technician.is_active
+            user.save()
+
+        technician.user = user
 
         # ✅ Create or update UserProfile
         user_profile, created = UserProfile.objects.get_or_create(user=user)
@@ -6781,6 +7028,12 @@ def edit_technician(request, technician_id):
         technician.date_of_joining = date_of_joining
         technician.branch = branch
         technician.save()
+
+        if old_contact and old_contact != contact_number:
+            leftovers = User.objects.filter(username=old_contact).exclude(pk=user.pk)
+            for lo in leftovers:
+                lo.username = f"{old_contact}_archived_{lo.id}"
+                lo.save()
 
         messages.success(request, "Technician updated successfully.")
         return redirect('display_technician')
@@ -8562,7 +8815,10 @@ def display_tax_invoice(request):
             Q(mobile_no=request.user.username) | Q(email=request.user.email)
         ).first()
         if sales:
-            m = TaxInvoice.objects.filter(created_by_no=sales.mobile_no)
+            m = TaxInvoice.objects.filter(
+                Q(quotation__contact_by__iexact=sales.full_name) |
+                (Q(quotation__contact_by_no=sales.mobile_no) & (Q(quotation__contact_by__isnull=True) | Q(quotation__contact_by="")))
+            )
         else:
             m = TaxInvoice.objects.none()
     else:
@@ -8973,7 +9229,10 @@ def payment_records_list(request):
             Q(mobile_no=request.user.username) | Q(email=request.user.email)
         ).first()
         if sp:
-            payments = payments_qs.filter(main_invoice__created_by_no=sp.mobile_no)
+            payments = payments_qs.filter(
+                Q(main_invoice__quotation__contact_by__iexact=sp.full_name) |
+                (Q(main_invoice__quotation__contact_by_no=sp.mobile_no) & (Q(main_invoice__quotation__contact_by__isnull=True) | Q(main_invoice__quotation__contact_by="")))
+            )
         else:
             payments = PaymentsRecord.objects.none()
     else:
@@ -10413,9 +10672,10 @@ def sales_dashboard(request):
 
 
 from django.shortcuts import render
+from .inventory_dashboard_views import inventory_dashboard_view
 
 def invetory_dashbord(request):
-    return render(request, 'invetory_dashbord.html')
+    return inventory_dashboard_view(request)
 from decimal import Decimal
 import re
 from dateutil.relativedelta import relativedelta
