@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path,include
 from crmapp import views , forms
+from crmapp import recommendation_views
 from crm import settings
 from django.conf.urls.static import static
 from crmapp.views import landing_page_lead_create_api
@@ -12,6 +13,11 @@ urlpatterns = [
     path('index', views.index, name="index"),
     path('', views.landing_page),
     path("login/", views.login_view, name="login_view"),
+    path(
+    'product-recommendations/',
+    recommendation_views.product_recommendations,
+    name='product_recommendations'
+),
     path('add-sales-person/', views.add_sales_person, name='add_sales_person'),
     path('sales-persons/', views.sales_person_list, name='sales_person_list'),
     path('edit-sales-person/<int:pk>/', views.edit_sales_person, name='edit_sales_person'),

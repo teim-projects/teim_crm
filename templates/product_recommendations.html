@@ -1,0 +1,999 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Product Intelligence | TEIM CRM</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --teal: #0f766e;
+            --ink: #172033;
+            --muted: #718096;
+            --line: #e7eaf1;
+            --bg: #f5f7fb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+        }
+
+        .pi-main {
+            width: 100%;
+            margin-left: 0;
+            margin-top: 110px;
+            padding: 32px 28px 55px;
+            min-height: 100vh;
+            color: #172033;
+            position: relative;
+            z-index: 1;
+        }
+
+        .heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .eyebrow {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 9px 0;
+            font-size: 30px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .status {
+            background: #ecfdf5;
+            color: #047857;
+            padding: 9px 13px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+            margin: 28px 0;
+        }
+
+        .stat, .panel {
+            background: white;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(25,40,75,.035);
+        }
+
+        .stat {
+            padding: 19px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .purple { background: #eef2ff; color: #4f46e5; }
+        .green { background: #e6fffa; color: #0f766e; }
+        .orange { background: #fff7ed; color: #c2410c; }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 7px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .panel {
+            padding: 25px;
+            margin-bottom: 22px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0 0 7px;
+        }
+
+        .panel-subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            margin: 0 0 22px;
+            line-height: 1.6;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 9px;
+        }
+
+        input {
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .customer-combo {
+            position: relative;
+            width: 100%;
+        }
+
+        .customer-input-wrap {
+            display: flex;
+            position: relative;
+        }
+
+        #customer_search {
+            width: 100%;
+            padding: 14px 48px 14px 14px;
+            border: 1px solid #d9deea;
+            border-radius: 10px;
+            outline: none;
+            color: var(--ink);
+        }
+
+        #customer_search:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px #4f46e51a;
+        }
+
+        #customer_toggle {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            bottom: 5px;
+            width: 38px;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 17px;
+        }
+
+        #customer_options {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            max-height: 270px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            box-shadow: 0 8px 20px rgba(0,0,0,.12);
+            z-index: 1000;
+        }
+
+        .customer-option {
+            padding: 11px 13px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+
+        .customer-option:hover {
+            background: #f1f5f9;
+        }
+
+        .customer-option small {
+            display: block;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            border: 0;
+            padding: 13px 19px;
+            border-radius: 10px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(.97);
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-teal { background: var(--teal); color: white; }
+        .btn-light { background: #f0f2f8; color: #344054; }
+
+        .btn-selected {
+            outline: 3px solid #c7d2fe;
+            outline-offset: 3px;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, .20);
+            transform: translateY(-1px);
+        }
+
+        .customer-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eef2ff;
+            color: #4338ca;
+            border-radius: 9px;
+            padding: 9px 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .results-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .meta {
+            color: var(--muted);
+            font-size: 12px;
+            margin: 7px 0;
+            line-height: 1.7;
+        }
+
+        .result-count {
+            display: inline-flex;
+            padding: 7px 11px;
+            margin: 4px 0;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .recommendation {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 24px;
+            align-items: start;
+            padding: 23px;
+            margin: 15px 0;
+            background: white;
+            border: 1px solid #e5e9f2;
+            border-radius: 15px;
+            box-shadow: 0 4px 16px rgba(23,32,51,.045);
+        }
+
+        .recommendation h3 {
+            margin: 0 0 8px;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .recommendation-simple {
+            grid-template-columns: 1fr;
+            padding: 18px 22px;
+            margin: 10px 0;
+        }
+
+        .recommendation-simple .meta {
+            margin: 0;
+        }
+
+        .classification-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            margin: 5px 0 10px;
+            border-radius: 7px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .classification-details {
+            margin-top: 8px;
+            padding: 11px 13px;
+            background: #f8fafc;
+            border: 1px solid #edf0f5;
+            border-radius: 9px;
+        }
+
+        .recommendation-evidence {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 10px;
+            margin: 8px 0 15px;
+            border-radius: 7px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+            gap: 10px;
+            margin: 13px 0;
+        }
+
+        .metric-tile {
+            padding: 13px;
+            background: #f8f9fc;
+            border: 1px solid #edf0f5;
+            border-radius: 10px;
+        }
+
+        .metric-label {
+            display: block;
+            margin-bottom: 7px;
+            color: #737e91;
+            font-size: 11px;
+        }
+
+        .metric-value {
+            color: #202b42;
+            font-size: 19px;
+            font-weight: 750;
+        }
+
+        .recommendation-score {
+            display: inline-block;
+            padding: 10px 13px;
+            background: #f0f2ff;
+            color: #4338ca;
+            border: 1px solid #e1e5ff;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .history-table-wrap {
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .history-table {
+            width: 100%;
+            min-width: 650px;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .history-table th {
+            padding: 13px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .history-table td {
+            padding: 14px 13px;
+            border-top: 1px solid #edf2f7;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .event-badge {
+            display: inline-block;
+            padding: 5px 8px;
+            border-radius: 6px;
+            background: #e0f2fe;
+            color: #075985;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px 15px;
+            color: var(--muted);
+        }
+
+        .empty i {
+            font-size: 30px;
+            color: #a5b4fc;
+            margin-bottom: 13px;
+        }
+
+        .empty h3 {
+            color: var(--ink);
+            font-size: 15px;
+        }
+
+        .amc-note {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: #9aa3b3;
+            padding: 15px;
+        }
+
+        @media(max-width: 900px) {
+            .pi-main {
+                margin-left: 0;
+                padding: 25px 15px;
+            }
+        }
+
+        @media(max-width: 700px) {
+            .stats { grid-template-columns: 1fr; }
+            .panel { padding: 19px; }
+            .actions { flex-direction: column; }
+            .btn { width: 100%; }
+            .recommendation { grid-template-columns: 1fr; }
+        }
+
+
+        /* Keep Product Intelligence styles isolated from the shared CRM sidebar CSS. */
+        .pi-main,
+        .pi-main * {
+            box-sizing: border-box;
+        }
+
+        .pi-main h1,
+        .pi-main h2,
+        .pi-main h3,
+        .pi-main .panel-title,
+        .pi-main .stat-value,
+        .pi-main .metric-value {
+            color: #172033 !important;
+            -webkit-text-fill-color: #172033 !important;
+        }
+
+        .pi-main .stat-label,
+        .pi-main .subtitle,
+        .pi-main .panel-subtitle,
+        .pi-main .meta {
+            color: #64748b !important;
+            -webkit-text-fill-color: #64748b !important;
+        }
+
+        .pi-main label {
+            color: #334155 !important;
+            -webkit-text-fill-color: #334155 !important;
+            margin-top: 0 !important;
+        }
+
+        .pi-main input {
+            color: #172033 !important;
+            background: #ffffff !important;
+            -webkit-text-fill-color: #172033 !important;
+        }
+
+        .pi-main .btn-primary,
+        .pi-main .btn-teal {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        .pi-main .btn-light {
+            color: #344054 !important;
+            -webkit-text-fill-color: #344054 !important;
+        }
+
+        @media (max-width: 768px) {
+            .pi-main {
+                margin-top: 100px;
+                padding: 24px 14px 40px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+{% include 'sidebar.html' %}
+
+{{ customers|json_script:"customer-data" }}
+
+<main class="pi-main">
+
+    <section class="heading">
+        <div>
+            <div class="eyebrow">Intelligence Centre</div>
+            <h1>Product Intelligence</h1>
+            <p class="subtitle">
+                Discover relevant upselling and cross-selling opportunities from customer data.
+            </p>
+        </div>
+
+        <span class="status">
+            <i class="fa-solid fa-circle-check"></i>
+            Recommendation Workspace
+        </span>
+    </section>
+
+    <!-- Dashboard statistics -->
+    <section class="stats">
+
+        <div class="stat">
+            <div class="stat-icon purple"><i class="fa-solid fa-users"></i></div>
+            <div>
+                <div class="stat-label">Total Customers</div>
+                <div class="stat-value">{{ total_customers }}</div>
+            </div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-icon green"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div>
+                <div class="stat-label">With Purchase History</div>
+                <div class="stat-value">{{ customers_with_purchase_history }}</div>
+            </div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-icon orange"><i class="fa-solid fa-user-clock"></i></div>
+            <div>
+                <div class="stat-label">Without Purchase History</div>
+                <div class="stat-value">{{ customers_without_purchase_history }}</div>
+            </div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-icon green"><i class="fa-solid fa-lightbulb"></i></div>
+            <div>
+                <div class="stat-label">With ML Recommendations</div>
+                <div class="stat-value">{{ customers_with_recommendations }}</div>
+            </div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-icon orange"><i class="fa-solid fa-ban"></i></div>
+            <div>
+                <div class="stat-label">Without ML Recommendations</div>
+                <div class="stat-value">{{ customers_without_recommendations }}</div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Customer selection -->
+    <section class="panel">
+
+        <h2 class="panel-title">
+            <i class="fa-solid fa-user-check" style="color:#4f46e5;margin-right:8px"></i>
+            Select a Customer
+        </h2>
+
+        <p class="panel-subtitle">
+            Search using the customer's actual name or CRM customer ID.
+        </p>
+
+        <form method="post" id="recommendation-form">
+            {% csrf_token %}
+
+            <label for="customer_search">Search or select customer</label>
+
+            <div class="customer-combo" id="customer_combo">
+
+                <div class="customer-input-wrap">
+                    <input
+                        type="text"
+                        id="customer_search"
+                        placeholder="Type customer name or CRM ID"
+                        autocomplete="off"
+                        required
+                    >
+
+                    <button type="button" id="customer_toggle" aria-label="Show customers">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                </div>
+
+                <div id="customer_options" role="listbox"></div>
+
+                <input
+                    type="hidden"
+                    id="customer_id"
+                    name="customer_id"
+                    value="{{ selected_customer_id }}"
+                >
+
+            </div>
+
+            <div class="actions">
+
+                <button
+                    class="btn btn-primary{% if selected_customer and mode == 'UPSELL' %} btn-selected{% endif %}"
+                    type="submit"
+                    name="mode"
+                    value="UPSELL"
+                    aria-pressed="{% if selected_customer and mode == 'UPSELL' %}true{% else %}false{% endif %}"
+                >
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                    Generate Upselling
+                </button>
+
+                <button
+                    class="btn btn-teal{% if selected_customer and mode == 'CROSS_SELL' %} btn-selected{% endif %}"
+                    type="submit"
+                    name="mode"
+                    value="CROSS_SELL"
+                    aria-pressed="{% if selected_customer and mode == 'CROSS_SELL' %}true{% else %}false{% endif %}"
+                >
+                    <i class="fa-solid fa-arrows-left-right"></i>
+                    Generate Cross-selling
+                </button>
+
+                <button class="btn btn-light" type="button" id="clear_customer">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    Clear Selection
+                </button>
+
+            </div>
+        </form>
+
+    </section>
+
+    <!-- Customer history -->
+    {% if selected_customer %}
+
+    <section class="panel">
+
+        <div class="results-head">
+            <div>
+                <h2 class="panel-title">Customer Product History</h2>
+                <p class="panel-subtitle">
+                    Quotation and service activity recorded in the CRM.
+                </p>
+            </div>
+
+            <span class="customer-chip">
+                <i class="fa-solid fa-user"></i>
+                {{ selected_customer.customer_name }}
+            </span>
+        </div>
+
+        <p class="meta">
+            CRM Customer ID:
+            {{ selected_customer.crm_customer_id|default:"Not available" }}
+        </p>
+
+        <p class="meta">
+            Customer Type: {{ selected_customer.customer_type|default:"Not available" }}
+            &nbsp; | &nbsp;
+            City: {{ selected_customer.city|default:"Not available" }}
+        </p>
+
+        {% if customer_history %}
+
+        <div class="history-table-wrap">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Activity Type</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in customer_history %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.product_name|default:"Unknown product" }}</strong>
+                        </td>
+
+                        <td>{{ item.category|default:"-" }}</td>
+
+                        <td>
+                            <span class="event-badge">
+                                {{ item.event_type|cut:"_"|title }}
+                            </span>
+                        </td>
+
+                        <td>{{ item.event_status|default:"-" }}</td>
+
+                        <td>{{ item.event_date|default:"-" }}</td>
+
+                        <td>{{ item.quantity|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="meta">
+            These records include quotation interest and service activity.
+            They should not all be interpreted as confirmed purchases.
+        </p>
+
+        {% else %}
+
+        <div class="empty">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <h3>No customer activity found</h3>
+            <p>No matching quotation or service activity is available.</p>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- Recommendations -->
+    <section class="panel">
+
+        <div class="results-head">
+            <div>
+                <h2 class="panel-title">
+                    {% if mode == "UPSELL" %}
+                        Upselling Recommendations
+                    {% else %}
+                        Cross-selling Recommendations
+                    {% endif %}
+                </h2>
+
+                <p class="panel-subtitle">
+                    Ranked recommendations from the saved hybrid recommendation model.
+                </p>
+            </div>
+
+            <span class="customer-chip">
+                <i class="fa-solid fa-user"></i>
+                {{ selected_customer.customer_name }}
+            </span>
+        </div>
+
+        <p class="meta">
+            CRM Customer ID:
+            {{ selected_customer.crm_customer_id|default:"Not available" }}
+        </p>
+
+        {% if customer_recommendations %}
+
+            <div class="result-count">
+                {{ customer_recommendations|length }}
+                {% if mode == "UPSELL" %}Upselling{% else %}Cross-selling{% endif %}
+                recommendation(s) returned
+            </div>
+
+            {% for item in customer_recommendations %}
+
+            <article class="recommendation recommendation-simple">
+                <div>
+                    <h3>
+                        <i class="fa-solid fa-cube" style="color:#6366f1;margin-right:8px"></i>
+                        {{ item.product_name|default:"Recommended Product" }}
+                    </h3>
+                </div>
+            </article>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty">
+                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                <h3>No {% if mode == "UPSELL" %}upselling{% else %}cross-selling{% endif %} recommendations available</h3>
+                <p>No matching {{ mode|cut:"_"|lower }} recommendations were found for this customer.</p>
+                <p>Try another customer or verify the recommendation CSV.</p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    {% endif %}
+
+    <div class="footer">
+        TEIM CRM · Product Intelligence · Customer-specific recommendations
+    </div>
+
+</main>
+
+<script>
+(function () {
+
+    const input = document.getElementById("customer_search");
+    const hidden = document.getElementById("customer_id");
+    const toggle = document.getElementById("customer_toggle");
+    const list = document.getElementById("customer_options");
+    const combo = document.getElementById("customer_combo");
+    const clear = document.getElementById("clear_customer");
+    const form = document.getElementById("recommendation-form");
+
+    if (!input || !hidden || !toggle || !list) return;
+
+    const customers = JSON.parse(
+        document.getElementById("customer-data").textContent
+    );
+
+    let matches = [];
+
+    function closeList() {
+        list.style.display = "none";
+    }
+
+    function choose(customer) {
+        input.value = customer.customer_name +
+            (customer.crm_customer_id
+                ? " (" + customer.crm_customer_id + ")"
+                : "");
+
+        hidden.value = customer.customer_id;
+        closeList();
+    }
+
+    function render() {
+
+        const query = input.value.trim().toLowerCase();
+
+        matches = customers.filter(customer => {
+
+            const name = (customer.customer_name || "").toLowerCase();
+            const crmId = (customer.crm_customer_id || "").toLowerCase();
+
+            return !query || name.includes(query) || crmId.includes(query);
+        });
+
+        list.replaceChildren();
+
+        matches.forEach(customer => {
+
+            const option = document.createElement("div");
+            option.className = "customer-option";
+            option.setAttribute("role", "option");
+
+            const name = document.createElement("strong");
+            name.textContent = customer.customer_name || "Unnamed customer";
+
+            const details = document.createElement("small");
+            details.textContent =
+                "CRM ID: " + (customer.crm_customer_id || "Not available");
+
+            option.appendChild(name);
+            option.appendChild(details);
+
+            option.addEventListener("mousedown", function (event) {
+                event.preventDefault();
+                choose(customer);
+            });
+
+            list.appendChild(option);
+        });
+
+        list.style.display = matches.length ? "block" : "none";
+    }
+
+    input.addEventListener("focus", render);
+
+    input.addEventListener("input", function () {
+        hidden.value = "";
+        render();
+    });
+
+    toggle.addEventListener("click", function () {
+        if (list.style.display === "block") {
+            closeList();
+        } else {
+            input.focus();
+            render();
+        }
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!combo.contains(event.target)) closeList();
+    });
+
+    input.addEventListener("keydown", function (event) {
+
+        if (event.key === "Escape") {
+            closeList();
+        }
+
+        if (event.key === "Enter" &&
+            list.style.display === "block" &&
+            matches.length === 1) {
+
+            event.preventDefault();
+            choose(matches[0]);
+        }
+    });
+
+    if (form) {
+        form.addEventListener("submit", function (event) {
+
+            if (!hidden.value) {
+                event.preventDefault();
+
+                input.setCustomValidity(
+                    "Please select a customer from the dropdown list."
+                );
+
+                input.reportValidity();
+            }
+        });
+    }
+
+    input.addEventListener("input", function () {
+        input.setCustomValidity("");
+    });
+
+    if (clear) {
+        clear.addEventListener("click", function () {
+            input.value = "";
+            hidden.value = "";
+            input.setCustomValidity("");
+            closeList();
+        });
+    }
+
+    const initial = customers.find(
+        customer => String(customer.customer_id) === String(hidden.value)
+    );
+
+    if (initial) {
+        input.value = initial.customer_name +
+            (initial.crm_customer_id
+                ? " (" + initial.crm_customer_id + ")"
+                : "");
+    }
+
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

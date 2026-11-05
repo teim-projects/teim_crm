@@ -175,3 +175,113 @@ def send_due_payment_alerts():
         payment.save(update_fields=["last_alert_sent"])
         print(f"[DEBUG] Updated last_alert_sent for {payment.payment_invoice_no}")
 
+
+
+# ============================================================
+# AI CUSTOMER RECOMMENDATION REFRESH TASKS
+# ============================================================
+
+def _run_locked_recommendation_refresh(customer_id=None):
+
+    import redis
+    from pathlib import Path
+
+    from src.recommendations.refresh_runner import (
+        refresh_recommendations,
+    )
+
+    client = redis.Redis.from_url(
+        settings.CELERY_BROKER_URL
+    )
+
+    lock = client.lock(
+        "crm:recommendations:csv-refresh",
+        timeout=3600,
+        blocking_timeout=0,
+    )
+
+    acquired = lock.acquire(blocking=False)
+
+    if not acquired:
+        raise RuntimeError(
+            "Another recommendation refresh is running."
+        )
+
+    try:
+        # Step 1: Run the existing live recommendation refresh.
+        recommendation_result = refresh_recommendations(
+            customer_id=customer_id
+        )
+
+        # Step 2: Classify the refreshed live recommendations.
+        from src.recommendations.classify_xgboost_recommendations import (
+            classify_recommendations,
+        )
+
+        base_dir = Path(settings.BASE_DIR)
+
+        classification_result = classify_recommendations(
+            input_file=(
+                base_dir
+                / "reports"
+                / "prediction_service_live"
+                / "latest_recommendations.csv"
+            ),
+            output_file=(
+                base_dir
+                / "reports"
+                / "upsell_crosssell"
+                / "latest_classified_recommendations.csv"
+            ),
+            summary_file=(
+                base_dir
+                / "reports"
+                / "upsell_crosssell"
+                / "latest_classification_summary.csv"
+            ),
+        )
+
+        recommendation_result["classification"] = classification_result
+
+        print("Live recommendation classification completed.")
+
+        return recommendation_result
+
+    finally:
+        lock.release()
+
+
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 3},
+)
+def refresh_customer_recommendations(self, customer_id):
+
+    result = _run_locked_recommendation_refresh(
+        customer_id=customer_id
+    )
+
+    print(
+        f"Recommendation refresh completed for customer "
+        f"{customer_id}"
+    )
+
+    return result
+
+
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 3},
+)
+def refresh_all_customer_recommendations(self):
+
+    result = _run_locked_recommendation_refresh()
+
+    print("Quarterly recommendation refresh completed.")
+
+    return result
+

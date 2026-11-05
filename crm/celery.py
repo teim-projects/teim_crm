@@ -36,9 +36,21 @@ app.conf.timezone = 'Asia/Kolkata'
 
 
 app.conf.beat_schedule = {
+    # Existing payment reminder — daily at 10 AM
     "send-due-payment-alerts-everyday": {
         "task": "crmapp.tasks.send_due_payment_alerts",
-        "schedule": crontab(hour=10, minute=0),  # daily at 10 AM
+        "schedule": crontab(hour=10, minute=0),
+    },
+
+    # AI recommendations — every 3 months at 2 AM
+    "refresh-all-customer-recommendations-quarterly": {
+        "task": "crmapp.tasks.refresh_all_customer_recommendations",
+        "schedule": crontab(
+            month_of_year="1,4,7,10",
+            day_of_month=1,
+            hour=2,
+            minute=0,
+        ),
     },
 }
 

@@ -92,11 +92,11 @@ WSGI_APPLICATION = 'crm.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'crmdb',
-        'HOST' : '127.0.0.1',
-        'USER' : 'root',
-        'PASSWORD' : '',
-        'PORT' : 3306,
+        'NAME': os.getenv('CRM_DB_NAME', 'crmdb'),
+        'HOST' : os.getenv('CRM_DB_HOST', '127.0.0.1'),
+        'USER' : os.getenv('CRM_DB_USER', 'root'),
+        'PASSWORD' : os.getenv('CRM_DB_PASSWORD', ''),
+        'PORT' : int(os.getenv('CRM_DB_PORT', '3306')),
         'OPTIONS': {
         'charset': 'utf8mb4',
         'init_command': "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
