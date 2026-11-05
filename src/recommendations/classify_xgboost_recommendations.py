@@ -312,3 +312,4 @@ def classify_recommendations(input_file=None, output_file=None, summary_file=Non
 
 if __name__ == "__main__":
     print(classify_recommendations())
+
