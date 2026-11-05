@@ -1,0 +1,13 @@
+﻿invoice_item_id,tax_invoice_id,invoice_product_name,invoice_hsn_code,candidate_product_id,candidate_product_name,candidate_hsn_code,name_match,hsn_match,review_status
+2,2,Rodent Bait Station (RBS),,,,,no_catalogue_match,not_applicable,manual_mapping_required
+3,2,Rat Snap Trap,,34,Rat Snap Trap,39269099,exact_normalized_name,no_or_missing,manual_validation_required
+4,2,RatOout,,,,,no_catalogue_match,not_applicable,manual_mapping_required
+5,3,UV Fly Control Board,3808,71,UV Fly Control Board,38089990,exact_normalized_name,no_or_missing,manual_validation_required
+6,4,Sanitization Service,998531,70,Sanitization Service,998531,exact_normalized_name,yes,manual_validation_required
+7,5,Cockroach Management,,,,,no_catalogue_match,not_applicable,manual_mapping_required
+8,6,Cockroach Management,,,,,no_catalogue_match,not_applicable,manual_mapping_required
+9,6,Mosquito Management (Spraying),,6,Mosquito Management (Spraying),998531,exact_normalized_name,no_or_missing,manual_validation_required
+10,6,Rodent Management,,,,,no_catalogue_match,not_applicable,manual_mapping_required
+11,7,Cockroach Management,dfdfa,,,,no_catalogue_match,not_applicable,manual_mapping_required
+13,8,Rodent Management,,,,,no_catalogue_match,not_applicable,manual_mapping_required
+14,8,Cockroach & Ant Management Service,,67,Cockroach & Ant Management Service,998531,exact_normalized_name,no_or_missing,manual_validation_required

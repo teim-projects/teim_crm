@@ -1,0 +1,8 @@
+﻿metric,value
+synthetic_interactions,5000
+synthetic_customers,987
+unique_products_used,367
+real_purchase_records_created,0
+real_customer_ids_used,0
+all_product_ids_exist_in_catalogue,True
+all_rows_data_source_synthetic,True

@@ -1,0 +1,1001 @@
+﻿synthetic_customer_id,customer_segment_scenario,customer_type_scenario,data_source,is_real_crm_customer
+SYN_CUST_00001,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00002,Residential,Organization,synthetic,False
+SYN_CUST_00003,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00004,Residential,Organization,synthetic,False
+SYN_CUST_00005,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00006,Residential,Organization,synthetic,False
+SYN_CUST_00007,Residential,Individual,synthetic,False
+SYN_CUST_00008,Residential,Organization,synthetic,False
+SYN_CUST_00009,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00010,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00011,Residential,Organization,synthetic,False
+SYN_CUST_00012,Residential,Individual,synthetic,False
+SYN_CUST_00013,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00014,Residential,Individual,synthetic,False
+SYN_CUST_00015,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00016,Residential,Individual,synthetic,False
+SYN_CUST_00017,Residential,Organization,synthetic,False
+SYN_CUST_00018,Residential,Individual,synthetic,False
+SYN_CUST_00019,Residential,Individual,synthetic,False
+SYN_CUST_00020,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00021,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00022,Residential,Individual,synthetic,False
+SYN_CUST_00023,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00024,Residential,Individual,synthetic,False
+SYN_CUST_00025,Residential,Organization,synthetic,False
+SYN_CUST_00026,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00027,Residential,Individual,synthetic,False
+SYN_CUST_00028,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00029,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00030,Residential,Organization,synthetic,False
+SYN_CUST_00031,Residential,Individual,synthetic,False
+SYN_CUST_00032,Residential,Individual,synthetic,False
+SYN_CUST_00033,Residential,Individual,synthetic,False
+SYN_CUST_00034,Residential,Individual,synthetic,False
+SYN_CUST_00035,Residential,Individual,synthetic,False
+SYN_CUST_00036,Residential,Individual,synthetic,False
+SYN_CUST_00037,Residential,Individual,synthetic,False
+SYN_CUST_00038,Residential,Individual,synthetic,False
+SYN_CUST_00039,Residential,Individual,synthetic,False
+SYN_CUST_00040,Residential,Individual,synthetic,False
+SYN_CUST_00041,Residential,Individual,synthetic,False
+SYN_CUST_00042,Residential,Individual,synthetic,False
+SYN_CUST_00043,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00044,Residential,Organization,synthetic,False
+SYN_CUST_00045,Residential,Individual,synthetic,False
+SYN_CUST_00046,Residential,Individual,synthetic,False
+SYN_CUST_00047,Residential,Individual,synthetic,False
+SYN_CUST_00048,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00049,Residential,Individual,synthetic,False
+SYN_CUST_00050,Residential,Organization,synthetic,False
+SYN_CUST_00051,Residential,Individual,synthetic,False
+SYN_CUST_00052,Residential,Individual,synthetic,False
+SYN_CUST_00053,Residential,Organization,synthetic,False
+SYN_CUST_00054,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00055,Residential,Individual,synthetic,False
+SYN_CUST_00056,Residential,Organization,synthetic,False
+SYN_CUST_00057,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00058,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00059,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00060,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00061,Residential,Individual,synthetic,False
+SYN_CUST_00062,Residential,Individual,synthetic,False
+SYN_CUST_00063,Residential,Individual,synthetic,False
+SYN_CUST_00064,Residential,Organization,synthetic,False
+SYN_CUST_00065,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00066,Residential,Individual,synthetic,False
+SYN_CUST_00067,Residential,Organization,synthetic,False
+SYN_CUST_00068,Residential,Individual,synthetic,False
+SYN_CUST_00069,Residential,Individual,synthetic,False
+SYN_CUST_00070,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00071,Residential,Individual,synthetic,False
+SYN_CUST_00072,Residential,Individual,synthetic,False
+SYN_CUST_00073,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00074,Residential,Organization,synthetic,False
+SYN_CUST_00075,Residential,Organization,synthetic,False
+SYN_CUST_00076,Residential,Individual,synthetic,False
+SYN_CUST_00077,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00078,Residential,Individual,synthetic,False
+SYN_CUST_00079,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00080,Residential,Organization,synthetic,False
+SYN_CUST_00081,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00082,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00083,Residential,Individual,synthetic,False
+SYN_CUST_00084,Residential,Organization,synthetic,False
+SYN_CUST_00085,Residential,Individual,synthetic,False
+SYN_CUST_00086,Residential,Organization,synthetic,False
+SYN_CUST_00087,Residential,Individual,synthetic,False
+SYN_CUST_00088,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00089,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00090,Residential,Organization,synthetic,False
+SYN_CUST_00091,Residential,Individual,synthetic,False
+SYN_CUST_00092,Residential,Individual,synthetic,False
+SYN_CUST_00093,Residential,Individual,synthetic,False
+SYN_CUST_00094,Residential,Individual,synthetic,False
+SYN_CUST_00095,Residential,Individual,synthetic,False
+SYN_CUST_00096,Residential,Individual,synthetic,False
+SYN_CUST_00097,Residential,Individual,synthetic,False
+SYN_CUST_00098,Institutional,Individual,synthetic,False
+SYN_CUST_00099,Residential,Individual,synthetic,False
+SYN_CUST_00100,Residential,Individual,synthetic,False
+SYN_CUST_00101,Residential,Individual,synthetic,False
+SYN_CUST_00102,Residential,Individual,synthetic,False
+SYN_CUST_00103,Residential,Individual,synthetic,False
+SYN_CUST_00104,Residential,Individual,synthetic,False
+SYN_CUST_00105,Residential,Individual,synthetic,False
+SYN_CUST_00106,Residential,Individual,synthetic,False
+SYN_CUST_00107,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00108,Institutional,Organization,synthetic,False
+SYN_CUST_00109,Residential,Individual,synthetic,False
+SYN_CUST_00110,Residential,Individual,synthetic,False
+SYN_CUST_00111,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00112,Residential,Organization,synthetic,False
+SYN_CUST_00113,Residential,Individual,synthetic,False
+SYN_CUST_00114,Residential,Individual,synthetic,False
+SYN_CUST_00115,Residential,Individual,synthetic,False
+SYN_CUST_00116,Residential,Individual,synthetic,False
+SYN_CUST_00117,Residential,Individual,synthetic,False
+SYN_CUST_00118,Residential,Individual,synthetic,False
+SYN_CUST_00119,Residential,Individual,synthetic,False
+SYN_CUST_00120,Residential,Organization,synthetic,False
+SYN_CUST_00121,Residential,Individual,synthetic,False
+SYN_CUST_00122,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00123,Institutional,Individual,synthetic,False
+SYN_CUST_00124,Residential,Individual,synthetic,False
+SYN_CUST_00125,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00126,Residential,Individual,synthetic,False
+SYN_CUST_00127,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00128,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00129,Residential,Individual,synthetic,False
+SYN_CUST_00130,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00131,Residential,Individual,synthetic,False
+SYN_CUST_00132,Residential,Individual,synthetic,False
+SYN_CUST_00133,Residential,Individual,synthetic,False
+SYN_CUST_00134,Residential,Organization,synthetic,False
+SYN_CUST_00135,Residential,Organization,synthetic,False
+SYN_CUST_00136,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00137,Residential,Individual,synthetic,False
+SYN_CUST_00138,Institutional,Individual,synthetic,False
+SYN_CUST_00139,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00140,Residential,Organization,synthetic,False
+SYN_CUST_00141,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00142,Residential,Individual,synthetic,False
+SYN_CUST_00143,Residential,Individual,synthetic,False
+SYN_CUST_00144,Residential,Individual,synthetic,False
+SYN_CUST_00145,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00146,Residential,Individual,synthetic,False
+SYN_CUST_00147,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00148,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00149,Residential,Organization,synthetic,False
+SYN_CUST_00150,Residential,Individual,synthetic,False
+SYN_CUST_00151,Residential,Organization,synthetic,False
+SYN_CUST_00152,Residential,Individual,synthetic,False
+SYN_CUST_00153,Residential,Organization,synthetic,False
+SYN_CUST_00154,Residential,Individual,synthetic,False
+SYN_CUST_00155,Residential,Individual,synthetic,False
+SYN_CUST_00156,Residential,Organization,synthetic,False
+SYN_CUST_00157,Residential,Individual,synthetic,False
+SYN_CUST_00158,Residential,Individual,synthetic,False
+SYN_CUST_00159,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00160,Residential,Individual,synthetic,False
+SYN_CUST_00161,Residential,Individual,synthetic,False
+SYN_CUST_00162,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00163,Residential,Organization,synthetic,False
+SYN_CUST_00164,Residential,Individual,synthetic,False
+SYN_CUST_00165,Residential,Individual,synthetic,False
+SYN_CUST_00166,Residential,Individual,synthetic,False
+SYN_CUST_00167,Residential,Organization,synthetic,False
+SYN_CUST_00168,Residential,Individual,synthetic,False
+SYN_CUST_00169,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00170,Residential,Individual,synthetic,False
+SYN_CUST_00171,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00172,Institutional,Individual,synthetic,False
+SYN_CUST_00173,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00174,Residential,Individual,synthetic,False
+SYN_CUST_00175,Residential,Individual,synthetic,False
+SYN_CUST_00176,Residential,Organization,synthetic,False
+SYN_CUST_00177,Residential,Organization,synthetic,False
+SYN_CUST_00178,Residential,Individual,synthetic,False
+SYN_CUST_00179,Residential,Individual,synthetic,False
+SYN_CUST_00180,Residential,Individual,synthetic,False
+SYN_CUST_00181,Residential,Individual,synthetic,False
+SYN_CUST_00182,Residential,Individual,synthetic,False
+SYN_CUST_00183,Residential,Individual,synthetic,False
+SYN_CUST_00184,Residential,Individual,synthetic,False
+SYN_CUST_00185,Residential,Individual,synthetic,False
+SYN_CUST_00186,Residential,Individual,synthetic,False
+SYN_CUST_00187,Residential,Individual,synthetic,False
+SYN_CUST_00188,Institutional,Individual,synthetic,False
+SYN_CUST_00189,Residential,Organization,synthetic,False
+SYN_CUST_00190,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00191,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00192,Residential,Organization,synthetic,False
+SYN_CUST_00193,Residential,Individual,synthetic,False
+SYN_CUST_00194,Residential,Organization,synthetic,False
+SYN_CUST_00195,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00196,Residential,Organization,synthetic,False
+SYN_CUST_00197,Residential,Individual,synthetic,False
+SYN_CUST_00198,Residential,Organization,synthetic,False
+SYN_CUST_00199,Residential,Individual,synthetic,False
+SYN_CUST_00200,Residential,Organization,synthetic,False
+SYN_CUST_00201,Institutional,Organization,synthetic,False
+SYN_CUST_00202,Residential,Individual,synthetic,False
+SYN_CUST_00203,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00204,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00205,Residential,Individual,synthetic,False
+SYN_CUST_00206,Residential,Individual,synthetic,False
+SYN_CUST_00207,Residential,Individual,synthetic,False
+SYN_CUST_00208,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00209,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00210,Residential,Individual,synthetic,False
+SYN_CUST_00211,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00212,Residential,Individual,synthetic,False
+SYN_CUST_00213,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00214,Residential,Individual,synthetic,False
+SYN_CUST_00215,Residential,Organization,synthetic,False
+SYN_CUST_00216,Residential,Individual,synthetic,False
+SYN_CUST_00217,Institutional,Individual,synthetic,False
+SYN_CUST_00218,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00219,Residential,Organization,synthetic,False
+SYN_CUST_00220,Residential,Organization,synthetic,False
+SYN_CUST_00221,Residential,Organization,synthetic,False
+SYN_CUST_00222,Residential,Individual,synthetic,False
+SYN_CUST_00223,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00224,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00225,Residential,Individual,synthetic,False
+SYN_CUST_00226,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00227,Residential,Individual,synthetic,False
+SYN_CUST_00228,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00229,Residential,Individual,synthetic,False
+SYN_CUST_00230,Residential,Individual,synthetic,False
+SYN_CUST_00231,Residential,Individual,synthetic,False
+SYN_CUST_00232,Residential,Individual,synthetic,False
+SYN_CUST_00233,Residential,Individual,synthetic,False
+SYN_CUST_00234,Residential,Individual,synthetic,False
+SYN_CUST_00235,Residential,Individual,synthetic,False
+SYN_CUST_00236,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00237,Residential,Individual,synthetic,False
+SYN_CUST_00238,Residential,Individual,synthetic,False
+SYN_CUST_00239,Residential,Individual,synthetic,False
+SYN_CUST_00240,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00241,Residential,Individual,synthetic,False
+SYN_CUST_00242,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00243,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00244,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00245,Residential,Individual,synthetic,False
+SYN_CUST_00246,Residential,Individual,synthetic,False
+SYN_CUST_00247,Residential,Organization,synthetic,False
+SYN_CUST_00248,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00249,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00250,Residential,Individual,synthetic,False
+SYN_CUST_00251,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00252,Residential,Individual,synthetic,False
+SYN_CUST_00253,Residential,Individual,synthetic,False
+SYN_CUST_00254,Residential,Individual,synthetic,False
+SYN_CUST_00255,Residential,Individual,synthetic,False
+SYN_CUST_00256,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00257,Residential,Organization,synthetic,False
+SYN_CUST_00258,Residential,Individual,synthetic,False
+SYN_CUST_00259,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00260,Residential,Individual,synthetic,False
+SYN_CUST_00261,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00262,Residential,Organization,synthetic,False
+SYN_CUST_00263,Residential,Individual,synthetic,False
+SYN_CUST_00264,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00265,Residential,Individual,synthetic,False
+SYN_CUST_00266,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00267,Residential,Individual,synthetic,False
+SYN_CUST_00268,Residential,Individual,synthetic,False
+SYN_CUST_00269,Residential,Organization,synthetic,False
+SYN_CUST_00270,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00271,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00272,Residential,Individual,synthetic,False
+SYN_CUST_00273,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00274,Residential,Individual,synthetic,False
+SYN_CUST_00275,Residential,Individual,synthetic,False
+SYN_CUST_00276,Residential,Individual,synthetic,False
+SYN_CUST_00277,Residential,Individual,synthetic,False
+SYN_CUST_00278,Residential,Individual,synthetic,False
+SYN_CUST_00279,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00280,Residential,Individual,synthetic,False
+SYN_CUST_00281,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00282,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00283,Residential,Organization,synthetic,False
+SYN_CUST_00284,Residential,Individual,synthetic,False
+SYN_CUST_00285,Residential,Organization,synthetic,False
+SYN_CUST_00286,Residential,Individual,synthetic,False
+SYN_CUST_00287,Residential,Individual,synthetic,False
+SYN_CUST_00288,Residential,Individual,synthetic,False
+SYN_CUST_00289,Residential,Individual,synthetic,False
+SYN_CUST_00290,Residential,Individual,synthetic,False
+SYN_CUST_00291,Residential,Individual,synthetic,False
+SYN_CUST_00292,Residential,Organization,synthetic,False
+SYN_CUST_00293,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00294,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00295,Residential,Individual,synthetic,False
+SYN_CUST_00296,Residential,Organization,synthetic,False
+SYN_CUST_00297,Residential,Individual,synthetic,False
+SYN_CUST_00298,Residential,Individual,synthetic,False
+SYN_CUST_00299,Institutional,Organization,synthetic,False
+SYN_CUST_00300,Residential,Individual,synthetic,False
+SYN_CUST_00301,Residential,Individual,synthetic,False
+SYN_CUST_00302,Residential,Individual,synthetic,False
+SYN_CUST_00303,Residential,Individual,synthetic,False
+SYN_CUST_00304,Residential,Individual,synthetic,False
+SYN_CUST_00305,Residential,Individual,synthetic,False
+SYN_CUST_00306,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00307,Residential,Individual,synthetic,False
+SYN_CUST_00308,Residential,Individual,synthetic,False
+SYN_CUST_00309,Residential,Organization,synthetic,False
+SYN_CUST_00310,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00311,Residential,Organization,synthetic,False
+SYN_CUST_00312,Residential,Individual,synthetic,False
+SYN_CUST_00313,Residential,Individual,synthetic,False
+SYN_CUST_00314,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00315,Residential,Individual,synthetic,False
+SYN_CUST_00316,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00317,Residential,Individual,synthetic,False
+SYN_CUST_00318,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00319,Institutional,Individual,synthetic,False
+SYN_CUST_00320,Residential,Organization,synthetic,False
+SYN_CUST_00321,Residential,Organization,synthetic,False
+SYN_CUST_00322,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00323,Residential,Individual,synthetic,False
+SYN_CUST_00324,Residential,Organization,synthetic,False
+SYN_CUST_00325,Residential,Individual,synthetic,False
+SYN_CUST_00326,Residential,Individual,synthetic,False
+SYN_CUST_00327,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00328,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00329,Residential,Individual,synthetic,False
+SYN_CUST_00330,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00331,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00332,Residential,Individual,synthetic,False
+SYN_CUST_00333,Residential,Individual,synthetic,False
+SYN_CUST_00334,Residential,Individual,synthetic,False
+SYN_CUST_00335,Residential,Individual,synthetic,False
+SYN_CUST_00336,Residential,Individual,synthetic,False
+SYN_CUST_00337,Residential,Organization,synthetic,False
+SYN_CUST_00338,Residential,Individual,synthetic,False
+SYN_CUST_00339,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00340,Residential,Individual,synthetic,False
+SYN_CUST_00341,Residential,Individual,synthetic,False
+SYN_CUST_00342,Residential,Individual,synthetic,False
+SYN_CUST_00343,Residential,Individual,synthetic,False
+SYN_CUST_00344,Residential,Individual,synthetic,False
+SYN_CUST_00345,Residential,Organization,synthetic,False
+SYN_CUST_00346,Residential,Organization,synthetic,False
+SYN_CUST_00347,Residential,Individual,synthetic,False
+SYN_CUST_00348,Residential,Individual,synthetic,False
+SYN_CUST_00349,Residential,Individual,synthetic,False
+SYN_CUST_00350,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00351,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00352,Residential,Individual,synthetic,False
+SYN_CUST_00353,Residential,Individual,synthetic,False
+SYN_CUST_00354,Residential,Organization,synthetic,False
+SYN_CUST_00355,Residential,Organization,synthetic,False
+SYN_CUST_00356,Residential,Individual,synthetic,False
+SYN_CUST_00357,Residential,Organization,synthetic,False
+SYN_CUST_00358,Residential,Individual,synthetic,False
+SYN_CUST_00359,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00360,Residential,Organization,synthetic,False
+SYN_CUST_00361,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00362,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00363,Residential,Individual,synthetic,False
+SYN_CUST_00364,Residential,Individual,synthetic,False
+SYN_CUST_00365,Residential,Individual,synthetic,False
+SYN_CUST_00366,Residential,Individual,synthetic,False
+SYN_CUST_00367,Residential,Individual,synthetic,False
+SYN_CUST_00368,Residential,Individual,synthetic,False
+SYN_CUST_00369,Institutional,Individual,synthetic,False
+SYN_CUST_00370,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00371,Residential,Individual,synthetic,False
+SYN_CUST_00372,Residential,Individual,synthetic,False
+SYN_CUST_00373,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00374,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00375,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00376,Residential,Organization,synthetic,False
+SYN_CUST_00377,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00378,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00379,Residential,Individual,synthetic,False
+SYN_CUST_00380,Residential,Individual,synthetic,False
+SYN_CUST_00381,Residential,Individual,synthetic,False
+SYN_CUST_00382,Residential,Organization,synthetic,False
+SYN_CUST_00383,Residential,Individual,synthetic,False
+SYN_CUST_00384,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00385,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00386,Residential,Organization,synthetic,False
+SYN_CUST_00387,Residential,Individual,synthetic,False
+SYN_CUST_00388,Residential,Individual,synthetic,False
+SYN_CUST_00389,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00390,Residential,Individual,synthetic,False
+SYN_CUST_00391,Residential,Individual,synthetic,False
+SYN_CUST_00392,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00393,Residential,Individual,synthetic,False
+SYN_CUST_00394,Residential,Individual,synthetic,False
+SYN_CUST_00395,Residential,Individual,synthetic,False
+SYN_CUST_00396,Residential,Individual,synthetic,False
+SYN_CUST_00397,Residential,Individual,synthetic,False
+SYN_CUST_00398,Residential,Individual,synthetic,False
+SYN_CUST_00399,Residential,Individual,synthetic,False
+SYN_CUST_00400,Residential,Individual,synthetic,False
+SYN_CUST_00401,Residential,Individual,synthetic,False
+SYN_CUST_00402,Residential,Individual,synthetic,False
+SYN_CUST_00403,Residential,Organization,synthetic,False
+SYN_CUST_00404,Residential,Individual,synthetic,False
+SYN_CUST_00405,Residential,Individual,synthetic,False
+SYN_CUST_00406,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00407,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00408,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00409,Residential,Individual,synthetic,False
+SYN_CUST_00410,Residential,Individual,synthetic,False
+SYN_CUST_00411,Residential,Individual,synthetic,False
+SYN_CUST_00412,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00413,Residential,Individual,synthetic,False
+SYN_CUST_00414,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00415,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00416,Residential,Individual,synthetic,False
+SYN_CUST_00417,Residential,Individual,synthetic,False
+SYN_CUST_00418,Residential,Individual,synthetic,False
+SYN_CUST_00419,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00420,Residential,Organization,synthetic,False
+SYN_CUST_00421,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00422,Residential,Individual,synthetic,False
+SYN_CUST_00423,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00424,Residential,Individual,synthetic,False
+SYN_CUST_00425,Residential,Organization,synthetic,False
+SYN_CUST_00426,Residential,Organization,synthetic,False
+SYN_CUST_00427,Residential,Organization,synthetic,False
+SYN_CUST_00428,Residential,Individual,synthetic,False
+SYN_CUST_00429,Residential,Organization,synthetic,False
+SYN_CUST_00430,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00431,Residential,Individual,synthetic,False
+SYN_CUST_00432,Residential,Individual,synthetic,False
+SYN_CUST_00433,Residential,Individual,synthetic,False
+SYN_CUST_00434,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00435,Residential,Individual,synthetic,False
+SYN_CUST_00436,Residential,Individual,synthetic,False
+SYN_CUST_00437,Residential,Organization,synthetic,False
+SYN_CUST_00438,Residential,Individual,synthetic,False
+SYN_CUST_00439,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00440,Residential,Individual,synthetic,False
+SYN_CUST_00441,Residential,Organization,synthetic,False
+SYN_CUST_00442,Residential,Individual,synthetic,False
+SYN_CUST_00443,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00444,Residential,Organization,synthetic,False
+SYN_CUST_00445,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00446,Residential,Individual,synthetic,False
+SYN_CUST_00447,Residential,Individual,synthetic,False
+SYN_CUST_00448,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00449,Residential,Individual,synthetic,False
+SYN_CUST_00450,Residential,Individual,synthetic,False
+SYN_CUST_00451,Residential,Individual,synthetic,False
+SYN_CUST_00452,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00453,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00454,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00455,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00456,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00457,Residential,Individual,synthetic,False
+SYN_CUST_00458,Residential,Individual,synthetic,False
+SYN_CUST_00459,Residential,Individual,synthetic,False
+SYN_CUST_00460,Residential,Individual,synthetic,False
+SYN_CUST_00461,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00462,Residential,Individual,synthetic,False
+SYN_CUST_00463,Residential,Individual,synthetic,False
+SYN_CUST_00464,Residential,Individual,synthetic,False
+SYN_CUST_00465,Residential,Individual,synthetic,False
+SYN_CUST_00466,Residential,Individual,synthetic,False
+SYN_CUST_00467,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00468,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00469,Residential,Individual,synthetic,False
+SYN_CUST_00470,Residential,Individual,synthetic,False
+SYN_CUST_00471,Residential,Individual,synthetic,False
+SYN_CUST_00472,Residential,Individual,synthetic,False
+SYN_CUST_00473,Residential,Individual,synthetic,False
+SYN_CUST_00474,Residential,Individual,synthetic,False
+SYN_CUST_00475,Residential,Individual,synthetic,False
+SYN_CUST_00476,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00477,Residential,Organization,synthetic,False
+SYN_CUST_00478,Residential,Organization,synthetic,False
+SYN_CUST_00479,Residential,Individual,synthetic,False
+SYN_CUST_00480,Residential,Individual,synthetic,False
+SYN_CUST_00481,Residential,Individual,synthetic,False
+SYN_CUST_00482,Residential,Individual,synthetic,False
+SYN_CUST_00483,Residential,Individual,synthetic,False
+SYN_CUST_00484,Residential,Individual,synthetic,False
+SYN_CUST_00485,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00486,Residential,Individual,synthetic,False
+SYN_CUST_00487,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00488,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00489,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00490,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00491,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00492,Residential,Individual,synthetic,False
+SYN_CUST_00493,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00494,Residential,Organization,synthetic,False
+SYN_CUST_00495,Residential,Organization,synthetic,False
+SYN_CUST_00496,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00497,Residential,Individual,synthetic,False
+SYN_CUST_00498,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00499,Residential,Individual,synthetic,False
+SYN_CUST_00500,Residential,Individual,synthetic,False
+SYN_CUST_00501,Residential,Individual,synthetic,False
+SYN_CUST_00502,Residential,Individual,synthetic,False
+SYN_CUST_00503,Residential,Individual,synthetic,False
+SYN_CUST_00504,Residential,Individual,synthetic,False
+SYN_CUST_00505,Residential,Individual,synthetic,False
+SYN_CUST_00506,Residential,Individual,synthetic,False
+SYN_CUST_00507,Residential,Individual,synthetic,False
+SYN_CUST_00508,Residential,Individual,synthetic,False
+SYN_CUST_00509,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00510,Residential,Individual,synthetic,False
+SYN_CUST_00511,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00512,Residential,Individual,synthetic,False
+SYN_CUST_00513,Residential,Individual,synthetic,False
+SYN_CUST_00514,Residential,Organization,synthetic,False
+SYN_CUST_00515,Residential,Individual,synthetic,False
+SYN_CUST_00516,Residential,Individual,synthetic,False
+SYN_CUST_00517,Residential,Individual,synthetic,False
+SYN_CUST_00518,Residential,Organization,synthetic,False
+SYN_CUST_00519,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00520,Residential,Individual,synthetic,False
+SYN_CUST_00521,Residential,Individual,synthetic,False
+SYN_CUST_00522,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00523,Institutional,Individual,synthetic,False
+SYN_CUST_00524,Residential,Individual,synthetic,False
+SYN_CUST_00525,Residential,Organization,synthetic,False
+SYN_CUST_00526,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00527,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00528,Residential,Individual,synthetic,False
+SYN_CUST_00529,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00530,Residential,Individual,synthetic,False
+SYN_CUST_00531,Residential,Individual,synthetic,False
+SYN_CUST_00532,Residential,Individual,synthetic,False
+SYN_CUST_00533,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00534,Residential,Individual,synthetic,False
+SYN_CUST_00535,Residential,Organization,synthetic,False
+SYN_CUST_00536,Residential,Individual,synthetic,False
+SYN_CUST_00537,Residential,Individual,synthetic,False
+SYN_CUST_00538,Residential,Individual,synthetic,False
+SYN_CUST_00539,Residential,Individual,synthetic,False
+SYN_CUST_00540,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00541,Residential,Individual,synthetic,False
+SYN_CUST_00542,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00543,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00544,Residential,Individual,synthetic,False
+SYN_CUST_00545,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00546,Residential,Individual,synthetic,False
+SYN_CUST_00547,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00548,Residential,Individual,synthetic,False
+SYN_CUST_00549,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00550,Residential,Individual,synthetic,False
+SYN_CUST_00551,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00552,Residential,Individual,synthetic,False
+SYN_CUST_00553,Residential,Organization,synthetic,False
+SYN_CUST_00554,Residential,Individual,synthetic,False
+SYN_CUST_00555,Residential,Individual,synthetic,False
+SYN_CUST_00556,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00557,Residential,Individual,synthetic,False
+SYN_CUST_00558,Residential,Individual,synthetic,False
+SYN_CUST_00559,Residential,Organization,synthetic,False
+SYN_CUST_00560,Residential,Individual,synthetic,False
+SYN_CUST_00561,Residential,Organization,synthetic,False
+SYN_CUST_00562,Residential,Individual,synthetic,False
+SYN_CUST_00563,Residential,Individual,synthetic,False
+SYN_CUST_00564,Residential,Individual,synthetic,False
+SYN_CUST_00565,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00566,Residential,Individual,synthetic,False
+SYN_CUST_00567,Residential,Individual,synthetic,False
+SYN_CUST_00568,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00569,Residential,Individual,synthetic,False
+SYN_CUST_00570,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00571,Residential,Individual,synthetic,False
+SYN_CUST_00572,Residential,Individual,synthetic,False
+SYN_CUST_00573,Residential,Organization,synthetic,False
+SYN_CUST_00574,Residential,Individual,synthetic,False
+SYN_CUST_00575,Residential,Individual,synthetic,False
+SYN_CUST_00576,Residential,Individual,synthetic,False
+SYN_CUST_00577,Residential,Organization,synthetic,False
+SYN_CUST_00578,Residential,Individual,synthetic,False
+SYN_CUST_00579,Residential,Organization,synthetic,False
+SYN_CUST_00580,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00581,Residential,Individual,synthetic,False
+SYN_CUST_00582,Residential,Individual,synthetic,False
+SYN_CUST_00583,Residential,Individual,synthetic,False
+SYN_CUST_00584,Residential,Individual,synthetic,False
+SYN_CUST_00585,Residential,Individual,synthetic,False
+SYN_CUST_00586,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00587,Residential,Organization,synthetic,False
+SYN_CUST_00588,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00589,Residential,Individual,synthetic,False
+SYN_CUST_00590,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00591,Residential,Individual,synthetic,False
+SYN_CUST_00592,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00593,Residential,Individual,synthetic,False
+SYN_CUST_00594,Residential,Individual,synthetic,False
+SYN_CUST_00595,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00596,Residential,Individual,synthetic,False
+SYN_CUST_00597,Residential,Individual,synthetic,False
+SYN_CUST_00598,Residential,Individual,synthetic,False
+SYN_CUST_00599,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00600,Residential,Individual,synthetic,False
+SYN_CUST_00601,Residential,Individual,synthetic,False
+SYN_CUST_00602,Residential,Organization,synthetic,False
+SYN_CUST_00603,Residential,Individual,synthetic,False
+SYN_CUST_00604,Residential,Organization,synthetic,False
+SYN_CUST_00605,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00606,Residential,Organization,synthetic,False
+SYN_CUST_00607,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00608,Residential,Individual,synthetic,False
+SYN_CUST_00609,Institutional,Individual,synthetic,False
+SYN_CUST_00610,Residential,Organization,synthetic,False
+SYN_CUST_00611,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00612,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00613,Residential,Organization,synthetic,False
+SYN_CUST_00614,Residential,Individual,synthetic,False
+SYN_CUST_00615,Residential,Individual,synthetic,False
+SYN_CUST_00616,Residential,Individual,synthetic,False
+SYN_CUST_00617,Residential,Individual,synthetic,False
+SYN_CUST_00618,Residential,Organization,synthetic,False
+SYN_CUST_00619,Residential,Individual,synthetic,False
+SYN_CUST_00620,Residential,Individual,synthetic,False
+SYN_CUST_00621,Residential,Individual,synthetic,False
+SYN_CUST_00622,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00623,Residential,Individual,synthetic,False
+SYN_CUST_00624,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00625,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00626,Residential,Individual,synthetic,False
+SYN_CUST_00627,Residential,Individual,synthetic,False
+SYN_CUST_00628,Residential,Organization,synthetic,False
+SYN_CUST_00629,Residential,Organization,synthetic,False
+SYN_CUST_00630,Residential,Organization,synthetic,False
+SYN_CUST_00631,Residential,Individual,synthetic,False
+SYN_CUST_00632,Residential,Individual,synthetic,False
+SYN_CUST_00633,Institutional,Individual,synthetic,False
+SYN_CUST_00634,Residential,Individual,synthetic,False
+SYN_CUST_00635,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00636,Residential,Organization,synthetic,False
+SYN_CUST_00637,Residential,Individual,synthetic,False
+SYN_CUST_00638,Residential,Organization,synthetic,False
+SYN_CUST_00639,Residential,Organization,synthetic,False
+SYN_CUST_00640,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00641,Residential,Organization,synthetic,False
+SYN_CUST_00642,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00643,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00644,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00645,Residential,Individual,synthetic,False
+SYN_CUST_00646,Residential,Individual,synthetic,False
+SYN_CUST_00647,Residential,Individual,synthetic,False
+SYN_CUST_00648,Residential,Individual,synthetic,False
+SYN_CUST_00649,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00650,Residential,Individual,synthetic,False
+SYN_CUST_00651,Residential,Individual,synthetic,False
+SYN_CUST_00652,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00653,Residential,Individual,synthetic,False
+SYN_CUST_00654,Residential,Individual,synthetic,False
+SYN_CUST_00655,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00656,Residential,Organization,synthetic,False
+SYN_CUST_00657,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00658,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00659,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00660,Residential,Individual,synthetic,False
+SYN_CUST_00661,Residential,Individual,synthetic,False
+SYN_CUST_00662,Residential,Organization,synthetic,False
+SYN_CUST_00663,Residential,Individual,synthetic,False
+SYN_CUST_00664,Residential,Organization,synthetic,False
+SYN_CUST_00665,Residential,Individual,synthetic,False
+SYN_CUST_00666,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00667,Residential,Organization,synthetic,False
+SYN_CUST_00668,Residential,Individual,synthetic,False
+SYN_CUST_00669,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00670,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00671,Residential,Organization,synthetic,False
+SYN_CUST_00672,Residential,Individual,synthetic,False
+SYN_CUST_00673,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00674,Residential,Organization,synthetic,False
+SYN_CUST_00675,Residential,Individual,synthetic,False
+SYN_CUST_00676,Residential,Individual,synthetic,False
+SYN_CUST_00677,Residential,Individual,synthetic,False
+SYN_CUST_00678,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00679,Residential,Organization,synthetic,False
+SYN_CUST_00680,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00681,Residential,Individual,synthetic,False
+SYN_CUST_00682,Residential,Individual,synthetic,False
+SYN_CUST_00683,Residential,Individual,synthetic,False
+SYN_CUST_00684,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00685,Residential,Individual,synthetic,False
+SYN_CUST_00686,Residential,Individual,synthetic,False
+SYN_CUST_00687,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00688,Residential,Individual,synthetic,False
+SYN_CUST_00689,Residential,Organization,synthetic,False
+SYN_CUST_00690,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00691,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00692,Residential,Organization,synthetic,False
+SYN_CUST_00693,Residential,Organization,synthetic,False
+SYN_CUST_00694,Residential,Individual,synthetic,False
+SYN_CUST_00695,Residential,Individual,synthetic,False
+SYN_CUST_00696,Residential,Individual,synthetic,False
+SYN_CUST_00697,Residential,Individual,synthetic,False
+SYN_CUST_00698,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00699,Residential,Individual,synthetic,False
+SYN_CUST_00700,Residential,Organization,synthetic,False
+SYN_CUST_00701,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00702,Residential,Organization,synthetic,False
+SYN_CUST_00703,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00704,Residential,Individual,synthetic,False
+SYN_CUST_00705,Residential,Individual,synthetic,False
+SYN_CUST_00706,Residential,Individual,synthetic,False
+SYN_CUST_00707,Residential,Individual,synthetic,False
+SYN_CUST_00708,Residential,Individual,synthetic,False
+SYN_CUST_00709,Residential,Individual,synthetic,False
+SYN_CUST_00710,Residential,Individual,synthetic,False
+SYN_CUST_00711,Residential,Individual,synthetic,False
+SYN_CUST_00712,Residential,Individual,synthetic,False
+SYN_CUST_00713,Residential,Individual,synthetic,False
+SYN_CUST_00714,Residential,Individual,synthetic,False
+SYN_CUST_00715,Residential,Organization,synthetic,False
+SYN_CUST_00716,Residential,Organization,synthetic,False
+SYN_CUST_00717,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00718,Residential,Individual,synthetic,False
+SYN_CUST_00719,Residential,Individual,synthetic,False
+SYN_CUST_00720,Residential,Individual,synthetic,False
+SYN_CUST_00721,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00722,Residential,Individual,synthetic,False
+SYN_CUST_00723,Residential,Organization,synthetic,False
+SYN_CUST_00724,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00725,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00726,Residential,Individual,synthetic,False
+SYN_CUST_00727,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00728,Residential,Individual,synthetic,False
+SYN_CUST_00729,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00730,Institutional,Organization,synthetic,False
+SYN_CUST_00731,Residential,Individual,synthetic,False
+SYN_CUST_00732,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00733,Residential,Individual,synthetic,False
+SYN_CUST_00734,Residential,Organization,synthetic,False
+SYN_CUST_00735,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00736,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00737,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00738,Residential,Individual,synthetic,False
+SYN_CUST_00739,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00740,Residential,Individual,synthetic,False
+SYN_CUST_00741,Residential,Individual,synthetic,False
+SYN_CUST_00742,Residential,Individual,synthetic,False
+SYN_CUST_00743,Residential,Individual,synthetic,False
+SYN_CUST_00744,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00745,Residential,Individual,synthetic,False
+SYN_CUST_00746,Residential,Individual,synthetic,False
+SYN_CUST_00747,Residential,Individual,synthetic,False
+SYN_CUST_00748,Residential,Individual,synthetic,False
+SYN_CUST_00749,Residential,Organization,synthetic,False
+SYN_CUST_00750,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00751,Residential,Individual,synthetic,False
+SYN_CUST_00752,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00753,Residential,Individual,synthetic,False
+SYN_CUST_00754,Residential,Organization,synthetic,False
+SYN_CUST_00755,Residential,Individual,synthetic,False
+SYN_CUST_00756,Residential,Individual,synthetic,False
+SYN_CUST_00757,Residential,Individual,synthetic,False
+SYN_CUST_00758,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00759,Residential,Individual,synthetic,False
+SYN_CUST_00760,Residential,Individual,synthetic,False
+SYN_CUST_00761,Residential,Individual,synthetic,False
+SYN_CUST_00762,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00763,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00764,Residential,Individual,synthetic,False
+SYN_CUST_00765,Residential,Individual,synthetic,False
+SYN_CUST_00766,Residential,Individual,synthetic,False
+SYN_CUST_00767,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00768,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00769,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00770,Residential,Individual,synthetic,False
+SYN_CUST_00771,Residential,Individual,synthetic,False
+SYN_CUST_00772,Residential,Individual,synthetic,False
+SYN_CUST_00773,Residential,Individual,synthetic,False
+SYN_CUST_00774,Residential,Organization,synthetic,False
+SYN_CUST_00775,Residential,Individual,synthetic,False
+SYN_CUST_00776,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00777,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00778,Residential,Individual,synthetic,False
+SYN_CUST_00779,Residential,Individual,synthetic,False
+SYN_CUST_00780,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00781,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00782,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00783,Residential,Individual,synthetic,False
+SYN_CUST_00784,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00785,Residential,Individual,synthetic,False
+SYN_CUST_00786,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00787,Residential,Individual,synthetic,False
+SYN_CUST_00788,Residential,Organization,synthetic,False
+SYN_CUST_00789,Residential,Individual,synthetic,False
+SYN_CUST_00790,Residential,Individual,synthetic,False
+SYN_CUST_00791,Residential,Individual,synthetic,False
+SYN_CUST_00792,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00793,Residential,Individual,synthetic,False
+SYN_CUST_00794,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00795,Residential,Organization,synthetic,False
+SYN_CUST_00796,Residential,Individual,synthetic,False
+SYN_CUST_00797,Residential,Individual,synthetic,False
+SYN_CUST_00798,Residential,Organization,synthetic,False
+SYN_CUST_00799,Residential,Individual,synthetic,False
+SYN_CUST_00800,Residential,Individual,synthetic,False
+SYN_CUST_00801,Residential,Individual,synthetic,False
+SYN_CUST_00802,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00803,Residential,Individual,synthetic,False
+SYN_CUST_00804,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00805,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00806,Residential,Organization,synthetic,False
+SYN_CUST_00807,Residential,Individual,synthetic,False
+SYN_CUST_00808,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00809,Residential,Individual,synthetic,False
+SYN_CUST_00810,Residential,Organization,synthetic,False
+SYN_CUST_00811,Residential,Individual,synthetic,False
+SYN_CUST_00812,Residential,Organization,synthetic,False
+SYN_CUST_00813,Residential,Individual,synthetic,False
+SYN_CUST_00814,Residential,Individual,synthetic,False
+SYN_CUST_00815,Residential,Organization,synthetic,False
+SYN_CUST_00816,Residential,Individual,synthetic,False
+SYN_CUST_00817,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00818,Residential,Individual,synthetic,False
+SYN_CUST_00819,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00820,Residential,Organization,synthetic,False
+SYN_CUST_00821,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00822,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00823,Residential,Individual,synthetic,False
+SYN_CUST_00824,Residential,Organization,synthetic,False
+SYN_CUST_00825,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00826,Residential,Organization,synthetic,False
+SYN_CUST_00827,Residential,Individual,synthetic,False
+SYN_CUST_00828,Residential,Individual,synthetic,False
+SYN_CUST_00829,Residential,Individual,synthetic,False
+SYN_CUST_00830,Residential,Individual,synthetic,False
+SYN_CUST_00831,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00832,Residential,Individual,synthetic,False
+SYN_CUST_00833,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00834,Residential,Individual,synthetic,False
+SYN_CUST_00835,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00836,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00837,Residential,Individual,synthetic,False
+SYN_CUST_00838,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00839,Residential,Individual,synthetic,False
+SYN_CUST_00840,Residential,Individual,synthetic,False
+SYN_CUST_00841,Institutional,Individual,synthetic,False
+SYN_CUST_00842,Residential,Individual,synthetic,False
+SYN_CUST_00843,Residential,Organization,synthetic,False
+SYN_CUST_00844,Residential,Individual,synthetic,False
+SYN_CUST_00845,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00846,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00847,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00848,Residential,Organization,synthetic,False
+SYN_CUST_00849,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00850,Residential,Individual,synthetic,False
+SYN_CUST_00851,Residential,Individual,synthetic,False
+SYN_CUST_00852,Residential,Individual,synthetic,False
+SYN_CUST_00853,Residential,Individual,synthetic,False
+SYN_CUST_00854,Residential,Organization,synthetic,False
+SYN_CUST_00855,Residential,Individual,synthetic,False
+SYN_CUST_00856,Residential,Organization,synthetic,False
+SYN_CUST_00857,Residential,Individual,synthetic,False
+SYN_CUST_00858,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00859,Residential,Individual,synthetic,False
+SYN_CUST_00860,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00861,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00862,Residential,Individual,synthetic,False
+SYN_CUST_00863,Residential,Individual,synthetic,False
+SYN_CUST_00864,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00865,Residential,Organization,synthetic,False
+SYN_CUST_00866,Residential,Individual,synthetic,False
+SYN_CUST_00867,Residential,Individual,synthetic,False
+SYN_CUST_00868,Residential,Individual,synthetic,False
+SYN_CUST_00869,Residential,Individual,synthetic,False
+SYN_CUST_00870,Residential,Individual,synthetic,False
+SYN_CUST_00871,Residential,Individual,synthetic,False
+SYN_CUST_00872,Residential,Individual,synthetic,False
+SYN_CUST_00873,Residential,Individual,synthetic,False
+SYN_CUST_00874,Residential,Individual,synthetic,False
+SYN_CUST_00875,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00876,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00877,Residential,Individual,synthetic,False
+SYN_CUST_00878,Residential,Organization,synthetic,False
+SYN_CUST_00879,Residential,Individual,synthetic,False
+SYN_CUST_00880,Residential,Individual,synthetic,False
+SYN_CUST_00881,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00882,Residential,Organization,synthetic,False
+SYN_CUST_00883,Residential,Individual,synthetic,False
+SYN_CUST_00884,Residential,Individual,synthetic,False
+SYN_CUST_00885,Residential,Organization,synthetic,False
+SYN_CUST_00886,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00887,Residential,Organization,synthetic,False
+SYN_CUST_00888,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00889,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00890,Residential,Individual,synthetic,False
+SYN_CUST_00891,Residential,Individual,synthetic,False
+SYN_CUST_00892,Residential,Individual,synthetic,False
+SYN_CUST_00893,Residential,Individual,synthetic,False
+SYN_CUST_00894,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00895,Residential,Organization,synthetic,False
+SYN_CUST_00896,Residential,Individual,synthetic,False
+SYN_CUST_00897,Residential,Individual,synthetic,False
+SYN_CUST_00898,Residential,Individual,synthetic,False
+SYN_CUST_00899,Residential,Individual,synthetic,False
+SYN_CUST_00900,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00901,Residential,Individual,synthetic,False
+SYN_CUST_00902,Residential,Individual,synthetic,False
+SYN_CUST_00903,Residential,Individual,synthetic,False
+SYN_CUST_00904,Residential,Individual,synthetic,False
+SYN_CUST_00905,Residential,Individual,synthetic,False
+SYN_CUST_00906,Residential,Individual,synthetic,False
+SYN_CUST_00907,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00908,Residential,Organization,synthetic,False
+SYN_CUST_00909,Residential,Individual,synthetic,False
+SYN_CUST_00910,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00911,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00912,Residential,Individual,synthetic,False
+SYN_CUST_00913,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00914,Residential,Organization,synthetic,False
+SYN_CUST_00915,Residential,Individual,synthetic,False
+SYN_CUST_00916,Institutional,Individual,synthetic,False
+SYN_CUST_00917,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00918,Residential,Individual,synthetic,False
+SYN_CUST_00919,Residential,Individual,synthetic,False
+SYN_CUST_00920,Residential,Individual,synthetic,False
+SYN_CUST_00921,Residential,Individual,synthetic,False
+SYN_CUST_00922,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00923,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00924,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00925,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00926,Residential,Individual,synthetic,False
+SYN_CUST_00927,Residential,Individual,synthetic,False
+SYN_CUST_00928,Residential,Individual,synthetic,False
+SYN_CUST_00929,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00930,Residential,Individual,synthetic,False
+SYN_CUST_00931,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00932,Residential,Individual,synthetic,False
+SYN_CUST_00933,Residential,Individual,synthetic,False
+SYN_CUST_00934,Residential,Individual,synthetic,False
+SYN_CUST_00935,Residential,Individual,synthetic,False
+SYN_CUST_00936,Residential,Individual,synthetic,False
+SYN_CUST_00937,Residential,Individual,synthetic,False
+SYN_CUST_00938,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00939,Residential,Individual,synthetic,False
+SYN_CUST_00940,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00941,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00942,Residential,Individual,synthetic,False
+SYN_CUST_00943,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00944,Residential,Individual,synthetic,False
+SYN_CUST_00945,Residential,Individual,synthetic,False
+SYN_CUST_00946,Residential,Individual,synthetic,False
+SYN_CUST_00947,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00948,Residential,Organization,synthetic,False
+SYN_CUST_00949,Residential,Individual,synthetic,False
+SYN_CUST_00950,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00951,Residential,Individual,synthetic,False
+SYN_CUST_00952,Residential,Individual,synthetic,False
+SYN_CUST_00953,Residential,Individual,synthetic,False
+SYN_CUST_00954,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00955,Residential,Individual,synthetic,False
+SYN_CUST_00956,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00957,Residential,Individual,synthetic,False
+SYN_CUST_00958,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00959,Residential,Individual,synthetic,False
+SYN_CUST_00960,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00961,Residential,Individual,synthetic,False
+SYN_CUST_00962,Residential,Individual,synthetic,False
+SYN_CUST_00963,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00964,Residential,Individual,synthetic,False
+SYN_CUST_00965,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00966,Residential,Organization,synthetic,False
+SYN_CUST_00967,Residential,Individual,synthetic,False
+SYN_CUST_00968,Residential,Individual,synthetic,False
+SYN_CUST_00969,Institutional,Individual,synthetic,False
+SYN_CUST_00970,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00971,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00972,Residential,Individual,synthetic,False
+SYN_CUST_00973,Residential,Organization,synthetic,False
+SYN_CUST_00974,Institutional,Individual,synthetic,False
+SYN_CUST_00975,Residential,Individual,synthetic,False
+SYN_CUST_00976,Residential,Individual,synthetic,False
+SYN_CUST_00977,Residential,Individual,synthetic,False
+SYN_CUST_00978,Residential,Individual,synthetic,False
+SYN_CUST_00979,Residential,Organization,synthetic,False
+SYN_CUST_00980,Residential,Individual,synthetic,False
+SYN_CUST_00981,Residential,Individual,synthetic,False
+SYN_CUST_00982,Residential,Individual,synthetic,False
+SYN_CUST_00983,Residential,Individual,synthetic,False
+SYN_CUST_00984,Residential,Individual,synthetic,False
+SYN_CUST_00985,Residential,Individual,synthetic,False
+SYN_CUST_00986,Residential,Individual,synthetic,False
+SYN_CUST_00987,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00988,Residential,Individual,synthetic,False
+SYN_CUST_00989,Residential,Individual,synthetic,False
+SYN_CUST_00990,Industrial / Commercial,Organization,synthetic,False
+SYN_CUST_00991,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00992,Residential,Organization,synthetic,False
+SYN_CUST_00993,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00994,Residential,Organization,synthetic,False
+SYN_CUST_00995,Residential,Individual,synthetic,False
+SYN_CUST_00996,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_00997,Residential,Individual,synthetic,False
+SYN_CUST_00998,Residential,Individual,synthetic,False
+SYN_CUST_00999,Industrial / Commercial,Individual,synthetic,False
+SYN_CUST_01000,Residential,Individual,synthetic,False

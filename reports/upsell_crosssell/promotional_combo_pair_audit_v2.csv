@@ -1,0 +1,778 @@
+product_a_id,product_a_name,product_a_category,product_b_id,product_b_name,product_b_category,completed_service_support,quotation_only_support,total_customer_support,evidence_score,relationship_status,approval_note
+1,Cockroach Management Service,Pest Control,8,Rodent Management Service,Pest Control,1,77,78,80,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+57,General Pest Control Service,Pest Control,8,Rodent Management Service,Pest Control,1,49,50,52,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+64,Mosquito Management Service,Pest Control,8,Rodent Management Service,Pest Control,0,47,47,47,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+46,Snake Management,Pest Control,8,Rodent Management Service,Pest Control,0,33,33,33,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+6,Mosquito Management (Spraying),Pest Control,8,Rodent Management Service,Pest Control,0,33,33,33,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+102,Cockroach Management Drainage Chamber Service,Pest Control,8,Rodent Management Service,Pest Control,0,25,25,25,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,64,Mosquito Management Service,Pest Control,0,25,25,25,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,8,Rodent Management Service,Pest Control,0,24,24,24,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,68,Mahira Fly Catcher Machine,Product Sale,0,22,22,22,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,6,Mosquito Management (Spraying),Pest Control,0,18,18,18,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+68,Mahira Fly Catcher Machine,Product Sale,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,16,16,16,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+46,Snake Management,Pest Control,64,Mosquito Management Service,Pest Control,0,16,16,16,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,15,15,15,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+349,Rodent Bait Station (RBS Box),Product Sale,57,General Pest Control Service,Pest Control,0,15,15,15,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,44,Fly Management Service,Pest Control,0,15,15,15,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+349,Rodent Bait Station (RBS Box),Product Sale,8,Rodent Management Service,Pest Control,0,14,14,14,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+8,Rodent Management Service,Pest Control,85,RodeXit Installation,Product Sale,0,13,13,13,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+68,Mahira Fly Catcher Machine,Product Sale,8,Rodent Management Service,Pest Control,0,13,13,13,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,46,Snake Management,Pest Control,0,13,13,13,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+13,Termite Management,Pest Control,8,Rodent Management Service,Pest Control,0,13,13,13,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+102,Cockroach Management Drainage Chamber Service,Pest Control,6,Mosquito Management (Spraying),Pest Control,0,12,12,12,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,8,Rodent Management Service,Pest Control,0,9,9,9,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,120,Cocoon 20 MT,Product Sale,0,9,9,9,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+349,Rodent Bait Station (RBS Box),Product Sale,68,Mahira Fly Catcher Machine,Product Sale,0,9,9,9,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,68,Mahira Fly Catcher Machine,Product Sale,0,9,9,9,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,46,Snake Management,Pest Control,0,9,9,9,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,57,General Pest Control Service,Pest Control,1,5,6,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,118,Cocoon 5 MT,Product Sale,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+50,Cocoon Flush Hose Pipe,Product Sale,51,O2 Analyser Machine,Product Sale,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+50,Cocoon Flush Hose Pipe,Product Sale,52,Manual Aspirator With Adapter,Product Sale,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+51,O2 Analyser Machine,Product Sale,52,Manual Aspirator With Adapter,Product Sale,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+46,Snake Management,Pest Control,57,General Pest Control Service,Pest Control,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+10,Lizard Management,Pest Control,8,Rodent Management Service,Pest Control,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+58,Prophylactic Treatment,Pest Control,8,Rodent Management Service,Pest Control,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+6,Mosquito Management (Spraying),Pest Control,7,Mosquito Management (Fogging),Pest Control,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+122,FLYght One (Fly Catcher),Product Sale,68,Mahira Fly Catcher Machine,Product Sale,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+122,FLYght One (Fly Catcher),Product Sale,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+46,Snake Management,Pest Control,6,Mosquito Management (Spraying),Pest Control,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+102,Cockroach Management Drainage Chamber Service,Pest Control,64,Mosquito Management Service,Pest Control,0,8,8,8,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+57,General Pest Control Service,Pest Control,68,Mahira Fly Catcher Machine,Product Sale,0,7,7,7,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,119,Cocoon 10 MT,Product Sale,0,7,7,7,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+119,Cocoon 10 MT,Product Sale,120,Cocoon 20 MT,Product Sale,0,7,7,7,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+122,FLYght One (Fly Catcher),Product Sale,25,Genus Fly Catcher Machine,Product Sale,0,7,7,7,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,68,Mahira Fly Catcher Machine,Product Sale,0,7,7,7,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+7,Mosquito Management (Fogging),Pest Control,8,Rodent Management Service,Pest Control,0,7,7,7,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+90,20ft Container Fumigation (48g/m3),Fumigation,94,40ft Container Fumigation(48g/m3),Fumigation,0,7,7,7,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+162,Mosquito Management Spraying & Fogging Service,Pest Control,8,Rodent Management Service,Pest Control,0,7,7,7,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,51,O2 Analyser Machine,Product Sale,0,6,6,6,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+67,Cockroach & Ant Management Service,Pest Control,8,Rodent Management Service,Pest Control,0,6,6,6,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,98,Mahira Fly Killer Machine,Product Sale,0,6,6,6,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,102,Cockroach Management Drainage Chamber Service,Pest Control,0,6,6,6,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,120,Cocoon 20 MT,Product Sale,0,6,6,6,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+26,Viper 30 Fly Zapper,Product Sale,98,Mahira Fly Killer Machine,Product Sale,0,6,6,6,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+32,MBr Fumigation,Fumigation,35,ALP Fumigation,Fumigation,0,6,6,6,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,2,Bedbugs Management Service,Pest Control,0,6,6,6,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+72,Empty Silo Fumigation,Fumigation,73,Filled Silo Fumigation,Fumigation,0,6,6,6,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,51,O2 Analyser Machine,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,64,Mosquito Management Service,Pest Control,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,44,Fly Management Service,Pest Control,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,13,Termite Management,Pest Control,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+120,Cocoon 20 MT,Product Sale,341,CO2 Flush Kit,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+120,Cocoon 20 MT,Product Sale,51,O2 Analyser Machine,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+212,Plus Zap Fly Killer,Product Sale,25,Genus Fly Catcher Machine,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+212,Plus Zap Fly Killer,Product Sale,26,Viper 30 Fly Zapper,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+212,Plus Zap Fly Killer,Product Sale,98,Mahira Fly Killer Machine,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,26,Viper 30 Fly Zapper,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+26,Viper 30 Fly Zapper,Product Sale,68,Mahira Fly Catcher Machine,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+68,Mahira Fly Catcher Machine,Product Sale,98,Mahira Fly Killer Machine,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,119,Cocoon 10 MT,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+57,General Pest Control Service,Pest Control,85,RodeXit Installation,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+34,Rat Snap Trap,Product Sale,39,RatooOut,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+68,Mahira Fly Catcher Machine,Product Sale,71,UV Fly Control Board,Product Sale,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,7,Mosquito Management (Fogging),Pest Control,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+13,Termite Management,Pest Control,57,General Pest Control Service,Pest Control,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+332,20ft Container Fumigation(80g/m3),Fumigation,89,20ft Container Fumigation (32g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+332,20ft Container Fumigation(80g/m3),Fumigation,90,20ft Container Fumigation (48g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+332,20ft Container Fumigation(80g/m3),Fumigation,93,40ft Container Fumigation(32g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+332,20ft Container Fumigation(80g/m3),Fumigation,94,40ft Container Fumigation(48g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+332,20ft Container Fumigation(80g/m3),Fumigation,95,40ft Container Fumigation(80g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+89,20ft Container Fumigation (32g/m3),Fumigation,90,20ft Container Fumigation (48g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+89,20ft Container Fumigation (32g/m3),Fumigation,93,40ft Container Fumigation(32g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+89,20ft Container Fumigation (32g/m3),Fumigation,94,40ft Container Fumigation(48g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+89,20ft Container Fumigation (32g/m3),Fumigation,95,40ft Container Fumigation(80g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+90,20ft Container Fumigation (48g/m3),Fumigation,93,40ft Container Fumigation(32g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+90,20ft Container Fumigation (48g/m3),Fumigation,95,40ft Container Fumigation(80g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+93,40ft Container Fumigation(32g/m3),Fumigation,94,40ft Container Fumigation(48g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+93,40ft Container Fumigation(32g/m3),Fumigation,95,40ft Container Fumigation(80g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+94,40ft Container Fumigation(48g/m3),Fumigation,95,40ft Container Fumigation(80g/m3),Fumigation,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,162,Mosquito Management Spraying & Fogging Service,Pest Control,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,57,General Pest Control Service,Pest Control,0,5,5,5,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,50,Cocoon Flush Hose Pipe,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,52,Manual Aspirator With Adapter,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+10,Lizard Management,Pest Control,44,Fly Management Service,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,71,UV Fly Control Board,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+56,Post Construction - Anti Termite Treatment,Pest Control,8,Rodent Management Service,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+4,Delfog,Product Sale,5,Gas Can,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,341,CO2 Flush Kit,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+212,Plus Zap Fly Killer,Product Sale,68,Mahira Fly Catcher Machine,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+212,Plus Zap Fly Killer,Product Sale,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+26,Viper 30 Fly Zapper,Product Sale,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+97,FLYght Duo (Fly Catcher Machine),Product Sale,98,Mahira Fly Killer Machine,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,10,Lizard Management,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+120,Cocoon 20 MT,Product Sale,160,Cocoon 50 MT,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,277,Fly Control Glue Board,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,349,Rodent Bait Station (RBS Box),Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+279,Lures for Dome Trap,Product Sale,28,Storegard Dome Traps,Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+2,Bedbugs Management Service,Pest Control,8,Rodent Management Service,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+301,Spider Management Service,Pest Control,8,Rodent Management Service,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+57,General Pest Control Service,Pest Control,64,Mosquito Management Service,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+10,Lizard Management,Pest Control,46,Snake Management,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+13,Termite Management,Pest Control,64,Mosquito Management Service,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+46,Snake Management,Pest Control,7,Mosquito Management (Fogging),Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,6,Mosquito Management (Spraying),Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+332,20ft Container Fumigation(80g/m3),Fumigation,92,20ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+332,20ft Container Fumigation(80g/m3),Fumigation,96,40ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+89,20ft Container Fumigation (32g/m3),Fumigation,92,20ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+89,20ft Container Fumigation (32g/m3),Fumigation,96,40ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+90,20ft Container Fumigation (48g/m3),Fumigation,92,20ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+90,20ft Container Fumigation (48g/m3),Fumigation,96,40ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+92,20ft Container Fumigation(100g/m3),Fumigation,93,40ft Container Fumigation(32g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+92,20ft Container Fumigation(100g/m3),Fumigation,94,40ft Container Fumigation(48g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+92,20ft Container Fumigation(100g/m3),Fumigation,95,40ft Container Fumigation(80g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+92,20ft Container Fumigation(100g/m3),Fumigation,96,40ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+93,40ft Container Fumigation(32g/m3),Fumigation,96,40ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+94,40ft Container Fumigation(48g/m3),Fumigation,96,40ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+95,40ft Container Fumigation(80g/m3),Fumigation,96,40ft Container Fumigation(100g/m3),Fumigation,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+162,Mosquito Management Spraying & Fogging Service,Pest Control,46,Snake Management,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,349,Rodent Bait Station (RBS Box),Product Sale,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+220,Per Flat Outlet Spray,Pest Control,8,Rodent Management Service,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+2,Bedbugs Management Service,Pest Control,57,General Pest Control Service,Pest Control,0,4,4,4,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,57,General Pest Control Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+10,Lizard Management,Pest Control,64,Mosquito Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,64,Mosquito Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,71,UV Fly Control Board,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+71,UV Fly Control Board,Product Sale,8,Rodent Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+11,Mini Fogger Machine,Product Sale,4,Delfog,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+4,Delfog,Product Sale,8,Rodent Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+5,Gas Can,Product Sale,8,Rodent Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+155,Mosquito Cold Fogging Service,Pest Control,8,Rodent Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+56,Post Construction - Anti Termite Treatment,Pest Control,57,General Pest Control Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,341,CO2 Flush Kit,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,359,Manual Aspirator,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+120,Cocoon 20 MT,Product Sale,359,Manual Aspirator,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,34,Rat Snap Trap,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+341,CO2 Flush Kit,Product Sale,359,Manual Aspirator,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+341,CO2 Flush Kit,Product Sale,51,O2 Analyser Machine,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+359,Manual Aspirator,Product Sale,51,O2 Analyser Machine,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,302,Cocoon 0.6  MT,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+119,Cocoon 10 MT,Product Sale,302,Cocoon 0.6  MT,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+119,Cocoon 10 MT,Product Sale,341,CO2 Flush Kit,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+147,Rat Guard Installation On Pipe,Product Sale,8,Rodent Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,160,Cocoon 50 MT,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+119,Cocoon 10 MT,Product Sale,160,Cocoon 50 MT,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+160,Cocoon 50 MT,Product Sale,341,CO2 Flush Kit,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+349,Rodent Bait Station (RBS Box),Product Sale,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,28,Storegard Dome Traps,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+8,Rodent Management Service,Pest Control,9,Ant Management,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+119,Cocoon 10 MT,Product Sale,51,O2 Analyser Machine,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+277,Fly Control Glue Board,Product Sale,8,Rodent Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+46,Snake Management,Pest Control,68,Mahira Fly Catcher Machine,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+159,Rodent Bait Station with snap trap,Product Sale,8,Rodent Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+153,Bird Netting Service,Product Sale,57,General Pest Control Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+153,Bird Netting Service,Product Sale,68,Mahira Fly Catcher Machine,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+46,Snake Management,Pest Control,71,UV Fly Control Board,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+13,Termite Management,Pest Control,6,Mosquito Management (Spraying),Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,85,RodeXit Installation,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+34,Rat Snap Trap,Product Sale,349,Rodent Bait Station (RBS Box),Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+349,Rodent Bait Station (RBS Box),Product Sale,44,Fly Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+102,Cockroach Management Drainage Chamber Service,Pest Control,220,Per Flat Outlet Spray,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+220,Per Flat Outlet Spray,Pest Control,64,Mosquito Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+6,Mosquito Management (Spraying),Pest Control,64,Mosquito Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+162,Mosquito Management Spraying & Fogging Service,Pest Control,44,Fly Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+301,Spider Management Service,Pest Control,44,Fly Management Service,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+64,Mosquito Management Service,Pest Control,68,Mahira Fly Catcher Machine,Product Sale,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+102,Cockroach Management Drainage Chamber Service,Pest Control,46,Snake Management,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,220,Per Flat Outlet Spray,Pest Control,0,3,3,3,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,50,Cocoon Flush Hose Pipe,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,52,Manual Aspirator With Adapter,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+28,Storegard Dome Traps,Product Sale,30,IMM+4 Lure,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+10,Lizard Management,Pest Control,25,Genus Fly Catcher Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+56,Post Construction - Anti Termite Treatment,Pest Control,64,Mosquito Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+64,Mosquito Management Service,Pest Control,71,UV Fly Control Board,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+300,Gap Filling,Pest Control,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,56,Post Construction - Anti Termite Treatment,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+11,Mini Fogger Machine,Product Sale,5,Gas Can,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,155,Mosquito Cold Fogging Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+300,Gap Filling,Pest Control,349,Rodent Bait Station (RBS Box),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,25,Genus Fly Catcher Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+117,Cocoon 1 MT,Product Sale,359,Manual Aspirator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,25,Genus Fly Catcher Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+120,Cocoon 20 MT,Product Sale,25,Genus Fly Catcher Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+160,Cocoon 50 MT,Product Sale,342,O2 Analyser with Connectors,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+341,CO2 Flush Kit,Product Sale,342,O2 Analyser with Connectors,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+146,Cockroach and Ant  Management Service,Pest Control,46,Snake Management,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+146,Cockroach and Ant  Management Service,Pest Control,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,279,Lures for Dome Trap,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+28,Storegard Dome Traps,Product Sale,68,Mahira Fly Catcher Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+28,Storegard Dome Traps,Product Sale,71,UV Fly Control Board,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+34,Rat Snap Trap,Product Sale,68,Mahira Fly Catcher Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+34,Rat Snap Trap,Product Sale,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+6,Mosquito Management (Spraying),Pest Control,67,Cockroach & Ant Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+58,Prophylactic Treatment,Pest Control,68,Mahira Fly Catcher Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+119,Cocoon 10 MT,Product Sale,50,Cocoon Flush Hose Pipe,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+119,Cocoon 10 MT,Product Sale,52,Manual Aspirator With Adapter,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+120,Cocoon 20 MT,Product Sale,50,Cocoon Flush Hose Pipe,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+120,Cocoon 20 MT,Product Sale,52,Manual Aspirator With Adapter,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+118,Cocoon 5 MT,Product Sale,302,Cocoon 0.6  MT,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+120,Cocoon 20 MT,Product Sale,302,Cocoon 0.6  MT,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+31,Rodent Bait Station (RBS Metal),Product Sale,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+106,Mosquito Management Anti-Larval,Pest Control,46,Snake Management,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+106,Mosquito Management Anti-Larval,Pest Control,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,7,Mosquito Management (Fogging),Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+159,Rodent Bait Station with snap trap,Product Sale,64,Mosquito Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,71,UV Fly Control Board,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+2,Bedbugs Management Service,Pest Control,46,Snake Management,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,236,Barrix Catch HouseFly Trap,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+236,Barrix Catch HouseFly Trap,Product Sale,44,Fly Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+236,Barrix Catch HouseFly Trap,Product Sale,68,Mahira Fly Catcher Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+236,Barrix Catch HouseFly Trap,Product Sale,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+261,Rodent Bait Station (metal),Product Sale,349,Rodent Bait Station (RBS Box),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+261,Rodent Bait Station (metal),Product Sale,57,General Pest Control Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+31,Rodent Bait Station (RBS Metal),Product Sale,57,General Pest Control Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+349,Rodent Bait Station (RBS Box),Product Sale,98,Mahira Fly Killer Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+182,ALP Stack Fumigation 9g/MT,Fumigation,185,ALP Stack Fumigation 12g/MT,Fumigation,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+102,Cockroach Management Drainage Chamber Service,Pest Control,13,Termite Management,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+25,Genus Fly Catcher Machine,Product Sale,85,RodeXit Installation,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+32,MBr Fumigation,Fumigation,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+285,15 W 18 Inch Sleeved Tube,Product Sale,57,General Pest Control Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+34,Rat Snap Trap,Product Sale,57,General Pest Control Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,25,Genus Fly Catcher Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,34,Rat Snap Trap,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+153,Bird Netting Service,Product Sale,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+212,Plus Zap Fly Killer,Product Sale,34,Rat Snap Trap,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+26,Viper 30 Fly Zapper,Product Sale,34,Rat Snap Trap,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+34,Rat Snap Trap,Product Sale,98,Mahira Fly Killer Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+44,Fly Management Service,Pest Control,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+8,Rodent Management Service,Pest Control,97,FLYght Duo (Fly Catcher Machine),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+220,Per Flat Outlet Spray,Pest Control,6,Mosquito Management (Spraying),Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+102,Cockroach Management Drainage Chamber Service,Pest Control,7,Mosquito Management (Fogging),Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+125,TSL 20,Product Sale,126,TSL 40,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,301,Spider Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+2,Bedbugs Management Service,Pest Control,349,Rodent Bait Station (RBS Box),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+347,Fumigation Service With ALP (18gmDosage/MT),Fumigation,36,Fumigation Service With ALP (9gmDosage/MT),Fumigation,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+347,Fumigation Service With ALP (18gmDosage/MT),Fumigation,37,Fumigation Service With ALP (12gmDosage/MT),Fumigation,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+36,Fumigation Service With ALP (9gmDosage/MT),Fumigation,37,Fumigation Service With ALP (12gmDosage/MT),Fumigation,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+284,Disinfestation Treatment,Pest Control,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+301,Spider Management Service,Pest Control,345,Lizard Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+345,Lizard Management Service,Pest Control,44,Fly Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+345,Lizard Management Service,Pest Control,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+104,RodeXit Proofing Strip,Product Sale,85,RodeXit Installation,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+46,Snake Management,Pest Control,58,Prophylactic Treatment,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+160,Cocoon 50 MT,Product Sale,51,O2 Analyser Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+57,General Pest Control Service,Pest Control,71,UV Fly Control Board,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+349,Rodent Bait Station (RBS Box),Product Sale,71,UV Fly Control Board,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,171,S.S.Vaporizer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,175,PVC PIPES 6mm x 12mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,179,MB Detector Tubes (10Tubes),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,181,Air Sampling Pump (ASP-40),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,183,Gas Mask (Full Respiratory Mask),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,175,PVC PIPES 6mm x 12mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,179,MB Detector Tubes (10Tubes),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,181,Air Sampling Pump (ASP-40),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,183,Gas Mask (Full Respiratory Mask),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+171,S.S.Vaporizer,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,175,PVC PIPES 6mm x 12mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,179,MB Detector Tubes (10Tubes),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,181,Air Sampling Pump (ASP-40),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,183,Gas Mask (Full Respiratory Mask),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,175,PVC PIPES 6mm x 12mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,179,MB Detector Tubes (10Tubes),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,181,Air Sampling Pump (ASP-40),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,183,Gas Mask (Full Respiratory Mask),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,179,MB Detector Tubes (10Tubes),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,181,Air Sampling Pump (ASP-40),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,183,Gas Mask (Full Respiratory Mask),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+175,PVC PIPES 6mm x 12mm,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,179,MB Detector Tubes (10Tubes),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,181,Air Sampling Pump (ASP-40),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,183,Gas Mask (Full Respiratory Mask),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,181,Air Sampling Pump (ASP-40),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,183,Gas Mask (Full Respiratory Mask),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+179,MB Detector Tubes (10Tubes),Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,183,Gas Mask (Full Respiratory Mask),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+181,Air Sampling Pump (ASP-40),Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+183,Gas Mask (Full Respiratory Mask),Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,190,Digital Thermometer,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+190,Digital Thermometer,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,192,Calculator Pocket type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,193,Measuring Tape roll-in type,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+192,Calculator Pocket type,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,194,Stopwatch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+193,Measuring Tape roll-in type,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,195,Adhesive/Sealing tape 5 cm width,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+194,Stopwatch,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,196,Resuscitator,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+195,Adhesive/Sealing tape 5 cm width,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+196,Resuscitator,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,198,Chemical Gloves (Bright) for chemical handling,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,199,Long Gloves,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+198,Chemical Gloves (Bright) for chemical handling,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,200,"Plastic Ropes (4mm, High Density)",Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+199,Long Gloves,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+200,"Plastic Ropes (4mm, High Density)",Product Sale,201,Fire extinguisher 2KG,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+200,"Plastic Ropes (4mm, High Density)",Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+200,"Plastic Ropes (4mm, High Density)",Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+200,"Plastic Ropes (4mm, High Density)",Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+200,"Plastic Ropes (4mm, High Density)",Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+200,"Plastic Ropes (4mm, High Density)",Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+200,"Plastic Ropes (4mm, High Density)",Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+200,"Plastic Ropes (4mm, High Density)",Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+200,"Plastic Ropes (4mm, High Density)",Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+201,Fire extinguisher 2KG,Product Sale,202,Clothing Coverall,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+201,Fire extinguisher 2KG,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+201,Fire extinguisher 2KG,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+201,Fire extinguisher 2KG,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+201,Fire extinguisher 2KG,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+201,Fire extinguisher 2KG,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+201,Fire extinguisher 2KG,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+201,Fire extinguisher 2KG,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+202,Clothing Coverall,Product Sale,203,Tool Box Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+202,Clothing Coverall,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+202,Clothing Coverall,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+202,Clothing Coverall,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+202,Clothing Coverall,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+202,Clothing Coverall,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+202,Clothing Coverall,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+203,Tool Box Kit,Product Sale,204,First Aid Kit,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+203,Tool Box Kit,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+203,Tool Box Kit,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+203,Tool Box Kit,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+203,Tool Box Kit,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+203,Tool Box Kit,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+204,First Aid Kit,Product Sale,205,Danger Roll Tape,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+204,First Aid Kit,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+204,First Aid Kit,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+204,First Aid Kit,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+204,First Aid Kit,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+205,Danger Roll Tape,Product Sale,207,Jumbo clips 6inch,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+205,Danger Roll Tape,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+205,Danger Roll Tape,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+205,Danger Roll Tape,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+207,Jumbo clips 6inch,Product Sale,208,DUCT TAPE 48MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+207,Jumbo clips 6inch,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+207,Jumbo clips 6inch,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+208,DUCT TAPE 48MM X 45METRE,Product Sale,210,DUCT TAPE 144MM X 45METRE,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+208,DUCT TAPE 48MM X 45METRE,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+210,DUCT TAPE 144MM X 45METRE,Product Sale,371,TUBES 2mm X 4mm,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+15,Wood Borer Management,Pest Control,64,Mosquito Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+102,Cockroach Management Drainage Chamber Service,Pest Control,162,Mosquito Management Spraying & Fogging Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+305,"UV Tube Shatter-Proof 18""",Product Sale,349,Rodent Bait Station (RBS Box),Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+42,ECO BIOTRAPS,Product Sale,71,UV Fly Control Board,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+57,General Pest Control Service,Pest Control,62,Silo Fumigation,Fumigation,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+2,Bedbugs Management Service,Pest Control,64,Mosquito Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+349,Rodent Bait Station (RBS Box),Product Sale,64,Mosquito Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+277,Fly Control Glue Board,Product Sale,57,General Pest Control Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+57,General Pest Control Service,Pest Control,58,Prophylactic Treatment,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+157,Transport Cost,Product Sale,390,Storgard Ultra-combi (UC) Master PCO Quick Change (QC) Dome,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+261,Rodent Bait Station (metal),Product Sale,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+4,Delfog,Product Sale,46,Snake Management,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+4,Delfog,Product Sale,64,Mosquito Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+46,Snake Management,Pest Control,5,Gas Can,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+5,Gas Can,Product Sale,64,Mosquito Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+346,Rodent Bait Station,Pest Control,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+68,Mahira Fly Catcher Machine,Product Sale,85,RodeXit Installation,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,4,Delfog,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+1,Cockroach Management Service,Pest Control,5,Gas Can,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+302,Cocoon 0.6  MT,Product Sale,50,Cocoon Flush Hose Pipe,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+302,Cocoon 0.6  MT,Product Sale,51,O2 Analyser Machine,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+302,Cocoon 0.6  MT,Product Sale,52,Manual Aspirator With Adapter,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+64,Mosquito Management Service,Pest Control,85,RodeXit Installation,Product Sale,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+113,Beehive Management,Pest Control,46,Snake Management,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+113,Beehive Management,Pest Control,64,Mosquito Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.
+113,Beehive Management,Pest Control,8,Rodent Management Service,Pest Control,0,2,2,2,PENDING_BUSINESS_APPROVAL,Observed together; business validation required.

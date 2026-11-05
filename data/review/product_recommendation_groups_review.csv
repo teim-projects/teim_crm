@@ -1,0 +1,393 @@
+﻿product_id,product_name,category,suggested_group,manual_review
+1,Cockroach Management Service,Pest Control,Pest Control Service,Pending
+2,Bedbugs Management Service,Pest Control,Pest Control Service,Pending
+3,Beehive Management Service,Pest Control,Pest Control Service,Pending
+4,Delfog,Product Sales,Product or Consumable,Pending
+5,Gas Can,Product Sales,Product or Consumable,Pending
+6,Mosquito Management (Spraying),Pest Control,Pest Control Service,Pending
+7,Mosquito Management (Fogging),Pest Control,Pest Control Service,Pending
+8,Rodent Management Service,Pest Control,Pest Control Service,Pending
+9,Ant Management,Pest Control,Pest Control Service,Pending
+10,Lizard Management,Pest Control,Pest Control Service,Pending
+11,Mini Fogger Machine,Product Sales,Equipment,Pending
+12,Fly Killer Machine,Product Sales,Equipment,Pending
+13,Termite Management,Pest Control,Pest Control Service,Pending
+15,Wood Borer Management,Pest Control,Pest Control Service,Pending
+25,Genus Fly Catcher Machine,Product Sales,Equipment,Pending
+26,Viper 30 Fly Zapper,Product Sales,Product or Consumable,Pending
+27,Cockroach Monitoring Traps,Product Sales,Equipment,Pending
+28,Storegard Dome Traps,Product Sales,Product or Consumable,Pending
+29,Diamond IMM+4 Traps,Product Sales,Product or Consumable,Pending
+30,IMM+4 Lure,Product Sales,Product or Consumable,Pending
+31,Rodent Bait Station (RBS Metal),Product Sales,Product or Consumable,Pending
+32,MBr Fumigation,Fumigation,Fumigation Service,Pending
+33,ALP Fumigation,Fumigation,Fumigation Service,Pending
+34,Rat Snap Trap,Product Sales,Product or Consumable,Pending
+35,ALP Fumigation,Fumigation,Fumigation Service,Pending
+36,Fumigation Service With ALP (9gmDosage/MT),Fumigation,Fumigation Service,Pending
+37,Fumigation Service With ALP (12gmDosage/MT),Fumigation,Fumigation Service,Pending
+38,Prophylactic Treatment For Warehouse,Pest Control,Pest Control Service,Pending
+39,RatooOut,Product Sales,Product or Consumable,Pending
+40,Fogger Machine,Product Sales,Equipment,Pending
+42,ECO BIOTRAPS,Product Sales,Product or Consumable,Pending
+44,Fly Management Service,Pest Control,Pest Control Service,Pending
+46,Snake Management,Pest Control,Pest Control Service,Pending
+47,Stack Fumigation with ALP,Fumigation,Fumigation Service,Pending
+49,Self Verifying Cocoons 10MT,Product Sales,Product or Consumable,Pending
+50,Cocoon Flush Hose Pipe,Product Sales,Product or Consumable,Pending
+51,O2 Analyser Machine,Product Sales,Equipment,Pending
+52,Manual Aspirator With Adapter,Product Sales,Product or Consumable,Pending
+55,ALP Fumigation Service Upto 10MT,Fumigation,Fumigation Service,Pending
+56,Post Construction - Anti Termite Treatment,Pest Control,Pest Control Service,Pending
+57,General Pest Control Service,Pest Control,Pest Control Service,Pending
+58,Prophylactic Treatment,Pest Control,Pest Control Service,Pending
+62,Silo Fumigation,Fumigation,Fumigation Service,Pending
+64,Mosquito Management Service,Pest Control,Pest Control Service,Pending
+65,Anti-Termite Spray Treatment,Pest Control,Pest Control Service,Pending
+66,Single Service For Trees Only (Termite Treatment),Pest Control,Pest Control Service,Pending
+67,Cockroach & Ant Management Service,Pest Control,Pest Control Service,Pending
+68,Mahira Fly Catcher Machine,Product Sales,Equipment,Pending
+69,Mosquito Spray & Anti Larval Treatment Service,Pest Control,Pest Control Service,Pending
+70,Sanitization Service,Pest Control,Pest Control Service,Pending
+71,UV Fly Control Board,Product Sales,Product or Consumable,Pending
+72,Empty Silo Fumigation,Fumigation,Fumigation Service,Pending
+73,Filled Silo Fumigation,Fumigation,Fumigation Service,Pending
+78,ILT Cleaning Ant Maintenance,Pest Control,Pest Control Service,Pending
+82,Wooden Crate Fumigation,Fumigation,Fumigation Service,Pending
+83,Container Leakage Testing Charges,Fumigation,Fumigation Service,Pending
+84,Transportation Charges,Product Sales,Installation or Charges,Pending
+85,RodeXit Installation,Product Sales,Installation or Charges,Pending
+87,Wooden Box MBr Fumigation,Fumigation,Fumigation Service,Pending
+88,Wooden Box MBr Fumigation Service,Fumigation,Fumigation Service,Pending
+89,20ft Container Fumigation (32g/m3),Fumigation,Fumigation Service,Pending
+90,20ft Container Fumigation (48g/m3),Fumigation,Fumigation Service,Pending
+91,20ft Container Fumigation (80g/m3),Fumigation,Fumigation Service,Pending
+92,20ft Container Fumigation(100g/m3),Fumigation,Fumigation Service,Pending
+93,40ft Container Fumigation(32g/m3),Fumigation,Fumigation Service,Pending
+94,40ft Container Fumigation(48g/m3),Fumigation,Fumigation Service,Pending
+95,40ft Container Fumigation(80g/m3),Fumigation,Fumigation Service,Pending
+96,40ft Container Fumigation(100g/m3),Fumigation,Fumigation Service,Pending
+97,FLYght Duo (Fly Catcher Machine),Product Sales,Equipment,Pending
+98,Mahira Fly Killer Machine,Product Sales,Equipment,Pending
+99,Viper 30 Fly Zapper,Product Sales,Product or Consumable,Pending
+100,Phillips PHILLIPS UVA TUBE 15W STD,Product Sales,Product or Consumable,Pending
+101,Wood Borer Spray Treatment,Pest Control,Pest Control Service,Pending
+102,Cockroach Management Drainage Chamber Service,Pest Control,Pest Control Service,Pending
+103,RodeXit Proofing Strip,Product Sales,Product or Consumable,Pending
+104,RodeXit Proofing Strip,Product Sales,Product or Consumable,Pending
+105,Mosquito Management Mist Fogging,Pest Control,Pest Control Service,Pending
+106,Mosquito Management Anti-Larval,Pest Control,Pest Control Service,Pending
+107,Rat Guard Installation On Drainage Pipe,Product Sales,Installation or Charges,Pending
+108,RodeXit All In One Rodent Seal,Product Sales,Product or Consumable,Pending
+109,Fumigation Service,Fumigation,Fumigation Service,Pending
+110,Tarpaulin Handling And Transportation Charges,Fumigation,Fumigation Service,Pending
+111,ALP Tablet,Product Sales,Product or Consumable,Pending
+112,Gokhilaht 5% SC,Product Sales,Product or Consumable,Pending
+113,Beehive Management,Pest Control,Pest Control Service,Pending
+114,Commodity ALP Fumigation Service,Fumigation,Fumigation Service,Pending
+115,Anti-Termite Treatment Service,Pest Control,Pest Control Service,Pending
+116,Drainage Chambers Spray Treatment,Pest Control,Pest Control Service,Pending
+117,Cocoon 1 MT,Product Sales,Product or Consumable,Pending
+118,Cocoon 5 MT,Product Sales,Product or Consumable,Pending
+119,Cocoon 10 MT,Product Sales,Product or Consumable,Pending
+120,Cocoon 20 MT,Product Sales,Product or Consumable,Pending
+121,Cocoon 10 MT,Product Sales,Product or Consumable,Pending
+122,FLYght One (Fly Catcher),Product Sales,Product or Consumable,Pending
+123,Termite Treatment Chemical,Product Sales,Product or Consumable,Pending
+124,Transafeliner,Product Sales,Product or Consumable,Pending
+125,TSL 20,Product Sales,Product or Consumable,Pending
+126,TSL 40,Product Sales,Product or Consumable,Pending
+127,PVC RBS Box,Product Sales,Product or Consumable,Pending
+128,Pinewood Pallets,Product Sales,Product or Consumable,Pending
+129,Viper 30 K,Product Sales,Product or Consumable,Pending
+130,Rat Run Green Bait,Product Sales,Product or Consumable,Pending
+131,White Glue Pad,Product Sales,Product or Consumable,Pending
+133,Prophylactic Treatment & Rodent Management,Pest Control,Pest Control Service,Pending
+134,Porous Pipe,Product Sales,Product or Consumable,Pending
+135,Porous Pipe Anti-Termite Treatment Service,Pest Control,Pest Control Service,Pending
+136,"Mosquito, Snake & Prophylactic Treatment Service",Pest Control,Pest Control Service,Pending
+137,40ft Container Fumigation(48g/m3),Fumigation,Fumigation Service,Pending
+138,Air Shipment  Fumigation,Fumigation,Fumigation Service,Pending
+139,Rat Box Checking and Cleaning,Pest Control,Pest Control Service,Pending
+140,Odorless Chemical Spraying,Pest Control,Pest Control Service,Pending
+141,Odorless Chemical Spraying,Pest Control,Pest Control Service,Pending
+142,Thermal Fogging,Pest Control,Pest Control Service,Pending
+143,Snake Repellent Service,Pest Control,Pest Control Product or Other,Pending
+144,Cold Fogging,Pest Control,Pest Control Service,Pending
+145,Ant's Control Services,Pest Control,Pest Control Service,Pending
+146,Cockroach and Ant  Management Service,Pest Control,Pest Control Service,Pending
+147,Rat Guard Installation On Pipe,Product Sales,Installation or Charges,Pending
+148,Gluetrap,Product Sales,Product or Consumable,Pending
+149,Hitter Cake,Product Sales,Product or Consumable,Pending
+150,Green Bait,Product Sales,Product or Consumable,Pending
+151,ZP (Zinc Phosphate),Product Sales,Product or Consumable,Pending
+152,Commodity MBr Fumigation Service,Fumigation,Fumigation Service,Pending
+153,Bird Netting Service,Product Sales,Product or Consumable,Pending
+154,PVC Door Curtain,Product Sales,Product or Consumable,Pending
+155,Mosquito Cold Fogging Service,Pest Control,Pest Control Service,Pending
+156,Weed Management Service,Pest Control,Pest Control Service,Pending
+157,Transport Cost,Product Sales,Installation or Charges,Pending
+158,Pre Construction - Anti Termite Treatment,Pest Control,Pest Control Service,Pending
+159,Rodent Bait Station with snap trap,Product Sales,Product or Consumable,Pending
+160,Cocoon 50 MT,Product Sales,Product or Consumable,Pending
+161,Pressure Kit Grain Pro,Product Sales,Product or Consumable,Pending
+162,Mosquito Management Spraying & Fogging Service,Pest Control,Pest Control Service,Pending
+163,FLYght One LED Catcher Machine,Product Sales,Equipment,Pending
+164,CO2 Fumigation,Fumigation,Fumigation Service,Pending
+165,Cocoon Flush Hose Pipe,Pest Control,Pest Control Product or Other,Pending
+166,Cocoon Flush Hose Pipe,Product Sales,Product or Consumable,Pending
+167,Cocoon 0.6 MT,Product Sales,Product or Consumable,Pending
+168,Wooden Pallet Fumigation,Fumigation,Fumigation Service,Pending
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sales,Product or Consumable,Pending
+170,Halide Leak detector Make: HLD-JL-303,Product Sales,Equipment,Pending
+171,S.S.Vaporizer,Product Sales,Product or Consumable,Pending
+172,Tarpaulin Sheet,Product Sales,Product or Consumable,Pending
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sales,Product or Consumable,Pending
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sales,Equipment,Pending
+175,PVC PIPES 6mm x 12mm,Product Sales,Product or Consumable,Pending
+176,TUBES 2mm x 4mm,Product Sales,Product or Consumable,Pending
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sales,Equipment,Pending
+178,MBr Stack Fumigation 32g/MT,Fumigation,Fumigation Service,Pending
+179,MB Detector Tubes (10Tubes),Product Sales,Equipment,Pending
+180,MBr Stack Fumigation 48g/MT,Fumigation,Fumigation Service,Pending
+181,Air Sampling Pump (ASP-40),Product Sales,Equipment,Pending
+182,ALP Stack Fumigation 9g/MT,Fumigation,Fumigation Service,Pending
+183,Gas Mask (Full Respiratory Mask),Product Sales,Product or Consumable,Pending
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sales,Product or Consumable,Pending
+185,ALP Stack Fumigation 12g/MT,Fumigation,Fumigation Service,Pending
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sales,Product or Consumable,Pending
+187,SAND SNAKES CANVAS (CLOTH SIZE 15cm x 1m,Pest Control,Pest Control Product or Other,Pending
+188,SAND SNAKES CANVAS,Product Sales,Product or Consumable,Pending
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sales,Product or Consumable,Pending
+190,Digital Thermometer,Product Sales,Product or Consumable,Pending
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sales,Product or Consumable,Pending
+192,Calculator Pocket type,Product Sales,Product or Consumable,Pending
+193,Measuring Tape roll-in type,Product Sales,Product or Consumable,Pending
+194,Stopwatch,Product Sales,Product or Consumable,Pending
+195,Adhesive/Sealing tape 5 cm width,Product Sales,Product or Consumable,Pending
+196,Resuscitator,Product Sales,Product or Consumable,Pending
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sales,Product or Consumable,Pending
+198,Chemical Gloves (Bright) for chemical handling,Product Sales,Product or Consumable,Pending
+199,Long Gloves,Product Sales,Product or Consumable,Pending
+200,"Plastic Ropes (4mm, High Density)",Product Sales,Product or Consumable,Pending
+201,Fire extinguisher 2KG,Product Sales,Product or Consumable,Pending
+202,Clothing Coverall,Product Sales,Product or Consumable,Pending
+203,Tool Box Kit,Product Sales,Product or Consumable,Pending
+204,First Aid Kit,Product Sales,Product or Consumable,Pending
+205,Danger Roll Tape,Product Sales,Product or Consumable,Pending
+206,Jumbo clips 6inch,Product Sales,Product or Consumable,Pending
+207,Jumbo clips 6inch,Product Sales,Product or Consumable,Pending
+208,DUCT TAPE 48MM X 45METRE,Product Sales,Product or Consumable,Pending
+209,PACKAGING & FORWARDING,Product Sales,Product or Consumable,Pending
+210,DUCT TAPE 144MM X 45METRE,Product Sales,Product or Consumable,Pending
+211,Treatment of wild grass and fogging,Pest Control,Pest Control Service,Pending
+212,Plus Zap Fly Killer,Product Sales,Product or Consumable,Pending
+213,Heat Treatment,Pest Control,Pest Control Service,Pending
+214,Wooden Box with Heat Treatment,Pest Control,Pest Control Service,Pending
+215,General Pest Management & PMS Consumables Items,Pest Control,Pest Control Service,Pending
+216,Stack Fumigation,Fumigation,Fumigation Service,Pending
+217,Stack Fumigation with Mbr,Fumigation,Fumigation Service,Pending
+218,SCBA 300 Bars,Product Sales,Product or Consumable,Pending
+219,Snake Repellent,Product Sales,Product or Consumable,Pending
+220,Per Flat Outlet Spray,Pest Control,Pest Control Product or Other,Pending
+221,Delthrin 1 Kg,Product Sales,Product or Consumable,Pending
+222,Malathion 50% (Eagle) 5 Lit,Product Sales,Product or Consumable,Pending
+223,Roban Cake,Pest Control,Pest Control Product or Other,Pending
+224,Chloroguard 20% 20 Lit,Pest Control,Pest Control Product or Other,Pending
+225,Agenda 500 ML,Product Sales,Product or Consumable,Pending
+226,AQUA-K-Otharine Ew20,Pest Control,Pest Control Product or Other,Pending
+227,Bitter Guard,Product Sales,Product or Consumable,Pending
+228,CYPRA,Pest Control,Pest Control Product or Other,Pending
+229,Delta Flow,Pest Control,Pest Control Product or Other,Pending
+230,Imida Gold Plus 1 Ltr,Pest Control,Pest Control Product or Other,Pending
+231,MBR 1 Lbs,Pest Control,Pest Control Product or Other,Pending
+232,MBR 1.5 Lbs,Pest Control,Pest Control Product or Other,Pending
+233,BARRIX CATCH HOUSEFLY LURE,Product Sales,Product or Consumable,Pending
+234,BOPP Tape,Pest Control,Pest Control Product or Other,Pending
+235,Fly Strips Yellow,Pest Control,Pest Control Product or Other,Pending
+236,Barrix Catch HouseFly Trap,Product Sales,Product or Consumable,Pending
+237,Fly Trap Jar,Pest Control,Pest Control Product or Other,Pending
+238,Flycobait,Pest Control,Pest Control Product or Other,Pending
+239,Flyquit,Pest Control,Pest Control Product or Other,Pending
+240,GAIAGEN ANTI ROACH GEL,Pest Control,Pest Control Product or Other,Pending
+241,Glue traps Big,Pest Control,Pest Control Product or Other,Pending
+242,Glue traps Small,Pest Control,Pest Control Product or Other,Pending
+243,Kilspot GEL,Pest Control,Pest Control Product or Other,Pending
+244,Lizard Airosol Spray,Pest Control,Pest Control Product or Other,Pending
+245,Mantra 1 Ltr,Pest Control,Pest Control Product or Other,Pending
+246,Mantra 5 Ltr,Pest Control,Pest Control Product or Other,Pending
+247,Maxforce Forte Gel 30 Gm,Pest Control,Pest Control Product or Other,Pending
+248,MOSKMAR,Pest Control,Pest Control Product or Other,Pending
+249,Premise 1 LTR,Pest Control,Pest Control Product or Other,Pending
+250,Premise 250 ml,Pest Control,Pest Control Product or Other,Pending
+251,Proton Pouch,Pest Control,Pest Control Product or Other,Pending
+252,Pyrofog,Pest Control,Pest Control Product or Other,Pending
+253,Ratcon CB,Pest Control,Pest Control Product or Other,Pending
+254,Ratil 2% Granuals,Pest Control,Pest Control Product or Other,Pending
+255,Ratol Cake 100 gm,Product Sales,Product or Consumable,Pending
+256,Ratol Powder 100 gm tin,Product Sales,Product or Consumable,Pending
+257,Responsar,Pest Control,Pest Control Product or Other,Pending
+258,Roach Trap,Product Sales,Product or Consumable,Pending
+259,ROACHBAIT (35 GM),Pest Control,Pest Control Product or Other,Pending
+260,Roachnil,Pest Control,Pest Control Product or Other,Pending
+261,Rodent Bait Station (metal),Product Sales,Product or Consumable,Pending
+262,SAN XUR 1Ltr,Pest Control,Pest Control Product or Other,Pending
+263,Sandbags,Product Sales,Product or Consumable,Pending
+264,Sanfip Gel 35 gm,Pest Control,Pest Control Product or Other,Pending
+265,Shastra,Pest Control,Pest Control Product or Other,Pending
+266,Silent Saviour,Product Sales,Product or Consumable,Pending
+267,Starhit,Pest Control,Pest Control Product or Other,Pending
+268,Sumistroke 1 Ltr,Pest Control,Pest Control Product or Other,Pending
+269,Temprid SC 50 ML,Pest Control,Pest Control Product or Other,Pending
+270,Temprid SC 500 ML,Pest Control,Pest Control Product or Other,Pending
+271,X out Lizard Trap (Red Traps ),Product Sales,Product or Consumable,Pending
+272,X Out White Trap,Pest Control,Pest Control Product or Other,Pending
+273,Yellow Sitcky Traps,Product Sales,Product or Consumable,Pending
+274,Aspee Marut MT-15 6 Lit,Product Sales,Product or Consumable,Pending
+275,Ratol Gel,Pest Control,Pest Control Product or Other,Pending
+276,"Sleeved UV Tube 15W 18""",Product Sales,Product or Consumable,Pending
+277,Fly Control Glue Board,Product Sales,Product or Consumable,Pending
+278,Pest Management Service,Pest Control,Pest Control Service,Pending
+279,Lures for Dome Trap,Product Sales,Product or Consumable,Pending
+280,UV ILT Tube Shatter-Proof,Product Sales,Product or Consumable,Pending
+281,MBr Stack Fumigation (15g/m3),Fumigation,Fumigation Service,Pending
+282,20ft Container With MBr Fumigation (48g/m3),Fumigation,Fumigation Service,Pending
+283,Spot treatment - For Termite and wood borer,Pest Control,Pest Control Service,Pending
+284,Disinfestation Treatment,Pest Control,Pest Control Service,Pending
+285,15 W 18 Inch Sleeved Tube,Product Sales,Product or Consumable,Pending
+286,18 W 24 Inch Sleeved Tube,Product Sales,Product or Consumable,Pending
+287,Bitter Guard,Product Sales,Product or Consumable,Pending
+288,Wooden Pallet Heat Treatment,Fumigation,Fumigation Service,Pending
+289,Rat Guard Sheet,Product Sales,Product or Consumable,Pending
+290,Garbage Duct Spray,Pest Control,Pest Control Product or Other,Pending
+291,Honey Bee Repellent Spray,Pest Control,Pest Control Product or Other,Pending
+292,Disinfestations & Prophylactic Treatment,Pest Control,Pest Control Service,Pending
+293,Mosquito Control (Anti Larval Spraying),Pest Control,Pest Control Service,Pending
+294,Mosquito Control (Anti Larval Fogging),Pest Control,Pest Control Service,Pending
+295,"Sleeved UV Tube 18W 24""",Product Sales,Product or Consumable,Pending
+296,RodeXit Proofing Strip With Installation,Product Sales,Installation or Charges,Pending
+297,Beehive Removal Service,Pest Control,Pest Control Service,Pending
+298,ILT Cleaning And Maintenance,Pest Control,Pest Control Service,Pending
+299,ILT Cleaning And Maintenance,Pest Control,Pest Control Service,Pending
+300,Gap Filling,Pest Control,Pest Control Product or Other,Pending
+301,Spider Management Service,Pest Control,Pest Control Service,Pending
+302,Cocoon 0.6  MT,Product Sales,Product or Consumable,Pending
+303,Aluminium Phosphide granules,Product Sales,Product or Consumable,Pending
+304,Aluminium Phosphide 77.5% Granules,Product Sales,Product or Consumable,Pending
+305,"UV Tube Shatter-Proof 18""",Product Sales,Product or Consumable,Pending
+306,UV Tube,Product Sales,Product or Consumable,Pending
+307,UV Meter,Product Sales,Product or Consumable,Pending
+308,"UV Tube Shatter-Proof 18""",Product Sales,Product or Consumable,Pending
+309,Cocoon 100 MT,Product Sales,Product or Consumable,Pending
+310,Fly glue pad,Product Sales,Product or Consumable,Pending
+311,Hermetic Bag Premium 50kg,Product Sales,Product or Consumable,Pending
+312,Equipment Fumigation Service,Fumigation,Fumigation Service,Pending
+313,Cimex Eradicator,Product Sales,Product or Consumable,Pending
+314,Prophylactic and snack  Management,Pest Control,Pest Control Service,Pending
+315,Fumigation Tarpaulin,Product Sales,Product or Consumable,Pending
+316,HDPE Plastic Tarpaulin 150GSM,Product Sales,Product or Consumable,Pending
+317,General Pest Control Service (2026-2027),Pest Control,Pest Control Service,Pending
+318,General Pest Control Service (2027-2028),Pest Control,Pest Control Service,Pending
+319,General Pest Control Service (2028-2029),Pest Control,Pest Control Service,Pending
+320,Lures for Barrix,Product Sales,Product or Consumable,Pending
+321,Lures for Barrix Fly Trap,Product Sales,Product or Consumable,Pending
+322,Silo Fumigation With ALP- 9 Gm,Fumigation,Fumigation Service,Pending
+323,Wooden Termite Treatment,Pest Control,Pest Control Service,Pending
+324,GrainPro Hermetic Bag,Product Sales,Product or Consumable,Pending
+325,ALP Fumigation- 9 gm,Fumigation,Fumigation Service,Pending
+326,ALP Fumigation- 12 gm,Fumigation,Fumigation Service,Pending
+327,ALP Fumigation- 15 gm,Fumigation,Fumigation Service,Pending
+328,ALP Fumigation- 18 gm,Fumigation,Fumigation Service,Pending
+329,MBr Fumigation- 32 gm,Fumigation,Fumigation Service,Pending
+330,MBr Fumigation- 48 gm,Fumigation,Fumigation Service,Pending
+331,40ft Container Fumigation(60g/m3),Fumigation,Fumigation Service,Pending
+332,20ft Container Fumigation(80g/m3),Fumigation,Fumigation Service,Pending
+333,20ft Container Fumigation (60g/m3),Fumigation,Fumigation Service,Pending
+334,Small/ Half Rodent Bait Station Box (RBS),Product Sales,Product or Consumable,Pending
+335,Polti Cimex Eradicator,Product Sales,Product or Consumable,Pending
+336,ALP Fumigation- 6 gm per Cub Mtr,Fumigation,Fumigation Service,Pending
+337,Rat Cage,Product Sales,Product or Consumable,Pending
+338,(RodeXit) Door Painting,Product Sales,Product or Consumable,Pending
+339,Wooden Pallet Fumigation With MBr,Fumigation,Fumigation Service,Pending
+340,Sand Snakes,Product Sales,Product or Consumable,Pending
+341,CO2 Flush Kit,Product Sales,Product or Consumable,Pending
+342,O2 Analyser with Connectors,Product Sales,Equipment,Pending
+343,Wooden Pallet Making,Fumigation,Fumigation Service,Pending
+344,Lizard Management Service,Pest Control,Pest Control Service,Pending
+345,Lizard Management Service,Pest Control,Pest Control Service,Pending
+346,Rodent Bait Station,Pest Control,Pest Control Product or Other,Pending
+347,Fumigation Service With ALP (18gmDosage/MT),Fumigation,Fumigation Service,Pending
+348,Fumigation Service With ALP (36gmDosage/MT),Fumigation,Fumigation Service,Pending
+349,Rodent Bait Station (RBS Box),Product Sales,Product or Consumable,Pending
+350,Trend Graph Analysis & Audit Report,Pest Control,Pest Control Service,Pending
+351,Cocoon 150 MT,Product Sales,Product or Consumable,Pending
+352,Shutter Gate Rolling Bird Netting,Product Sales,Product or Consumable,Pending
+353,Shutter Gate Bird Netting Without Rolling,Product Sales,Product or Consumable,Pending
+354,Rodent glue pad,Product Sales,Product or Consumable,Pending
+355,MBr Fumigation for Besan,Fumigation,Fumigation Service,Pending
+356,MBr Fumigation for Pulses,Fumigation,Fumigation Service,Pending
+357,Rodent Proof Fill Fabric,Product Sales,Product or Consumable,Pending
+358,Wooden Box Heat Treatment,Fumigation,Fumigation Service,Pending
+359,Manual Aspirator,Product Sales,Product or Consumable,Pending
+360,Fumigation Cover & Transportation,Fumigation,Fumigation Service,Pending
+361,Transportation & Installation Charges,Product Sales,Installation or Charges,Pending
+362,Snake Repellent Chemical,Product Sales,Product or Consumable,Pending
+363,ULV Cold Fogger Machine,Product Sales,Equipment,Pending
+364,Hygrometer HD-303,Product Sales,Product or Consumable,Pending
+365,Phosphine Gas Monitoring Equipment/Phosphine Portable Monitor Fumisense Pro PH3,Product Sales,Equipment,Pending
+366,Phosphine Alert Personal Monitor (Personal PH3 Gas Detector),Product Sales,Equipment,Pending
+367,CANISTER (V-776),Product Sales,Product or Consumable,Pending
+368,Phosphine Gas Detection Strips,Product Sales,Product or Consumable,Pending
+369,Phosphine detector tubes,Product Sales,Equipment,Pending
+370,Pump for Gas Detector tubes,Product Sales,Equipment,Pending
+371,TUBES 2mm X 4mm,Product Sales,Product or Consumable,Pending
+372,Portable Oxygen Aluminium Air Cylinder Kit,Product Sales,Product or Consumable,Pending
+373,Aluminium Metal probe for introducing ALP tablets,Product Sales,Product or Consumable,Pending
+374,DUST MASK Disposable Textile Respirator,Product Sales,Product or Consumable,Pending
+375,CHEMICAL SPLASH GOGGLES,Product Sales,Product or Consumable,Pending
+376,Gum Boots (Indian),Product Sales,Product or Consumable,Pending
+377,SPP Diamond Trap,Product Sales,Product or Consumable,Pending
+378,Rodent & Snake Management Service,Pest Control,Pest Control Service,Pending
+379,Mosquito Rodent Snake Management Service,Pest Control,Pest Control Service,Pending
+380,Cockroach Management & Prophylactic Service,Pest Control,Pest Control Service,Pending
+381,Plant Equipment Fumigation with MBr,Fumigation,Fumigation Service,Pending
+382,HDPE Bag,Product Sales,Product or Consumable,Pending
+383,O2 Analyser With Manual Aspirator,Product Sales,Equipment,Pending
+384,ED- Bloster,Product Sales,Product or Consumable,Pending
+385,Galaxy FL Uplighter Machine,Product Sales,Equipment,Pending
+386,Rodent Entry Closing,Pest Control,Pest Control Product or Other,Pending
+387,Rodexit,Product Sales,Product or Consumable,Pending
+388,Fragrance Spray Treatment,Pest Control,Pest Control Service,Pending
+389,Plant Equipment Fumigation with ALP,Fumigation,Fumigation Service,Pending
+390,Storgard Ultra-combi (UC) Master PCO Quick Change (QC) Dome,Product Sales,Product or Consumable,Pending
+391,Pesto Guars600 SS,Product Sales,Product or Consumable,Pending
+392,Fly & Ant  Management Services,Pest Control,Pest Control Service,Pending
+393,ALP Stack Fumigation 12g/MT,Fumigation,Fumigation Service,Pending
+394,ALP Stack Fumigation 15g/MT,Fumigation,Fumigation Service,Pending
+395,Raxit for shutter,Product Sales,Product or Consumable,Pending
+396,supply and installation,Product Sales,Installation or Charges,Pending
+397,Supply,Product Sales,Product or Consumable,Pending
+398,Installations,Product Sales,Installation or Charges,Pending
+399,Rodexit / Raxit,Product Sales,Product or Consumable,Pending
+400,Rodexit / Raxit ( including installations ),Pest Control,Pest Control Product or Other,Pending
+401,Per Flat ( Outlet Chemical  Spray Treatments ) Per Flat,Pest Control,Pest Control Service,Pending
+402,Plastic Pump,Product Sales,Equipment,Pending
+403,Stainless Steel Pump,Product Sales,Equipment,Pending
+404,Temprid  20 % SE,Product Sales,Product or Consumable,Pending
+405,Propoxur 20 % Ec,Product Sales,Product or Consumable,Pending
+406,PHILLIPS UVA TUBE 15W STD,Product Sales,Product or Consumable,Pending
+407,Chinchex 50 g.  bottle - DIY,Product Sales,Product or Consumable,Pending
+408,Chinchex 500 g.  Kraft Bag - Professional,Product Sales,Product or Consumable,Pending
+409,Chinchex Professional Applicator Kit,Product Sales,Equipment,Pending
+410,Rat Management,Pest Control,Pest Control Service,Pending
+411,Spraying treatment for the surrounding club area,Pest Control,Pest Control Service,Pending
+412,Sand Bags,Product Sales,Product or Consumable,Pending
+413,Starters boy,Product Sales,Product or Consumable,Pending
+414,Choke,Product Sales,Product or Consumable,Pending
+415,Blaster,Product Sales,Product or Consumable,Pending
+416,Silo Fumigation With ALP- 3 Gm,Fumigation,Fumigation Service,Pending
+417,Snakes service,Pest Control,Pest Control Product or Other,Pending
+418,Thermal Fogging Machine,Product Sales,Equipment,Pending
+419,Flies Strip,Product Sales,Product or Consumable,Pending
+420,Divecha stand,Product Sales,Product or Consumable,Pending
+421,Mali Room,Pest Control,Pest Control Product or Other,Pending

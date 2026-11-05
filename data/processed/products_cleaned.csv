@@ -1,0 +1,400 @@
+﻿product_id,product_name,category,hsn_code,description,standard_unit,source_category,normalized_product_name,data_source
+1,Cockroach Management Service,Pest Control,998531,,,Pest Control,cockroach management service,crm_backup
+2,Bedbugs Management Service,Pest Control,998531,,,Pest Control,bedbugs management service,crm_backup
+3,Beehive Management Service,Pest Control,998531,,,Pest Control,beehive management service,crm_backup
+4,Delfog,Product Sales,38089910,,,Product Sale,delfog,crm_backup
+5,Gas Can,Product Sales,27111900,,,Product Sale,gas can,crm_backup
+6,Mosquito Management (Spraying),Pest Control,998531,,,Pest Control,mosquito management spraying,crm_backup
+7,Mosquito Management (Fogging),Pest Control,998531,,,Pest Control,mosquito management fogging,crm_backup
+8,Rodent Management Service,Pest Control,998531,,,Pest Control,rodent management service,crm_backup
+9,Ant Management,Pest Control,998531,,,Pest Control,ant management,crm_backup
+10,Lizard Management,Pest Control,998531,,,Pest Control,lizard management,crm_backup
+11,Mini Fogger Machine,Product Sales,84244900,,,Product Sale,mini fogger machine,crm_backup
+12,Fly Killer Machine,Product Sales,85439000,,,Product Sale,fly killer machine,crm_backup
+13,Termite Management,Pest Control,998531,,,Pest Control,termite management,crm_backup
+15,Wood Borer Management,Pest Control,998531,,,Pest Control,wood borer management,crm_backup
+25,Genus Fly Catcher Machine,Product Sales,85439000,,,Product Sale,genus fly catcher machine,crm_backup
+26,Viper 30 Fly Zapper,Product Sales,85439000,,,Product Sale,viper 30 fly zapper,crm_backup
+27,Cockroach Monitoring Traps,Product Sales,,,,Product Sale,cockroach monitoring traps,crm_backup
+28,Storegard Dome Traps,Product Sales,39269099,,,Product Sale,storegard dome traps,crm_backup
+29,Diamond IMM+4 Traps,Product Sales,38089990,,,Product Sale,diamond imm 4 traps,crm_backup
+30,IMM+4 Lure,Product Sales,,,,Product Sale,imm 4 lure,crm_backup
+31,Rodent Bait Station (RBS Metal),Product Sales,73102990,,,Product Sale,rodent bait station rbs metal,crm_backup
+32,MBr Fumigation,Fumigation,998531,,,Fumigation,mbr fumigation,crm_backup
+33,ALP Fumigation,Fumigation,998531,,,Fumigation,alp fumigation,crm_backup
+34,Rat Snap Trap,Product Sales,39269099,,,Product Sale,rat snap trap,crm_backup
+35,ALP Fumigation,Fumigation,998531,,,Fumigation,alp fumigation,crm_backup
+36,Fumigation Service With ALP (9gmDosage/MT),Fumigation,998531,,,Fumigation,fumigation service with alp 9gmdosage mt,crm_backup
+37,Fumigation Service With ALP (12gmDosage/MT),Fumigation,998531,,,Fumigation,fumigation service with alp 12gmdosage mt,crm_backup
+38,Prophylactic Treatment For Warehouse,Pest Control,998531,,,Pest Control,prophylactic treatment for warehouse,crm_backup
+39,RatooOut,Product Sales,380891,,,Product Sale,ratooout,crm_backup
+40,Fogger Machine,Product Sales,,,,Product Sale,fogger machine,crm_backup
+42,ECO BIOTRAPS,Product Sales,39100090,,,Product Sale,eco biotraps,crm_backup
+44,Fly Management Service,Pest Control,998531,,,Pest Control,fly management service,crm_backup
+46,Snake Management,Pest Control,,,,Pest Control,snake management,crm_backup
+47,Stack Fumigation with ALP,Fumigation,998531,,,Fumigation,stack fumigation with alp,crm_backup
+49,Self Verifying Cocoons 10MT,Product Sales,,,,Product Sale,self verifying cocoons 10mt,crm_backup
+50,Cocoon Flush Hose Pipe,Product Sales,,,,Product Sale,cocoon flush hose pipe,crm_backup
+51,O2 Analyser Machine,Product Sales,90271000,,,Product Sale,o2 analyser machine,crm_backup
+52,Manual Aspirator With Adapter,Product Sales,,,,Product Sale,manual aspirator with adapter,crm_backup
+55,ALP Fumigation Service Upto 10MT,Fumigation,998531,,,Fumigation,alp fumigation service upto 10mt,crm_backup
+56,Post Construction - Anti Termite Treatment,Pest Control,998531,,,Pest Control,post construction anti termite treatment,crm_backup
+57,General Pest Control Service,Pest Control,998531,,,Pest Control,general pest control service,crm_backup
+58,Prophylactic Treatment,Pest Control,998531,,,Pest Control,prophylactic treatment,crm_backup
+62,Silo Fumigation,Fumigation,998531,,,Fumigation,silo fumigation,crm_backup
+64,Mosquito Management Service,Pest Control,998531,,,Pest Control,mosquito management service,crm_backup
+65,Anti-Termite Spray Treatment,Pest Control,998531,,,Pest Control,anti termite spray treatment,crm_backup
+66,Single Service For Trees Only (Termite Treatment),Pest Control,998531,,,Pest Control,single service for trees only termite treatment,crm_backup
+67,Cockroach & Ant Management Service,Pest Control,998531,,,Pest Control,cockroach ant management service,crm_backup
+68,Mahira Fly Catcher Machine,Product Sales,85439000,,,Product Sale,mahira fly catcher machine,crm_backup
+69,Mosquito Spray & Anti Larval Treatment Service,Pest Control,998531,,,Pest Control,mosquito spray anti larval treatment service,crm_backup
+70,Sanitization Service,Pest Control,998531,,,Pest Control,sanitization service,crm_backup
+71,UV Fly Control Board,Product Sales,38089990,,,Product Sale,uv fly control board,crm_backup
+72,Empty Silo Fumigation,Fumigation,998531,,,Fumigation,empty silo fumigation,crm_backup
+73,Filled Silo Fumigation,Fumigation,998531,,,Fumigation,filled silo fumigation,crm_backup
+78,ILT Cleaning Ant Maintenance,Pest Control,,,,Pest Control,ilt cleaning ant maintenance,crm_backup
+82,Wooden Crate Fumigation,Fumigation,998531,,,Fumigation,wooden crate fumigation,crm_backup
+83,Container Leakage Testing Charges,Fumigation,998531,,,Fumigation,container leakage testing charges,crm_backup
+84,Transportation Charges,Product Sales,,,,Product Sale,transportation charges,crm_backup
+85,RodeXit Installation,Product Sales,39219090,,,Product Sale,rodexit installation,crm_backup
+87,Wooden Box MBr Fumigation,Fumigation,998531,,,Fumigation,wooden box mbr fumigation,crm_backup
+88,Wooden Box MBr Fumigation Service,Fumigation,998531,,,Fumigation,wooden box mbr fumigation service,crm_backup
+89,20ft Container Fumigation (32g/m3),Fumigation,998531,,,Fumigation,20ft container fumigation 32g m3,crm_backup
+90,20ft Container Fumigation (48g/m3),Fumigation,998531,,,Fumigation,20ft container fumigation 48g m3,crm_backup
+91,20ft Container Fumigation (80g/m3),Fumigation,998531,,,Fumigation,20ft container fumigation 80g m3,crm_backup
+92,20ft Container Fumigation(100g/m3),Fumigation,998531,,,Fumigation,20ft container fumigation 100g m3,crm_backup
+93,40ft Container Fumigation(32g/m3),Fumigation,998531,,,Fumigation,40ft container fumigation 32g m3,crm_backup
+94,40ft Container Fumigation(48g/m3),Fumigation,998531,,,Fumigation,40ft container fumigation 48g m3,crm_backup
+95,40ft Container Fumigation(80g/m3),Fumigation,998531,,,Fumigation,40ft container fumigation 80g m3,crm_backup
+96,40ft Container Fumigation(100g/m3),Fumigation,998531,,,Fumigation,40ft container fumigation 100g m3,crm_backup
+97,FLYght Duo (Fly Catcher Machine),Product Sales,85167920,,,Product Sale,flyght duo fly catcher machine,crm_backup
+98,Mahira Fly Killer Machine,Product Sales,85439000,,,Product Sale,mahira fly killer machine,crm_backup
+99,Viper 30 Fly Zapper,Product Sales,85439000,,,Product Sale,viper 30 fly zapper,crm_backup
+100,Phillips PHILLIPS UVA TUBE 15W STD,Product Sales,,,,Product Sale,phillips phillips uva tube 15w std,crm_backup
+101,Wood Borer Spray Treatment,Pest Control,998531,,,Pest Control,wood borer spray treatment,crm_backup
+102,Cockroach Management Drainage Chamber Service,Pest Control,998531,,,Pest Control,cockroach management drainage chamber service,crm_backup
+103,RodeXit Proofing Strip,Product Sales,39219090,,,Product Sale,rodexit proofing strip,crm_backup
+104,RodeXit Proofing Strip,Product Sales,39219090,,,Product Sale,rodexit proofing strip,crm_backup
+105,Mosquito Management Mist Fogging,Pest Control,998531,,,Pest Control,mosquito management mist fogging,crm_backup
+106,Mosquito Management Anti-Larval,Pest Control,998531,,,Pest Control,mosquito management anti larval,crm_backup
+107,Rat Guard Installation On Drainage Pipe,Product Sales,,,,Product Sale,rat guard installation on drainage pipe,crm_backup
+108,RodeXit All In One Rodent Seal,Product Sales,39219090,,,Product Sale,rodexit all in one rodent seal,crm_backup
+109,Fumigation Service,Fumigation,998531,,,Fumigation,fumigation service,crm_backup
+110,Tarpaulin Handling And Transportation Charges,Fumigation,,,,Fumigation,tarpaulin handling and transportation charges,crm_backup
+111,ALP Tablet,Product Sales,,,,Product Sale,alp tablet,crm_backup
+112,Gokhilaht 5% SC,Product Sales,,,,Product Sale,gokhilaht 5 sc,crm_backup
+113,Beehive Management,Pest Control,,,,Pest Control,beehive management,crm_backup
+114,Commodity ALP Fumigation Service,Fumigation,998531,,,Fumigation,commodity alp fumigation service,crm_backup
+115,Anti-Termite Treatment Service,Pest Control,998531,,,Pest Control,anti termite treatment service,crm_backup
+116,Drainage Chambers Spray Treatment,Pest Control,998531,,,Pest Control,drainage chambers spray treatment,crm_backup
+117,Cocoon 1 MT,Product Sales,39269091,,,Product Sale,cocoon 1 mt,crm_backup
+118,Cocoon 5 MT,Product Sales,39269091,,,Product Sale,cocoon 5 mt,crm_backup
+119,Cocoon 10 MT,Product Sales,39269091,,,Product Sale,cocoon 10 mt,crm_backup
+120,Cocoon 20 MT,Product Sales,39269091,,,Product Sale,cocoon 20 mt,crm_backup
+121,Cocoon 10 MT,Product Sales,39269091,,,Product Sale,cocoon 10 mt,crm_backup
+122,FLYght One (Fly Catcher),Product Sales,85167920,,,Product Sale,flyght one fly catcher,crm_backup
+123,Termite Treatment Chemical,Product Sales,,,,Product Sale,termite treatment chemical,crm_backup
+124,Transafeliner,Product Sales,39269091,,,Product Sale,transafeliner,crm_backup
+125,TSL 20,Product Sales,39269091,,,Product Sale,tsl 20,crm_backup
+126,TSL 40,Product Sales,39269091,,,Product Sale,tsl 40,crm_backup
+127,PVC RBS Box,Product Sales,73102990,,,Product Sale,pvc rbs box,crm_backup
+128,Pinewood Pallets,Product Sales,4415,,,Product Sale,pinewood pallets,crm_backup
+129,Viper 30 K,Product Sales,85439000,,,Product Sale,viper 30 k,crm_backup
+130,Rat Run Green Bait,Product Sales,38089191,,,Product Sale,rat run green bait,crm_backup
+131,White Glue Pad,Product Sales,35061000,,,Product Sale,white glue pad,crm_backup
+133,Prophylactic Treatment & Rodent Management,Pest Control,998531,,,Pest Control,prophylactic treatment rodent management,crm_backup
+134,Porous Pipe,Product Sales,40091100,,,Product Sale,porous pipe,crm_backup
+135,Porous Pipe Anti-Termite Treatment Service,Pest Control,40091100,,,Pest Control,porous pipe anti termite treatment service,crm_backup
+136,"Mosquito, Snake & Prophylactic Treatment Service",Pest Control,998531,,,Pest Control,mosquito snake prophylactic treatment service,crm_backup
+137,40ft Container Fumigation(48g/m3),Fumigation,,,,Fumigation,40ft container fumigation 48g m3,crm_backup
+138,Air Shipment  Fumigation,Fumigation,996531,,,Fumigation,air shipment fumigation,crm_backup
+139,Rat Box Checking and Cleaning,Pest Control,,,,Pest Control,rat box checking and cleaning,crm_backup
+140,Odorless Chemical Spraying,Pest Control,,,,Pest Control,odorless chemical spraying,crm_backup
+141,Odorless Chemical Spraying,Pest Control,,,,Pest Control,odorless chemical spraying,crm_backup
+142,Thermal Fogging,Pest Control,,,,Pest Control,thermal fogging,crm_backup
+143,Snake Repellent Service,Pest Control,,,,Pest Control,snake repellent service,crm_backup
+144,Cold Fogging,Pest Control,,,,Pest Control,cold fogging,crm_backup
+145,Ant's Control Services,Pest Control,,,,Pest Control,ant s control services,crm_backup
+146,Cockroach and Ant  Management Service,Pest Control,998531,,,Pest Control,cockroach and ant management service,crm_backup
+147,Rat Guard Installation On Pipe,Product Sales,,,,Product Sale,rat guard installation on pipe,crm_backup
+148,Gluetrap,Product Sales,,,,Product Sale,gluetrap,crm_backup
+149,Hitter Cake,Product Sales,,,,Product Sale,hitter cake,crm_backup
+150,Green Bait,Product Sales,,,,Product Sale,green bait,crm_backup
+151,ZP (Zinc Phosphate),Product Sales,,,,Product Sale,zp zinc phosphate,crm_backup
+152,Commodity MBr Fumigation Service,Fumigation,,,,Fumigation,commodity mbr fumigation service,crm_backup
+153,Bird Netting Service,Product Sales,,,,Product Sale,bird netting service,crm_backup
+154,PVC Door Curtain,Product Sales,,,,Product Sale,pvc door curtain,crm_backup
+155,Mosquito Cold Fogging Service,Pest Control,998531,,,Pest Control,mosquito cold fogging service,crm_backup
+156,Weed Management Service,Pest Control,998531,,,Pest Control,weed management service,crm_backup
+157,Transport Cost,Product Sales,,,,Product Sale,transport cost,crm_backup
+158,Pre Construction - Anti Termite Treatment,Pest Control,998531,,,Pest Control,pre construction anti termite treatment,crm_backup
+159,Rodent Bait Station with snap trap,Product Sales,,,,Product Sale,rodent bait station with snap trap,crm_backup
+160,Cocoon 50 MT,Product Sales,39269091,,,Product Sale,cocoon 50 mt,crm_backup
+161,Pressure Kit Grain Pro,Product Sales,,,,Product Sale,pressure kit grain pro,crm_backup
+162,Mosquito Management Spraying & Fogging Service,Pest Control,,,,Pest Control,mosquito management spraying fogging service,crm_backup
+163,FLYght One LED Catcher Machine,Product Sales,,,,Product Sale,flyght one led catcher machine,crm_backup
+164,CO2 Fumigation,Fumigation,,,,Fumigation,co2 fumigation,crm_backup
+165,Cocoon Flush Hose Pipe,Pest Control,,,,Pest Control,cocoon flush hose pipe,crm_backup
+166,Cocoon Flush Hose Pipe,Product Sales,,,,Product Sale,cocoon flush hose pipe,crm_backup
+167,Cocoon 0.6 MT,Product Sales,,,,Product Sale,cocoon 0 6 mt,crm_backup
+168,Wooden Pallet Fumigation,Fumigation,998531,,,Fumigation,wooden pallet fumigation,crm_backup
+169,MBr Gas Leak Checker / Fumisense Pro-MBr Lo Leak,Product Sales,9027,,,Product Sale,mbr gas leak checker fumisense pro mbr lo leak,crm_backup
+170,Halide Leak detector Make: HLD-JL-303,Product Sales,9027,,,Product Sale,halide leak detector make hld jl 303,crm_backup
+171,S.S.Vaporizer,Product Sales,8419,,,Product Sale,s s vaporizer,crm_backup
+172,Tarpaulin Sheet,Product Sales,3926,,,Product Sale,tarpaulin sheet,crm_backup
+173,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,Product Sales,3926,,,Product Sale,fumigation sheet ldpe 30 x 40 feet 200gsm,crm_backup
+174,MBr Gas Monitoring Equipment / Fumisense Pro-Mbr Hi,Product Sales,9027,,,Product Sale,mbr gas monitoring equipment fumisense pro mbr hi,crm_backup
+175,PVC PIPES 6mm x 12mm,Product Sales,3917,,,Product Sale,pvc pipes 6mm x 12mm,crm_backup
+176,TUBES 2mm x 4mm,Product Sales,3917,,,Product Sale,tubes 2mm x 4mm,crm_backup
+177,MB can applicator (Dual Handle Stainless Steel Applicator.)Model AR 65 SS,Product Sales,8203,,,Product Sale,mb can applicator dual handle stainless steel applicator model ar 65 ss,crm_backup
+178,MBr Stack Fumigation 32g/MT,Fumigation,998531,,,Fumigation,mbr stack fumigation 32g mt,crm_backup
+179,MB Detector Tubes (10Tubes),Product Sales,9027,,,Product Sale,mb detector tubes 10tubes,crm_backup
+180,MBr Stack Fumigation 48g/MT,Fumigation,998531,,,Fumigation,mbr stack fumigation 48g mt,crm_backup
+181,Air Sampling Pump (ASP-40),Product Sales,9027,,,Product Sale,air sampling pump asp 40,crm_backup
+182,ALP Stack Fumigation 9g/MT,Fumigation,998531,,,Fumigation,alp stack fumigation 9g mt,crm_backup
+183,Gas Mask (Full Respiratory Mask),Product Sales,9020,,,Product Sale,gas mask full respiratory mask,crm_backup
+184,"CANISTER AX (V-7700) (5000ppm,AX)",Product Sales,9020,,,Product Sale,canister ax v 7700 5000ppm ax,crm_backup
+185,ALP Stack Fumigation 12g/MT,Fumigation,998531,,,Fumigation,alp stack fumigation 12g mt,crm_backup
+186,Self Contained Breathing Apparatus SCBA 300Bars,Product Sales,9020,,,Product Sale,self contained breathing apparatus scba 300bars,crm_backup
+187,SAND SNAKES CANVAS (CLOTH SIZE 15cm x 1m,Pest Control,,,,Pest Control,sand snakes canvas cloth size 15cm x 1m,crm_backup
+188,SAND SNAKES CANVAS,Product Sales,5208,,,Product Sale,sand snakes canvas,crm_backup
+189,HDPE/PLASTIC 15cm x 1mtr,Product Sales,3926,,,Product Sale,hdpe plastic 15cm x 1mtr,crm_backup
+190,Digital Thermometer,Product Sales,9025,,,Product Sale,digital thermometer,crm_backup
+191,Axial Fan 12inch 70m³/min (2500 CFM),Product Sales,8414,,,Product Sale,axial fan 12inch 70m min 2500 cfm,crm_backup
+192,Calculator Pocket type,Product Sales,8470,,,Product Sale,calculator pocket type,crm_backup
+193,Measuring Tape roll-in type,Product Sales,9017,,,Product Sale,measuring tape roll in type,crm_backup
+194,Stopwatch,Product Sales,9102,,,Product Sale,stopwatch,crm_backup
+195,Adhesive/Sealing tape 5 cm width,Product Sales,3919,,,Product Sale,adhesive sealing tape 5 cm width,crm_backup
+196,Resuscitator,Product Sales,9019,,,Product Sale,resuscitator,crm_backup
+197,"Y/T-connections (1Set :2pcs,Brass)",Product Sales,7412,,,Product Sale,y t connections 1set 2pcs brass,crm_backup
+198,Chemical Gloves (Bright) for chemical handling,Product Sales,4015,,,Product Sale,chemical gloves bright for chemical handling,crm_backup
+199,Long Gloves,Product Sales,4015,,,Product Sale,long gloves,crm_backup
+200,"Plastic Ropes (4mm, High Density)",Product Sales,5607,,,Product Sale,plastic ropes 4mm high density,crm_backup
+201,Fire extinguisher 2KG,Product Sales,8424,,,Product Sale,fire extinguisher 2kg,crm_backup
+202,Clothing Coverall,Product Sales,6210,,,Product Sale,clothing coverall,crm_backup
+203,Tool Box Kit,Product Sales,7310,,,Product Sale,tool box kit,crm_backup
+204,First Aid Kit,Product Sales,3006,,,Product Sale,first aid kit,crm_backup
+205,Danger Roll Tape,Product Sales,3919,,,Product Sale,danger roll tape,crm_backup
+206,Jumbo clips 6inch,Product Sales,8536,,,Product Sale,jumbo clips 6inch,crm_backup
+207,Jumbo clips 6inch,Product Sales,3919,,,Product Sale,jumbo clips 6inch,crm_backup
+208,DUCT TAPE 48MM X 45METRE,Product Sales,3919,,,Product Sale,duct tape 48mm x 45metre,crm_backup
+209,PACKAGING & FORWARDING,Product Sales,9965,,,Product Sale,packaging forwarding,crm_backup
+210,DUCT TAPE 144MM X 45METRE,Product Sales,3919,,,Product Sale,duct tape 144mm x 45metre,crm_backup
+211,Treatment of wild grass and fogging,Pest Control,998619,,,Pest Control,treatment of wild grass and fogging,crm_backup
+212,Plus Zap Fly Killer,Product Sales,85394900,,,Product Sale,plus zap fly killer,crm_backup
+213,Heat Treatment,Pest Control,,,,Pest Control,heat treatment,crm_backup
+214,Wooden Box with Heat Treatment,Pest Control,998531,,,Pest Control,wooden box with heat treatment,crm_backup
+215,General Pest Management & PMS Consumables Items,Pest Control,,,,Pest Control,general pest management pms consumables items,crm_backup
+216,Stack Fumigation,Fumigation,,,,Fumigation,stack fumigation,crm_backup
+217,Stack Fumigation with Mbr,Fumigation,,,,Fumigation,stack fumigation with mbr,crm_backup
+218,SCBA 300 Bars,Product Sales,9020,,,Product Sale,scba 300 bars,crm_backup
+219,Snake Repellent,Product Sales,38089310,,,Product Sale,snake repellent,crm_backup
+220,Per Flat Outlet Spray,Pest Control,998531,,,Pest Control,per flat outlet spray,crm_backup
+221,Delthrin 1 Kg,Product Sales,38089910,,,Product Sale,delthrin 1 kg,crm_backup
+222,Malathion 50% (Eagle) 5 Lit,Product Sales,38089910,,,Product Sale,malathion 50 eagle 5 lit,crm_backup
+223,Roban Cake,Pest Control,38089122,,,Pest Control,roban cake,crm_backup
+224,Chloroguard 20% 20 Lit,Pest Control,38089199,,,Pest Control,chloroguard 20 20 lit,crm_backup
+225,Agenda 500 ML,Product Sales,38089137,,,Product Sale,agenda 500 ml,crm_backup
+226,AQUA-K-Otharine Ew20,Pest Control,38089137,,,Pest Control,aqua k otharine ew20,crm_backup
+227,Bitter Guard,Product Sales,29232090,,,Product Sale,bitter guard,crm_backup
+228,CYPRA,Pest Control,38099191,,,Pest Control,cypra,crm_backup
+229,Delta Flow,Pest Control,38089910,,,Pest Control,delta flow,crm_backup
+230,Imida Gold Plus 1 Ltr,Pest Control,38089910,,,Pest Control,imida gold plus 1 ltr,crm_backup
+231,MBR 1 Lbs,Pest Control,38089122,,,Pest Control,mbr 1 lbs,crm_backup
+232,MBR 1.5 Lbs,Pest Control,38089122,,,Pest Control,mbr 1 5 lbs,crm_backup
+233,BARRIX CATCH HOUSEFLY LURE,Product Sales,380899,,,Product Sale,barrix catch housefly lure,crm_backup
+234,BOPP Tape,Pest Control,39199090,,,Pest Control,bopp tape,crm_backup
+235,Fly Strips Yellow,Pest Control,38089990,,,Pest Control,fly strips yellow,crm_backup
+236,Barrix Catch HouseFly Trap,Product Sales,380899,,,Product Sale,barrix catch housefly trap,crm_backup
+237,Fly Trap Jar,Pest Control,,,,Pest Control,fly trap jar,crm_backup
+238,Flycobait,Pest Control,38089199,,,Pest Control,flycobait,crm_backup
+239,Flyquit,Pest Control,38089910,,,Pest Control,flyquit,crm_backup
+240,GAIAGEN ANTI ROACH GEL,Pest Control,38089199,,,Pest Control,gaiagen anti roach gel,crm_backup
+241,Glue traps Big,Pest Control,35061000,,,Pest Control,glue traps big,crm_backup
+242,Glue traps Small,Pest Control,35069990,,,Pest Control,glue traps small,crm_backup
+243,Kilspot GEL,Pest Control,998531,,,Pest Control,kilspot gel,crm_backup
+244,Lizard Airosol Spray,Pest Control,3301,,,Pest Control,lizard airosol spray,crm_backup
+245,Mantra 1 Ltr,Pest Control,38089199,,,Pest Control,mantra 1 ltr,crm_backup
+246,Mantra 5 Ltr,Pest Control,3808 91 99,,,Pest Control,mantra 5 ltr,crm_backup
+247,Maxforce Forte Gel 30 Gm,Pest Control,38089199,,,Pest Control,maxforce forte gel 30 gm,crm_backup
+248,MOSKMAR,Pest Control,38089191,,,Pest Control,moskmar,crm_backup
+249,Premise 1 LTR,Pest Control,38089910,,,Pest Control,premise 1 ltr,crm_backup
+250,Premise 250 ml,Pest Control,38089910,,,Pest Control,premise 250 ml,crm_backup
+251,Proton Pouch,Pest Control,38089910,,,Pest Control,proton pouch,crm_backup
+252,Pyrofog,Pest Control,998531,,,Pest Control,pyrofog,crm_backup
+253,Ratcon CB,Pest Control,38089199,,,Pest Control,ratcon cb,crm_backup
+254,Ratil 2% Granuals,Pest Control,3808,,,Pest Control,ratil 2 granuals,crm_backup
+255,Ratol Cake 100 gm,Product Sales,38089910,,,Product Sale,ratol cake 100 gm,crm_backup
+256,Ratol Powder 100 gm tin,Product Sales,38089910,,,Product Sale,ratol powder 100 gm tin,crm_backup
+257,Responsar,Pest Control,38089199,,,Pest Control,responsar,crm_backup
+258,Roach Trap,Product Sales,38089990,,,Product Sale,roach trap,crm_backup
+259,ROACHBAIT (35 GM),Pest Control,28480020,,,Pest Control,roachbait 35 gm,crm_backup
+260,Roachnil,Pest Control,38089910,,,Pest Control,roachnil,crm_backup
+261,Rodent Bait Station (metal),Product Sales,73102990,,,Product Sale,rodent bait station metal,crm_backup
+262,SAN XUR 1Ltr,Pest Control,3809 91 91,,,Pest Control,san xur 1ltr,crm_backup
+263,Sandbags,Product Sales,1062000,,,Product Sale,sandbags,crm_backup
+264,Sanfip Gel 35 gm,Pest Control,38089199,,,Pest Control,sanfip gel 35 gm,crm_backup
+265,Shastra,Pest Control,38089910,,,Pest Control,shastra,crm_backup
+266,Silent Saviour,Product Sales,84244900,,,Product Sale,silent saviour,crm_backup
+267,Starhit,Pest Control,3809 91 91,,,Pest Control,starhit,crm_backup
+268,Sumistroke 1 Ltr,Pest Control,38089910,,,Pest Control,sumistroke 1 ltr,crm_backup
+269,Temprid SC 50 ML,Pest Control,38089199,,,Pest Control,temprid sc 50 ml,crm_backup
+270,Temprid SC 500 ML,Pest Control,38089199,,,Pest Control,temprid sc 500 ml,crm_backup
+271,X out Lizard Trap (Red Traps ),Product Sales,38089990,,,Product Sale,x out lizard trap red traps,crm_backup
+272,X Out White Trap,Pest Control,38089990,,,Pest Control,x out white trap,crm_backup
+273,Yellow Sitcky Traps,Product Sales,39269099,,,Product Sale,yellow sitcky traps,crm_backup
+274,Aspee Marut MT-15 6 Lit,Product Sales,84248200,,,Product Sale,aspee marut mt 15 6 lit,crm_backup
+275,Ratol Gel,Pest Control,38089910,,,Pest Control,ratol gel,crm_backup
+276,"Sleeved UV Tube 15W 18""",Product Sales,85394900,,,Product Sale,sleeved uv tube 15w 18,crm_backup
+277,Fly Control Glue Board,Product Sales,38089990,,,Product Sale,fly control glue board,crm_backup
+278,Pest Management Service,Pest Control,,,,Pest Control,pest management service,crm_backup
+279,Lures for Dome Trap,Product Sales,35069999,,,Product Sale,lures for dome trap,crm_backup
+280,UV ILT Tube Shatter-Proof,Product Sales,85394900,,,Product Sale,uv ilt tube shatter proof,crm_backup
+281,MBr Stack Fumigation (15g/m3),Fumigation,998531,,,Fumigation,mbr stack fumigation 15g m3,crm_backup
+282,20ft Container With MBr Fumigation (48g/m3),Fumigation,998531,,,Fumigation,20ft container with mbr fumigation 48g m3,crm_backup
+283,Spot treatment - For Termite and wood borer,Pest Control,998531,,,Pest Control,spot treatment for termite and wood borer,crm_backup
+284,Disinfestation Treatment,Pest Control,998531,,,Pest Control,disinfestation treatment,crm_backup
+285,15 W 18 Inch Sleeved Tube,Product Sales,,,,Product Sale,15 w 18 inch sleeved tube,crm_backup
+286,18 W 24 Inch Sleeved Tube,Product Sales,,,,Product Sale,18 w 24 inch sleeved tube,crm_backup
+287,Bitter Guard,Product Sales,38089199,,,Product Sale,bitter guard,crm_backup
+288,Wooden Pallet Heat Treatment,Fumigation,,,,Fumigation,wooden pallet heat treatment,crm_backup
+289,Rat Guard Sheet,Product Sales,39269099,,,Product Sale,rat guard sheet,crm_backup
+290,Garbage Duct Spray,Pest Control,998531,,,Pest Control,garbage duct spray,crm_backup
+291,Honey Bee Repellent Spray,Pest Control,998531,,,Pest Control,honey bee repellent spray,crm_backup
+292,Disinfestations & Prophylactic Treatment,Pest Control,998531,,,Pest Control,disinfestations prophylactic treatment,crm_backup
+293,Mosquito Control (Anti Larval Spraying),Pest Control,998531,,,Pest Control,mosquito control anti larval spraying,crm_backup
+294,Mosquito Control (Anti Larval Fogging),Pest Control,998531,,,Pest Control,mosquito control anti larval fogging,crm_backup
+295,"Sleeved UV Tube 18W 24""",Product Sales,85394900,,,Product Sale,sleeved uv tube 18w 24,crm_backup
+296,RodeXit Proofing Strip With Installation,Product Sales,39219090,,,Product Sale,rodexit proofing strip with installation,crm_backup
+297,Beehive Removal Service,Pest Control,998531,,,Pest Control,beehive removal service,crm_backup
+298,ILT Cleaning And Maintenance,Pest Control,998531,,,Pest Control,ilt cleaning and maintenance,crm_backup
+299,ILT Cleaning And Maintenance,Pest Control,998531,,,Pest Control,ilt cleaning and maintenance,crm_backup
+300,Gap Filling,Pest Control,998531,,,Pest Control,gap filling,crm_backup
+301,Spider Management Service,Pest Control,998531,,,Pest Control,spider management service,crm_backup
+302,Cocoon 0.6  MT,Product Sales,39269091,,,Product Sale,cocoon 0 6 mt,crm_backup
+303,Aluminium Phosphide granules,Product Sales,38089910,,,Product Sale,aluminium phosphide granules,crm_backup
+304,Aluminium Phosphide 77.5% Granules,Product Sales,38089910,,,Product Sale,aluminium phosphide 77 5 granules,crm_backup
+305,"UV Tube Shatter-Proof 18""",Product Sales,85394900,,,Product Sale,uv tube shatter proof 18,crm_backup
+306,UV Tube,Product Sales,85394900,,,Product Sale,uv tube,crm_backup
+307,UV Meter,Product Sales,85394900,,,Product Sale,uv meter,crm_backup
+308,"UV Tube Shatter-Proof 18""",Product Sales,85394900,,,Product Sale,uv tube shatter proof 18,crm_backup
+309,Cocoon 100 MT,Product Sales,39269091,"1) 100 MT GHF Cocoon with 2 mtr height.(flexi wheat
+storage)
+2) The pressure kit required for Co2 fumigation",,Product Sale,cocoon 100 mt,crm_backup
+310,Fly glue pad,Product Sales,35061000,,,Product Sale,fly glue pad,crm_backup
+311,Hermetic Bag Premium 50kg,Product Sales,39269091,"Twist & Tie Medium
+Size: 110 x 65 cm",,Product Sale,hermetic bag premium 50kg,crm_backup
+312,Equipment Fumigation Service,Fumigation,998531,,LBS,Fumigation,equipment fumigation service,crm_backup
+313,Cimex Eradicator,Product Sales,85167990,,,Product Sale,cimex eradicator,crm_backup
+314,Prophylactic and snack  Management,Pest Control,,,,Pest Control,prophylactic and snack management,crm_backup
+315,Fumigation Tarpaulin,Product Sales,,,,Product Sale,fumigation tarpaulin,crm_backup
+316,HDPE Plastic Tarpaulin 150GSM,Product Sales,,,,Product Sale,hdpe plastic tarpaulin 150gsm,crm_backup
+317,General Pest Control Service (2026-2027),Pest Control,,"Best to be covered (2026-2027)
+Prophylactic Treatment & Snake Management
+Monthly 12 Service in a year.",,Pest Control,general pest control service 2026 2027,crm_backup
+318,General Pest Control Service (2027-2028),Pest Control,,"Best to be covered 
+Prophylactic Treatment & Snake Management
+Monthly 12 Service in a year.",,Pest Control,general pest control service 2027 2028,crm_backup
+319,General Pest Control Service (2028-2029),Pest Control,,,,Pest Control,general pest control service 2028 2029,crm_backup
+320,Lures for Barrix,Product Sales,,,,Product Sale,lures for barrix,crm_backup
+321,Lures for Barrix Fly Trap,Product Sales,,,,Product Sale,lures for barrix fly trap,crm_backup
+322,Silo Fumigation With ALP- 9 Gm,Fumigation,,,,Fumigation,silo fumigation with alp 9 gm,crm_backup
+323,Wooden Termite Treatment,Pest Control,,,,Pest Control,wooden termite treatment,crm_backup
+324,GrainPro Hermetic Bag,Product Sales,,,,Product Sale,grainpro hermetic bag,crm_backup
+325,ALP Fumigation- 9 gm,Fumigation,998531,,,Fumigation,alp fumigation 9 gm,crm_backup
+326,ALP Fumigation- 12 gm,Fumigation,998531,,,Fumigation,alp fumigation 12 gm,crm_backup
+327,ALP Fumigation- 15 gm,Fumigation,998531,,,Fumigation,alp fumigation 15 gm,crm_backup
+328,ALP Fumigation- 18 gm,Fumigation,998531,,,Fumigation,alp fumigation 18 gm,crm_backup
+329,MBr Fumigation- 32 gm,Fumigation,998531,,,Fumigation,mbr fumigation 32 gm,crm_backup
+330,MBr Fumigation- 48 gm,Fumigation,998531,,,Fumigation,mbr fumigation 48 gm,crm_backup
+331,40ft Container Fumigation(60g/m3),Fumigation,998531,,,Fumigation,40ft container fumigation 60g m3,crm_backup
+332,20ft Container Fumigation(80g/m3),Fumigation,998531,,,Fumigation,20ft container fumigation 80g m3,crm_backup
+333,20ft Container Fumigation (60g/m3),Fumigation,,,,Fumigation,20ft container fumigation 60g m3,crm_backup
+334,Small/ Half Rodent Bait Station Box (RBS),Product Sales,,,,Product Sale,small half rodent bait station box rbs,crm_backup
+335,Polti Cimex Eradicator,Product Sales,,,,Product Sale,polti cimex eradicator,crm_backup
+336,ALP Fumigation- 6 gm per Cub Mtr,Fumigation,998531,,,Fumigation,alp fumigation 6 gm per cub mtr,crm_backup
+337,Rat Cage,Product Sales,,,,Product Sale,rat cage,crm_backup
+338,(RodeXit) Door Painting,Product Sales,,,,Product Sale,rodexit door painting,crm_backup
+339,Wooden Pallet Fumigation With MBr,Fumigation,,,,Fumigation,wooden pallet fumigation with mbr,crm_backup
+340,Sand Snakes,Product Sales,5208,,,Product Sale,sand snakes,crm_backup
+341,CO2 Flush Kit,Product Sales,84819090,,,Product Sale,co2 flush kit,crm_backup
+342,O2 Analyser with Connectors,Product Sales,,,,Product Sale,o2 analyser with connectors,crm_backup
+343,Wooden Pallet Making,Fumigation,4415,,,Fumigation,wooden pallet making,crm_backup
+344,Lizard Management Service,Pest Control,,,,Pest Control,lizard management service,crm_backup
+345,Lizard Management Service,Pest Control,,,,Pest Control,lizard management service,crm_backup
+346,Rodent Bait Station,Pest Control,73102990,,,Pest Control,rodent bait station,crm_backup
+347,Fumigation Service With ALP (18gmDosage/MT),Fumigation,,,,Fumigation,fumigation service with alp 18gmdosage mt,crm_backup
+348,Fumigation Service With ALP (36gmDosage/MT),Fumigation,,,,Fumigation,fumigation service with alp 36gmdosage mt,crm_backup
+349,Rodent Bait Station (RBS Box),Product Sales,73102990,,,Product Sale,rodent bait station rbs box,crm_backup
+350,Trend Graph Analysis & Audit Report,Pest Control,,,,Pest Control,trend graph analysis audit report,crm_backup
+351,Cocoon 150 MT,Product Sales,39269091,,,Product Sale,cocoon 150 mt,crm_backup
+352,Shutter Gate Rolling Bird Netting,Product Sales,5608,,,Product Sale,shutter gate rolling bird netting,crm_backup
+353,Shutter Gate Bird Netting Without Rolling,Product Sales,5608,,,Product Sale,shutter gate bird netting without rolling,crm_backup
+354,Rodent glue pad,Product Sales,35069190,,,Product Sale,rodent glue pad,crm_backup
+355,MBr Fumigation for Besan,Fumigation,,,,Fumigation,mbr fumigation for besan,crm_backup
+356,MBr Fumigation for Pulses,Fumigation,,,,Fumigation,mbr fumigation for pulses,crm_backup
+357,Rodent Proof Fill Fabric,Product Sales,73231000,10 cm X 300 cm Roll.,Nos,Product Sale,rodent proof fill fabric,crm_backup
+358,Wooden Box Heat Treatment,Fumigation,44152000,,,Fumigation,wooden box heat treatment,crm_backup
+359,Manual Aspirator,Product Sales,90271000,,,Product Sale,manual aspirator,crm_backup
+360,Fumigation Cover & Transportation,Fumigation,,,,Fumigation,fumigation cover transportation,crm_backup
+361,Transportation & Installation Charges,Product Sales,,,,Product Sale,transportation installation charges,crm_backup
+362,Snake Repellent Chemical,Product Sales,3808,,,Product Sale,snake repellent chemical,crm_backup
+363,ULV Cold Fogger Machine,Product Sales,,,,Product Sale,ulv cold fogger machine,crm_backup
+364,Hygrometer HD-303,Product Sales,9025,,,Product Sale,hygrometer hd 303,crm_backup
+365,Phosphine Gas Monitoring Equipment/Phosphine Portable Monitor Fumisense Pro PH3,Product Sales,9027,"(Range: 0 - 2000 ppm,Res;1ppm)",,Product Sale,phosphine gas monitoring equipment phosphine portable monitor fumisense pro ph3,crm_backup
+366,Phosphine Alert Personal Monitor (Personal PH3 Gas Detector),Product Sales,9027,,,Product Sale,phosphine alert personal monitor personal ph3 gas detector,crm_backup
+367,CANISTER (V-776),Product Sales,9020,,,Product Sale,canister v 776,crm_backup
+368,Phosphine Gas Detection Strips,Product Sales,9027,,,Product Sale,phosphine gas detection strips,crm_backup
+369,Phosphine detector tubes,Product Sales,9027,,,Product Sale,phosphine detector tubes,crm_backup
+370,Pump for Gas Detector tubes,Product Sales,9027,,,Product Sale,pump for gas detector tubes,crm_backup
+371,TUBES 2mm X 4mm,Product Sales,3917,,,Product Sale,tubes 2mm x 4mm,crm_backup
+372,Portable Oxygen Aluminium Air Cylinder Kit,Product Sales,9019,,,Product Sale,portable oxygen aluminium air cylinder kit,crm_backup
+373,Aluminium Metal probe for introducing ALP tablets,Product Sales,7609,,,Product Sale,aluminium metal probe for introducing alp tablets,crm_backup
+374,DUST MASK Disposable Textile Respirator,Product Sales,6307,,,Product Sale,dust mask disposable textile respirator,crm_backup
+375,CHEMICAL SPLASH GOGGLES,Product Sales,9004,,,Product Sale,chemical splash goggles,crm_backup
+376,Gum Boots (Indian),Product Sales,6401,,,Product Sale,gum boots indian,crm_backup
+377,SPP Diamond Trap,Product Sales,,,,Product Sale,spp diamond trap,crm_backup
+378,Rodent & Snake Management Service,Pest Control,998531,,Nos,Pest Control,rodent snake management service,crm_backup
+379,Mosquito Rodent Snake Management Service,Pest Control,998531,,Nos,Pest Control,mosquito rodent snake management service,crm_backup
+380,Cockroach Management & Prophylactic Service,Pest Control,998531,,,Pest Control,cockroach management prophylactic service,crm_backup
+381,Plant Equipment Fumigation with MBr,Fumigation,998531,,,Fumigation,plant equipment fumigation with mbr,crm_backup
+382,HDPE Bag,Product Sales,,,,Product Sale,hdpe bag,crm_backup
+383,O2 Analyser With Manual Aspirator,Product Sales,90271000,,,Product Sale,o2 analyser with manual aspirator,crm_backup
+384,ED- Bloster,Product Sales,,,,Product Sale,ed bloster,crm_backup
+385,Galaxy FL Uplighter Machine,Product Sales,85439000,,,Product Sale,galaxy fl uplighter machine,crm_backup
+386,Rodent Entry Closing,Pest Control,,,,Pest Control,rodent entry closing,crm_backup
+387,Rodexit,Product Sales,39219099,,Sqft,Product Sale,rodexit,crm_backup
+388,Fragrance Spray Treatment,Pest Control,,,,Pest Control,fragrance spray treatment,crm_backup
+389,Plant Equipment Fumigation with ALP,Fumigation,,,,Fumigation,plant equipment fumigation with alp,crm_backup
+390,Storgard Ultra-combi (UC) Master PCO Quick Change (QC) Dome,Product Sales,39269099,QC Dome Traps with UC Phermone Lures Trays.,Nos,Product Sale,storgard ultra combi uc master pco quick change qc dome,crm_backup
+391,Pesto Guars600 SS,Product Sales,38089910,,Nos,Product Sale,pesto guars600 ss,crm_backup
+392,Fly & Ant  Management Services,Pest Control,998531,,Nos,Pest Control,fly ant management services,crm_backup
+393,ALP Stack Fumigation 12g/MT,Fumigation,998531,,Nos,Fumigation,alp stack fumigation 12g mt,crm_backup
+394,ALP Stack Fumigation 15g/MT,Fumigation,998531,,Nos,Fumigation,alp stack fumigation 15g mt,crm_backup
+395,Raxit for shutter,Product Sales,730830,,fts,Product Sale,raxit for shutter,crm_backup
+396,supply and installation,Product Sales,9987,,Nos,Product Sale,supply and installation,crm_backup
+397,Supply,Product Sales,9987,,Nos,Product Sale,supply,crm_backup
+398,Installations,Product Sales,9987,,Nos,Product Sale,installations,crm_backup
+399,Rodexit / Raxit,Product Sales,730830,,fts,Product Sale,rodexit raxit,crm_backup
+400,Rodexit / Raxit ( including installations ),Pest Control,730830,,fts,Pest Control,rodexit raxit including installations,crm_backup
+401,Per Flat ( Outlet Chemical  Spray Treatments ) Per Flat,Pest Control,998531,,Nos,Pest Control,per flat outlet chemical spray treatments per flat,crm_backup
+402,Plastic Pump,Product Sales,8413,,Nos,Product Sale,plastic pump,crm_backup
+403,Stainless Steel Pump,Product Sales,8413,,Nos,Product Sale,stainless steel pump,crm_backup
+404,Temprid  20 % SE,Product Sales,38089199,,ML,Product Sale,temprid 20 se,crm_backup
+405,Propoxur 20 % Ec,Product Sales,38089199,,Lit,Product Sale,propoxur 20 ec,crm_backup
+406,PHILLIPS UVA TUBE 15W STD,Product Sales,85394900,,,Product Sale,phillips uva tube 15w std,crm_backup
+407,Chinchex 50 g.  bottle - DIY,Product Sales,28112200,,,Product Sale,chinchex 50 g bottle diy,crm_backup
+408,Chinchex 500 g.  Kraft Bag - Professional,Product Sales,28112200,,,Product Sale,chinchex 500 g kraft bag professional,crm_backup
+409,Chinchex Professional Applicator Kit,Product Sales,39269097,,,Product Sale,chinchex professional applicator kit,crm_backup
+410,Rat Management,Pest Control,998531,,Nos,Pest Control,rat management,crm_backup
+411,Spraying treatment for the surrounding club area,Pest Control,998531,,,Pest Control,spraying treatment for the surrounding club area,crm_backup
+412,Sand Bags,Product Sales,,,,Product Sale,sand bags,crm_backup
+413,Starters boy,Product Sales,6203,,Nos,Product Sale,starters boy,crm_backup
+414,Choke,Product Sales,85045010,,Nos,Product Sale,choke,crm_backup
+415,Blaster,Product Sales,84243000,,Nos,Product Sale,blaster,crm_backup
+416,Silo Fumigation With ALP- 3 Gm,Fumigation,998531,,Nos,Fumigation,silo fumigation with alp 3 gm,crm_backup
+417,Snakes service,Pest Control,998531,,Nos,Pest Control,snakes service,crm_backup
+418,Thermal Fogging Machine,Product Sales,84244100,Fogger XL 175 (P),,Product Sale,thermal fogging machine,crm_backup
+419,Flies Strip,Product Sales,38089191,,,Product Sale,flies strip,crm_backup
+420,Divecha stand,Product Sales,998531,,Nos,Product Sale,divecha stand,crm_backup
+421,Mali Room,Pest Control,998531,,Nos,Pest Control,mali room,crm_backup

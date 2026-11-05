@@ -1,0 +1,16 @@
+Metric,Count
+Total customers,1156
+Previously receiving recommendations,59
+Previously without recommendations,1097
+Customers receiving new promotional offers,698
+Previously missing customers now reached,641
+Previously missing customers still without offers,456
+Customers with no mapped product history,332
+Verified aliases loaded,284
+Mapped quotation lines,2316
+Unmapped quotation lines,9
+Potential product pairs,777
+Combo offer rows,1991
+Individual promotion rows,1233
+Maximum combos per customer,3
+Maximum individual promotions per customer,2

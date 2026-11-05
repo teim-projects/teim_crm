@@ -1,0 +1,197 @@
+﻿customer_id,product_id,category,event_type,event_date,event_status,quantity,amount,confidence_weight,data_source,source_table,source_record_id,event_date_iso
+1202,33,Fumigation,quotation_interest,2026-09-01,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1970,2026-09-01 00:00:00
+1202,35,Fumigation,quotation_interest,2026-09-01,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1971,2026-09-01 00:00:00
+1204,1,Pest Control,quotation_interest,2026-09-01,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1973,2026-09-01 00:00:00
+1204,8,Pest Control,quotation_interest,2026-09-01,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1972,2026-09-01 00:00:00
+713,57,Pest Control,quotation_interest,2026-09-01,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1974,2026-09-01 00:00:00
+1205,8,Pest Control,quotation_interest,2026-09-02,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1975,2026-09-02 00:00:00
+1205,57,Pest Control,quotation_interest,2026-09-02,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1976,2026-09-02 00:00:00
+1207,225,Product Sales,quotation_interest,2026-09-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1980,2026-09-03 00:00:00
+690,1,Pest Control,quotation_interest,2026-09-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1979,2026-09-03 00:00:00
+1207,225,Product Sales,nonapproved_service_product,2026-09-03,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,403,2026-09-03 00:00:00
+1197,57,Pest Control,quotation_interest,2026-09-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1977,2026-09-03 00:00:00
+1206,57,Pest Control,quotation_interest,2026-09-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1978,2026-09-03 00:00:00
+714,1,Pest Control,quotation_interest,2026-09-04,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1983,2026-09-04 00:00:00
+714,8,Pest Control,quotation_interest,2026-09-04,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1982,2026-09-04 00:00:00
+714,44,Pest Control,quotation_interest,2026-09-04,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1984,2026-09-04 00:00:00
+1213,8,Pest Control,quotation_interest,2026-09-04,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1985,2026-09-04 00:00:00
+1207,225,Product Sales,nonapproved_service_product,2026-09-04,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,404,2026-09-04 00:00:00
+1208,85,Product Sales,quotation_interest,2026-09-05,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1981,2026-09-05 00:00:00
+624,225,Product Sales,quotation_interest,2026-09-05,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1986,2026-09-05 00:00:00
+106,406,Product Sales,quotation_interest,2026-09-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1987,2026-09-07 00:00:00
+1215,1,Pest Control,quotation_interest,2026-09-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1989,2026-09-07 00:00:00
+1215,8,Pest Control,quotation_interest,2026-09-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1988,2026-09-07 00:00:00
+1215,10,Pest Control,quotation_interest,2026-09-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1990,2026-09-07 00:00:00
+1215,284,Pest Control,quotation_interest,2026-09-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1991,2026-09-07 00:00:00
+1216,390,Product Sales,quotation_interest,2026-09-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1992,2026-09-07 00:00:00
+211,57,Pest Control,quotation_interest,2026-09-08,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1996,2026-09-08 00:00:00
+1218,1,Pest Control,quotation_interest,2026-09-08,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1994,2026-09-08 00:00:00
+1217,57,Pest Control,quotation_interest,2026-09-08,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1993,2026-09-08 00:00:00
+211,8,Pest Control,quotation_interest,2026-09-08,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1995,2026-09-08 00:00:00
+1219,8,Pest Control,quotation_interest,2026-09-09,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1997,2026-09-09 00:00:00
+1220,2,Pest Control,quotation_interest,2026-09-09,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1999,2026-09-09 00:00:00
+1220,57,Pest Control,quotation_interest,2026-09-09,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,1998,2026-09-09 00:00:00
+1220,349,Product Sales,quotation_interest,2026-09-09,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2000,2026-09-09 00:00:00
+1221,13,Pest Control,quotation_interest,2026-09-09,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2001,2026-09-09 00:00:00
+1221,102,Pest Control,quotation_interest,2026-09-09,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2002,2026-09-09 00:00:00
+1222,13,Pest Control,quotation_interest,2026-09-09,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2033,2026-09-09 00:00:00
+1279,9,Pest Control,nonapproved_service_product,2026-09-10,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,422,2026-09-10 00:00:00
+624,225,Product Sales,nonapproved_service_product,2026-09-10,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,405,2026-09-10 00:00:00
+1206,7,Pest Control,nonapproved_service_product,2026-09-10,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,406,2026-09-10 00:00:00
+1224,7,Pest Control,quotation_interest,2026-09-10,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2016,2026-09-10 00:00:00
+1226,57,Pest Control,quotation_interest,2026-09-10,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2017,2026-09-10 00:00:00
+1223,57,Pest Control,quotation_interest,2026-09-10,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2004,2026-09-10 00:00:00
+1096,34,Product Sales,quotation_interest,2026-09-10,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2011,2026-09-10 00:00:00
+1096,349,Product Sales,quotation_interest,2026-09-10,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2012,2026-09-10 00:00:00
+1227,409,Product Sales,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2101,2026-09-11 00:00:00
+1227,408,Product Sales,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2100,2026-09-11 00:00:00
+1228,13,Pest Control,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2030,2026-09-11 00:00:00
+83,253,Pest Control,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2059,2026-09-11 00:00:00
+659,349,Product Sales,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2070,2026-09-11 00:00:00
+546,220,Pest Control,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2066,2026-09-11 00:00:00
+546,162,Pest Control,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2065,2026-09-11 00:00:00
+546,102,Pest Control,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2067,2026-09-11 00:00:00
+546,8,Pest Control,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2064,2026-09-11 00:00:00
+1227,407,Product Sales,quotation_interest,2026-09-11,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2102,2026-09-11 00:00:00
+1192,8,Pest Control,quotation_interest,2026-09-12,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2075,2026-09-12 00:00:00
+1192,64,Pest Control,quotation_interest,2026-09-12,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2072,2026-09-12 00:00:00
+1192,220,Pest Control,quotation_interest,2026-09-12,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2074,2026-09-12 00:00:00
+83,147,Product Sales,quotation_interest,2026-09-12,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2071,2026-09-12 00:00:00
+624,9,Pest Control,nonapproved_service_product,2026-09-12,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,407,2026-09-12 00:00:00
+1192,1,Pest Control,quotation_interest,2026-09-12,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2073,2026-09-12 00:00:00
+1230,1,Pest Control,nonapproved_service_product,2026-09-13,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,408,2026-09-13 00:00:00
+1233,2,Pest Control,nonapproved_service_product,2026-09-15,not_approved,2.0,,0.75,real_crm,crmapp_serviceproduct,409,2026-09-15 00:00:00
+1234,1,Pest Control,nonapproved_service_product,2026-09-15,not_approved,3.0,,0.75,real_crm,crmapp_serviceproduct,410,2026-09-15 00:00:00
+1222,278,Pest Control,quotation_interest,2026-09-15,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2093,2026-09-15 00:00:00
+1235,57,Pest Control,quotation_interest,2026-09-15,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2080,2026-09-15 00:00:00
+1231,64,Pest Control,quotation_interest,2026-09-15,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2078,2026-09-15 00:00:00
+1232,8,Pest Control,quotation_interest,2026-09-15,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2079,2026-09-15 00:00:00
+1235,182,Fumigation,quotation_interest,2026-09-15,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2083,2026-09-15 00:00:00
+1235,185,Fumigation,quotation_interest,2026-09-15,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2081,2026-09-15 00:00:00
+1235,393,Fumigation,quotation_interest,2026-09-15,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2082,2026-09-15 00:00:00
+1237,57,Pest Control,quotation_interest,2026-09-15,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2092,2026-09-15 00:00:00
+1238,1,Pest Control,nonapproved_service_product,2026-09-16,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,411,2026-09-16 00:00:00
+1240,57,Pest Control,quotation_interest,2026-09-16,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2098,2026-09-16 00:00:00
+1239,8,Pest Control,quotation_interest,2026-09-16,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2095,2026-09-16 00:00:00
+1239,56,Pest Control,quotation_interest,2026-09-16,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2099,2026-09-16 00:00:00
+1239,102,Pest Control,quotation_interest,2026-09-16,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2096,2026-09-16 00:00:00
+1239,64,Pest Control,quotation_interest,2026-09-16,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2094,2026-09-16 00:00:00
+1239,46,Pest Control,quotation_interest,2026-09-16,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2097,2026-09-16 00:00:00
+1236,135,Pest Control,quotation_interest,2026-09-17,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2104,2026-09-17 00:00:00
+1241,1,Pest Control,quotation_interest,2026-09-17,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2106,2026-09-17 00:00:00
+1241,8,Pest Control,quotation_interest,2026-09-17,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2107,2026-09-17 00:00:00
+1241,64,Pest Control,quotation_interest,2026-09-17,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2105,2026-09-17 00:00:00
+1245,109,Fumigation,quotation_interest,2026-09-18,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2133,2026-09-18 00:00:00
+1244,8,Pest Control,quotation_interest,2026-09-18,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2108,2026-09-18 00:00:00
+1245,57,Pest Control,quotation_interest,2026-09-18,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2132,2026-09-18 00:00:00
+1246,1,Pest Control,quotation_interest,2026-09-19,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2129,2026-09-19 00:00:00
+1243,1,Pest Control,nonapproved_service_product,2026-09-19,not_approved,3.0,,0.75,real_crm,crmapp_serviceproduct,412,2026-09-19 00:00:00
+1046,121,Product Sales,quotation_interest,2026-09-19,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2170,2026-09-19 00:00:00
+1046,119,Product Sales,quotation_interest,2026-09-19,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2171,2026-09-19 00:00:00
+1046,302,Product Sales,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2172,2026-09-21 00:00:00
+503,153,Product Sales,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2166,2026-09-21 00:00:00
+1247,312,Fumigation,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2142,2026-09-21 00:00:00
+1249,57,Pest Control,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2144,2026-09-21 00:00:00
+437,57,Pest Control,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2146,2026-09-21 00:00:00
+155,13,Pest Control,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2149,2026-09-21 00:00:00
+1252,57,Pest Control,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2150,2026-09-21 00:00:00
+503,8,Pest Control,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2153,2026-09-21 00:00:00
+503,58,Pest Control,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2154,2026-09-21 00:00:00
+1253,6,Pest Control,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2165,2026-09-21 00:00:00
+503,85,Product Sales,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2169,2026-09-21 00:00:00
+503,346,Pest Control,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2167,2026-09-21 00:00:00
+503,68,Product Sales,quotation_interest,2026-09-21,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2168,2026-09-21 00:00:00
+1255,8,Pest Control,quotation_interest,2026-09-22,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2182,2026-09-22 00:00:00
+1256,57,Pest Control,quotation_interest,2026-09-22,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2178,2026-09-22 00:00:00
+620,158,Pest Control,quotation_interest,2026-09-22,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2177,2026-09-22 00:00:00
+1254,8,Pest Control,quotation_interest,2026-09-22,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2174,2026-09-22 00:00:00
+1258,2,Pest Control,nonapproved_service_product,2026-09-23,not_approved,2.0,,0.75,real_crm,crmapp_serviceproduct,413,2026-09-23 00:00:00
+1259,2,Pest Control,nonapproved_service_product,2026-09-23,not_approved,2.0,5310.0,0.75,real_crm,crmapp_serviceproduct,416,2026-09-23 00:00:00
+192,4,Product Sales,quotation_interest,2026-09-23,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2188,2026-09-23 00:00:00
+1222,115,Pest Control,quotation_interest,2026-09-23,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2191,2026-09-23 00:00:00
+192,40,Product Sales,quotation_interest,2026-09-23,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2187,2026-09-23 00:00:00
+192,5,Product Sales,quotation_interest,2026-09-23,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2189,2026-09-23 00:00:00
+1260,8,Pest Control,quotation_interest,2026-09-23,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2186,2026-09-23 00:00:00
+1264,57,Pest Control,quotation_interest,2026-09-24,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2202,2026-09-24 00:00:00
+1264,8,Pest Control,quotation_interest,2026-09-24,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2201,2026-09-24 00:00:00
+1263,288,Fumigation,quotation_interest,2026-09-24,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2198,2026-09-24 00:00:00
+1262,57,Pest Control,quotation_interest,2026-09-24,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2197,2026-09-24 00:00:00
+1261,57,Pest Control,quotation_interest,2026-09-24,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2195,2026-09-24 00:00:00
+1265,335,Product Sales,quotation_interest,2026-09-24,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2204,2026-09-24 00:00:00
+1235,412,Product Sales,quotation_interest,2026-09-25,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2209,2026-09-25 00:00:00
+1248,158,Pest Control,quotation_interest,2026-09-25,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2140,2026-09-25 00:00:00
+220,1,Pest Control,quotation_interest,2026-09-26,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2217,2026-09-26 00:00:00
+220,8,Pest Control,quotation_interest,2026-09-26,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2218,2026-09-26 00:00:00
+1245,285,Product Sales,quotation_interest,2026-09-26,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2233,2026-09-26 00:00:00
+1245,148,Product Sales,quotation_interest,2026-09-26,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2232,2026-09-26 00:00:00
+220,56,Pest Control,quotation_interest,2026-09-26,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2216,2026-09-26 00:00:00
+1245,31,Product Sales,quotation_interest,2026-09-26,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2234,2026-09-26 00:00:00
+1245,85,Product Sales,quotation_interest,2026-09-26,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2231,2026-09-26 00:00:00
+1266,100,Product Sales,quotation_interest,2026-09-28,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2246,2026-09-28 00:00:00
+505,322,Fumigation,quotation_interest,2026-09-28,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2244,2026-09-28 00:00:00
+1051,414,Product Sales,quotation_interest,2026-09-28,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2243,2026-09-28 00:00:00
+1051,413,Product Sales,quotation_interest,2026-09-28,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2242,2026-09-28 00:00:00
+1267,158,Pest Control,quotation_interest,2026-09-29,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2247,2026-09-29 00:00:00
+1264,8,Pest Control,nonapproved_service_product,2026-09-29,not_approved,24.0,,0.75,real_crm,crmapp_serviceproduct,415,2026-09-29 00:00:00
+1268,2,Pest Control,quotation_interest,2026-09-29,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2248,2026-09-29 00:00:00
+1269,410,Pest Control,quotation_interest,2026-09-30,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2259,2026-09-30 00:00:00
+1269,349,Product Sales,quotation_interest,2026-09-30,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2260,2026-09-30 00:00:00
+1270,8,Pest Control,quotation_interest,2026-09-30,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2261,2026-09-30 00:00:00
+1257,64,Pest Control,quotation_interest,2026-09-30,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2266,2026-09-30 00:00:00
+1257,8,Pest Control,quotation_interest,2026-09-30,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2268,2026-09-30 00:00:00
+1257,1,Pest Control,quotation_interest,2026-09-30,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2267,2026-09-30 00:00:00
+1270,13,Pest Control,quotation_interest,2026-09-30,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2262,2026-09-30 00:00:00
+1120,56,Pest Control,quotation_interest,2026-10-01,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2279,2026-10-01 00:00:00
+1285,1,Pest Control,nonapproved_service_product,2026-10-01,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,427,2026-10-01 00:00:00
+192,64,Pest Control,quotation_interest,2026-10-02,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2284,2026-10-02 00:00:00
+192,46,Pest Control,quotation_interest,2026-10-02,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2287,2026-10-02 00:00:00
+192,8,Pest Control,quotation_interest,2026-10-02,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2286,2026-10-02 00:00:00
+192,1,Pest Control,quotation_interest,2026-10-02,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2285,2026-10-02 00:00:00
+1271,1,Pest Control,nonapproved_service_product,2026-10-02,not_approved,3.0,,0.75,real_crm,crmapp_serviceproduct,417,2026-10-02 00:00:00
+1280,1,Pest Control,nonapproved_service_product,2026-10-02,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,423,2026-10-02 00:00:00
+1275,1,Pest Control,quotation_interest,2026-10-02,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2290,2026-10-02 00:00:00
+1272,2,Pest Control,nonapproved_service_product,2026-10-03,not_approved,2.0,,0.75,real_crm,crmapp_serviceproduct,418,2026-10-03 00:00:00
+1273,2,Pest Control,nonapproved_service_product,2026-10-03,not_approved,2.0,,0.75,real_crm,crmapp_serviceproduct,419,2026-10-03 00:00:00
+1281,1,Pest Control,nonapproved_service_product,2026-10-03,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,424,2026-10-03 00:00:00
+1291,71,Product Sales,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2322,2026-10-03 00:00:00
+1284,1,Pest Control,nonapproved_service_product,2026-10-03,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,426,2026-10-03 00:00:00
+1276,1,Pest Control,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2304,2026-10-03 00:00:00
+1276,2,Pest Control,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2305,2026-10-03 00:00:00
+1276,8,Pest Control,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2306,2026-10-03 00:00:00
+1276,64,Pest Control,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2303,2026-10-03 00:00:00
+1277,155,Pest Control,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2307,2026-10-03 00:00:00
+1292,56,Pest Control,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2319,2026-10-03 00:00:00
+1291,42,Product Sales,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2320,2026-10-03 00:00:00
+1291,363,Product Sales,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2321,2026-10-03 00:00:00
+1293,62,Fumigation,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2323,2026-10-03 00:00:00
+1293,57,Pest Control,quotation_interest,2026-10-03,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2324,2026-10-03 00:00:00
+1283,2,Pest Control,nonapproved_service_product,2026-10-04,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,425,2026-10-04 00:00:00
+505,322,Fumigation,quotation_interest,2026-10-05,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2326,2026-10-05 00:00:00
+1046,119,Product Sales,quotation_interest,2026-10-05,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2334,2026-10-05 00:00:00
+1046,121,Product Sales,quotation_interest,2026-10-05,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2333,2026-10-05 00:00:00
+848,2,Pest Control,quotation_interest,2026-10-05,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2336,2026-10-05 00:00:00
+848,1,Pest Control,quotation_interest,2026-10-05,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2335,2026-10-05 00:00:00
+1274,2,Pest Control,nonapproved_service_product,2026-10-06,not_approved,2.0,,0.75,real_crm,crmapp_serviceproduct,420,2026-10-06 00:00:00
+115,1,Pest Control,nonapproved_service_product,2026-10-06,not_approved,1.0,,0.75,real_crm,crmapp_serviceproduct,428,2026-10-06 00:00:00
+1301,35,Fumigation,quotation_interest,2026-10-06,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2344,2026-10-06 00:00:00
+1297,57,Pest Control,quotation_interest,2026-10-06,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2338,2026-10-06 00:00:00
+1301,33,Fumigation,quotation_interest,2026-10-06,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2343,2026-10-06 00:00:00
+1201,8,Pest Control,quotation_interest,2026-10-06,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2349,2026-10-06 00:00:00
+1201,292,Pest Control,quotation_interest,2026-10-06,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2350,2026-10-06 00:00:00
+1302,421,Pest Control,quotation_interest,2026-10-06,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2352,2026-10-06 00:00:00
+1302,420,Product Sales,quotation_interest,2026-10-06,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2354,2026-10-06 00:00:00
+823,35,Fumigation,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2371,2026-10-07 00:00:00
+938,346,Pest Control,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2356,2026-10-07 00:00:00
+1309,8,Pest Control,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2360,2026-10-07 00:00:00
+1309,57,Pest Control,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2361,2026-10-07 00:00:00
+1309,8,Pest Control,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2363,2026-10-07 00:00:00
+1309,57,Pest Control,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2364,2026-10-07 00:00:00
+1310,85,Product Sales,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2365,2026-10-07 00:00:00
+825,32,Fumigation,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2366,2026-10-07 00:00:00
+825,33,Fumigation,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2367,2026-10-07 00:00:00
+825,35,Fumigation,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2368,2026-10-07 00:00:00
+823,32,Fumigation,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2369,2026-10-07 00:00:00
+823,33,Fumigation,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2370,2026-10-07 00:00:00
+1309,346,Pest Control,quotation_interest,2026-10-07,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2362,2026-10-07 00:00:00
+1303,2,Pest Control,nonapproved_service_product,2026-10-07,not_approved,2.0,,0.75,real_crm,crmapp_serviceproduct,429,2026-10-07 00:00:00
+650,390,Product Sales,quotation_interest,2026-10-08,latest_quotation,,,1.5,real_crm,crmapp_quotation_management_selected_services,2374,2026-10-08 00:00:00

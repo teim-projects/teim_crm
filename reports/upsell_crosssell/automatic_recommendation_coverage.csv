@@ -1,0 +1,9 @@
+Metric,Count
+Total customers,1156
+Customers with any recommendation,59
+Customers without recommendations,1097
+Customers with potential upsell,1
+Customers with potential cross-sell,59
+Customers with both,1
+Product relationships generated,3166
+Customer recommendation rows,418

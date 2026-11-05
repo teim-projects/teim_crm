@@ -1,0 +1,4 @@
+﻿dataset,events,unique_customers,unique_products,unique_customer_product_pairs,start_date,end_date
+Training,1835,801,225,1533,2025-06-17,2026-06-30
+Validation,415,192,104,388,2026-07-01,2026-08-31
+Testing,196,109,69,187,2026-09-01,2026-10-08

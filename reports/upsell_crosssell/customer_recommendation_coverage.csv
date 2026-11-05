@@ -1,0 +1,10 @@
+Metric,Count
+Total customers,1156
+Customers with recommendations,51
+Customers without recommendations,1105
+Customers with upsell,0
+Customers with cross-sell,51
+Customers with both,0
+Upsell only,0
+Cross-sell only,51
+Recommendation rows,51

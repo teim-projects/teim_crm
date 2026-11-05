@@ -1,0 +1,178 @@
+﻿customer_id,mapped_product_id,mapped_product_name,quotation_count,first_quotation,latest_quotation,average_unit_price,maximum_unit_price,total_quantity
+1008,8.0,Rodent Management Service,2,2026-06-29,2026-06-29,1375.0,1800.0,48.0
+1046,302.0,Cocoon 0.6  MT,2,2026-07-10,2026-09-21,36500.0,38000.0,2.0
+1051,71.0,UV Fly Control Board,2,2026-08-17,2026-09-28,1800.0,1800.0,2.0
+1051,285.0,15 W 18 Inch Sleeved Tube,2,2026-08-17,2026-09-28,620.0,620.0,17.0
+1056,1.0,Cockroach Management Service,2,2026-07-13,2026-07-13,1200.0,1200.0,8.0
+1056,8.0,Rodent Management Service,2,2026-07-13,2026-07-13,1500.0,1700.0,36.0
+1056,57.0,General Pest Control Service,2,2026-07-13,2026-07-13,1900.0,2300.0,36.0
+1064,98.0,Mahira Fly Killer Machine,2,2026-07-23,2026-08-01,6000.0,6000.0,5.0
+107,72.0,Empty Silo Fumigation,5,2025-08-21,2026-04-22,92000.0,101000.0,13.0
+107,73.0,Filled Silo Fumigation,4,2025-08-21,2026-04-22,199500.0,210000.0,9.0
+108,57.0,General Pest Control Service,3,2025-08-19,2025-08-21,7066.666666666667,10000.0,5.0
+109,32.0,MBr Fumigation,2,2026-02-19,2026-05-26,875.0,900.0,2.0
+109,324.0,GrainPro Hermetic Bag,2,2026-03-21,2026-04-28,85.0,85.0,30.0
+1091,158.0,Pre Construction - Anti Termite Treatment,2,2026-07-21,2026-07-24,35.0,35.0,8000.0
+1096,34.0,Rat Snap Trap,2,2026-08-31,2026-09-10,132.5,135.0,120.0
+1096,349.0,Rodent Bait Station (RBS Box),2,2026-08-31,2026-09-10,445.0,450.0,120.0
+1107,158.0,Pre Construction - Anti Termite Treatment,2,2026-07-23,2026-07-27,35.0,40.0,7062.0
+1116,57.0,General Pest Control Service,2,2026-07-28,2026-07-28,4900.0,5000.0,6.0
+1146,32.0,MBr Fumigation,2,2026-08-08,2026-08-11,15500.0,25500.0,2.0
+1162,57.0,General Pest Control Service,2,2026-08-14,2026-08-14,3500.0,3750.0,6.0
+1187,57.0,General Pest Control Service,2,2026-08-25,2026-08-25,3500.0,3500.0,24.0
+1188,8.0,Rodent Management Service,2,2026-08-31,2026-08-31,2925.0,3500.0,25.0
+1192,1.0,Cockroach Management Service,2,2026-08-26,2026-09-12,2200.0,2200.0,8.0
+1192,8.0,Rodent Management Service,2,2026-08-26,2026-09-12,900.0,900.0,48.0
+1192,64.0,Mosquito Management Service,2,2026-08-26,2026-09-12,1700.0,1700.0,24.0
+1201,8.0,Rodent Management Service,2,2026-08-31,2026-10-06,6700.0,6700.0,12.0
+1201,292.0,Disinfestations & Prophylactic Treatment,2,2026-08-31,2026-10-06,6700.0,6700.0,12.0
+126,89.0,20ft Container Fumigation (32g/m3),4,2025-09-02,2025-11-08,2050.0,2050.0,26.0
+126,90.0,20ft Container Fumigation (48g/m3),2,2025-09-02,2025-09-02,2900.0,2900.0,2.0
+126,91.0,20ft Container Fumigation (80g/m3),2,2025-09-02,2025-09-02,4000.0,4000.0,2.0
+126,92.0,20ft Container Fumigation(100g/m3),2,2025-09-02,2025-09-02,4900.0,4900.0,2.0
+126,93.0,40ft Container Fumigation(32g/m3),2,2025-09-02,2025-09-02,3500.0,3500.0,2.0
+126,95.0,40ft Container Fumigation(80g/m3),2,2025-09-02,2025-09-02,8000.0,8000.0,2.0
+126,96.0,40ft Container Fumigation(100g/m3),2,2025-09-02,2025-09-02,10000.0,10000.0,2.0
+1309,8.0,Rodent Management Service,2,2026-10-07,2026-10-07,1000.0,1200.0,3.0
+1309,57.0,General Pest Control Service,2,2026-10-07,2026-10-07,1875.0,2500.0,3.0
+1309,346.0,Rodent Bait Station,2,2026-10-07,2026-10-07,500.0,500.0,10.0
+155,13.0,Termite Management,2,2025-09-04,2026-09-21,8733.333333333334,14200.0,3.0
+155,31.0,Rodent Bait Station (RBS Metal),2,2026-02-20,2026-04-22,375.0,400.0,60.0
+165,8.0,Rodent Management Service,4,2025-09-25,2025-12-13,2000.0,2800.0,144.0
+165,57.0,General Pest Control Service,4,2025-09-25,2025-12-13,1200.0,1200.0,72.0
+165,85.0,RodeXit Installation,2,2025-12-13,2025-12-13,1000.0,1000.0,142.0
+192,1.0,Cockroach Management Service,2,2025-10-03,2026-10-02,1400.0,1400.0,8.0
+192,8.0,Rodent Management Service,2,2025-10-03,2026-10-02,1050.0,1200.0,48.0
+192,46.0,Snake Management,2,2025-10-03,2026-10-02,1200.0,1200.0,6.0
+192,64.0,Mosquito Management Service,2,2025-10-03,2026-10-02,900.0,1000.0,60.0
+207,51.0,O2 Analyser Machine,2,2025-10-04,2025-12-01,32250.0,32500.0,2.0
+207,118.0,Cocoon 5 MT,2,2025-10-29,2025-10-30,135000.0,140000.0,2.0
+207,120.0,Cocoon 20 MT,2,2025-10-29,2025-10-30,223000.0,231000.0,2.0
+211,8.0,Rodent Management Service,3,2025-10-06,2026-09-08,883.3333333333334,1250.0,48.0
+211,57.0,General Pest Control Service,3,2025-10-06,2026-09-08,1300.0,1600.0,18.0
+220,1.0,Cockroach Management Service,2,2025-10-09,2026-09-26,2150.0,2300.0,8.0
+220,8.0,Rodent Management Service,2,2025-10-09,2026-09-26,1100.0,1200.0,27.0
+221,56.0,Post Construction - Anti Termite Treatment,2,2025-10-09,2026-07-24,10.0,10.0,1850.0
+231,123.0,Termite Treatment Chemical,2,2025-10-10,2025-10-10,3200.0,4200.0,80.0
+244,57.0,General Pest Control Service,2,2025-10-15,2026-07-25,3250.0,3500.0,25.0
+244,68.0,Mahira Fly Catcher Machine,2,2025-10-15,2026-07-25,6000.0,6000.0,2.0
+266,1.0,Cockroach Management Service,3,2025-10-28,2026-03-04,5333.333333333333,6000.0,11.0
+307,9.0,Ant Management,2,2025-11-07,2025-11-07,8000.0,8000.0,104.0
+307,139.0,Rat Box Checking and Cleaning,2,2025-11-07,2025-11-07,14000.0,14000.0,104.0
+307,143.0,Snake Repellent Service,2,2025-11-07,2025-11-07,10000.0,10000.0,104.0
+329,89.0,20ft Container Fumigation (32g/m3),2,2025-11-12,2025-11-12,6750.0,10000.0,2.0
+329,90.0,20ft Container Fumigation (48g/m3),2,2025-11-12,2025-11-12,10000.0,15000.0,2.0
+329,91.0,20ft Container Fumigation (80g/m3),2,2025-11-12,2025-11-12,16000.0,25000.0,2.0
+329,92.0,20ft Container Fumigation(100g/m3),2,2025-11-12,2025-11-12,22000.0,35000.0,2.0
+329,93.0,40ft Container Fumigation(32g/m3),2,2025-11-12,2025-11-12,11250.0,16500.0,2.0
+329,95.0,40ft Container Fumigation(80g/m3),2,2025-11-12,2025-11-12,27250.0,42500.0,2.0
+329,96.0,40ft Container Fumigation(100g/m3),2,2025-11-12,2025-11-12,34250.0,52500.0,2.0
+331,8.0,Rodent Management Service,2,2026-04-03,2026-05-04,1500.0,1500.0,24.0
+331,57.0,General Pest Control Service,2,2026-04-03,2026-05-04,1500.0,1500.0,8.0
+331,64.0,Mosquito Management Service,2,2026-04-03,2026-05-04,900.0,900.0,24.0
+35,1.0,Cockroach Management Service,2,2025-10-08,2025-10-17,750.0,1000.0,16.0
+360,1.0,Cockroach Management Service,2,2025-11-18,2025-11-18,1900.0,2000.0,13.0
+360,8.0,Rodent Management Service,2,2025-11-18,2025-11-18,1500.0,1800.0,13.0
+365,8.0,Rodent Management Service,2,2026-06-16,2026-06-16,1985.0,2270.0,48.0
+365,159.0,Rodent Bait Station with snap trap,2,2026-06-16,2026-06-16,550.0,550.0,51.0
+375,160.0,Cocoon 50 MT,2,2025-11-26,2026-02-24,507500.0,510000.0,3.0
+376,162.0,Mosquito Management Spraying & Fogging Service,2,2025-11-22,2026-07-13,3100.0,3200.0,17.0
+394,57.0,General Pest Control Service,2,2025-12-12,2026-05-18,1150.0,1300.0,8.0
+40,42.0,ECO BIOTRAPS,3,2025-07-14,2025-07-14,680.0,680.0,60.0
+400,1.0,Cockroach Management Service,2,2025-12-15,2026-03-20,6500.0,7500.0,6.0
+412,8.0,Rodent Management Service,2,2025-12-06,2026-08-17,1975.0,2200.0,24.0
+412,46.0,Snake Management,2,2025-12-06,2026-08-17,2250.0,2500.0,12.0
+412,57.0,General Pest Control Service,2,2025-12-06,2026-08-17,900.0,1000.0,24.0
+416,8.0,Rodent Management Service,2,2025-12-09,2025-12-09,1700.0,1700.0,36.0
+416,57.0,General Pest Control Service,2,2025-12-09,2025-12-09,1000.0,1000.0,8.0
+416,58.0,Prophylactic Treatment,2,2025-12-09,2025-12-09,750.0,750.0,36.0
+473,8.0,Rodent Management Service,2,2026-01-05,2026-03-29,825.0,900.0,24.0
+480,8.0,Rodent Management Service,2,2026-01-06,2026-06-20,700.0,900.0,25.0
+480,102.0,Cockroach Management Drainage Chamber Service,2,2026-01-06,2026-06-20,1600.0,1700.0,5.0
+501,8.0,Rodent Management Service,2,2026-01-17,2026-03-05,1900.0,2000.0,25.0
+501,57.0,General Pest Control Service,2,2026-01-17,2026-03-05,2250.0,2500.0,5.0
+503,8.0,Rodent Management Service,3,2026-01-21,2026-09-21,1400.0,1800.0,36.0
+503,58.0,Prophylactic Treatment,3,2026-01-21,2026-09-21,1466.6666666666667,2000.0,36.0
+505,322.0,Silo Fumigation With ALP- 9 Gm,2,2026-03-12,2026-10-05,44500.0,45000.0,2.0
+506,6.0,Mosquito Management (Spraying),4,2026-04-01,2026-04-01,1225.0,1300.0,60.0
+506,8.0,Rodent Management Service,4,2026-04-01,2026-04-01,1000.0,1000.0,48.0
+519,71.0,UV Fly Control Board,3,2026-01-24,2026-06-17,1800.0,1800.0,11.0
+52,49.0,Self Verifying Cocoons 10MT,2,2025-07-18,2025-07-19,205000.0,205000.0,2.0
+52,51.0,O2 Analyser Machine,2,2025-07-18,2025-07-19,29000.0,29000.0,2.0
+52,52.0,Manual Aspirator With Adapter,2,2025-07-18,2025-07-19,10500.0,10500.0,2.0
+527,1.0,Cockroach Management Service,2,2026-01-28,2026-06-08,1200.0,1200.0,24.0
+527,8.0,Rodent Management Service,3,2026-01-28,2026-08-31,1200.0,1200.0,72.0
+527,64.0,Mosquito Management Service,3,2026-01-28,2026-08-31,1500.0,1500.0,72.0
+530,1.0,Cockroach Management Service,5,2026-01-29,2026-01-29,1740.0,2000.0,60.0
+530,6.0,Mosquito Management (Spraying),4,2026-01-29,2026-01-29,1400.0,1600.0,208.0
+530,8.0,Rodent Management Service,5,2026-01-29,2026-01-29,1280.0,1800.0,120.0
+530,15.0,Wood Borer Management,2,2026-01-29,2026-01-29,4500.0,6000.0,14.0
+546,8.0,Rodent Management Service,3,2026-07-03,2026-09-11,766.6666666666666,800.0,19.0
+546,102.0,Cockroach Management Drainage Chamber Service,2,2026-07-03,2026-09-11,1550.0,1600.0,2.0
+546,162.0,Mosquito Management Spraying & Fogging Service,2,2026-07-03,2026-09-11,2000.0,2000.0,18.0
+546,220.0,Per Flat Outlet Spray,3,2026-07-03,2026-09-11,56.666666666666664,90.0,3.0
+553,8.0,Rodent Management Service,3,2026-02-06,2026-06-04,1466.6666666666667,2000.0,29.0
+562,6.0,Mosquito Management (Spraying),2,2026-02-19,2026-02-19,550.0,550.0,48.0
+562,8.0,Rodent Management Service,2,2026-02-19,2026-02-19,600.0,600.0,48.0
+562,46.0,Snake Management,2,2026-02-19,2026-02-19,900.0,900.0,96.0
+562,301.0,Spider Management Service,2,2026-02-19,2026-02-19,550.0,550.0,24.0
+563,8.0,Rodent Management Service,2,2026-08-04,2026-08-24,1050.0,1100.0,7.0
+563,57.0,General Pest Control Service,2,2026-08-04,2026-08-24,1150.0,1200.0,4.0
+584,57.0,General Pest Control Service,2,2026-02-18,2026-03-06,20550.0,32000.0,60.0
+620,158.0,Pre Construction - Anti Termite Treatment,2,2026-07-14,2026-09-22,25.0,42.0,147840.0
+624,225.0,Agenda 500 ML,9,2026-03-20,2026-09-05,56.44444444444444,500.0,27.0
+626,57.0,General Pest Control Service,2,2026-02-28,2026-03-06,14400.0,22000.0,60.0
+638,158.0,Pre Construction - Anti Termite Treatment,2,2026-03-05,2026-03-05,6.0,7.0,60000.0
+65,46.0,Snake Management,3,2025-07-29,2025-07-29,1500.0,1500.0,3.0
+665,1.0,Cockroach Management Service,2,2026-03-12,2026-03-12,1575.0,1650.0,24.0
+665,8.0,Rodent Management Service,2,2026-03-12,2026-03-12,1575.0,1650.0,24.0
+665,155.0,Mosquito Cold Fogging Service,2,2026-03-12,2026-03-12,6825.0,7150.0,24.0
+676,57.0,General Pest Control Service,2,2026-03-16,2026-03-31,26250.0,27500.0,2.0
+712,57.0,General Pest Control Service,3,2026-03-27,2026-03-27,4500.0,6000.0,74.0
+713,57.0,General Pest Control Service,3,2026-03-27,2026-09-01,2037.0,2500.0,32.0
+714,8.0,Rodent Management Service,2,2026-08-22,2026-09-04,1900.0,2000.0,48.0
+714,44.0,Fly Management Service,2,2026-08-18,2026-09-04,2750.0,4000.0,13.0
+717,135.0,Porous Pipe Anti-Termite Treatment Service,2,2026-03-28,2026-03-28,62.0,62.0,4800.0
+720,8.0,Rodent Management Service,2,2026-03-29,2026-03-29,1500.0,1600.0,48.0
+726,57.0,General Pest Control Service,2,2026-03-31,2026-03-31,22250.0,38000.0,24.0
+731,168.0,Wooden Pallet Fumigation,2,2026-04-01,2026-04-01,3500.0,3500.0,2.0
+733,173.0,FUMIGATION SHEET LDPE 30 X 40 FEET 200GSM,2,2026-07-01,2026-07-03,15860.0,15860.0,2.0
+74,8.0,Rodent Management Service,2,2025-08-02,2025-08-02,2750.0,2750.0,48.0
+747,57.0,General Pest Control Service,2,2026-04-08,2026-04-08,4000.0,4500.0,13.0
+763,87.0,Wooden Box MBr Fumigation,3,2026-04-11,2026-06-11,8500.0,17500.0,4.0
+769,8.0,Rodent Management Service,2,2026-04-15,2026-05-11,1000.0,1200.0,48.0
+769,64.0,Mosquito Management Service,2,2026-04-15,2026-05-11,775.0,900.0,48.0
+774,1.0,Cockroach Management Service,2,2026-04-17,2026-04-17,2000.0,2000.0,5.0
+774,8.0,Rodent Management Service,2,2026-04-17,2026-04-17,1400.0,1400.0,13.0
+774,64.0,Mosquito Management Service,2,2026-04-17,2026-04-17,1600.0,1600.0,13.0
+785,57.0,General Pest Control Service,2,2026-04-27,2026-04-27,2500.0,2500.0,2.0
+787,102.0,Cockroach Management Drainage Chamber Service,2,2026-04-28,2026-04-30,2750.0,3000.0,5.0
+791,355.0,MBr Fumigation for Besan,2,2026-05-20,2026-05-20,1450.0,1450.0,1914.0
+791,356.0,MBr Fumigation for Pulses,2,2026-05-20,2026-05-20,1437.5,1450.0,1968.0
+792,158.0,Pre Construction - Anti Termite Treatment,2,2026-05-06,2026-05-09,30.0,30.0,44000.0
+806,288.0,Wooden Pallet Heat Treatment,2,2026-05-05,2026-05-05,5000.0,5000.0,2.0
+819,312.0,Equipment Fumigation Service,2,2026-05-09,2026-05-09,1350.0,1350.0,2.0
+823,32.0,MBr Fumigation,2,2026-05-11,2026-10-07,6000.0,6000.0,2.0
+823,35.0,ALP Fumigation,2,2026-05-11,2026-10-07,4000.0,4000.0,2.0
+825,32.0,MBr Fumigation,2,2026-05-11,2026-10-07,6000.0,6000.0,2.0
+825,35.0,ALP Fumigation,2,2026-05-11,2026-10-07,4000.0,4000.0,2.0
+83,67.0,Cockroach & Ant Management Service,2,2025-08-06,2026-09-11,1750.0,2000.0,8.0
+841,349.0,Rodent Bait Station (RBS Box),2,2026-05-15,2026-06-10,550.0,550.0,97.0
+884,8.0,Rodent Management Service,2,2026-05-29,2026-06-11,1950.0,2500.0,22.0
+884,349.0,Rodent Bait Station (RBS Box),2,2026-05-29,2026-06-11,450.0,450.0,20.0
+89,64.0,Mosquito Management Service,2,2025-08-12,2025-08-12,1600.0,1800.0,25.0
+905,1.0,Cockroach Management Service,2,2026-06-04,2026-06-04,5000.0,6000.0,2.0
+908,57.0,General Pest Control Service,3,2026-06-08,2026-06-08,1883.3333333333333,2300.0,3.0
+911,8.0,Rodent Management Service,2,2026-06-05,2026-06-05,1000.0,1000.0,36.0
+911,58.0,Prophylactic Treatment,2,2026-06-05,2026-06-05,1000.0,1000.0,36.0
+913,57.0,General Pest Control Service,3,2026-06-05,2026-06-19,10066.666666666666,10600.0,36.0
+919,64.0,Mosquito Management Service,2,2026-06-06,2026-06-06,1800.0,2000.0,25.0
+919,102.0,Cockroach Management Drainage Chamber Service,2,2026-06-06,2026-06-06,2750.0,3000.0,5.0
+922,57.0,General Pest Control Service,3,2026-06-08,2026-07-04,4537.8533333333335,7000.0,17.0
+924,57.0,General Pest Control Service,2,2026-06-08,2026-06-08,6750.0,9500.0,104.0
+925,135.0,Porous Pipe Anti-Termite Treatment Service,2,2026-06-08,2026-06-08,35.0,35.0,9907.0
+951,58.0,Prophylactic Treatment,2,2026-07-02,2026-07-10,7500.0,8000.0,2.0
+959,57.0,General Pest Control Service,2,2026-06-16,2026-06-29,4750.0,5000.0,25.0
+964,8.0,Rodent Management Service,2,2026-06-18,2026-08-24,1500.0,2000.0,28.0
+964,57.0,General Pest Control Service,2,2026-06-18,2026-08-24,1850.0,2500.0,16.0
+968,158.0,Pre Construction - Anti Termite Treatment,2,2026-06-19,2026-06-19,225.0,300.0,1110.0

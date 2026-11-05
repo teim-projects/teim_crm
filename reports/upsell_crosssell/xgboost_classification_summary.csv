@@ -1,0 +1,5 @@
+recommendation_type,recommendation_rows,unique_customers
+CROSS_SELL,7287,903
+GENERIC,1100,110
+REVIEW,1578,186
+UPSELL,1595,707

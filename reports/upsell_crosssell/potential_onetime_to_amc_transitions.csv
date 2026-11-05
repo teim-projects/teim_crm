@@ -1,0 +1,1 @@
+﻿service_id,customer_id,service_subject,service_date,contract_type,contract_status,parent_service_id,total_price,total_price_with_gst,is_completed,previous_contract_type,previous_service_value,service_value_change,contract_normalized,previous_contract_normalized

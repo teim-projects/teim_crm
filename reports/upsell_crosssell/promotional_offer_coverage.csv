@@ -1,0 +1,11 @@
+Metric,Count
+Total customers,1156
+Previously receiving recommendations,59
+Previously without recommendations,1097
+Customers with personalized combo offers,664
+Previously missing customers now reached,607
+Previously missing customers still without offers,490
+Customers with no mapped product history,357
+Potential combo pairs discovered,763
+Different-category combo pairs,54
+Personalized combo offer rows,13413

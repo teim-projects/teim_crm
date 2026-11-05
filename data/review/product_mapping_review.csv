@@ -1,0 +1,34 @@
+﻿product_id,product_name,category,hsn_code,standard_unit,normalized_product_name,review_reason,recommended_action
+332,20ft Container Fumigation(80g/m3),Fumigation,998531,,20ft container fumigation 80g m3,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+91,20ft Container Fumigation (80g/m3),Fumigation,998531,,20ft container fumigation 80g m3,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+137,40ft Container Fumigation(48g/m3),Fumigation,,,40ft container fumigation 48g m3,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+94,40ft Container Fumigation(48g/m3),Fumigation,998531,,40ft container fumigation 48g m3,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+33,ALP Fumigation,Fumigation,998531,,alp fumigation,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+35,ALP Fumigation,Fumigation,998531,,alp fumigation,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+185,ALP Stack Fumigation 12g/MT,Fumigation,998531,,alp stack fumigation 12g mt,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+393,ALP Stack Fumigation 12g/MT,Fumigation,998531,Nos,alp stack fumigation 12g mt,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+227,Bitter Guard,Product Sales,29232090,,bitter guard,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+287,Bitter Guard,Product Sales,38089199,,bitter guard,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+167,Cocoon 0.6 MT,Product Sales,,,cocoon 0 6 mt,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+302,Cocoon 0.6  MT,Product Sales,39269091,,cocoon 0 6 mt,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+119,Cocoon 10 MT,Product Sales,39269091,,cocoon 10 mt,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+121,Cocoon 10 MT,Product Sales,39269091,,cocoon 10 mt,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+165,Cocoon Flush Hose Pipe,Pest Control,,,cocoon flush hose pipe,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+166,Cocoon Flush Hose Pipe,Product Sales,,,cocoon flush hose pipe,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+50,Cocoon Flush Hose Pipe,Product Sales,,,cocoon flush hose pipe,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+298,ILT Cleaning And Maintenance,Pest Control,998531,,ilt cleaning and maintenance,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+299,ILT Cleaning And Maintenance,Pest Control,998531,,ilt cleaning and maintenance,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+206,Jumbo clips 6inch,Product Sales,8536,,jumbo clips 6inch,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+207,Jumbo clips 6inch,Product Sales,3919,,jumbo clips 6inch,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+344,Lizard Management Service,Pest Control,,,lizard management service,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+345,Lizard Management Service,Pest Control,,,lizard management service,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+140,Odorless Chemical Spraying,Pest Control,,,odorless chemical spraying,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+141,Odorless Chemical Spraying,Pest Control,,,odorless chemical spraying,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+103,RodeXit Proofing Strip,Product Sales,39219090,,rodexit proofing strip,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+104,RodeXit Proofing Strip,Product Sales,39219090,,rodexit proofing strip,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+176,TUBES 2mm x 4mm,Product Sales,3917,,tubes 2mm x 4mm,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+371,TUBES 2mm X 4mm,Product Sales,3917,,tubes 2mm x 4mm,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+305,"UV Tube Shatter-Proof 18""",Product Sales,85394900,,uv tube shatter proof 18,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+308,"UV Tube Shatter-Proof 18""",Product Sales,85394900,,uv tube shatter proof 18,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+26,Viper 30 Fly Zapper,Product Sales,85439000,,viper 30 fly zapper,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
+99,Viper 30 Fly Zapper,Product Sales,85439000,,viper 30 fly zapper,Repeated normalized product name; manually verify before canonical mapping,Preserve every original product_id; do not auto-merge
