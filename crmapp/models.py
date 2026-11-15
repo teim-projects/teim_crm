@@ -629,7 +629,7 @@ class service_management(models.Model):
     gps_location = models.URLField(null=True, blank=True)
     # gst_number = models.CharField(max_length=15, null=True, blank=True)
     frequency_count = models.CharField(max_length=50, choices=[(str(i), str(i)) for i in range(1, 13)] + [('Fortnight', 'Fortnight'), ('Weekly', 'Weekly'), ('Daily', 'Daily')], default="NOT SELECTED")
-    payment_terms = models.CharField(max_length=200, default="100% Advance payment OR Whatever mutually Decided", editable=False)
+    payment_terms = models.TextField(default="100% Advance payment OR Whatever mutually Decided", blank=True, null=True)
     sales_person_name = models.CharField(max_length=100, null=True, blank=True)
     sales_person_contact_no = models.CharField(max_length=15, null=True, blank=True)
     sales_person_email = models.EmailField(null=True, blank=True)

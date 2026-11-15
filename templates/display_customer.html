@@ -540,10 +540,12 @@
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
 
+                                            {% if request.user.is_superuser or request.user.userprofile.role == 'admin' %}
                                             <a href="/delete_customer/{{ x.id }}"
                                                 class="btn btn-outline-danger delete-link" role="button">
                                                 <i class="fa-solid fa-trash"></i>
                                             </a>
+                                            {% endif %}
 
                                             <a href="/quotation_history/{{ x.id }}/" id="linarbtn" class="btn linarbtn "
                                                 role="button"

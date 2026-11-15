@@ -278,9 +278,11 @@
                                             </a>
                                         {% endif %}
 
+                                        {% if request.user.is_superuser or request.user.userprofile.role == 'admin' %}
                                         <a href="{% url 'amc:delete' amc.pk %}" class="btn btn-delete action-btn delete-link" title="Delete AMC">
                                             <i class="bi bi-trash"></i>
                                         </a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}

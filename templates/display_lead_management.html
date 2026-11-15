@@ -751,11 +751,13 @@
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </a>
 
+                                                {% if request.user.is_superuser or request.user.userprofile.role == 'admin' %}
                                                 <a href="/delete_lead_management/{{ x.id }}"
                                                    class="btn btn-sm btn-danger delete-link"
                                                    title="Delete">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </a>
+                                                {% endif %}
 
                                                 {% if not x.latest_followup or x.latest_followup.order_status != "Close Win" %}
                                                     <a href="{% url 'send_lead_email' x.id %}" class="btn btn-sm btn-primary" title="Email">

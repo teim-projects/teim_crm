@@ -305,9 +305,15 @@
                             <span onclick="goBackAndRefresh()"
                                 style="float: right; cursor: pointer; color:red; font-size:20px;" class="mb-4">X</span>
 
-                            <h3 style="font-weight: 600; margin: 10px;" class="mt-5">Edit Quotation Management Record</h3>
+                            <h3 style="font-weight: 600; margin: 10px;" class="mt-5">
+                                {% if is_clone %}
+                                    Clone Quotation Record <span class="badge bg-info text-white fs-6 ms-2" style="vertical-align: middle;">Cloning from {{ quotation.quotation_no }}</span>
+                                {% else %}
+                                    Edit Quotation Management Record
+                                {% endif %}
+                            </h3>
 
-                            <form method="POST" id="quotation-management-form" action="{% url 'edit_quotation' quotation.id %}">
+                            <form method="POST" id="quotation-management-form" action="{% if is_clone %}{% url 'clone_quotation' quotation.id %}{% else %}{% url 'edit_quotation' quotation.id %}{% endif %}">
                                 {% csrf_token %}
 
                                 <!-- STEP 1 -->
@@ -691,7 +697,7 @@
                                         <button type="button" class="btn btn-secondary prev-step mt-2"
                                             style="width: 150px;">Previous</button>
                                         <button class="btn btn-info mt-2" type="submit"
-                                            style="width: 150px;">Submit</button>
+                                            style="min-width: 150px;">{% if is_clone %}Save Cloned Quotation{% else %}Submit{% endif %}</button>
                                     </div>
 
                                 </div>

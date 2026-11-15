@@ -1055,3 +1055,109 @@ def get_service_sub_item_stock_out_summary(service):
                 "location_id"   : location_id,
             })
     return rows
+
+
+def get_or_sync_current_stock(product_id, batch_id, location_type, location_id, for_update=False):
+    """
+    Safely retrieves or synchronizes the CurrentStock record for (product, batch, location_type, location_id).
+    If no batch-specific row exists yet or available_qty is 0:
+      1. Checks for unbatched CurrentStock (batch__isnull=True).
+      2. Checks for ProductStock aggregated closing_qty.
+      3. Checks for MonthlyStockSnapshot closing_qty.
+      4. Checks for StockLedger cumulative balance (in_qty - out_qty).
+    Initializes/links the CurrentStock record so stock movements and reservations
+    never fail with 'CurrentStock matching query does not exist'.
+    """
+    from .models import CurrentStock, ProductStock, MonthlyStockSnapshot, StockLedger
+    from decimal import Decimal
+    from django.db.models import Sum as DJSum
+
+    qs = CurrentStock.objects
+    if for_update:
+        qs = qs.select_for_update()
+
+    stock = qs.filter(
+        product_id=product_id,
+        batch_id=batch_id,
+        location_type=location_type,
+        location_id=location_id
+    ).first()
+
+    if stock and stock.available_qty > 0:
+        return stock
+
+    # Helper to sync found balance to stock
+    def _apply_bal(bal):
+        nonlocal stock
+        if not stock:
+            stock = CurrentStock.objects.create(
+                product_id=product_id,
+                batch_id=batch_id,
+                location_type=location_type,
+                location_id=location_id,
+                opening_qty=bal,
+                closing_qty=bal
+            )
+        elif stock.closing_qty <= 0:
+            stock.opening_qty = bal
+            stock.closing_qty = bal
+            stock.save(update_fields=['opening_qty', 'closing_qty', 'last_updated'])
+        return stock
+
+    # 1. Fallback: check unbatched CurrentStock at this location
+    unbatched_qs = CurrentStock.objects
+    if for_update:
+        unbatched_qs = unbatched_qs.select_for_update()
+    unbatched = unbatched_qs.filter(
+        product_id=product_id,
+        batch__isnull=True,
+        location_type=location_type,
+        location_id=location_id
+    ).first()
+    if unbatched and unbatched.available_qty > 0:
+        return _apply_bal(unbatched.closing_qty)
+
+    # 2. Fallback: check aggregated ProductStock at this location
+    ps_qs = ProductStock.objects
+    if for_update:
+        ps_qs = ps_qs.select_for_update()
+    ps = ps_qs.filter(
+        product_id=product_id,
+        location_type=location_type,
+        location_id=location_id
+    ).first()
+    if ps and ps.closing_qty > 0:
+        return _apply_bal(ps.closing_qty)
+
+    # 3. Fallback: check MonthlyStockSnapshot at this location
+    snap = MonthlyStockSnapshot.objects.filter(
+        product_id=product_id,
+        location_type=location_type,
+        location_id=location_id
+    ).order_by('-year', '-month').first()
+    if snap and snap.closing_qty > 0:
+        return _apply_bal(snap.closing_qty)
+
+    # 4. Fallback: check StockLedger cumulative balance at this location
+    ledger_totals = StockLedger.objects.filter(
+        product_id=product_id,
+        location_type=location_type,
+        location_id=location_id
+    ).aggregate(tot_in=DJSum('in_qty'), tot_out=DJSum('out_qty'))
+    tot_in = ledger_totals.get('tot_in') or Decimal('0.000')
+    tot_out = ledger_totals.get('tot_out') or Decimal('0.000')
+    ledger_bal = max(Decimal('0.000'), tot_in - tot_out)
+    if ledger_bal > 0:
+        return _apply_bal(ledger_bal)
+
+    # 5. If still not found, return existing or create an empty 0.000 record
+    if not stock:
+        stock, _ = CurrentStock.objects.get_or_create(
+            product_id=product_id,
+            batch_id=batch_id,
+            location_type=location_type,
+            location_id=location_id,
+            defaults={"opening_qty": Decimal("0.000"), "closing_qty": Decimal("0.000")}
+        )
+
+    return stock

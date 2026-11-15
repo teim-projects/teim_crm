@@ -26,6 +26,16 @@
 
 <div class="container" style="margin-top:130px">
 
+{% if messages %}
+<div class="mb-3">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
 <form method="post">
 {% csrf_token %}
 
@@ -92,7 +102,7 @@
                                    step="0.001"
                                    min="0"
                                    name="approved_qty_{{ item.id }}"
-                                   value="{{ item.requested_qty }}"
+                                   value="{{ item.approved_qty|default:item.requested_qty }}"
                                    class="form-control">
                         {% else %}
                             {{ item.approved_qty|default:item.requested_qty }}
@@ -112,15 +122,43 @@
 </div>
 
 <!-- ================= ACTIONS ================= -->
-<div class="text-end">
+<div class="d-flex justify-content-between align-items-center">
     <a href="{% url 'material_request_list' %}" class="btn btn-secondary">
-        Back
+        ← Back to List
     </a>
 
     {% if is_editable %}
-        <button type="submit" class="btn btn-success">
-            Approve Request
-        </button>
+    <div class="d-flex gap-2">
+        {% if mr.status == "SUBMITTED" %}
+            <button type="submit" name="status_action" value="APPROVED" class="btn btn-success">
+                ✓ Approve Request
+            </button>
+            <button type="submit" name="status_action" value="REJECTED" class="btn btn-danger"
+                    onclick="return confirm('Are you sure you want to reject this request?');">
+                ✕ Reject Request
+            </button>
+        {% elif mr.status == "APPROVED" %}
+            <button type="submit" name="status_action" value="APPROVED" class="btn btn-primary">
+                💾 Update Quantities
+            </button>
+            <button type="submit" name="status_action" value="SUBMITTED" class="btn btn-warning text-dark"
+                    onclick="return confirm('Revert status back to Submitted (Pending)?');">
+                ↺ Revert to Submitted
+            </button>
+            <button type="submit" name="status_action" value="REJECTED" class="btn btn-danger"
+                    onclick="return confirm('Are you sure you want to change status to Rejected?');">
+                ✕ Reject Request
+            </button>
+        {% elif mr.status == "REJECTED" %}
+            <button type="submit" name="status_action" value="APPROVED" class="btn btn-success">
+                ✓ Approve Request
+            </button>
+            <button type="submit" name="status_action" value="SUBMITTED" class="btn btn-warning text-dark"
+                    onclick="return confirm('Reopen request back to Submitted?');">
+                ↺ Reopen as Submitted
+            </button>
+        {% endif %}
+    </div>
     {% endif %}
 </div>
 

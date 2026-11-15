@@ -76,10 +76,12 @@
 <form action="{% url 'delete_bank_account' account.id %}" method="post" style="display:inline;" id="delete-form-{{ account.id }}">
   {% csrf_token %}
 
-  <!-- Delete Button that opens the modal -->
+  <!-- Delete Button that opens the modal (Admin Only) -->
+  {% if request.user.is_superuser or request.user.userprofile.role == 'admin' %}
   <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal-{{ account.id }}">
     Delete
   </button>
+  {% endif %}
 
   <!-- Modal inside the form so it can submit -->
   <div class="modal fade" id="deleteConfirmModal-{{ account.id }}" tabindex="-1" aria-labelledby="deleteConfirmModalLabel-{{ account.id }}" aria-hidden="true">

@@ -338,29 +338,25 @@ def handle_mtn_item_reservation(sender, instance, created, **kwargs):
 
     with transaction.atomic():
         # ----- CurrentStock (Batch level) -----
-        cs = CurrentStock.objects.select_for_update().filter(
-            product=instance.product,
-            batch=instance.batch,
-            location_type=mtn.source_type,
-            location_id=mtn.source_id
-        ).first()
-
-        if cs is None:
-            # No stock row yet — can't reserve what isn't there
-            return
+        from .utils import get_or_sync_current_stock
+        cs = get_or_sync_current_stock(
+            instance.product_id,
+            instance.batch_id,
+            mtn.source_type,
+            mtn.source_id,
+            for_update=True
+        )
 
         cs.reserved_qty = max(Decimal('0'), (cs.reserved_qty or Decimal('0')) + delta)
         cs.recompute_closing()
 
         # ----- ProductStock (Aggregate level) -----
-        ps = ProductStock.objects.select_for_update().filter(
+        ps, _ = ProductStock.objects.select_for_update().get_or_create(
             product=instance.product,
             location_type=mtn.source_type,
-            location_id=mtn.source_id
-        ).first()
-
-        if ps is None:
-            return
+            location_id=mtn.source_id,
+            defaults={"total_in_qty": Decimal("0.000"), "total_out_qty": Decimal("0.000"), "total_reserved_qty": Decimal("0.000")}
+        )
 
         ps.total_reserved_qty = max(Decimal('0'), (ps.total_reserved_qty or Decimal('0')) + delta)
         ps.save()
@@ -383,32 +379,37 @@ def handle_mtn_status_change(sender, instance, **kwargs):
     if old_instance.status == 'DRAFT' and instance.status == 'APPROVED':
         with transaction.atomic():
             for item in instance.items.all():
+                from .utils import get_or_sync_current_stock
                 # --- SOURCE SIDE: MOVE FROM RESERVED TO OUT ---
-                cs_source = CurrentStock.objects.select_for_update().get(
-                    product=item.product, batch=item.batch,
-                    location_type=instance.source_type, location_id=instance.source_id
+                cs_source = get_or_sync_current_stock(
+                    item.product_id, item.batch_id,
+                    instance.source_type, instance.source_id,
+                    for_update=True
                 )
-                cs_source.reserved_qty -= item.transfer_qty
+                cs_source.reserved_qty = max(Decimal('0'), (cs_source.reserved_qty or Decimal('0')) - item.transfer_qty)
                 cs_source.out_qty += item.transfer_qty
                 cs_source.recompute_closing()
 
-                ps_source = ProductStock.objects.select_for_update().get(
-                    product=item.product, location_type=instance.source_type, location_id=instance.source_id
+                ps_source, _ = ProductStock.objects.select_for_update().get_or_create(
+                    product=item.product, location_type=instance.source_type, location_id=instance.source_id,
+                    defaults={"total_in_qty": Decimal("0.000"), "total_out_qty": Decimal("0.000"), "total_reserved_qty": Decimal("0.000")}
                 )
-                ps_source.total_reserved_qty -= item.transfer_qty
+                ps_source.total_reserved_qty = max(Decimal('0'), (ps_source.total_reserved_qty or Decimal('0')) - item.transfer_qty)
                 ps_source.total_out_qty += item.transfer_qty
                 ps_source.save()
 
                 # --- DESTINATION SIDE: ADD TO IN ---
-                cs_dest, _ = CurrentStock.objects.select_for_update().get_or_create(
-                    product=item.product, batch=item.batch,
-                    location_type=instance.destination_type, location_id=instance.destination_id
+                cs_dest = get_or_sync_current_stock(
+                    item.product_id, item.batch_id,
+                    instance.destination_type, instance.destination_id,
+                    for_update=True
                 )
                 cs_dest.in_qty += item.transfer_qty
                 cs_dest.recompute_closing()
 
                 ps_dest, _ = ProductStock.objects.select_for_update().get_or_create(
-                    product=item.product, location_type=instance.destination_type, location_id=instance.destination_id
+                    product=item.product, location_type=instance.destination_type, location_id=instance.destination_id,
+                    defaults={"total_in_qty": Decimal("0.000"), "total_out_qty": Decimal("0.000"), "total_reserved_qty": Decimal("0.000")}
                 )
                 ps_dest.total_in_qty += item.transfer_qty
                 ps_dest.save()

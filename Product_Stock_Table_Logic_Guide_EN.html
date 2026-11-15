@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TEIM CRM - Inventory Stock Table Logic Guide</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm 14mm 14mm;
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #64748b;
+      font-weight: 600;
+    }
+    @bottom-left {
+      content: "TEIM CRM • Inventory Management System • Official Standard Operating Procedure";
+      font-size: 8pt;
+      color: #64748b;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.45;
+    font-size: 9.2pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  .header-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+    color: white;
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+
+  .header-card h1 {
+    margin: 0 0 4px 0;
+    font-size: 17pt;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+
+  .header-card p {
+    margin: 0;
+    font-size: 9.8pt;
+    opacity: 0.9;
+  }
+
+  .badge-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 8pt;
+    font-weight: 700;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .img-container {
+    text-align: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 14px;
+  }
+
+  .img-container img {
+    max-width: 98%;
+    height: auto;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+  }
+
+  .img-caption {
+    font-size: 8pt;
+    color: #64748b;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  h2 {
+    color: #0f172a;
+    font-size: 11.5pt;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 4px;
+    margin: 14px 0 8px 0;
+    font-weight: 700;
+  }
+
+  /* Table styling */
+  table.master-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 14px 0;
+    font-size: 8.2pt;
+  }
+
+  table.master-table th {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 6px 7px;
+    text-align: left;
+    font-weight: 700;
+    border: 1px solid #0f172a;
+  }
+
+  table.master-table td {
+    padding: 5px 7px;
+    border: 1px solid #cbd5e1;
+    vertical-align: middle;
+  }
+
+  table.master-table tr:nth-child(even) {
+    background-color: #f8fafc;
+  }
+
+  .col-pill {
+    font-weight: 700;
+    font-size: 7.8pt;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .badge-open { background: #e0f2fe; color: #0369a1; }
+  .badge-rcpt { background: #dcfce7; color: #15803d; }
+  .badge-sent { background: #ffedd5; color: #c2410c; }
+  .badge-appr { background: #f3e8ff; color: #7e22ce; }
+  .badge-resv { background: #fef3c7; color: #b45309; }
+  .badge-clos { background: #e2e8f0; color: #334155; }
+  .badge-avail { background: #bbf7d0; color: #166534; font-weight: 800; }
+
+  .formula-box {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-left: 3px solid #2563eb;
+    padding: 3px 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 7.8pt;
+    color: #0f172a;
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* Column detail cards */
+  .col-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 9px 12px;
+    margin-bottom: 8px;
+    page-break-inside: avoid;
+  }
+
+  .col-card.accent-blue { border-left: 4px solid #2563eb; }
+  .col-card.accent-green { border-left: 4px solid #16a34a; }
+  .col-card.accent-orange { border-left: 4px solid #ea580c; }
+  .col-card.accent-purple { border-left: 4px solid #9333ea; }
+  .col-card.accent-amber { border-left: 4px solid #d97706; }
+  .col-card.accent-navy { border-left: 4px solid #0f172a; }
+  .col-card.accent-emerald { border-left: 4px solid #059669; }
+
+  .col-title {
+    font-size: 9.8pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 3px;
+  }
+
+  .col-desc {
+    font-size: 8.8pt;
+    color: #334155;
+    margin: 3px 0;
+  }
+
+  /* Example Box */
+  .example-card {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 10px 0;
+    page-break-inside: avoid;
+  }
+
+  .example-card h3 {
+    margin: 0 0 6px 0;
+    color: #15803d;
+    font-size: 10.5pt;
+    font-weight: 700;
+  }
+
+  .calc-flow {
+    display: table;
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .calc-item {
+    display: inline-block;
+    background: white;
+    border: 1px solid #cbd5e1;
+    padding: 5px 9px;
+    border-radius: 4px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .calc-item .val {
+    font-size: 10.5pt;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .calc-item .lbl {
+    font-size: 7pt;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .rule-list {
+    margin: 6px 0;
+    padding-left: 18px;
+    font-size: 8.8pt;
+    color: #334155;
+  }
+
+  .rule-list li {
+    margin-bottom: 4px;
+  }
+
+  .page-break {
+    page-break-after: always;
+  }
+</style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header-card">
+    <h1>TEIM CRM — Inventory Stock Table Logic Guide</h1>
+    <p>Complete Operational & Mathematical Logic for the Products Stock List Table</p>
+    <span class="badge-tag">INVENTORY MODULE • STANDARD OPERATING PROCEDURE (SOP)</span>
+  </div>
+
+  <!-- SCREENSHOT SECTION -->
+  <div class="img-container">
+    <img src="file:///C:/Users/ASUS/.gemini/antigravity/brain/74380754-02e2-4003-898f-201e5a484351/.user_uploaded/media_1793786289526_dd356a79.png" alt="Stock Table Columns Screenshot">
+    <div class="img-caption">Figure 1: Products Stock List Table Columns Header (TEIM CRM Inventory)</div>
+  </div>
+
+  <h2>1. Master Column Summary & Mathematical Formulae</h2>
+  <table class="master-table">
+    <thead>
+      <tr>
+        <th style="width: 13%;">Column</th>
+        <th style="width: 18%;">Definition</th>
+        <th style="width: 37%;">Operational Meaning (What it tracks)</th>
+        <th style="width: 32%;">Calculation Formula & Trigger</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="col-pill bg-light border">SR</span></td>
+        <td>Serial Number</td>
+        <td>Sequential display index of the product row.</td>
+        <td>Auto-incremented (1, 2, 3...)</td>
+      </tr>
+      <tr>
+        <td><span class="col-pill bg-light border">PRODUCT</span></td>
+        <td>Product Name</td>
+        <td>Name of the chemical, consumable, or service item.</td>
+        <td><code>crmapp_product.product_name</code></td>
+      </tr>
+      <tr>
+        <td><span class="col-pill badge-open">OPENING</span></td>
+        <td>Opening Stock</td>
+        <td>Stock balance carried forward from prior periods (before 1st of month).</td>
+        <td><div class="formula-box">Prior Inward - Prior Outward</div></td>
+      </tr>
+      <tr>
+        <td><span class="col-pill badge-rcpt">RECEIPT</span></td>
+        <td>Inward Receipts</td>
+        <td>New stock received in warehouse during the selected month.</td>
+        <td><div class="formula-box">GRN (Purchase) + MTN_IN (Transfers)</div></td>
+      </tr>
+      <tr>
+        <td><span class="col-pill badge-sent">SENT</span></td>
+        <td>Outward Transfers</td>
+        <td>Stock dispatched to other branches, sites, or warehouses.</td>
+        <td><div class="formula-box">MTN_OUT (Approved) + Delivery Challans</div></td>
+      </tr>
+      <tr>
+        <td><span class="col-pill badge-appr">APPROVED</span></td>
+        <td>Service Consumption</td>
+        <td>Chemicals/materials consumed during customer services by technicians.</td>
+        <td><div class="formula-box">Service_OUT - Service_Return</div></td>
+      </tr>
+      <tr>
+        <td><span class="col-pill badge-resv">RESERVED</span></td>
+        <td>Stock on Hold</td>
+        <td>Stock allocated in DRAFT MTNs, held so others cannot use it.</td>
+        <td><div class="formula-box">&Sigma; (Active DRAFT MTN Item Quantities)</div></td>
+      </tr>
+      <tr>
+        <td><span class="col-pill badge-clos">CLOSING</span></td>
+        <td>Physical Stock</td>
+        <td>Total physical quantity physically present in the warehouse/rack.</td>
+        <td><div class="formula-box">Opening + Receipt - Sent - Approved</div></td>
+      </tr>
+      <tr>
+        <td><span class="col-pill badge-avail">AVAILABLE</span></td>
+        <td>Free Usable Stock</td>
+        <td>Net free stock available immediately for new services or transfers.</td>
+        <td><div class="formula-box" style="border-left-color:#16a34a; font-weight:bold;">Closing - Reserved</div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>2. Detailed Explanation of Each Column</h2>
+
+  <div class="col-card accent-blue">
+    <div class="col-title">1. OPENING — Opening Stock Balance</div>
+    <div class="col-desc">
+      Represents the inventory balance available in the warehouse at 00:00 hours on the 1st day of the selected month.
+      <br>&bull; <strong>Logic:</strong> Previous month's ending <strong>Closing Stock</strong> automatically becomes this month's <strong>Opening Stock</strong>.
+      <br>&bull; <strong>Formula:</strong> <code>Opening = &Sigma;(Inward transactions before 1st of month) - &Sigma;(Outward transactions before 1st of month)</code>
+    </div>
+  </div>
+
+  <div class="col-card accent-green">
+    <div class="col-title">2. RECEIPT — Inward Stock Receipts</div>
+    <div class="col-desc">
+      Tracks all positive incoming inventory into this warehouse/location during the month:
+      <br>&bull; <strong>Goods Receive Note (GRN):</strong> Shipments purchased from vendors/manufacturers against verified Purchase Orders.
+      <br>&bull; <strong>MTN_IN (Material Transfer In):</strong> Shipments transferred into this location from Head Office (HO) or another branch.
+    </div>
+  </div>
+
+  <div class="col-card accent-orange">
+    <div class="col-title">3. SENT — Outward Stock Transfers</div>
+    <div class="col-desc">
+      Tracks inventory dispatched from this location to other locations:
+      <br>&bull; <strong>MTN_OUT (Approved):</strong> Triggered when a Material Transfer Note transitions to <strong>"APPROVED"</strong> status.
+      <br>&bull; <strong>Delivery Challan (DC):</strong> Dispatches made to client sites or external locations via challans.
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <div class="col-card accent-purple">
+    <div class="col-title">4. APPROVED — Service Consumption in Field Work</div>
+    <div class="col-desc">
+      Tracks chemicals and consumables consumed during pest control services and AMC visits by technicians:
+      <br>&bull; <strong>SERVICE_OUT:</strong> Deducted when a service completion report is verified and approved.
+      <br>&bull; <strong>SERVICE_RETURN / REVERSAL:</strong> If any unused chemical is returned to the warehouse by the technician, it is deducted from this figure to ensure exact real-time accuracy.
+    </div>
+    <div class="formula-box">Approved = Gross Chemical Used - Unused Returned Chemical</div>
+  </div>
+
+  <div class="col-card accent-amber">
+    <div class="col-title">5. RESERVED — Stock on Hold (DRAFT Protection)</div>
+    <div class="col-desc">
+      Inventory that is still physically inside the warehouse, but earmarked/blocked for a pending transfer:
+      <br>&bull; When an MTN is created in <strong>"DRAFT"</strong> status, the requested quantity is immediately reserved to prevent other staff from committing the same stock.
+      <br>&bull; When the MTN is <strong>"APPROVED"</strong>, the reservation is released and the quantity moves into <strong>SENT</strong>.
+      <br>&bull; If the DRAFT MTN is <strong>Cancelled or Deleted</strong>, the reservation is released and returns to <strong>AVAILABLE</strong>.
+    </div>
+  </div>
+
+  <div class="col-card accent-navy">
+    <div class="col-title">6. CLOSING — Total Physical Stock on Hand</div>
+    <div class="col-desc">
+      The actual physical count of units sitting on the warehouse shelves right now:
+      <br>&bull; <strong>Physical Audit Target:</strong> When warehouse managers conduct a physical shelf count, it must match this <strong>Closing</strong> figure.
+      <br>&bull; <em>Note:</em> Reserved stock is still physically in the building, so it is included within Closing Stock.
+    </div>
+    <div class="formula-box" style="font-weight:700;">Closing = Opening + Receipt - Sent - Approved</div>
+  </div>
+
+  <div class="col-card accent-emerald">
+    <div class="col-title">7. AVAILABLE — Net Available Stock for New Operations</div>
+    <div class="col-desc">
+      The most critical operational metric for dispatchers, branch managers, and technicians.
+      <br>&bull; Indicates the maximum quantity of stock that can be safely issued for new work orders or new transfer notes today.
+    </div>
+    <div class="formula-box" style="font-weight:800; color:#047857; background:#ecfdf5; border-left-color:#059669;">
+      AVAILABLE = CLOSING STOCK - RESERVED STOCK
+    </div>
+  </div>
+
+  <h2>3. Real-World Practical Example (Step-by-Step)</h2>
+  <div class="example-card">
+    <h3>Product Example: Cockroach Gel (50g Bottle)</h3>
+    <p style="margin: 0 0 8px 0; font-size: 8.8pt;">
+      Assume the following transactions take place during the month:
+    </p>
+
+    <div class="calc-flow">
+      <div class="calc-item">
+        <div class="val">100</div>
+        <div class="lbl">Opening</div>
+      </div>
+      <div class="calc-item" style="border-color:#3b82f6;">
+        <div class="val">+ 50</div>
+        <div class="lbl">Receipt (GRN)</div>
+      </div>
+      <div class="calc-item" style="border-color:#f97316;">
+        <div class="val">- 20</div>
+        <div class="lbl">Sent (MTN Out)</div>
+      </div>
+      <div class="calc-item" style="border-color:#a855f7;">
+        <div class="val">- 10</div>
+        <div class="lbl">Approved (Service)</div>
+      </div>
+      <div class="calc-item" style="background:#e0f2fe; border-color:#0284c7;">
+        <div class="val">= 120</div>
+        <div class="lbl" style="font-weight:700;">Closing Stock</div>
+      </div>
+      <div class="calc-item" style="border-color:#f59e0b;">
+        <div class="val">- 5</div>
+        <div class="lbl">Reserved (Draft)</div>
+      </div>
+      <div class="calc-item" style="background:#dcfce7; border-color:#16a34a;">
+        <div class="val" style="color:#15803d;">= 115</div>
+        <div class="lbl" style="color:#15803d; font-weight:800;">AVAILABLE</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 8px; font-size: 8.5pt; color: #1e293b;">
+      <strong>Operational Breakdown:</strong><br>
+      &bull; <strong>Physical Count (Closing):</strong> There are exactly <strong>120 bottles</strong> physically located on the warehouse shelves.<br>
+      &bull; <strong>Commitment (Reserved):</strong> <strong>5 bottles</strong> are committed to a pending Draft MTN for Katraj Branch.<br>
+      &bull; <strong>Net Free (Available):</strong> You can only allocate up to <strong>115 bottles</strong> for any new client bookings or transfers.
+    </div>
+  </div>
+
+  <h2>4. Core Operational Rules for Inventory Management</h2>
+  <ul class="rule-list">
+    <li><strong>Negative Stock Prevention:</strong> The system enforces a strict rule where transfer or issue quantities cannot exceed the <strong>Available</strong> stock quantity.</li>
+    <li><strong>Draft MTN Hygiene:</strong> Never leave Draft MTNs lingering indefinitely. If a planned transfer is no longer needed, <strong>Cancel/Delete the Draft MTN</strong> immediately to return the reserved stock to the <strong>Available</strong> pool.</li>
+    <li><strong>Monthly Reconciliations:</strong> Physical inventory stocktakes at month-end must always be benchmarked against the <strong>Closing Stock</strong> column.</li>
+    <li><strong>Access Control:</strong> In compliance with security governance, only <strong>Admin (`role == 'admin'`)</strong> and <strong>Super Admin (`is_superuser=True`)</strong> have permissions to delete records across the system.</li>
+  </ul>
+
+</body>
+</html>
