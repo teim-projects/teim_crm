@@ -536,13 +536,14 @@
                                 <tr>
                                     <td>{{ forloop.counter|add:start_index }}</td>
                                     <td>
-                                        <a href="{% url 'view_quotation_pdf' x.id %}?download=true" class="btn btn-sm btn-primary"><i class="fa-solid fa-download"></i></a>
-                                        <a href="{% url 'view_quotation_pdf' x.id %}" class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
-                                        <a href="{% url 'edit_quotation' x.id %}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <a href="/delete_quotation/{{ x.id }}" class="btn btn-sm btn-danger delete-link"><i class="fa-solid fa-trash"></i></a>
-                                        <a href="{% url 'send_quotation_email' x.id %}" class="btn btn-sm btn-primary"><i class="fa-solid fa-envelope"></i></a>
+                                        <a href="{% url 'view_quotation_pdf' x.id %}?download=true" class="btn btn-sm btn-primary" title="Download"><i class="fa-solid fa-download"></i></a>
+                                        <a href="{% url 'view_quotation_pdf' x.id %}" class="btn btn-sm btn-secondary" title="View"><i class="fa-solid fa-eye"></i></a>
+                                        <a href="{% url 'edit_quotation' x.id %}" class="btn btn-sm btn-warning" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <a href="{% url 'clone_quotation' x.id %}" class="btn btn-sm btn-info text-white" title="Clone Quotation"><i class="fa-solid fa-copy"></i></a>
+                                        {% if request.user.is_superuser or request.user.userprofile.role == 'admin' %}<a href="/delete_quotation/{{ x.id }}" class="btn btn-sm btn-danger delete-link" title="Delete"><i class="fa-solid fa-trash"></i></a>{% endif %}
+                                        <a href="{% url 'send_quotation_email' x.id %}" class="btn btn-sm btn-primary" title="Email"><i class="fa-solid fa-envelope"></i></a>
                                         <!-- WhatsApp - Backend Disabled -->
-                                        <a href="#" onclick="alert('WhatsApp feature is currently disabled'); return false;" class="btn btn-sm btn-success"><i class="fa-brands fa-whatsapp"></i></a>
+                                        <a href="#" onclick="alert('WhatsApp feature is currently disabled'); return false;" class="btn btn-sm btn-success" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
                                     </td>
                                     <td>{{ x.quotation_no }}</td>
                                     <td>
@@ -629,9 +630,10 @@
                                                             <td>
                                                                 <a href="{% url 'view_quotation_pdf' v.id %}?download=true" class="btn btn-sm btn-primary" title="Download"><i class="fa-solid fa-download"></i></a>
                                                                 <a href="{% url 'view_quotation_pdf' v.id %}" class="btn btn-sm btn-secondary" title="View"><i class="fa-solid fa-eye"></i></a>
+                                                                <a href="{% url 'clone_quotation' v.id %}" class="btn btn-sm btn-info text-white" title="Clone Version"><i class="fa-solid fa-copy"></i></a>
                                                                 <a href="{% url 'send_quotation_email' v.id %}" class="btn btn-sm btn-primary" title="Email"><i class="fa-solid fa-envelope"></i></a>
                                                                 <a href="#" onclick="alert('WhatsApp feature is currently disabled'); return false;" class="btn btn-sm btn-success" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-                                                                <a href="/delete_quotation/{{ v.id }}" class="btn btn-sm btn-danger delete-link" title="Delete Version"><i class="fa-solid fa-trash"></i></a>
+                                                                {% if request.user.is_superuser or request.user.userprofile.role == 'admin' %}<a href="/delete_quotation/{{ v.id }}" class="btn btn-sm btn-danger delete-link" title="Delete Version"><i class="fa-solid fa-trash"></i></a>{% endif %}
                                                             </td>
                                                         </tr>
                                                         {% endfor %}

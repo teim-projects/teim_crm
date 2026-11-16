@@ -1,3 +1,4 @@
+from crmapp.decorators import admin_or_superadmin_required
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
@@ -32,6 +33,8 @@ import re
 from crmapp.custom_filters import price_in_words
 from django.utils.dateparse import parse_date
 from crmapp.decorators import role_required
+import logging
+logger = logging.getLogger(__name__)
 
 state_map = {
         'Andaman and Nicobar Islands': {'code': 35, 'shortcut': 'AN'},
@@ -177,7 +180,7 @@ def vendor_edit(request, id):
     return render(request, 'inventory/vendor_edit.html', {'form': form,   "vendor": vendor, "state_map":state_map})
 
 @login_required
-@role_required(['admin',"HO_operation","HO_manager"])
+@admin_or_superadmin_required
 def vendor_delete(request, id):
     vendor = get_object_or_404(Vendor, id=id)
     vendor.delete()
@@ -305,7 +308,7 @@ def ho_edit(request, pk):
     return render(request, "inventory/add_ho.html", {"form": form, "ho": ho})
 
 @login_required
-@role_required(['admin',"HO_manager"])
+@admin_or_superadmin_required
 def ho_delete(request, pk):
     ho = get_object_or_404(HO, id=pk)
     ho.delete()
@@ -380,7 +383,7 @@ def site_edit(request, id):
     return render(request, "inventory/add_site.html", {"form": form, "site": site})
 
 @login_required
-@role_required(['admin',"HO_operation","HO_manager","branch_manager"])
+@admin_or_superadmin_required
 def site_delete(request, id):
     site = get_object_or_404(Site, id=id)
     site.delete()
@@ -589,7 +592,7 @@ def purchase_order_edit(request, id):
 # ------------------ Purchase Order Delete ---------------------
 
 @login_required
-@role_required(['admin',"HO_operation","HO_manager"])
+@admin_or_superadmin_required
 def purchase_order_delete(request, id):
     po = get_object_or_404(PurchaseOrder, id=id)
     po.delete()
@@ -1505,12 +1508,20 @@ def export_products_stock_excel(request):
 # ---- batch api ------
 def load_batches(request):
     product_id = request.GET.get("product_id")
-    print("p id:",product_id)
+    if not product_id:
+        return JsonResponse({"results": []})
     batches = ProductBatch.objects.filter(product_id=product_id)
+    if not batches.exists():
+        try:
+            prod = Product.objects.get(pk=product_id)
+            get_or_create_product_batch(product=prod)
+            batches = ProductBatch.objects.filter(product_id=product_id)
+        except Exception as err:
+            logger.warning(f"Could not auto-create batch for product {product_id}: {err}")
 
     return JsonResponse({
         "results": [
-            {"id": b.id, "name": str(b.batch)}
+            {"id": b.id, "name": str(b.batch) if b.batch else f"Batch-{b.id}"}
             for b in batches
         ]
     })
@@ -1525,13 +1536,7 @@ def fetch_mtn_available_qty(request):
     if not all([product_id, batch_id, source_type, source_id]):
         return JsonResponse({"available_qty": "0.000"})
 
-    stock = CurrentStock.objects.filter(
-        product_id=product_id,
-        batch_id=batch_id,
-        location_type=source_type,
-        location_id=source_id
-    ).first()
-
+    stock = get_or_sync_current_stock(product_id, batch_id, source_type, source_id)
     available = stock.available_qty if stock else Decimal("0.000")
 
     return JsonResponse({
@@ -1542,24 +1547,122 @@ def fetch_mtn_available_qty(request):
 @login_required
 @role_required(['admin',"HO_operation","HO_manager","branch_manager"])
 def create_mtn(request):
+    products = Product.objects.all()
+    today_date = timezone.now().date().strftime('%Y-%m-%d')
+
     if request.method == "POST":
         source_type = request.POST.get("source_type")
         source_id = request.POST.get("source")
         destination_type = request.POST.get("destination_type")
         destination_id = request.POST.get("destination")
-        status = request.POST.get("status")
+        status = request.POST.get("status") or "DRAFT"
         remarks = request.POST.get("remarks")
         transfer_date = request.POST.get("date") or timezone.now().date()
 
-        products = request.POST.getlist("product[]")
-        batches = request.POST.getlist("batch[]")
-        qtys = request.POST.getlist("qty[]")
-        item_remarks = request.POST.getlist("item_remarks[]")
+        posted_products = request.POST.getlist("product[]")
+        posted_batches = request.POST.getlist("batch[]")
+        posted_qtys = request.POST.getlist("qty[]")
+        posted_remarks = request.POST.getlist("item_remarks[]")
 
+        # 1. Location Validation
+        if not source_type or not source_id:
+            messages.error(request, "Please select Source Type and Source location.")
+            return render(request, "inventory/mtn_form.html", {
+                "products": products,
+                "today_date": today_date
+            })
+
+        if not destination_type or not destination_id:
+            messages.error(request, "Please select Destination Type and Destination location.")
+            return render(request, "inventory/mtn_form.html", {
+                "products": products,
+                "today_date": today_date
+            })
+
+        if source_type == destination_type and str(source_id) == str(destination_id):
+            messages.error(request, "Source and Destination cannot be the same location.")
+            return render(request, "inventory/mtn_form.html", {
+                "products": products,
+                "today_date": today_date
+            })
+
+        # 2. Parse Items & Batches
+        items_data = []
+        for i in range(len(posted_products)):
+            p_id = posted_products[i] if i < len(posted_products) else None
+            q_val = posted_qtys[i] if i < len(posted_qtys) else None
+            if not p_id or not q_val:
+                continue
+
+            try:
+                q_dec = Decimal(str(q_val))
+                if q_dec <= Decimal('0'):
+                    continue
+            except Exception:
+                continue
+
+            b_id = posted_batches[i] if (i < len(posted_batches) and posted_batches[i]) else None
+            if not b_id:
+                batch_obj = ProductBatch.objects.filter(product_id=p_id).first()
+                if not batch_obj:
+                    try:
+                        p_inst = Product.objects.get(pk=p_id)
+                        batch_obj = get_or_create_product_batch(product=p_inst)
+                    except Exception:
+                        pass
+                if batch_obj:
+                    b_id = batch_obj.id
+
+            rem_val = posted_remarks[i] if i < len(posted_remarks) else ""
+            items_data.append({
+                "product_id": p_id,
+                "batch_id": b_id,
+                "qty": q_dec,
+                "remarks": rem_val
+            })
+
+        if not items_data:
+            messages.error(request, "Please add at least one valid MTN item with a quantity greater than 0.")
+            return render(request, "inventory/mtn_form.html", {
+                "products": products,
+                "today_date": today_date
+            })
+
+        # 3. Stock Availability Check at Source
+        stock_errors = []
+        for item in items_data:
+            if not item["batch_id"]:
+                stock_errors.append(f"Row for product #{item['product_id']} has no valid batch.")
+                continue
+
+            stock = get_or_sync_current_stock(
+                item["product_id"],
+                item["batch_id"],
+                source_type,
+                source_id
+            )
+            avail = stock.available_qty if stock else Decimal('0.000')
+
+            if item["qty"] > avail:
+                p_name = None
+                if stock and stock.product:
+                    p_name = getattr(stock.product, 'product_name', None)
+                if not p_name:
+                    p_inst = Product.objects.filter(pk=item["product_id"]).first()
+                    p_name = p_inst.product_name if p_inst else f"Product #{item['product_id']}"
+                stock_errors.append(f"Insufficient stock for '{p_name}'. Available: {avail}, requested: {item['qty']}.")
+
+        if stock_errors:
+            for err in stock_errors:
+                messages.error(request, err)
+            return render(request, "inventory/mtn_form.html", {
+                "products": products,
+                "today_date": today_date
+            })
+
+        # 4. Save MTN
         try:
             with transaction.atomic():
-
-                # 1️⃣ Create MTN HEADER (always DRAFT first)
                 mtn = MaterialTransferNote.objects.create(
                     source_type=source_type,
                     source_id=source_id,
@@ -1571,32 +1674,29 @@ def create_mtn(request):
                     created_by=request.user
                 )
 
-                # 2️⃣ Create MTN ITEMS (this triggers reservation)
-                for i in range(len(products)):
-                    if not products[i] or not qtys[i]:
-                        continue
-
+                for item in items_data:
                     MTNItem.objects.create(
                         mtn=mtn,
-                        product_id=products[i],
-                        batch_id=batches[i],
-                        transfer_qty=qtys[i],
-                        remarks=item_remarks[i]
+                        product_id=item["product_id"],
+                        batch_id=item["batch_id"],
+                        transfer_qty=item["qty"],
+                        remarks=item["remarks"]
                     )
 
-                # 3️⃣ If user selected APPROVED → update status
                 if status == "APPROVED":
                     mtn.status = "APPROVED"
                     mtn.save()   # 🔥 triggers pre_save logic
 
+                messages.success(request, f"Material Transfer Note {mtn.mtn_no} created successfully.")
                 return redirect("mtn_list_view")
 
         except Exception as e:
-            print("MTN ERROR:", e)
+            logger.exception("MTN Creation Error")
+            messages.error(request, f"Error creating MTN: {str(e)}")
 
-    products = Product.objects.all()
     return render(request, "inventory/mtn_form.html", {
-        "products": products
+        "products": products,
+        "today_date": today_date
     })
 
 
@@ -1687,14 +1787,85 @@ def mtn_edit_view(request, pk):
         status = request.POST.get("status")
         remarks = request.POST.get("remarks")
 
-        products = request.POST.getlist("product[]")
-        batches = request.POST.getlist("batch[]")
-        qtys = request.POST.getlist("qty[]")
-        item_remarks = request.POST.getlist("item_remarks[]")
+        posted_products = request.POST.getlist("product[]")
+        posted_batches = request.POST.getlist("batch[]")
+        posted_qtys = request.POST.getlist("qty[]")
+        posted_remarks = request.POST.getlist("item_remarks[]")
+
+        # 1. Location Validation
+        if not source_type or not source_id:
+            messages.error(request, "Please select Source Type and Source location.")
+            return render(request, "inventory/mtn_form.html", {
+                "products": Product.objects.all(),
+                "mtn": mtn,
+                "is_edit": True,
+                "items": mtn.items.all()
+            })
+
+        if not destination_type or not destination_id:
+            messages.error(request, "Please select Destination Type and Destination location.")
+            return render(request, "inventory/mtn_form.html", {
+                "products": Product.objects.all(),
+                "mtn": mtn,
+                "is_edit": True,
+                "items": mtn.items.all()
+            })
+
+        if source_type == destination_type and str(source_id) == str(destination_id):
+            messages.error(request, "Source and Destination cannot be the same location.")
+            return render(request, "inventory/mtn_form.html", {
+                "products": Product.objects.all(),
+                "mtn": mtn,
+                "is_edit": True,
+                "items": mtn.items.all()
+            })
+
+        # 2. Parse Items & Batches
+        items_data = []
+        for i in range(len(posted_products)):
+            p_id = posted_products[i] if i < len(posted_products) else None
+            q_val = posted_qtys[i] if i < len(posted_qtys) else None
+            if not p_id or not q_val:
+                continue
+
+            try:
+                q_dec = Decimal(str(q_val))
+                if q_dec <= Decimal('0'):
+                    continue
+            except Exception:
+                continue
+
+            b_id = posted_batches[i] if (i < len(posted_batches) and posted_batches[i]) else None
+            if not b_id:
+                batch_obj = ProductBatch.objects.filter(product_id=p_id).first()
+                if not batch_obj:
+                    try:
+                        p_inst = Product.objects.get(pk=p_id)
+                        batch_obj = get_or_create_product_batch(product=p_inst)
+                    except Exception:
+                        pass
+                if batch_obj:
+                    b_id = batch_obj.id
+
+            rem_val = posted_remarks[i] if i < len(posted_remarks) else ""
+            items_data.append({
+                "product_id": p_id,
+                "batch_id": b_id,
+                "qty": q_dec,
+                "remarks": rem_val
+            })
+
+        if not items_data:
+            messages.error(request, "Please add at least one valid MTN item with a quantity greater than 0.")
+            return render(request, "inventory/mtn_form.html", {
+                "products": Product.objects.all(),
+                "mtn": mtn,
+                "is_edit": True,
+                "items": mtn.items.all()
+            })
 
         try:
             with transaction.atomic():
-
                 # 1️⃣ Update MTN header
                 mtn.source_type = source_type
                 mtn.source_id = source_id
@@ -1704,21 +1875,17 @@ def mtn_edit_view(request, pk):
                 mtn.remark = remarks
                 mtn.save()
 
-                # 2️⃣ Remove old items (IMPORTANT)
-                # This will also release reserved stock
+                # 2️⃣ Remove old items (IMPORTANT - releases reserved stock)
                 mtn.items.all().delete()
 
                 # 3️⃣ Re-create items (re-reserve stock)
-                for i in range(len(products)):
-                    if not products[i] or not qtys[i]:
-                        continue
-
+                for item in items_data:
                     MTNItem.objects.create(
                         mtn=mtn,
-                        product_id=products[i],
-                        batch_id=batches[i],
-                        transfer_qty=Decimal(qtys[i]),
-                        remarks=item_remarks[i]
+                        product_id=item["product_id"],
+                        batch_id=item["batch_id"],
+                        transfer_qty=item["qty"],
+                        remarks=item["remarks"]
                     )
 
                 # 4️⃣ Approve if selected
@@ -1726,10 +1893,12 @@ def mtn_edit_view(request, pk):
                     mtn.status = "APPROVED"
                     mtn.save()  # 🔥 triggers pre_save approval logic
 
+                messages.success(request, f"Material Transfer Note {mtn.mtn_no} updated successfully.")
                 return redirect("mtn_list_view")
 
         except Exception as e:
-            print("MTN EDIT ERROR:", e)
+            logger.exception("MTN EDIT ERROR")
+            messages.error(request, f"Error updating MTN: {str(e)}")
 
     # GET request → load form with existing data
     products = Product.objects.all()
@@ -1873,28 +2042,36 @@ def material_request_detail(request, pk):
         if mr.source_type != "BRANCH" or mr.source_id != branch.id:
             raise PermissionDenied()
 
-    # 🔒 Prevent approving again
-    is_editable = (
-        role in ["admin", "HO_manager"]
-        and mr.status == "SUBMITTED"
-    )
+    # 🔒 Only admin and HO_manager can edit / change status
+    is_editable = role in ["admin", "HO_manager"]
 
     if request.method == "POST":
         if not is_editable:
             raise PermissionDenied()
 
+        status_action = request.POST.get("status_action") or request.POST.get("status")
+        if status_action in ["APPROVED", "REJECTED", "SUBMITTED"]:
+            mr.status = status_action
+        else:
+            mr.status = "APPROVED"
+
         for item in mr.items.all():
             raw_val = request.POST.get(f"approved_qty_{item.id}")
 
             if raw_val in [None, ""]:
-                item.approved_qty = item.requested_qty
+                if item.approved_qty is None:
+                    item.approved_qty = item.requested_qty
             else:
-                item.approved_qty = Decimal(raw_val)
+                try:
+                    item.approved_qty = Decimal(raw_val)
+                except Exception:
+                    if item.approved_qty is None:
+                        item.approved_qty = item.requested_qty
 
             item.save()
 
-        mr.status = "APPROVED"
         mr.save()
+        messages.success(request, f"Material Request {mr.request_no} status updated to {mr.status}.")
 
         return redirect("material_request_list")
     branch = Branch.objects.get(id = mr.source_id)
@@ -1907,6 +2084,7 @@ def material_request_detail(request, pk):
         "is_editable": is_editable,
     })
 
+@login_required
 @transaction.atomic
 def approve_material_request(request, pk):
     if request.user.userprofile.role not in ["admin", "HO_manager"]:
@@ -1915,21 +2093,49 @@ def approve_material_request(request, pk):
     mr = get_object_or_404(MaterialRequest, pk=pk)
 
     for item in mr.items.all():
-        approved = request.POST.get(f"approved_qty_{item.id}")
-        print('approved',approved)
-        item.approved_qty = Decimal(approved)
+        raw_val = request.POST.get(f"approved_qty_{item.id}")
+        if raw_val in [None, ""]:
+            if item.approved_qty is None:
+                item.approved_qty = item.requested_qty
+        else:
+            try:
+                item.approved_qty = Decimal(raw_val)
+            except Exception:
+                if item.approved_qty is None:
+                    item.approved_qty = item.requested_qty
         item.save()
 
     mr.status = "APPROVED"
     mr.save()
-
+    messages.success(request, f"Material Request {mr.request_no} has been approved.")
     return redirect("material_request_list")
 
 
+@login_required
+@transaction.atomic
 def reject_material_request(request, pk):
+    if request.user.userprofile.role not in ["admin", "HO_manager"]:
+        raise PermissionDenied()
+
     mr = get_object_or_404(MaterialRequest, pk=pk)
+
     mr.status = "REJECTED"
     mr.save()
+    messages.warning(request, f"Material Request {mr.request_no} marked as REJECTED.")
+    return redirect("material_request_list")
+
+
+@login_required
+@transaction.atomic
+def reopen_material_request(request, pk):
+    if request.user.userprofile.role not in ["admin", "HO_manager"]:
+        raise PermissionDenied()
+
+    mr = get_object_or_404(MaterialRequest, pk=pk)
+
+    mr.status = "SUBMITTED"
+    mr.save()
+    messages.info(request, f"Material Request {mr.request_no} status reverted to SUBMITTED.")
     return redirect("material_request_list")
 
 
@@ -2012,15 +2218,16 @@ def create_dc_from_mtn(request, mtn_id):
             )
 
             # 3️⃣ FINAL STOCK OUT
-            stock = CurrentStock.objects.select_for_update().get(
-                product=item.product,
-                batch=item.batch,
-                location_type=mtn.source_type,
-                location_id=mtn.source_id
+            stock = get_or_sync_current_stock(
+                item.product_id,
+                item.batch_id,
+                mtn.source_type,
+                mtn.source_id,
+                for_update=True
             )
 
             stock.out_qty += item.transfer_qty
-            stock.reserved_qty -= item.transfer_qty
+            stock.reserved_qty = max(Decimal('0'), (stock.reserved_qty or Decimal('0')) - item.transfer_qty)
             stock.recompute_closing()
 
             StockLedger.objects.create(

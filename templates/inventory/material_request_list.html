@@ -43,6 +43,17 @@
 
     <div class="container card shadow-sm mb-3 py-5" style="margin-top:130px">
 
+        {% if messages %}
+        <div class="px-4 pt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <!-- ================= HEADER ================= -->
        
         <form method="get" >
@@ -155,12 +166,30 @@
 
                                 {% if request.user.userprofile.role != "branch_manager" %}
                                 {% if req.status == "SUBMITTED" %}
-                                <a href="{% url 'material_request_approve' req.id %}" class="btn btn-sm btn-success">
+                                <a href="{% url 'material_request_approve' req.id %}" class="btn btn-sm btn-success" title="Approve Request">
                                     Approve
                                 </a>
-
-                                <a href="{% url 'material_request_reject' req.id %}" class="btn btn-sm btn-danger">
+                                <a href="{% url 'material_request_reject' req.id %}" class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Are you sure you want to reject request {{ req.request_no }}?');" title="Reject Request">
                                     Reject
+                                </a>
+                                {% elif req.status == "APPROVED" %}
+                                <a href="{% url 'material_request_reopen' req.id %}" class="btn btn-sm btn-warning text-dark"
+                                   onclick="return confirm('Revert request {{ req.request_no }} back to Submitted (Pending)?');" title="Revert / Reopen to change">
+                                    Reopen
+                                </a>
+                                <a href="{% url 'material_request_reject' req.id %}" class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Are you sure you want to reject request {{ req.request_no }}?');" title="Reject Request">
+                                    Reject
+                                </a>
+                                {% elif req.status == "REJECTED" %}
+                                <a href="{% url 'material_request_approve' req.id %}" class="btn btn-sm btn-success"
+                                   onclick="return confirm('Approve request {{ req.request_no }}?');" title="Approve Request">
+                                    Approve
+                                </a>
+                                <a href="{% url 'material_request_reopen' req.id %}" class="btn btn-sm btn-warning text-dark"
+                                   onclick="return confirm('Reopen request {{ req.request_no }} back to Submitted (Pending)?');" title="Reopen to change">
+                                    Reopen
                                 </a>
                                 {% endif %}
                                 {% endif %}

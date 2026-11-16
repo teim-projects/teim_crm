@@ -177,6 +177,9 @@
                     <p class="info-p"><strong>Work Description:</strong> {{ item.work_description }}</p>
                     <p class="info-p"><strong>Payment Status:</strong> {{ item.customer_payment_status }}</p>
                     <p class="info-p"><strong>Payment Amount:</strong> ₹{{ item.payment_amount }}</p>
+                    {% if item.service.payment_terms %}
+                    <p class="info-p"><strong>Payment Terms:</strong> <span style="white-space: pre-line;">{{ item.service.payment_terms|linebreaksbr }}</span></p>
+                    {% endif %}
                 </td>
             </tr>
         </table>

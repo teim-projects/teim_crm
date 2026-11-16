@@ -174,11 +174,13 @@
                         <td>{{ forloop.counter }}</td>
                         <td>{{ item.item_name }}</td>
                         <td>
+            {% if request.user.is_superuser or request.user.userprofile.role == 'admin' %}
             <a href="{% url 'delete_product_item' item.id %}" 
                onclick="return confirm('Delete this item?')"
                class="btn btn-sm btn-danger">
                ❌
             </a>
+            {% endif %}
         </td>
                     </tr>
                     {% endfor %}

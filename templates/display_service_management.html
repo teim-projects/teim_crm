@@ -609,11 +609,13 @@
                                             </a>
 
                                             <!-- Delete -->
+                                            {% if request.user.is_superuser or request.user.userprofile.role == 'admin' %}
                                             <a href="{% url 'delete_service_records' x.id %}"
                                                class="btn btn-sm btn-outline-danger mb-1"
                                                onclick="return confirm('Are you sure?');">
                                                 <i class="fa fa-trash"></i>
                                             </a>
+                                            {% endif %}
 
                                             <!-- View PDF -->
                                             <a href="{% url 'work_order_pdf' x.id %}"

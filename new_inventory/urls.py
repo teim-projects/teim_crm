@@ -73,6 +73,7 @@ urlpatterns = [
     path("mreq/<int:pk>/", material_request_detail,name="material_request_detail"),
     path("mreq/<int:pk>/approve/", approve_material_request, name="material_request_approve"),
     path("mreq/<int:pk>/reject/", reject_material_request, name="material_request_reject"), 
+    path("mreq/<int:pk>/reopen/", reopen_material_request, name="material_request_reopen"),
 
 
 

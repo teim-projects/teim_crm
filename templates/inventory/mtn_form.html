@@ -17,6 +17,16 @@
   {% include 'sidebar.html' %}
 
   <div class="container" style="margin-top: 130px;">
+    {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
     <form method="post"
           data-destination-url="{% url 'load_destinations' %}"
@@ -78,7 +88,7 @@
 
             <div class="col-md-3">
               <label class="form-label">Date</label>
-              <input type="date" class="form-control" name="date" value="{{ mtn.transfer_date|date:'Y-m-d' }}">
+              <input type="date" class="form-control" name="date" value="{{ mtn.transfer_date|date:'Y-m-d'|default:today_date }}">
             </div>
 
             <div class="col-md-3">
@@ -327,13 +337,18 @@
         fetch(`${destUrl}?destination_type=${this.value}`)
           .then(r => r.json())
           .then(data => {
-            (data.results || []).forEach(item => {
+            const results = data.results || [];
+            results.forEach(item => {
               const opt = new Option(item.name, item.id);
               if (String(item.id) === String(this.dataset.preselect || "")) {
                 opt.selected = true;
               }
               destSelect.appendChild(opt);
             });
+            if (results.length === 1 && !this.dataset.preselect) {
+              destSelect.value = results[0].id;
+              destSelect.dispatchEvent(new Event('change'));
+            }
           });
       }
 
@@ -382,9 +397,14 @@
           .then(r => r.json())
           .then(data => {
             batchSelect.innerHTML = '<option value="">Select Batch</option>';
-            (data.results || []).forEach(b => {
+            const results = data.results || [];
+            results.forEach(b => {
               batchSelect.insertAdjacentHTML("beforeend", `<option value="${b.id}">${b.name}</option>`);
             });
+            if (results.length === 1) {
+              batchSelect.value = results[0].id;
+              updateAvailableQty(row);
+            }
           })
           .catch(err => console.error("Batch fetch error:", err));
       });
@@ -478,7 +498,9 @@
           if (!batch)   errors.push("Row " + (idx+1) + ": Please select a Batch.");
           if (isNaN(qty) || qty <= 0) {
             errors.push("Row " + (idx+1) + ": Transfer quantity must be greater than 0.");
-          } else if (avail > 0 && qty > avail) {
+          } else if (avail <= 0) {
+            errors.push("Row " + (idx+1) + ": No stock available at source location (Available: 0.000).");
+          } else if (qty > avail) {
             errors.push("Row " + (idx+1) + ": Qty (" + qty + ") exceeds available stock (" + avail + ").");
           }
         });
@@ -493,7 +515,7 @@
           alertDiv.innerHTML = "<strong>Please fix the following errors:</strong><ul class='mb-0 mt-1'>" +
             errors.map(function(m){ return "<li>" + m + "</li>"; }).join("") + "</ul>";
           document.querySelector("form[data-destination-url]").prepend(alertDiv);
-          alertDiv && alertDiv.scrollIntoView ? alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }) : window.scrollTo(0,0);
+          window.scrollTo({ top: Math.max(0, alertDiv.offsetTop - 140), behavior: 'smooth' });
         }
       });
 

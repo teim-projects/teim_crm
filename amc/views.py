@@ -1,3 +1,4 @@
+from crmapp.decorators import admin_or_superadmin_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -312,6 +313,7 @@ def amc_edit(request, pk):
 # CANCEL AMC
 # -------------------------------------------------------------------
 @login_required
+@admin_or_superadmin_required
 def amc_delete(request, pk):
     amc = get_object_or_404(AMCContract, pk=pk)
 

@@ -68,7 +68,7 @@ from .models import (
     ServiceProductItem,
 )
 
-from .decorators import role_required
+from .decorators import role_required, admin_or_superadmin_required, is_admin_or_superadmin
 from schedule_meetings.models import Meeting
 
 from django.shortcuts import render, redirect
@@ -838,7 +838,7 @@ def toggle_sales_person_status(request, pk):
 
 
 @login_required
-@role_required(['admin', 'branch_manager'])
+@admin_or_superadmin_required
 def delete_sales_person(request, pk):
     # Safely disable instead of destroying DB records so linked leads/quotations are preserved
     return toggle_sales_person_status(request, pk)
@@ -1016,7 +1016,7 @@ def toggle_branch_manager_status(request, pk):
 
 
 @login_required
-@role_required(['admin'])
+@admin_or_superadmin_required
 def delete_branch_manager(request, pk):
     return toggle_branch_manager_status(request, pk)
 
@@ -1203,7 +1203,7 @@ def toggle_operation_person_status(request, pk):
 
 
 @login_required
-@role_required(['admin', 'branch_manager'])
+@admin_or_superadmin_required
 def delete_operation_person(request, pk):
     return toggle_operation_person_status(request, pk)
 
@@ -1356,6 +1356,7 @@ def product_list(request):
         'selected_category': category_filter,
         'search_query': search_query,
         'product_count': paginator.count,
+        'is_admin': is_admin_or_superadmin(request.user),
     }
     return render(request, 'product_list.html', context)
 
@@ -1379,10 +1380,38 @@ def export_product_list_csv(request):
     return response
 
 @login_required
+@admin_or_superadmin_required
 def delete_product(request, product_id):
+    from django.db.models.deletion import ProtectedError, RestrictedError
+    from django.db import IntegrityError
+
     product = get_object_or_404(Product, product_id=product_id)
-    product.delete()
-    return redirect('/products')
+    product_name = product.product_name
+
+    # Preserve exact page/category query parameters when redirecting
+    redirect_url = request.POST.get('next') or request.GET.get('next') or request.META.get('HTTP_REFERER') or '/products/'
+
+    try:
+        product.delete()
+        messages.success(request, f"Product '{product_name}' was deleted successfully.")
+    except (ProtectedError, RestrictedError) as e:
+        messages.error(
+            request,
+            f"Cannot delete product '{product_name}' because it is linked to other records (such as Inventory, GRN items, Stock, AMC or Quotations). "
+            f"To delete it, remove or reassign those related records first."
+        )
+    except IntegrityError as e:
+        messages.error(
+            request,
+            f"Cannot delete product '{product_name}' due to database constraints: {str(e)}"
+        )
+    except Exception as e:
+        messages.error(
+            request,
+            f"Could not delete product '{product_name}': {str(e)}"
+        )
+
+    return redirect(redirect_url)
 
 
 # views.py - Add this function
@@ -1609,7 +1638,7 @@ def service_management_create(request):
                 longitude=longitude,
                 gps_location=request.POST.get('gps_location'),
                 frequency_count=request.POST.get('frequency_count', 'NOT SELECTED'),
-                payment_terms=request.POST.get('payment_terms', '100% Advance payment OR Whatever mutually Decided'),
+                payment_terms=(request.POST.get('payment_terms') or '').strip() or '100% Advance payment OR Whatever mutually Decided',
                 sales_person_name=request.POST.get('sales_person_name'),
                 sales_person_contact_no=request.POST.get('sales_person_contact_no'),
                 sales_person_email=request.POST.get('sales_person_email'),
@@ -3617,6 +3646,8 @@ def view_quotation_terms(request):
     terms = QuotationTerm.objects.all()
     return render(request, 'view_quotation_terms.html', {'terms': terms})
 
+@login_required
+@admin_or_superadmin_required
 def delete_quotation_term(request, id):
     term = get_object_or_404(QuotationTerm, id=id)
     term.delete()
@@ -3642,6 +3673,8 @@ def view_invoice_terms(request):
     terms = InvoiceTerm.objects.all()
     return render(request, 'view_invoice_terms.html', {'terms': terms})
 
+@login_required
+@admin_or_superadmin_required
 def delete_invoice_term(request, id):
     term = get_object_or_404(InvoiceTerm, id=id)
     term.delete()
@@ -5625,6 +5658,8 @@ def get_lead_details(request, lead_id):
 # Delete Section
 # Delete Customer Details
 
+@login_required
+@admin_or_superadmin_required
 def delete_customer(request , rid):
     
     if request.method == "POST":
@@ -5655,6 +5690,8 @@ def delete_customer(request , rid):
 # test 1
 from django.contrib import messages
 
+@login_required
+@admin_or_superadmin_required
 def delete_service_management(request, rid):
     if request.method == "POST":
         password = request.POST.get("password")
@@ -5675,6 +5712,8 @@ def delete_service_management(request, rid):
 
 # Delete Quotation
 
+@login_required
+@admin_or_superadmin_required
 def delete_quotation(request, rid):
     if request.method == "POST":
         password = request.POST.get("password")
@@ -5747,6 +5786,8 @@ def clone_quotation(request, rid):
 
 # Delete Invoice
 
+@login_required
+@admin_or_superadmin_required
 def delete_invoice(request , rid):
     if request.method == "POST":
         password = request.POST.get("password")
@@ -5777,6 +5818,8 @@ def delete_invoice(request , rid):
 
 # Delete Lead Management
 
+@login_required
+@admin_or_superadmin_required
 def delete_lead_management(request , rid):
     if request.method == "POST":
         password = request.POST.get("password")
@@ -6046,6 +6089,7 @@ def edit_service_records(request, rid):
                                 frequency=f_val,
                                 duration_months=12
                             )
+            service.payment_terms = (request.POST.get('payment_terms') or '').strip() or '100% Advance payment OR Whatever mutually Decided'
             service.sales_person_name = request.POST.get('sales_person_name')
             service.sales_person_contact_no = request.POST.get('sales_person_contact_no')
             service.lead_date = request.POST.get('lead_date')
@@ -6078,6 +6122,8 @@ def edit_service_records(request, rid):
     return render(request, 'edit_service_records.html', context)
 
 
+@login_required
+@admin_or_superadmin_required
 def delete_service_records(request, rid):
     service_management.objects.get(id = rid).delete()
     return redirect('display_service_management')
@@ -6085,6 +6131,8 @@ def delete_service_records(request, rid):
 # This is for the delete product inside the edit field 
 
 @csrf_exempt
+@login_required
+@admin_or_superadmin_required
 def delete_service_product(request, pid):
     if request.method == 'POST':
         try:
@@ -6133,7 +6181,7 @@ def edit_service_management(request, rid):
         upincode = request.POST.get('upincode')
         ugps_location = request.POST.get('ugps_location')
         ufrequency_count = request.POST.get('ufrequency_count')
-        upayment_terms = request.POST.get('upayment_terms')
+        upayment_terms = (request.POST.get('upayment_terms') or '').strip() or '100% Advance payment OR Whatever mutually Decided'
         usales_person_name = request.POST.get('usales_person_name')
         usales_person_contact_no = request.POST.get('usales_person_contact_no')
         udelivery_time = request.POST.get('udelivery_time')
@@ -6230,6 +6278,13 @@ def edit_quotation(request, rid):
     if request.method == "POST":
         delete_ids = request.POST.getlist('delete_product_ids[]')
         existing_products = quotation.product_details_json or []
+        if isinstance(existing_products, str):
+            try:
+                existing_products = json.loads(existing_products)
+            except Exception:
+                existing_products = []
+        elif not isinstance(existing_products, list):
+            existing_products = []
 
         updated_products = []
         existing_product_ids = []
@@ -6404,14 +6459,20 @@ def edit_quotation(request, rid):
         all_terms = ordered_terms + remaining_terms
 
         branches = Branch.objects.all()
-        branch = Branch.objects.get(id = quotation.branch_id)
+        branch = Branch.objects.filter(id=quotation.branch_id).first() if quotation.branch_id else (branches.first() if branches.exists() else None)
         
-        try:
-            product_details = json.loads(quotation.product_details_json)
-        except Exception:
+        product_details = quotation.product_details_json or []
+        if isinstance(product_details, str):
+            try:
+                product_details = json.loads(product_details)
+            except Exception:
+                product_details = []
+        elif not isinstance(product_details, list):
             product_details = []
 
-        product_ids = [item['id'] for item in product_details if 'id' in item]
+        quotation.product_details_json = product_details
+
+        product_ids = [item['id'] for item in product_details if isinstance(item, dict) and 'id' in item]
         selected_categories = list(
             Product.objects.filter(product_id__in=product_ids)
             .values_list('category', flat=True)
@@ -6422,6 +6483,261 @@ def edit_quotation(request, rid):
             'quotation': quotation,
             'all_terms': all_terms,
             'branch':branch,
+            'branches': branches,
+            'product_details': json.dumps(product_details),
+            'selected_categories': selected_categories,
+            'category_choices': Product.CATEGORY_CHOICES,
+            "sales_person_list": sales_person_list,
+            "thank_notes": list(thank_notes),
+            'products': products,
+        })
+
+
+@login_required
+def clone_quotation(request, rid):
+    quotation = get_object_or_404(quotation_management, id=rid)
+    sales_person_list = list(SalesPerson.objects.filter(is_active=True)) + list(BranchManager.objects.filter(is_active=True))
+    thank_notes = quotation_management.objects.values_list('thank_u_note', flat=True).distinct()
+    products = Product.objects.all()
+
+    if request.method == "POST":
+        delete_ids = request.POST.getlist('delete_product_ids[]')
+        existing_products = quotation.product_details_json or []
+        if isinstance(existing_products, str):
+            try:
+                existing_products = json.loads(existing_products)
+            except Exception:
+                existing_products = []
+        elif not isinstance(existing_products, list):
+            existing_products = []
+
+        updated_products = []
+        existing_product_ids = []
+
+        # Get form fields
+        customer_full_name = (request.POST.get('customer_full_name') or '').strip()
+        contact_no = (request.POST.get('contact_no') or '').strip()
+        secondary_contact_no = request.POST.get('secondary_contact_no') or None
+        customer_email = (request.POST.get('customer_email') or '').strip()
+        secondary_email = request.POST.get('secondary_email') or None
+        contact_by = request.POST.get('contact_by')
+        contact_by_no = request.POST.get('contact_by_no')
+        address = request.POST.get('address')
+        subject = request.POST.get('subject')
+        branch_id = request.POST.get('branch_id')
+        selected_term_ids = request.POST.getlist('terms_and_conditions[]')
+        ordered_term_ids_str = request.POST.get('terms_and_conditions_ordered', '')
+        custom_terms = request.POST.get('add_terms_conditions')
+        customer_type = request.POST.get('customer_type') or 'Individual'
+        or_name = request.POST.get('or_name')
+        or_contact = request.POST.get('or_contact')
+        or_email = request.POST.get('or_email')
+        thank_u_note = request.POST.get('thank_u_note')
+        quotation_date_str = request.POST.get('quotation_date')
+
+        # Customer handling
+        customer = None
+        customer_id = request.POST.get('customer_id')
+        if contact_no:
+            customer = customer_details.objects.filter(primarycontact=contact_no).first()
+        if not customer and customer_id:
+            customer = customer_details.objects.filter(id=customer_id).first()
+
+        try:
+            parsed_or_contact = int(or_contact) if or_contact not in (None, "", "None") else None
+        except (TypeError, ValueError):
+            parsed_or_contact = None
+
+        if customer:
+            if customer_full_name:
+                customer.fullname = customer_full_name
+            if contact_no:
+                customer.primarycontact = contact_no
+            if customer_email:
+                customer.primaryemail = customer_email
+            if secondary_contact_no:
+                customer.secondarycontact = secondary_contact_no
+            if secondary_email:
+                customer.secondaryemail = secondary_email
+            if customer_type:
+                customer.customer_type = customer_type
+            if or_name is not None:
+                customer.or_name = or_name
+            if parsed_or_contact is not None:
+                customer.or_contact = parsed_or_contact
+            if or_email is not None:
+                customer.or_email = or_email
+            customer.save()
+        else:
+            customer = customer_details.objects.create(
+                fullname=customer_full_name or "Unknown",
+                primarycontact=contact_no or "0000000000",
+                primaryemail=customer_email or "",
+                secondarycontact=secondary_contact_no,
+                secondaryemail=secondary_email,
+                customer_type=customer_type,
+                or_name=or_name,
+                or_contact=parsed_or_contact,
+                or_email=or_email,
+            )
+
+        # Products from form
+        for counter, product in enumerate(existing_products, start=1):
+            product_id = str(product.get('id', counter))
+            if product_id in delete_ids:
+                continue
+            existing_product_ids.append(product_id)
+
+            try:
+                price = float(request.POST.get(f'product_price_{product_id}', product.get('price', 0)))
+                quantity = float(request.POST.get(f'product_quantity_{product_id}', product.get('quantity', 0)))
+                gst = float(request.POST.get(f'product_gst_{product_id}', product.get('gst', 0)))
+                description = request.POST.get(f'product_description_{product_id}', product.get('description', ''))
+                unit = request.POST.get(f'product_unit_{product_id}', product.get('unit', ''))
+                hsn_code = request.POST.get(f'product_hsn_{product_id}', product.get('hsn_code', ''))
+            except (TypeError, ValueError):
+                continue
+
+            updated_products.append({
+                'id': counter,
+                'p_id': product.get('p_id', product_id),
+                'name': product.get('name'),
+                'price': price,
+                'quantity': quantity,
+                'hsn_code': hsn_code,
+                'gst': gst,
+                'description': description,
+                'unit': unit
+            })
+
+        # New products
+        try:
+            new_products = json.loads(request.POST.get("product_details_json", "[]"))
+        except json.JSONDecodeError:
+            new_products = []
+
+        for new_product in new_products:
+            if str(new_product.get('id')) or str(new_product.get('name')):
+                updated_products.append(new_product)
+
+        # Totals
+        try:
+            total_without_gst = float(request.POST.get("grand_total_without_gst") or request.POST.get("total_price") or 0)
+        except (ValueError, TypeError):
+            total_without_gst = 0
+
+        try:
+            total_gst = float(request.POST.get("grand_total_gst") or request.POST.get("total_gst") or 0)
+        except (ValueError, TypeError):
+            total_gst = 0
+
+        enable_gst = request.POST.get('enable_gst') == 'on'
+        gst_type = request.POST.get('gst_type', 'cgst_sgst')
+
+        if total_without_gst == 0 and updated_products:
+            total_without_gst = sum(p.get('price', 0) * p.get('quantity', 0) for p in updated_products)
+            if enable_gst:
+                total_gst = sum((p.get('price', 0) * p.get('quantity', 0) * p.get('gst', 0)) / 100.0 for p in updated_products)
+
+        if enable_gst:
+            gst_status = 'GST'
+            cgst = total_gst / 2 if gst_type == 'cgst_sgst' else 0
+            sgst = total_gst / 2 if gst_type == 'cgst_sgst' else 0
+            igst = total_gst if gst_type == 'igst' else 0
+        else:
+            gst_status = 'NON-GST'
+            cgst = sgst = igst = total_gst = 0
+
+        total_with_gst = total_without_gst + total_gst
+
+        if quotation_date_str:
+            try:
+                quotation_date = datetime.strptime(quotation_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                quotation_date = timezone.now().date()
+        else:
+            quotation_date = timezone.now().date()
+
+        ordered_term_ids = [int(tid) for tid in ordered_term_ids_str.split(',') if tid.isdigit()]
+
+        # Create brand new quotation (new quotation number automatically generated, version=1, is_latest=True)
+        new_quotation = quotation_management.objects.create(
+            customer=customer,
+            version=1,
+            is_latest=True,
+            parent_quotation=None,
+            contact_by=contact_by,
+            contact_by_no=contact_by_no,
+            address=address,
+            subject=subject,
+            branch_id=branch_id if branch_id else None,
+            quotation_date=quotation_date,
+            product_details_json=updated_products,
+            total_price=total_without_gst,
+            total_charges=total_without_gst,
+            gst_total=total_gst,
+            total_price_with_gst=total_with_gst,
+            cgst=cgst,
+            sgst=sgst,
+            igst=igst,
+            gst_status=gst_status,
+            apply_gst=enable_gst,
+            custom_terms=custom_terms,
+            or_name=or_name,
+            or_contact=parsed_or_contact,
+            or_email=or_email,
+            thank_u_note=thank_u_note,
+            terms_order=ordered_term_ids
+        )
+
+        if quotation.selected_services.exists():
+            new_quotation.selected_services.set(quotation.selected_services.all())
+
+        prod_names = [p.get('name') for p in updated_products if p.get('name')]
+        if prod_names:
+            matched_prods = Product.objects.filter(product_name__in=prod_names)
+            if matched_prods.exists():
+                new_quotation.selected_services.add(*matched_prods)
+
+        new_quotation.terms_and_conditions.set(ordered_term_ids)
+
+        messages.success(request, f"Quotation cloned successfully with new Quotation No: {new_quotation.quotation_no}!")
+        return redirect('display_quotation')
+
+    else:
+        terms = QuotationTerm.objects.all()
+        terms_order = quotation.terms_order or []
+
+        ordered_terms = [term for tid in terms_order for term in terms if term.id == tid]
+        remaining_terms = [term for term in terms if term.id not in terms_order]
+        all_terms = ordered_terms + remaining_terms
+
+        branches = Branch.objects.all()
+        branch = Branch.objects.filter(id=quotation.branch_id).first() if quotation.branch_id else (branches.first() if branches.exists() else None)
+
+        product_details = quotation.product_details_json or []
+        if isinstance(product_details, str):
+            try:
+                product_details = json.loads(product_details)
+            except Exception:
+                product_details = []
+        elif not isinstance(product_details, list):
+            product_details = []
+
+        quotation.product_details_json = product_details
+
+        product_ids = [item['id'] for item in product_details if isinstance(item, dict) and 'id' in item]
+        selected_categories = list(
+            Product.objects.filter(product_id__in=product_ids)
+            .values_list('category', flat=True)
+            .distinct()
+        )
+
+        return render(request, 'edit_quotation.html', {
+            'quotation': quotation,
+            'is_clone': True,
+            'all_terms': all_terms,
+            'branch': branch,
             'branches': branches,
             'product_details': json.dumps(product_details),
             'selected_categories': selected_categories,
@@ -7061,7 +7377,8 @@ def toggle_technician_status(request, technician_id):
     return redirect('display_technician')
 
 
-@role_required(['admin', 'sales', 'branch_manager', 'operation_person'])
+@login_required
+@admin_or_superadmin_required
 def delete_technician(request, technician_id):
     return toggle_technician_status(request, technician_id)
 
@@ -7632,6 +7949,8 @@ def edit_work(request, work_id):
     
     return render(request, 'edit_work.html', {'work_allocation': work_allocation})
 
+@login_required
+@admin_or_superadmin_required
 def delete_work(request, work_id):
     if request.method == 'POST':
         work_allocation = get_object_or_404(WorkAllocation, id=work_id)
@@ -8384,6 +8703,8 @@ def branch_list(request):
     branches = Branch.objects.all().order_by('-created_at')
     return render(request, 'branch_list.html', {'branches': branches})
 
+@login_required
+@admin_or_superadmin_required
 def delete_branch(request, branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
     branch.delete()
@@ -8621,6 +8942,7 @@ def edit_bank_account(request, account_id):
 
 
 @login_required
+@admin_or_superadmin_required
 @require_POST
 def delete_bank_account(request, account_id):
     bank_account = get_object_or_404(BankAccounts, id=account_id)
@@ -9058,9 +9380,15 @@ def tax_invoice_pdf(request, id):
     return response
 
 
+@login_required
+@admin_or_superadmin_required
 def delete_invoice(request, invoice_id):
     invoice = get_object_or_404(TaxInvoice, id = invoice_id)
-    invoice.delete()
+    try:
+        invoice.delete()
+        messages.success(request, 'Invoice deleted successfully.')
+    except Exception as e:
+        messages.error(request, f'Could not delete invoice: {str(e)}')
     return redirect('/display_tax_invoice')
 
 
@@ -10264,13 +10592,20 @@ def add_product_items(request):
 
 from django.shortcuts import get_object_or_404
 
+@login_required
+@admin_or_superadmin_required
 def delete_product_item(request, item_id):
     item = get_object_or_404(ProductRequiredItem, id=item_id)
 
     product_id = item.product_id
     category = item.product.category
+    item_name = item.item_name
 
-    item.delete()
+    try:
+        item.delete()
+        messages.success(request, f"Item '{item_name}' was deleted successfully.")
+    except Exception as e:
+        messages.error(request, f"Could not delete item '{item_name}': {str(e)}")
 
     return redirect(f"/product-items?category={category}&product={product_id}")   
 
@@ -10824,6 +11159,28 @@ def calculate_work_order_dates(service):
     return start_date, end_date, quote_date
 
 
+def parse_payment_terms_to_list(raw_text):
+    if not raw_text:
+        return []
+    import re
+    lines = []
+    raw_lines = [l.strip() for l in str(raw_text).splitlines() if l.strip()]
+    for line in raw_lines:
+        sub_points = re.split(r'(?<=\S)(?:\s+(?=\d+[\.\)])|(?=\s+\d+[\.\)])|(?=\s+[\-\*•]\s+)|(?<=[a-zA-Z0-9])\s*[\-\*•]\s+)', line)
+        expanded = []
+        for sp in sub_points:
+            parts = re.split(r'(?:^|\s+)(?=\d+[\.\)])', sp)
+            expanded.extend(parts)
+        for sp in expanded:
+            sp = sp.strip()
+            if sp:
+                cleaned = re.sub(r'^(?:\d+[\.\)]|\-|\*|•)\s*', '', sp).strip()
+                cleaned = cleaned.rstrip(' -').strip()
+                if cleaned:
+                    lines.append(cleaned)
+    return lines
+
+
 def work_order_pdf(request, service_id):
     service = get_object_or_404(
         service_management,
@@ -10961,6 +11318,7 @@ def work_order_pdf(request, service_id):
     # 4. Dates & Payment Terms
     start_date, end_date, quote_date = calculate_work_order_dates(service)
     payment_terms_val = service.payment_terms or "100% Advance payment OR Whatever mutually Decided"
+    payment_terms_list = parse_payment_terms_to_list(payment_terms_val)
 
     # Set attributes on service for template compatibility
     service.end_date = end_date
@@ -10978,6 +11336,7 @@ def work_order_pdf(request, service_id):
         "start_date": start_date,
         "end_date": end_date,
         "payment_terms": payment_terms_val,
+        "payment_terms_list": payment_terms_list,
         "subtotal": calc_subtotal,
         "subtotal_formatted": indian_currency(calc_subtotal),
         "apply_gst": apply_gst,

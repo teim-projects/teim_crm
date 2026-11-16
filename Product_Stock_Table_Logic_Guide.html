@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEIM CRM - Stock Table Logic & Calculation Guide</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+  body {
+    background-color: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+    padding-bottom: 50px;
+  }
+  .header-banner {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    color: white;
+    padding: 30px 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  }
+  .card-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .table-preview-img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 2px solid #cbd5e1;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  }
+  .col-pill {
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+  .badge-open { background: #e0f2fe; color: #0369a1; }
+  .badge-rcpt { background: #dcfce7; color: #15803d; }
+  .badge-sent { background: #ffedd5; color: #c2410c; }
+  .badge-appr { background: #f3e8ff; color: #7e22ce; }
+  .badge-resv { background: #fef3c7; color: #b45309; }
+  .badge-clos { background: #e2e8f0; color: #334155; }
+  .badge-avail { background: #bbf7d0; color: #166534; font-size: 0.95rem; }
+  .formula-badge {
+    background: #f8fafc;
+    border: 1px dashed #94a3b8;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-weight: 600;
+    color: #0f172a;
+    display: inline-block;
+  }
+  .calc-step {
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    min-width: 110px;
+  }
+  .calc-step .number {
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+  .calc-step .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #64748b;
+  }
+  .operator {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #64748b;
+    align-self: center;
+    padding: 0 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container py-4">
+
+  <!-- BANNER -->
+  <div class="header-banner text-center text-md-start">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-box-seam-fill me-2"></i>TEIM CRM — Stock Table Logic Guide</h2>
+        <p class="mb-0 text-white-50">इन्वेंटरी टेबल (Products Stock List) के सभी कॉलम्स का आसान व संपूर्ण विवरण</p>
+      </div>
+      <div class="mt-3 mt-md-0">
+        <button onclick="window.print()" class="btn btn-light btn-sm fw-bold shadow-sm">
+          <i class="bi bi-printer-fill me-1"></i> Print / Save as PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREENSHOT CARD -->
+  <div class="card-box text-center">
+    <h5 class="fw-bold text-primary mb-3 text-start"><i class="bi bi-image me-2"></i>आपकी स्क्रीन का टेबल हेडर (Screenshot):</h5>
+    <img src="C:/Users/ASUS/.gemini/antigravity/brain/74380754-02e2-4003-898f-201e5a484351/.user_uploaded/media_1793786289526_dd356a79.png" class="table-preview-img img-fluid" alt="Stock Table Screenshot">
+  </div>
+
+  <!-- QUICK SUMMARY TABLE -->
+  <div class="card-box">
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-table me-2"></i>1. सभी कॉलम्स का त्वरित सारांश (Quick Summary Table)</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>कॉलम नाम</th>
+            <th>हिंदी अर्थ</th>
+            <th>यह क्या है? (सरल भाषा में)</th>
+            <th>कैलकुलेशन सूत्र (Formula)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="col-pill bg-light border">SR</span></td>
+            <td>क्रम संख्या</td>
+            <td>टेबल में प्रोडक्ट का सीरियल नंबर (1, 2, 3...)</td>
+            <td>Auto</td>
+          </tr>
+          <tr>
+            <td><span class="col-pill bg-light border">PRODUCT</span></td>
+            <td>उत्पाद नाम</td>
+            <td>केमिकल या सर्विस प्रोडक्ट का नाम (उदा. Cockroach Management)</td>
+            <td>Product Name</td>
+          </tr>
+          <tr>
+            <td><span class="col-pill badge-open">OPENING</span></td>
+            <td>शुरुआती स्टॉक</td>
+            <td>महीने की 1 तारीख को सुबह गोदाम में कितना माल था (पिछला बचा हुआ)।</td>
+            <td><span class="formula-badge">पिछला Inward - पिछला Outward</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-pill badge-rcpt">RECEIPT</span></td>
+            <td>आया नया माल</td>
+            <td>उस महीने में वेंडर से खरीदा गया नया माल (GRN) या दूसरी ब्रांच से आया माल (MTN-IN)।</td>
+            <td><span class="formula-badge">GRN + MTN_IN</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-pill badge-sent">SENT</span></td>
+            <td>भेजा गया माल</td>
+            <td>इस गोदाम से दूसरी ब्रांच या साइट पर ट्रांसफर करके भेजा गया माल।</td>
+            <td><span class="formula-badge">MTN_OUT (Approved)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-pill badge-appr">APPROVED</span></td>
+            <td>सर्विस में उपयोग</td>
+            <td>कस्टमर के यहाँ सर्विस करने में टेक्निशियन द्वारा खर्च हुआ कुल केमिकल।</td>
+            <td><span class="formula-badge">Service Used - Return</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-pill badge-resv">RESERVED</span></td>
+            <td>रोका हुआ माल</td>
+            <td>जो माल अभी गोदाम में ही रखा है, पर किसी ने उसका Draft MTN बना रखा है (Hold)।</td>
+            <td><span class="formula-badge">Total DRAFT MTN Qty</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-pill badge-clos">CLOSING</span></td>
+            <td>गोदाम में कुल माल</td>
+            <td>आज की तारीख में गोदाम के रैक पर फिजिकली मौजूद कुल माल।</td>
+            <td><span class="formula-badge">Opening + Receipt - Sent - Approved</span></td>
+          </tr>
+          <tr class="table-success">
+            <td><span class="col-pill badge-avail">AVAILABLE</span></td>
+            <td><strong>उपयोग हेतु उपलब्ध</strong></td>
+            <td><strong>फ्री स्टॉक</strong> जिसे आप आज नई सर्विस या ट्रांसफर में दे सकते हैं।</td>
+            <td><span class="formula-badge bg-white text-success fw-bold">Closing - Reserved</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REAL EXAMPLE CARD -->
+  <div class="card-box bg-light border-success">
+    <h5 class="fw-bold text-success mb-3"><i class="bi bi-calculator-fill me-2"></i>2. आसान व्यावहारिक उदाहरण (Real-World Practical Example)</h5>
+    <p class="mb-3">मान लीजिए आपके पास <strong>Cockroach Gel (50g)</strong> है:</p>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-center mb-3">
+      <div class="calc-step border-primary">
+        <div class="number text-primary">100</div>
+        <div class="label">Opening</div>
+      </div>
+      <div class="operator">+</div>
+      <div class="calc-step border-success">
+        <div class="number text-success">50</div>
+        <div class="label">Receipt (GRN)</div>
+      </div>
+      <div class="operator">-</div>
+      <div class="calc-step border-warning">
+        <div class="number text-warning">20</div>
+        <div class="label">Sent (MTN)</div>
+      </div>
+      <div class="operator">-</div>
+      <div class="calc-step border-danger">
+        <div class="number text-danger">10</div>
+        <div class="label">Approved (Service)</div>
+      </div>
+      <div class="operator">=</div>
+      <div class="calc-step border-dark bg-white shadow-sm">
+        <div class="number text-dark">120</div>
+        <div class="label fw-bold">Closing Stock</div>
+      </div>
+      <div class="operator">-</div>
+      <div class="calc-step border-secondary">
+        <div class="number text-secondary">5</div>
+        <div class="label">Reserved (Draft)</div>
+      </div>
+      <div class="operator">=</div>
+      <div class="calc-step border-success bg-success text-white shadow">
+        <div class="number text-white">115</div>
+        <div class="label text-white-50">AVAILABLE</div>
+      </div>
+    </div>
+
+    <div class="alert alert-success mb-0">
+      <strong>सरल निष्कर्ष:</strong><br>
+      • आपके गोदाम में फिजिकली <strong>120 बोतलें</strong> रखी हैं (Closing)।<br>
+      • लेकिन <strong>5 बोतलें</strong> एक Draft MTN के लिए रोक (Hold) ली गई हैं (Reserved)।<br>
+      • इसलिए आप नई सर्विस या ट्रांसफर के लिए अधिकतम <strong>115 बोतलें</strong> ही जारी कर सकते हैं (Available)।
+    </div>
+  </div>
+
+  <!-- IMPORTANT RULES -->
+  <div class="card-box">
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-shield-check me-2"></i>3. ऑपरेशन्स के महत्वपूर्ण नियम (Golden Rules)</h5>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item d-flex align-items-start">
+        <i class="bi bi-check-circle-fill text-success fs-5 me-3 mt-1"></i>
+        <div>
+          <strong>Available Stock से ज्यादा माल कभी नहीं कटेगा:</strong><br>
+          यदि किसी प्रोडक्ट का Available स्टॉक 115 है, तो सिस्टम 116 का ट्रांसफर या सर्विस कभी नहीं बनाने देगा।
+        </div>
+      </li>
+      <li class="list-group-item d-flex align-items-start">
+        <i class="bi bi-check-circle-fill text-success fs-5 me-3 mt-1"></i>
+        <div>
+          <strong>Draft MTN को पेंडिंग न छोड़ें:</strong><br>
+          अगर कोई Draft MTN गलती से बना है और माल नहीं भेजना है, तो उसे <strong>Delete / Cancel</strong> कर दें। ऐसा करते ही उसका 5 रुका हुआ स्टॉक तुरंत <strong>Available</strong> में वापस जुड़ जाएगा।
+        </div>
+      </li>
+      <li class="list-group-item d-flex align-items-start">
+        <i class="bi bi-check-circle-fill text-success fs-5 me-3 mt-1"></i>
+        <div>
+          <strong>Physical Stock Audit = Closing:</strong><br>
+          जब भी महीने के अंत में गोदाम में केमिकल की वास्तविक गिनती (Physical Audit) की जाए, तो गिनती को हमेशा <strong>Closing</strong> कॉलम से मिलाएँ।
+        </div>
+      </li>
+      <li class="list-group-item d-flex align-items-start">
+        <i class="bi bi-check-circle-fill text-success fs-5 me-3 mt-1"></i>
+        <div>
+          <strong>Only Admin & Super Admin Can Delete:</strong><br>
+          सिस्टम में किसी भी स्टॉक, सर्विस, MTN या प्रोडक्ट को डिलीट करने का अधिकार केवल Admin और Superadmin के पास है।
+        </div>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>

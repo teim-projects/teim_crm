@@ -643,12 +643,13 @@ class MTNItem(models.Model):
     def clean(self):
         # Only validate during creation or if it's still a draft
         if self.mtn.status == 'DRAFT':
-            stock = CurrentStock.objects.filter(
-                product=self.product,
-                batch=self.batch,
-                location_type=self.mtn.source_type,
-                location_id=self.mtn.source_id
-            ).first()
+            from .utils import get_or_sync_current_stock
+            stock = get_or_sync_current_stock(
+                self.product_id,
+                self.batch_id,
+                self.mtn.source_type,
+                self.mtn.source_id
+            )
 
             # available_qty = closing_qty - reserved_qty
             available = stock.available_qty if stock else Decimal('0')
@@ -724,7 +725,7 @@ class CurrentStock(models.Model):
             (self.in_qty or Decimal('0')) -
             (self.out_qty or Decimal('0'))
         )
-        self.save(update_fields=['closing_qty', 'last_updated'])
+        self.save(update_fields=['opening_qty', 'in_qty', 'out_qty', 'reserved_qty', 'closing_qty', 'last_updated'])
 
     def __str__(self):
         return f"{self.product} / {self.batch or 'NO-BATCH'} @ {self.location_type}:{self.location_id} -> {self.closing_qty}"
