@@ -56,27 +56,13 @@ def auto_month_snapshot():
         # Receipt
         receipt = stock.in_qty or Decimal("0.000")
 
-        # Approved Qty
-        approved = (
-            StockLedger.objects.filter(
-                product=stock.product,
-                location_type=stock.location_type,
-                location_id=stock.location_id,
-                transaction_type="SERVICE_OUT"
-            )
-            .aggregate(total=Sum("out_qty"))
-            .get("total")
-            or Decimal("0.000")
-        )
-
-        # Sent (Out Qty net of Approved)
-        total_out = stock.out_qty or Decimal("0.000")
-        sent = max(Decimal("0.000"), total_out - approved)
+        # Sent (Out Qty)
+        sent = stock.out_qty or Decimal("0.000")
 
         # Closing Formula
         closing = max(
             Decimal("0.000"),
-            opening + receipt - sent - approved
+            opening + receipt - sent
         )
 
         MonthlyStockSnapshot.objects.create(
@@ -90,6 +76,5 @@ def auto_month_snapshot():
             opening_qty=opening,
             receipt_qty=receipt,
             sent_qty=sent,
-            approved_qty=approved,
             closing_qty=closing
         )

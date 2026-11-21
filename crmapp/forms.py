@@ -37,9 +37,10 @@ class AddProductForm(forms.ModelForm):
         fields = [
             'product_name',
             'hsn_code',
-            'description',      # ✅ ADD
-            'standard_unit',    # ✅ ADD
-            'category'
+            'description',
+            'standard_unit',
+            'category',
+            'rate'
         ]
 
         labels = {
@@ -47,7 +48,8 @@ class AddProductForm(forms.ModelForm):
             'hsn_code': 'HSN Code',
             'description': 'Product Description',
             'standard_unit': 'Standard Unit',
-            'category': 'Select Category'
+            'category': 'Select Category',
+            'rate': 'Rate (₹)'
         }
 
         widgets = {
@@ -62,9 +64,8 @@ class AddProductForm(forms.ModelForm):
                 'class': 'form-control standard-unit-select',
                 'placeholder': 'Type unit (Kg, Litre, Box, etc)'
             }),
-
-
             'category': forms.Select(attrs={'class': 'form-control'}),
+            'rate': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Rate per unit'}),
         }
 
 class UpdateProductForm(forms.ModelForm):
@@ -73,9 +74,10 @@ class UpdateProductForm(forms.ModelForm):
         fields = [
             'product_name',
             'hsn_code',
-            'description',      # ✅ ADD
-            'standard_unit',    # ✅ ADD
-            'category'
+            'description',
+            'standard_unit',
+            'category',
+            'rate'
         ]
 
         labels = {
@@ -83,7 +85,8 @@ class UpdateProductForm(forms.ModelForm):
             'hsn_code': 'HSN Code',
             'description': 'Product Description',
             'standard_unit': 'Standard Unit',
-            'category': 'Select Category'
+            'category': 'Select Category',
+            'rate': 'Rate (₹)'
         }
 
         widgets = {
@@ -97,9 +100,8 @@ class UpdateProductForm(forms.ModelForm):
                 'class': 'form-control standard-unit-select',
                 'placeholder': 'Type unit (Kg, Litre, Box, etc)'
             }),
-
-
             'category': forms.Select(attrs={'class': 'form-control'}),
+            'rate': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Rate per unit'}),
         }
 
 

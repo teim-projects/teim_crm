@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 from django.db import models
 import random
 from django.contrib.auth.models import User
@@ -180,6 +181,14 @@ class Product(models.Model):
         default="NULL"
     )
 
+    rate = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        blank=True,
+        null=True
+    )
+
       # ✅ ADD THIS BLOCK
     class Meta:
         ordering = ["product_name"]   # A → Z sorting
@@ -189,17 +198,6 @@ class Product(models.Model):
 
     def delete_product(self):
         self.delete()
-
-
-
-# product item
-
-class ProductRequiredItem(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='required_items')
-    item_name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return f"{self.product.product_name} - {self.item_name}"
 
 
 
@@ -687,16 +685,6 @@ class ServiceProduct(models.Model):
         return f"{self.product.product_name} ({self.quantity} @ ₹{self.price} + GST {self.gst_percentage}%)"
 
 
-
-# models.py - Add this new model
-class ServiceProductItem(models.Model):
-    service_product = models.ForeignKey('ServiceProduct', on_delete=models.CASCADE, related_name='selected_items')
-    required_item = models.ForeignKey('ProductRequiredItem', on_delete=models.CASCADE)
-    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1.0)
-    notes = models.TextField(blank=True, null=True)
-    
-    def __str__(self):
-        return f"{self.service_product.product.product_name} - {self.required_item.item_name}"
 
 from django.db import models
 from django.utils import timezone
@@ -1195,12 +1183,6 @@ class MessageTemplates(models.Model):
     
 
 
-from django.shortcuts import render
-from .models import service_management
-
-def bharat_page(request):
-    services = service_management.objects.all()
-    return render(request, 'bharat.html', {'services': services})
 
 
 

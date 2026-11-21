@@ -2,7 +2,7 @@ from crmapp.decorators import admin_or_superadmin_required
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
-from crmapp.models import UserProfile, Product,ProductRequiredItem
+from crmapp.models import UserProfile, Product
 from crmapp.models import UserProfile
 from .utils import get_destination_object
 
@@ -22,7 +22,7 @@ try:
 except Exception:
     pisa = None
 from django.http import HttpResponse
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Sum
 
 from django.db import transaction
@@ -391,18 +391,6 @@ def site_delete(request, id):
 
 
 
-from django.http import JsonResponse
-from crmapp.models import ProductRequiredItem
-
-def get_required_items(request, product_id):
-    items = ProductRequiredItem.objects.filter(product_id=product_id)
-
-    data = [
-        {"id": i.id, "name": i.item_name}
-        for i in items
-    ]
-
-    return JsonResponse({"items": data})
 # ------------------ Purchase order section --------------- 
 @login_required
 @role_required(['admin',"HO_operation","HO_manager"])
@@ -424,25 +412,6 @@ def purchase_order_create(request):
             for item in items:
                 item.purchase_order = po
                 item.save()
-
-            sub_products = request.POST.getlist("sub_product")
-            sub_item_ids = request.POST.getlist("sub_item_id")
-            sub_qtys = request.POST.getlist("sub_qty")
-            sub_rates = request.POST.getlist("sub_rate")
-            sub_units = request.POST.getlist("sub_unit")
-            sub_gsts = request.POST.getlist("sub_gst")
-            
-            for i in range(len(sub_item_ids)):
-                if sub_item_ids[i]:
-                    PurchaseOrderSubItem.objects.create(
-                        purchase_order=po,
-                        product_id=sub_products[i] or None,
-                        sub_item_id=sub_item_ids[i],
-                        quantity=sub_qtys[i] or 0,
-                        rate=sub_rates[i] or 0,
-                        unit=sub_units[i],
-                        gst_rate=sub_gsts[i] or 0,
-                    )              
 
             return redirect("purchase_order_list")
 
@@ -530,8 +499,6 @@ def purchase_order_edit(request, id):
     po = get_object_or_404(PurchaseOrder, id=id)
     dest_obj = get_destination_object(po.destination_type, po.destination_id)
     dest_label = str(dest_obj) if dest_obj else ""
-# GET existing sub items
-    sub_items = po.sub_items.all()
     
     if request.method == "POST":
         form = PurchaseOrderForm(request.POST, request.FILES, instance=po)
@@ -540,29 +507,6 @@ def purchase_order_edit(request, id):
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-    
-            # 🔥 DELETE OLD SUB ITEMS
-            po.sub_items.all().delete()
-    
-            # 🔥 SAVE NEW SUB ITEMS (same as create)
-            sub_products = request.POST.getlist("sub_product")
-            sub_item_ids = request.POST.getlist("sub_item_id")
-            sub_qtys = request.POST.getlist("sub_qty")
-            sub_rates = request.POST.getlist("sub_rate")
-            sub_units = request.POST.getlist("sub_unit")
-            sub_gsts = request.POST.getlist("sub_gst")
-    
-            for i in range(len(sub_item_ids)):
-                if sub_item_ids[i]:
-                    PurchaseOrderSubItem.objects.create(
-                        purchase_order=po,
-                        product_id=sub_products[i] or None,
-                        sub_item_id=sub_item_ids[i],
-                        quantity=sub_qtys[i] or 0,
-                        rate=sub_rates[i] or 0,
-                        unit=sub_units[i],
-                        gst_rate=sub_gsts[i] or 0,
-                    )
     
             return redirect("purchase_order_list")
         
@@ -583,7 +527,6 @@ def purchase_order_edit(request, id):
         "form": form,
         "formset": formset,
         "po": po,
-        "sub_items": sub_items,
         "products": Product.objects.all(),
         "destination_initial": {"id": po.destination_id, "label": dest_label}
     })
@@ -652,9 +595,6 @@ def purchase_order_pdf(request, id):
 def grn_create(request, po_id):
     po = get_object_or_404(PurchaseOrder, id=po_id)
     po_items = po.items.all()
-    
-    # 🔥 ADD THIS
-    po_sub_items = po.sub_items.all()
 
     # compute remaining for each PO item (already-received across previous GRNs)
     remaining_by_item = {}
@@ -669,17 +609,6 @@ def grn_create(request, po_id):
     for pi in po_items:
         pi.remaining = remaining_by_item.get(pi.id, Decimal("0.00"))
 
-    # 🔥 SUB ITEMS REMAINING
-    for si in po_sub_items:
-        s = GoodsReceiveNoteSubItem.objects.filter(po_sub_item=si).aggregate(total=Sum("received_qty"))["total"]
-        already = Decimal(s or 0)
-        remaining = Decimal(si.quantity or 0) - already
-    
-        if remaining < 0:
-            remaining = Decimal("0.00")
-    
-        si.remaining = remaining        
-
     # destination display values
     po_dest_type = getattr(po, "destination_type", None)
     po_dest_id = getattr(po, "destination_id", None)
@@ -691,36 +620,7 @@ def grn_create(request, po_id):
         if form.is_valid():
             errors = []
             item_inputs = []
-            sub_inputs = []
 
-            for si in po_sub_items:
-                raw = request.POST.get(f"sub_received_qty_{si.id}", "").strip()
-            
-                if raw in ("", None):
-                    continue
-            
-                try:
-                    received_qty = Decimal(raw)
-                except Exception:
-                    errors.append(f"Invalid quantity for {si.sub_item.item_name}")
-                    continue
-            
-                if received_qty <= 0:
-                    continue
-            
-                if received_qty > si.remaining:
-                    errors.append(f"{si.sub_item.item_name} exceeds remaining ({si.remaining})")
-                    continue
-            
-                sub_inputs.append({
-                    "si": si,
-                    "qty": received_qty,
-                    "batch": request.POST.get(f"sub_batch_{si.id}"),
-                    "mfg": request.POST.get(f"sub_mfg_{si.id}"),
-                    "exp": request.POST.get(f"sub_exp_{si.id}"),
-                    "remarks": request.POST.get(f"sub_remarks_{si.id}")
-                })            
-            
             # gather per-item inputs first for validations
             for pi in po_items:
                 raw = request.POST.get(f"received_qty_{pi.id}", "").strip()
@@ -815,23 +715,9 @@ def grn_create(request, po_id):
 
                             gri.save()
                             items_created += 1
-                        # 🔥 SAVE SUB ITEMS
-                        for sub in sub_inputs:
-                            si = sub["si"]
-                        
-                            GoodsReceiveNoteSubItem.objects.create(
-                                grn=grn,
-                                po_sub_item=si,
-                                sub_item=si.sub_item,
-                                ordered_qty=si.quantity,
-                                received_qty=sub["qty"],
-                                batch_no=sub["batch"],
-                                mfg_date=sub["mfg"] or None,
-                                exp_date=sub["exp"] or None,
-                                remarks=sub["remarks"]
-                            )
-                        if items_created == 0 and len(sub_inputs) == 0:
-                            raise ValueError("No GRN items or sub-items were created.")
+
+                        if items_created == 0:
+                            raise ValueError("No GRN items were created.")
 
                         # Recompute PO item remaining from DB to decide PO status
                         all_done = True
@@ -843,8 +729,7 @@ def grn_create(request, po_id):
                                 all_done = False
                                 break
 
-                        # 🔥 PROCESS SUB ITEMS
-                        
+                                                
 
 
                         po.status = "CLOSED" if all_done else "PARTIALLY_RECEIVED"
@@ -866,7 +751,6 @@ def grn_create(request, po_id):
         "form": form,
         "po": po,
         "po_items": po_items,
-        "po_sub_items": po_sub_items,
         "destination_initial": {"id": po_dest_id, "label": dest_label},
         "remaining_by_item": remaining_by_item,
     })
@@ -940,7 +824,6 @@ def grn_edit(request, pk):
     grn = get_object_or_404(GoodsReceiveNote, pk=pk)
 
     items = grn.items.select_related("batch", "product")
-    sub_items = grn.sub_items.select_related("sub_item")   # 🔥 ADD THIS
 
     if request.method == "POST":
         try:
@@ -964,21 +847,6 @@ def grn_edit(request, pk):
 
                     batch.save(update_fields=["manufacturing_date", "expiry_date"])
 
-
-                # 🔥 UPDATE SUB ITEMS
-                for sub in sub_items:
-                    mfg_str = request.POST.get(f"sub_mfg_{sub.id}")
-                    exp_str = request.POST.get(f"sub_exp_{sub.id}")
-
-                    if mfg_str:
-                        sub.mfg_date = datetime.date.fromisoformat(mfg_str)
-
-                    if exp_str:
-                        sub.exp_date = datetime.date.fromisoformat(exp_str)
-
-                    sub.save(update_fields=["mfg_date", "exp_date"])
-
-
                 messages.success(request, "GRN updated successfully.")
                 return redirect("grn_list")
 
@@ -988,7 +856,6 @@ def grn_edit(request, pk):
     return render(request, "inventory/grn_edit.html", {
         "grn": grn,
         "items": items,
-        "sub_items": sub_items,   # 🔥 ADD THIS
     })
 
 @login_required
@@ -1002,16 +869,9 @@ def grn_detail(request, grn_id):
         "batch__batch"
     )
 
-    # ✅ FIXED
-    sub_items = grn.sub_items.select_related(
-        "sub_item",
-        "po_sub_item"
-    )
-
     return render(request, "inventory/grn_detail.html", {
         "grn": grn,
         "items": items,
-        "sub_items": sub_items
     })
 
 
@@ -1036,27 +896,19 @@ def _calculate_product_monthly_stock(p, location_type, location_id, year_str, mo
         if (batch_no or expiry_from or expiry_to) and hasattr(p, 'batch_in_qty'):
             in_qty = Decimal(str(getattr(p, 'batch_in_qty', 0) or 0))
             out_qty = Decimal('0')
-            approved = Decimal('0')
-            reserved = Decimal('0')
         else:
             in_qty = Decimal(str(getattr(p, 'in_qty', 0) or 0))
             out_qty = Decimal(str(getattr(p, 'out_qty', 0) or 0))
-            approved = Decimal(str(getattr(p, 'approved_qty', 0) or 0))
-            reserved = Decimal(str(getattr(p, 'reserved_qty', 0) or 0))
 
         opening = Decimal("0.000")
-        sent = max(Decimal('0.000'), out_qty - approved)
-        closing = max(Decimal('0.000'), opening + in_qty - sent - approved)
-        available = max(Decimal('0.000'), closing - reserved)
+        sent = max(Decimal('0.000'), out_qty)
+        closing = max(Decimal('0.000'), opening + in_qty - sent)
 
         return {
             "opening": opening,
             "receipt": in_qty,
             "sent": sent,
-            "approved": approved,
-            "reserved": reserved,
             "closing": closing,
-            "available": available,
         }
 
     try:
@@ -1106,39 +958,60 @@ def _calculate_product_monthly_stock(p, location_type, location_id, year_str, mo
     # 2. MONTH TRANSACTIONS
     month_ledger = ledger_base.filter(transaction_date__gte=start_date, transaction_date__lte=end_date)
     month_in = month_ledger.aggregate(total=Sum('in_qty'))['total'] or Decimal('0.000')
-
-    srv_out = month_ledger.filter(transaction_type='SERVICE_OUT').aggregate(total=Sum('out_qty'))['total'] or Decimal('0.000')
-    srv_ret = month_ledger.filter(transaction_type__in=['SERVICE_RETURN', 'SERVICE_REVERSAL']).aggregate(total=Sum('in_qty'))['total'] or Decimal('0.000')
-    approved = max(Decimal('0.000'), Decimal(str(srv_out)) - Decimal(str(srv_ret)))
-
-    sent_out = month_ledger.exclude(transaction_type__in=['SERVICE_OUT', 'SERVICE_RETURN', 'SERVICE_REVERSAL']).aggregate(total=Sum('out_qty'))['total'] or Decimal('0.000')
-    sent = max(Decimal('0.000'), Decimal(str(sent_out)))
+    month_out = month_ledger.aggregate(total=Sum('out_qty'))['total'] or Decimal('0.000')
 
     receipt = Decimal(str(month_in))
-    reserved = Decimal(str(getattr(p, 'reserved_qty', 0) or 0))
+    sent = max(Decimal('0.000'), Decimal(str(month_out)))
 
     # Fallback for current month if ledger had no records yet (e.g. legacy aggregate ProductStock)
-    if opening == 0 and receipt == 0 and sent == 0 and approved == 0:
+    if opening == 0 and receipt == 0 and sent == 0:
         cum_in = Decimal(str(getattr(p, 'in_qty', 0) or 0))
         cum_out = Decimal(str(getattr(p, 'out_qty', 0) or 0))
-        cum_app = Decimal(str(getattr(p, 'approved_qty', 0) or 0))
         if req_year == now.year and req_month == now.month:
             receipt = cum_in
-            approved = cum_app
-            sent = max(Decimal('0.000'), cum_out - approved)
+            sent = cum_out
 
-    closing = max(Decimal('0.000'), opening + receipt - sent - approved)
-    available = max(Decimal('0.000'), closing - reserved)
+    closing = max(Decimal('0.000'), opening + receipt - sent)
 
     return {
         "opening": opening,
         "receipt": receipt,
         "sent": sent,
-        "approved": approved,
-        "reserved": reserved,
         "closing": closing,
-        "available": available,
     }
+
+
+def _get_product_rates_map(product_ids):
+    """
+    Get the unit rate for each product:
+    1. Check latest PurchaseOrderItem (cost rate from PO)
+    2. Check Product.rate (if set on the Product model)
+    3. Default to Decimal('0.00')
+    """
+    rates_map = {}
+    if not product_ids:
+        return rates_map
+
+    # 1. Latest PurchaseOrderItem rate
+    po_items = (
+        PurchaseOrderItem.objects.filter(product_id__in=product_ids)
+        .exclude(rate__isnull=True)
+        .exclude(rate=0)
+        .order_by('-id')
+    )
+    for poi in po_items:
+        if poi.product_id not in rates_map:
+            rates_map[poi.product_id] = Decimal(str(poi.rate or 0))
+
+    # 2. Check Product model's rate field
+    missing_ids = [pid for pid in product_ids if pid not in rates_map]
+    if missing_ids:
+        for p in Product.objects.filter(pk__in=missing_ids):
+            p_rate = getattr(p, 'rate', None)
+            if p_rate:
+                rates_map[p.pk] = Decimal(str(p_rate))
+
+    return rates_map
 
 
 @login_required
@@ -1214,7 +1087,7 @@ def products_stock_list_view(request):
 
     qs = qs.annotate(
         closing_qty=ExpressionWrapper(
-            F('in_qty') - F('out_qty') - F('reserved_qty'),
+            F('in_qty') - F('out_qty'),
             output_field=DecimalField(max_digits=15, decimal_places=3, null=True)
         )
     )
@@ -1225,10 +1098,10 @@ def products_stock_list_view(request):
         qs = qs.order_by('-product_name')          # Z → A
     elif sort == 'asc':
         qs = qs.order_by(Lower('product_name'))    # A → Z
-    elif sort == 'avail_desc':
-        qs = qs.order_by('-closing_qty')           # Highest available first
-    elif sort == 'avail_asc':
-        qs = qs.order_by('closing_qty')            # Lowest available first
+    elif sort in ('closing_desc', 'avail_desc'):
+        qs = qs.order_by('-closing_qty')           # Highest closing first
+    elif sort in ('closing_asc', 'avail_asc'):
+        qs = qs.order_by('closing_qty')            # Lowest closing first
     else:
         qs = qs.order_by(Lower('product_name'))    # default A → Z (same as before)
 
@@ -1239,9 +1112,22 @@ def products_stock_list_view(request):
     products_page = paginator.get_page(page)
 
     # -----------------------------
-    # PREPARE TABLE DATA (MONTH-AWARE OPENING/CLOSING)
+    # PREPARE TABLE DATA (MONTH-AWARE OPENING/CLOSING + RATE & AMOUNTS)
     # -----------------------------
+    product_ids = [p.pk for p in products_page]
+    rates_map = _get_product_rates_map(product_ids)
+
     rows = []
+    page_totals = {
+        'opening_qty': Decimal('0.000'),
+        'receipt_qty': Decimal('0.000'),
+        'sent_qty': Decimal('0.000'),
+        'closing_qty': Decimal('0.000'),
+        'opening_amount': Decimal('0.00'),
+        'receipt_amount': Decimal('0.00'),
+        'sent_amount': Decimal('0.00'),
+        'closing_amount': Decimal('0.00'),
+    }
 
     for p in products_page:
         stock_data = _calculate_product_monthly_stock(
@@ -1249,16 +1135,39 @@ def products_stock_list_view(request):
             batch_no=batch_no, expiry_from=expiry_from, expiry_to=expiry_to
         )
 
+        op_qty = stock_data['opening']
+        rc_qty = stock_data['receipt']
+        st_qty = stock_data['sent']
+        cl_qty = stock_data['closing']
+
+        rate = rates_map.get(p.pk, Decimal('0.00'))
+
+        op_amt = (op_qty * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        rc_amt = (rc_qty * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        st_amt = (st_qty * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        cl_amt = (cl_qty * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+        page_totals['opening_qty'] += op_qty
+        page_totals['receipt_qty'] += rc_qty
+        page_totals['sent_qty'] += st_qty
+        page_totals['closing_qty'] += cl_qty
+        page_totals['opening_amount'] += op_amt
+        page_totals['receipt_amount'] += rc_amt
+        page_totals['sent_amount'] += st_amt
+        page_totals['closing_amount'] += cl_amt
+
         rows.append({
             "id": p.pk,
             "name": getattr(p, 'product_name', str(p)),
-            "opening_qty": f"{stock_data['opening']:.3f}",
-            "receipt_qty": f"{stock_data['receipt']:.3f}",
-            "sent_qty": f"{stock_data['sent']:.3f}",
-            "approved_qty": f"{stock_data['approved']:.3f}",
-            "reserved_qty": f"{stock_data['reserved']:.3f}",
-            "closing_qty": f"{stock_data['closing']:.3f}",
-            "available_qty": f"{stock_data['available']:.3f}",
+            "opening_qty": f"{op_qty:.3f}",
+            "receipt_qty": f"{rc_qty:.3f}",
+            "sent_qty": f"{st_qty:.3f}",
+            "closing_qty": f"{cl_qty:.3f}",
+            "rate": f"{rate:.2f}",
+            "opening_amount": f"{op_amt:.2f}",
+            "receipt_amount": f"{rc_amt:.2f}",
+            "sent_amount": f"{st_amt:.2f}",
+            "closing_amount": f"{cl_amt:.2f}",
         })
 
     # -----------------------------
@@ -1266,115 +1175,6 @@ def products_stock_list_view(request):
     # -----------------------------
     params = request.GET.copy()
     params.pop('page', None)
-
-    
-    from django.db.models import Sum, Q
-    from crmapp.models import ServiceProductItem
-    
-    sub_item_qs = GoodsReceiveNoteSubItem.objects.select_related(
-        "sub_item",
-        "grn__purchase_order"
-    )
-    
-    # -----------------------------
-    # LOCATION FILTER (SAME AS PRODUCT)
-    # -----------------------------
-    service_item_filter = Q(service_product__service__is_approved=True)
-    if location_type and location_id:
-        sub_item_qs = sub_item_qs.filter(
-            grn__destination_type=location_type,
-            grn__destination_id=location_id
-        )
-        if location_type == 'BRANCH':
-            service_item_filter &= Q(service_product__service__branch_id=location_id)
-        elif location_type == 'HO':
-            service_item_filter &= Q(service_product__service__branch__is_head_office=True)
-    
-    # -----------------------------
-    # SEARCH FILTER
-    # -----------------------------
-    if search:
-        sub_item_qs = sub_item_qs.filter(
-            sub_item__item_name__icontains=search
-        )
-        service_item_filter &= Q(required_item__item_name__icontains=search)
-    
-    # -----------------------------
-    # AGGREGATE
-    # -----------------------------
-    grn_totals = sub_item_qs.values(
-        "sub_item__item_name", "sub_item_id"
-    ).annotate(
-        total_in=Sum("received_qty")
-    )
-    
-    service_totals = ServiceProductItem.objects.filter(service_item_filter).values(
-        "required_item__item_name", "required_item_id"
-    ).annotate(
-        total_out=Sum("quantity")
-    )
-
-    # Compute total returned per sub-item from StockLedger SERVICE_RETURN entries.
-    # transaction_ref pattern: SERVICE_{id}_SUBITEM_{required_item_id}
-    # We extract required_item_id by matching the suffix SUBITEM_{id}.
-    from new_inventory.models import StockLedger
-    from django.db.models import Sum as LSum
-
-    # Build a map: required_item_id → total returned qty (all services at this location)
-    return_ledger_qs = StockLedger.objects.filter(
-        transaction_type="SERVICE_RETURN",
-        transaction_ref__contains="_SUBITEM_",
-    )
-    if location_type and location_id:
-        return_ledger_qs = return_ledger_qs.filter(
-            location_type=location_type,
-            location_id=location_id,
-        )
-
-    returned_map = {}  # required_item_id → Decimal
-    for entry in return_ledger_qs.values("transaction_ref", "in_qty"):
-        ref = entry["transaction_ref"]  # e.g. SERVICE_307_SUBITEM_3
-        try:
-            ri_id = int(ref.split("_SUBITEM_")[1])
-        except (IndexError, ValueError):
-            continue
-        returned_map[ri_id] = returned_map.get(ri_id, Decimal("0.000")) + Decimal(str(entry["in_qty"] or 0))
-
-    sub_item_dict = {}
-    for r in grn_totals:
-        sub_item_dict[r["sub_item_id"]] = {
-            "name": r["sub_item__item_name"],
-            "in_qty": Decimal(str(r["total_in"] or '0.0')),
-            "approved_qty": Decimal('0.0'),
-        }
-
-    for r in service_totals:
-        item_id = r["required_item_id"]
-        if item_id not in sub_item_dict:
-            sub_item_dict[item_id] = {
-                "name": r["required_item__item_name"],
-                "in_qty": Decimal('0.0'),
-                "approved_qty": Decimal('0.0'),
-            }
-        planned = Decimal(str(r["total_out"] or '0.0'))
-        returned = returned_map.get(item_id, Decimal("0.000"))
-        # Net approved = planned usage − returned to stock
-        net_consumed = max(Decimal("0.000"), planned - returned)
-        sub_item_dict[item_id]["approved_qty"] += net_consumed
-
-    sub_item_rows = []
-    for data in sub_item_dict.values():
-        available = max(Decimal('0.0'), data["in_qty"] - data["approved_qty"])
-        if available > 0 or data["in_qty"] > 0 or data["approved_qty"] > 0:
-            sub_item_rows.append({
-                "name": data["name"],
-                "in_qty": str(data["in_qty"]),
-                "approved_qty": str(data["approved_qty"]),
-                "available_qty": str(available)
-            })
-
-    sub_item_rows.sort(key=lambda x: x["name"])
-
 
     months_list = [
         (1, "January"), (2, "February"), (3, "March"), (4, "April"),
@@ -1396,10 +1196,10 @@ def products_stock_list_view(request):
 
     context = {
         "rows": rows,
+        "page_totals": page_totals,
         "page_obj": products_page,
         "paginator": paginator,
         "base_qs": params.urlencode(),
-        "sub_item_rows": sub_item_rows,
         "filters": {
             "location_type": location_type,
             "location_id": location_id,
@@ -1470,12 +1270,26 @@ def export_products_stock_excel(request):
         "Opening",
         "Receipt",
         "Sent",
-        "Approved",
-        "Reserved",
         "Closing",
-        "Available",
+        "Rate",
+        "Opening Amount",
+        "Receipt Amount",
+        "Sent Amount",
+        "Closing Amount",
     ]
     ws.append(headers)
+
+    qs_pids = [p.pk for p in qs]
+    rates_map = _get_product_rates_map(qs_pids)
+
+    total_op = Decimal('0.000')
+    total_rc = Decimal('0.000')
+    total_st = Decimal('0.000')
+    total_cl = Decimal('0.000')
+    total_op_amt = Decimal('0.00')
+    total_rc_amt = Decimal('0.00')
+    total_st_amt = Decimal('0.00')
+    total_cl_amt = Decimal('0.00')
 
     for p in qs:
         stock_data = _calculate_product_monthly_stock(
@@ -1483,16 +1297,51 @@ def export_products_stock_excel(request):
             batch_no=batch_no, expiry_from=expiry_from, expiry_to=expiry_to
         )
 
+        op_qty = stock_data['opening']
+        rc_qty = stock_data['receipt']
+        st_qty = stock_data['sent']
+        cl_qty = stock_data['closing']
+        rate = rates_map.get(p.pk, Decimal('0.00'))
+
+        op_amt = (op_qty * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        rc_amt = (rc_qty * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        st_amt = (st_qty * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        cl_amt = (cl_qty * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+        total_op += op_qty
+        total_rc += rc_qty
+        total_st += st_qty
+        total_cl += cl_qty
+        total_op_amt += op_amt
+        total_rc_amt += rc_amt
+        total_st_amt += st_amt
+        total_cl_amt += cl_amt
+
         ws.append([
             getattr(p, 'product_name', str(p)),
-            float(stock_data['opening']),
-            float(stock_data['receipt']),
-            float(stock_data['sent']),
-            float(stock_data['approved']),
-            float(stock_data['reserved']),
-            float(stock_data['closing']),
-            float(stock_data['available']),
+            float(op_qty),
+            float(rc_qty),
+            float(st_qty),
+            float(cl_qty),
+            float(rate),
+            float(op_amt),
+            float(rc_amt),
+            float(st_amt),
+            float(cl_amt),
         ])
+
+    ws.append([
+        "TOTAL",
+        float(total_op),
+        float(total_rc),
+        float(total_st),
+        float(total_cl),
+        "",
+        float(total_op_amt),
+        float(total_rc_amt),
+        float(total_st_amt),
+        float(total_cl_amt),
+    ])
 
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -2435,7 +2284,6 @@ def service_stock_return(request, service_id):
     from crmapp.models import service_management
     from .utils import (
         get_service_stock_out_summary,
-        get_service_sub_item_stock_out_summary,
         partial_return_stock_for_service,
     )
 
@@ -2446,12 +2294,8 @@ def service_stock_return(request, service_id):
         messages.error(request, "Stock can only be returned for approved services.")
         return redirect("inventory_service")  # adjust to your service list URL
 
-    summary          = get_service_stock_out_summary(service)
-    sub_item_summary = get_service_sub_item_stock_out_summary(service)
-    has_returnable = (
-        any(row["returnable"] > 0 for row in summary)
-        or any(row["returnable"] > 0 for row in sub_item_summary)
-    )
+    summary = get_service_stock_out_summary(service)
+    has_returnable = any(row["returnable"] > 0 for row in summary)
 
     if request.method == "POST":
         return_items = []
@@ -2465,16 +2309,6 @@ def service_stock_return(request, service_id):
                 qty = Decimal("0")
             if qty > 0:
                 return_items.append({"ledger_id": row["ledger_id"], "return_qty": qty})
-        # Collect sub-item return quantities (keyed by spi_id)
-        for row in sub_item_summary:
-            field_name = f"return_qty_spi_{row['spi_id']}"
-            raw = request.POST.get(field_name, "0").strip() or "0"
-            try:
-                qty = Decimal(raw)
-            except Exception:
-                qty = Decimal("0")
-            if qty > 0:
-                return_items.append({"spi_id": row["spi_id"], "return_qty": qty})
 
         if not return_items:
             messages.warning(request, "No return quantities entered. Nothing was returned.")
@@ -2488,18 +2322,13 @@ def service_stock_return(request, service_id):
                 messages.success(request, "Stock returned to inventory successfully.")
             return redirect("service_stock_return", service_id=service.id)
 
-        # Refresh both summaries after POST
-        summary          = get_service_stock_out_summary(service)
-        sub_item_summary = get_service_sub_item_stock_out_summary(service)
-        has_returnable = (
-            any(row["returnable"] > 0 for row in summary)
-            or any(row["returnable"] > 0 for row in sub_item_summary)
-        )
+        # Refresh summary after POST
+        summary = get_service_stock_out_summary(service)
+        has_returnable = any(row["returnable"] > 0 for row in summary)
 
     return render(request, "inventory/service_stock_return.html", {
         "service"         : service,
         "summary"         : summary,
-        "sub_item_summary": sub_item_summary,
         "has_returnable"  : has_returnable,
     })
     

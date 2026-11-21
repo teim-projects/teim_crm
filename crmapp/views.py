@@ -64,8 +64,6 @@ from .models import (
     finalfollowup,
     BranchManager,
     OperationPerson,
-    ProductRequiredItem,
-    ServiceProductItem,
 )
 
 from .decorators import role_required, admin_or_superadmin_required, is_admin_or_superadmin
@@ -1414,28 +1412,6 @@ def delete_product(request, product_id):
     return redirect(redirect_url)
 
 
-# views.py - Add this function
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from .models import ProductRequiredItem
-
-@login_required
-def get_product_items(request):
-    """API to get items for a specific product"""
-    product_id = request.GET.get('product_id')
-    
-    if not product_id:
-        return JsonResponse({'error': 'Product ID required', 'success': False}, status=400)
-    
-    try:
-        items = ProductRequiredItem.objects.filter(product_id=product_id).values('id', 'item_name')
-        return JsonResponse({
-            'items': list(items),
-            'success': True
-        })
-    except Exception as e:
-        return JsonResponse({'error': str(e), 'success': False}, status=500)
-
 import json
 from decimal import Decimal
 from datetime import datetime
@@ -1708,27 +1684,6 @@ def service_management_create(request):
                         print(f"✅ PRODUCT SAVED: {product.product_name}")
                     except Exception as e:
                         print("❌ PRODUCT SAVE ERROR:", e)
-
-                if service_product:
-                    sub_items = item.get("items", [])
-                    print("📦 SUB ITEMS:", sub_items)
-                    for sub_item in sub_items:
-                        required_item_id = sub_item.get("required_item_id")
-                        if not required_item_id:
-                            continue
-                        try:
-                            required_item = ProductRequiredItem.objects.get(id=required_item_id)
-                            ServiceProductItem.objects.create(
-                                service_product=service_product,
-                                required_item=required_item,
-                                quantity=sub_item.get("quantity", 1),
-                                notes=sub_item.get("notes", "")
-                            )
-                            print(f"✅ SUB ITEM SAVED: {required_item.item_name}")
-                        except ProductRequiredItem.DoesNotExist:
-                            print(f"❌ Required item not found: {required_item_id}")
-                        except Exception as e:
-                            print("❌ SUB ITEM SAVE ERROR:", e)
 
                 freq_raw = str(frequency or "").strip().lower()
                 if not freq_raw:
@@ -2123,7 +2078,7 @@ def approve_amc_visit(request, schedule_id):
     """
     from new_inventory.utils import deduct_stock_for_service
     from django.db import transaction
-    from crmapp.models import ServiceProduct, ServiceProductItem
+    from crmapp.models import ServiceProduct
     from decimal import Decimal, ROUND_HALF_UP
     from django.utils import timezone
 
@@ -2223,9 +2178,7 @@ def approve_amc_visit(request, schedule_id):
 
                 # Get the parent service product row for this specific product
                 try:
-                    parent_sp = parent_service.service_products.select_related('product').prefetch_related(
-                        'selected_items__required_item'
-                    ).get(product=visit_product)
+                    parent_sp = parent_service.service_products.select_related('product').get(product=visit_product)
                 except ServiceProduct.DoesNotExist:
                     # Product not in parent service — warn and skip
                     warnings.append(
@@ -2284,22 +2237,6 @@ def approve_amc_visit(request, schedule_id):
                         'per_visit_qty': float(per_visit_qty),
                     })
 
-                    # Sub-items use the same per-product divisor
-                    for spi in parent_sp.selected_items.all():
-                        per_visit_sub_qty = (
-                            Decimal(str(spi.quantity)) / per_visit_divisor
-                        ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
-
-                        ServiceProductItem.objects.create(
-                            service_product=new_sp,
-                            required_item=spi.required_item,
-                            quantity=per_visit_sub_qty,
-                            notes=(
-                                f"[Visit share: {per_visit_sub_qty} of {spi.quantity} total "
-                                f"÷ {product_visit_count} visits] {spi.notes or ''}"
-                            ).strip(),
-                        )
-
             else:
                 # Fallback: visit has no product (legacy / no product-wise frequencies)
                 # Copy ALL products from parent service using total schedule count as divisor
@@ -2324,9 +2261,7 @@ def approve_amc_visit(request, schedule_id):
                     is_approved=False,
                 )
 
-                for sp in parent_service.service_products.select_related('product').prefetch_related(
-                    'selected_items__required_item'
-                ).all():
+                for sp in parent_service.service_products.select_related('product').all():
                     per_visit_qty = (
                         Decimal(str(sp.quantity)) / fallback_divisor
                     ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
@@ -2356,20 +2291,6 @@ def approve_amc_visit(request, schedule_id):
                         'product_visits': total_schedule_count,
                         'per_visit_qty': float(per_visit_qty),
                     })
-
-                    for spi in sp.selected_items.all():
-                        per_visit_sub_qty = (
-                            Decimal(str(spi.quantity)) / fallback_divisor
-                        ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
-                        ServiceProductItem.objects.create(
-                            service_product=new_sp,
-                            required_item=spi.required_item,
-                            quantity=per_visit_sub_qty,
-                            notes=(
-                                f"[Visit share: {per_visit_sub_qty} of {spi.quantity} total] "
-                                f"{spi.notes or ''}"
-                            ).strip(),
-                        )
 
             if not new_svc.service_products.exists():
                 warnings.append(
@@ -2518,16 +2439,7 @@ def get_amc_visit_details(request, schedule_id):
             "quantity": float(sp.quantity) if sp.quantity else 1,
             "price": float(sp.price) if sp.price else 0,
             "gst_percentage": float(sp.gst_percentage) if sp.gst_percentage else 0,
-            "items": []
         }
-        
-        for item in sp.selected_items.all():
-            product_data["items"].append({
-                "name": item.required_item.item_name,
-                "qty": float(item.quantity),
-                "notes": item.notes or ""
-            })
-        
         products.append(product_data)
     
     # Add AMC schedule as a product with its required items
@@ -2598,16 +2510,7 @@ def get_amc_service_products(request, schedule_id):
             "quantity": float(sp.quantity) if sp.quantity else 1,
             "price": float(sp.price) if sp.price else 0,
             "gst_percentage": float(sp.gst_percentage) if sp.gst_percentage else 0,
-            "items": []
         }
-        
-        for item in sp.selected_items.all():
-            product_data["items"].append({
-                "name": item.required_item.item_name,
-                "qty": float(item.quantity),
-                "notes": item.notes or ""
-            })
-        
         products.append(product_data)
     
     # Add AMC schedule product
@@ -2628,285 +2531,6 @@ def get_amc_service_products(request, schedule_id):
     products.append(amc_product)
     
     return JsonResponse({'success': True, 'products': products, 'count': len(products)})
-
-def get_products_with_amc_schedules(service, amc_contracts=None, visit_lookup=None):
-    """
-    Get products for a service, including AMC schedule entries.
-    Accepts preloaded amc_contracts and visit_lookup to avoid N+1 queries.
-    Falls back to live DB queries when called standalone (e.g. for the AJAX detail endpoint).
-    """
-    products = []
-
-    # ── Regular products (already prefetched via select_related) ─────────────
-    for sp in service.service_products.all():
-        product_data = {
-            "name": sp.product.product_name,
-            "type": "NORMAL",
-            "quantity": float(sp.quantity),
-            "price": float(sp.price),
-            "gst_percentage": float(sp.gst_percentage),
-            "total_with_gst": float(sp.total_with_gst) if sp.total_with_gst else None,
-            "items": [],
-        }
-        for item in sp.selected_items.all():
-            product_data["items"].append({
-                "name": item.required_item.item_name,
-                "qty": float(item.quantity),
-                "notes": item.notes or "",
-            })
-        products.append(product_data)
-
-    # ── AMC schedule entries ──────────────────────────────────────────────────
-    # Use preloaded data when available; fall back to DB queries otherwise.
-    if amc_contracts is None:
-        amc_contracts = AMCContract.objects.filter(service=service).prefetch_related(
-            'service_schedules', 'visits'
-        )
-
-    for amc in amc_contracts:
-        schedules = sorted(amc.service_schedules.all(), key=lambda s: s.service_date)
-
-        for schedule in schedules:
-            if visit_lookup is not None:
-                visits_for_date = visit_lookup.get((amc.id, schedule.service_date), [])
-                visit = visits_for_date[0] if visits_for_date else None
-            else:
-                visit = AMCServiceVisit.objects.filter(
-                    amc=amc, service_date=schedule.service_date
-                ).first()
-
-            if schedule.is_completed:
-                status = "Completed"
-            elif schedule.is_approved:
-                status = "Approved"
-            else:
-                status = "Pending"
-
-            products.append({
-                "name": f"AMC Service - {amc.contract_number}",
-                "type": "AMC",
-                "service_date": schedule.service_date,
-                "schedule_id": schedule.id,
-                "visit_id": visit.id if visit else None,
-                "is_completed": schedule.is_completed,
-                "amc_contract": amc.contract_number,
-                "items": [
-                    {
-                        "name": f"Visit Date: {schedule.service_date}",
-                        "qty": 1,
-                        "status": status,
-                        "is_approved": schedule.is_approved,
-                    }
-                ],
-            })
-
-    return products
-
-@login_required
-def bharat_page(request):
-    filter_type = request.GET.get("type", "all")
-
-    services = service_management.objects.select_related('customer').prefetch_related(
-        'service_products__product',
-        'service_products__selected_items__required_item'
-    ).order_by("-id")
-
-    if filter_type == "amc":
-        service_ids_with_amc = AMCContract.objects.values_list('service_id', flat=True).distinct()
-        services = services.filter(id__in=service_ids_with_amc)
-
-    # ── Pre-fetch ALL AMC contracts + schedules + visits in bulk ─────────────
-    # This eliminates N+1 queries (previously 1 query per schedule for visits).
-    service_ids = list(services.values_list('id', flat=True))
-
-    all_contracts = (
-        AMCContract.objects
-        .filter(service_id__in=service_ids)
-        .prefetch_related(
-            'service_schedules',                      # AMCServiceSchedule set
-            'visits__crm_service',                    # AMCServiceVisit + crm_service FK
-        )
-    )
-
-    # Build contract lookup: service_id → [AMCContract, ...]
-    contracts_by_service = {}
-    for amc in all_contracts:
-        contracts_by_service.setdefault(amc.service_id, []).append(amc)
-
-    # Build visit lookup: (amc_id, service_date) → list[AMCServiceVisit]
-    # Using a list because multiple visits can occur on the same date (one per product).
-    visit_lookup = {}
-    for amc in all_contracts:
-        for visit in amc.visits.all():
-            key = (amc.id, visit.service_date)
-            visit_lookup.setdefault(key, []).append(visit)
-
-    # ── Pre-compute which services have actual StockLedger deductions ─────────
-    # A single query: extract service IDs from refs like 'SERVICE_303' or 'SERVICE_303_SUBITEM_3'
-    # This prevents the "Return Stock" button showing for services with no stock deducted.
-    from new_inventory.models import StockLedger
-    stock_refs = StockLedger.objects.filter(
-        transaction_type='SERVICE_OUT'
-    ).values_list('transaction_ref', flat=True).distinct()
-
-    services_with_stock = set()
-    for ref in stock_refs:
-        parts = ref.split('_')
-        if len(parts) >= 2 and parts[0] == 'SERVICE' and parts[1].isdigit():
-            services_with_stock.add(int(parts[1]))
-
-    grouped = {}
-
-    for service in services:
-        # Group by customer phone — sibling services collapse into one card
-        key = service.customer.primarycontact if service.customer else f"no_{service.id}"
-
-        # Resolve this service's AMC contracts from the preloaded dict FIRST
-        amc_contracts = contracts_by_service.get(service.id, [])
-
-        products_with_amc = get_products_with_amc_schedules(
-            service,
-            amc_contracts=amc_contracts,
-            visit_lookup=visit_lookup,
-        )
-
-        amc_sub_services = []
-
-        for amc in amc_contracts:
-            schedules = sorted(amc.service_schedules.all(), key=lambda s: s.service_date)
-            total_visits = len(schedules)
-
-            from decimal import Decimal, ROUND_HALF_UP
-
-            # Pre-build parent product lookup: product_id → ServiceProduct
-            parent_product_map = {}
-            if hasattr(amc, 'service') and amc.service:
-                for sp in amc.service.service_products.select_related('product').all():
-                    parent_product_map[sp.product_id] = sp
-
-            # Pre-build visit count per product: product_id → count of AMCServiceVisit rows
-            from django.db.models import Count
-            product_visit_counts = {}
-            if hasattr(amc, 'service') and amc.service:
-                vc_qs = amc.visits.values('product_id').annotate(cnt=Count('id'))
-                for row in vc_qs:
-                    if row['product_id']:
-                        product_visit_counts[row['product_id']] = row['cnt']
-
-            for schedule in schedules:
-                if schedule.is_completed:
-                    status = "Completed"
-                elif schedule.is_approved:
-                    status = "Approved"
-                else:
-                    status = "Pending"
-
-                # Get all visits for this schedule date (one per product)
-                visits_for_date = visit_lookup.get((amc.id, schedule.service_date), [])
-                if not visits_for_date:
-                    visits_for_date = [None]
-
-                for visit in visits_for_date:
-                    crm_service_id = None
-                    crm_service_approved = False
-                    if visit and visit.crm_service:
-                        crm_service_id = visit.crm_service.id
-                        crm_service_approved = visit.crm_service.is_approved
-
-                    # Build per-visit stock info for THIS specific visit's product only
-                    per_visit_products = []
-                    if visit and visit.product_id and visit.product_id in parent_product_map:
-                        sp = parent_product_map[visit.product_id]
-                        product_visit_count = product_visit_counts.get(visit.product_id, total_visits)
-                        divisor = Decimal(str(max(1, product_visit_count)))
-                        qty_per_visit = (
-                            Decimal(str(sp.quantity)) / divisor
-                        ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
-                        per_visit_products = [{
-                            'name': sp.product.product_name,
-                            'total_qty': float(sp.quantity),
-                            'product_visits': product_visit_count,
-                            'per_visit_qty': float(qty_per_visit),
-                        }]
-                    elif not visit or not visit.product_id:
-                        # Legacy: no product on visit — show all products ÷ total_visits
-                        for sp in parent_product_map.values():
-                            divisor = Decimal(str(max(1, total_visits)))
-                            qty_per_visit = (
-                                Decimal(str(sp.quantity)) / divisor
-                            ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
-                            per_visit_products.append({
-                                'name': sp.product.product_name,
-                                'total_qty': float(sp.quantity),
-                                'product_visits': total_visits,
-                                'per_visit_qty': float(qty_per_visit),
-                            })
-
-                    amc_sub_services.append({
-                        "id": schedule.id,
-                        "schedule_id": schedule.id,
-                        "type": "AMC",
-                        "product": (
-                            f"AMC Visit ({amc.contract_number})"
-                            + (f" – {visit.product.product_name}" if visit and visit.product else "")
-                        ),
-                        "service_date": schedule.service_date,
-                        "service_date_display": schedule.service_date.strftime('%b %d, %Y'),
-                        "status": status,
-                        "contract_number": amc.contract_number,
-                        "is_completed": schedule.is_completed,
-                        "is_approved": schedule.is_approved,
-                        "crm_service_id": crm_service_id,
-                        "crm_service_approved": crm_service_approved,
-                        "crm_has_stock": crm_service_id in services_with_stock if crm_service_id else False,
-                        "total_visits": total_visits,
-                        "per_visit_products_json": __import__('json').dumps(per_visit_products),
-                        "per_visit_products": per_visit_products,
-                    })
-
-        # has_amc = True if a real AMCContract record exists OR if the service
-        # was manually labelled as AMC (contract_type field) but not yet linked
-        has_amc = len(amc_contracts) > 0 or service.contract_type == 'AMC'
-        svc_status = "Approved" if service.is_approved else "Pending"
-
-        main_service_data = {
-            "id": service.id,
-            "service_no": f"SRV-{service.id:04d}",
-            "customer": service.customer.fullname if service.customer else "",
-            "mobile": service.customer.primarycontact if service.customer else "",
-            "status": svc_status,
-            "is_approved": service.is_approved,
-            # True only when the StockLedger actually has SERVICE_OUT entries for this service
-            "has_stock_entries": service.id in services_with_stock,
-            "date": service.service_date,
-            "contract": "AMC" if has_amc else service.contract_type,
-            "products": products_with_amc,
-            "sub_services": amc_sub_services,
-        }
-
-        # Group by customer — sibling services go into 'subs' (shown as expandable panel)
-        if key not in grouped:
-            grouped[key] = {"main": main_service_data, "subs": []}
-        else:
-            grouped[key]["subs"].append(main_service_data)
-
-    total_services = service_management.objects.count()
-    approved_count = service_management.objects.filter(is_approved=True).count()
-    pending_count = service_management.objects.filter(is_approved=False).count()
-
-    context = {
-        "groups": grouped.values(),
-        "total_entries": total_services,
-        
-        "approved_count": approved_count,
-        "pending_count": pending_count,
-        
-        "selected_type": filter_type
-    }
-    
-    return render(request, 'bharat.html', context)
-
-
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -5900,23 +5524,6 @@ def edit_service_records(request, rid):
     sales_persons = list(SalesPerson.objects.filter(is_active=True)) + list(BranchManager.objects.filter(is_active=True))
     frequency_choices = [str(i) for i in range(1, 13)] + ['Fortnight', 'Weekly', 'Daily']
 
-    # Build a dictionary of selected items for each service product
-    selected_items_map = {}
-    for sp in selected_products:
-        selected_items = ServiceProductItem.objects.filter(service_product=sp).select_related('required_item')
-        selected_items_map[sp.product.product_id] = {
-            'service_product_id': sp.id,
-            'items': [
-                {
-                    'item_id': item.required_item.id,
-                    'item_name': item.required_item.item_name,
-                    'quantity': float(item.quantity),
-                    'notes': item.notes or ''
-                }
-                for item in selected_items
-            ]
-        }
-
     if request.method == "POST":
         try:
             total_price = Decimal('0.00')
@@ -5941,47 +5548,6 @@ def edit_service_records(request, rid):
                 sp.total_with_gst = line_total_with_gst
                 sp.save()
 
-                # Update items for this service product
-                # First, get existing items
-                existing_items = {item.required_item_id: item for item in ServiceProductItem.objects.filter(service_product=sp)}
-                
-                # Get items from POST data
-                items_data = request.POST.get(f'items_{sp.id}', '[]')
-                try:
-                    items_list = json.loads(items_data)
-                except json.JSONDecodeError:
-                    items_list = []
-                
-                # Track which items we've processed
-                processed_item_ids = set()
-                
-                for item_data in items_list:
-                    required_item_id = item_data.get('required_item_id')
-                    item_quantity = Decimal(item_data.get('quantity', 1))
-                    item_notes = item_data.get('notes', '')
-                    
-                    if required_item_id in existing_items:
-                        # Update existing
-                        existing_items[required_item_id].quantity = item_quantity
-                        existing_items[required_item_id].notes = item_notes
-                        existing_items[required_item_id].save()
-                        processed_item_ids.add(required_item_id)
-                    else:
-                        # Create new
-                        required_item = ProductRequiredItem.objects.get(id=required_item_id)
-                        ServiceProductItem.objects.create(
-                            service_product=sp,
-                            required_item=required_item,
-                            quantity=item_quantity,
-                            notes=item_notes
-                        )
-                        processed_item_ids.add(required_item_id)
-                
-                # Delete items that were removed
-                for item_id, item_obj in existing_items.items():
-                    if item_id not in processed_item_ids:
-                        item_obj.delete()
-                
                 total_price += line_total
                 total_charges += line_total_charges
                 total_with_gst += line_total_with_gst
@@ -6000,7 +5566,6 @@ def edit_service_records(request, rid):
                 quantity = item.get('quantity')
                 gst_percentage = item.get('gst', 0)
                 description = item.get('description', '')
-                items_list = item.get('items', [])
 
                 if not price or not quantity:
                     continue
@@ -6024,24 +5589,6 @@ def edit_service_records(request, rid):
                         total_with_gst=line_total_with_gst,
                         description=description,
                     )
-                    
-                    # Add items for this service product
-                    for item_data in items_list:
-                        required_item_id = item_data.get('required_item_id')
-                        item_quantity = Decimal(item_data.get('quantity', 1))
-                        item_notes = item_data.get('notes', '')
-                        
-                        try:
-                            required_item = ProductRequiredItem.objects.get(id=required_item_id)
-                            ServiceProductItem.objects.create(
-                                service_product=service_product,
-                                required_item=required_item,
-                                quantity=item_quantity,
-                                notes=item_notes
-                            )
-                        except ProductRequiredItem.DoesNotExist:
-                            print(f"Required item with ID {required_item_id} does not exist.")
-                            continue
 
                     total_price += line_total
                     total_with_gst += line_total_with_gst
@@ -6116,7 +5663,6 @@ def edit_service_records(request, rid):
         'products': products,
         'sales_persons': sales_persons,
         'frequency_choices': frequency_choices,
-        'selected_items_map': json.dumps(selected_items_map),  # Pass to template
         'branches': Branch.objects.all(),
     }
     return render(request, 'edit_service_records.html', context)
@@ -10550,69 +10096,6 @@ def send_invoice_email(request, id):
 
 
 
-def add_product_items(request):
-    categories = Product.CATEGORY_CHOICES
-    products = None
-    selected_category = request.GET.get('category')
-    selected_product = request.GET.get('product')
-    selected_product_items = None
-
-    # Filter products by category
-    if selected_category:
-        products = Product.objects.filter(category=selected_category)
-
-    # Show existing items
-    if selected_product:
-        selected_product_items = ProductRequiredItem.objects.filter(product_id=selected_product)
-
-    # Save items
-    if request.method == "POST":
-        product_id = request.POST.get('product')
-        item_names = request.POST.getlist('item_name[]')
-
-        for name in item_names:
-            if name.strip():
-                ProductRequiredItem.objects.create(
-                    product_id=product_id,
-                    item_name=name.strip()
-                )
-
-        return redirect(f"/product-items?category={selected_category}&product={product_id}")
-
-    context = {
-        'categories': categories,
-        'products': products,
-        'selected_category': selected_category,
-        'selected_product': selected_product,
-        'selected_product_items': selected_product_items
-    }
-
-    return render(request, 'product_items.html', context)
-
-
-from django.shortcuts import get_object_or_404
-
-@login_required
-@admin_or_superadmin_required
-def delete_product_item(request, item_id):
-    item = get_object_or_404(ProductRequiredItem, id=item_id)
-
-    product_id = item.product_id
-    category = item.product.category
-    item_name = item.item_name
-
-    try:
-        item.delete()
-        messages.success(request, f"Item '{item_name}' was deleted successfully.")
-    except Exception as e:
-        messages.error(request, f"Could not delete item '{item_name}': {str(e)}")
-
-    return redirect(f"/product-items?category={category}&product={product_id}")   
-
-
-
-
-
 def get_amc_or_normal_services(service):
 
     # ❌ if not AMC → normal service
@@ -10664,52 +10147,6 @@ from django.db.models import Prefetch
 
 from crmapp.models import service_management
 from amc.models import AMCContract, AMCServiceSchedule
-
-
-@login_required
-def service_list_with_amc(request):
-
-    services = service_management.objects.all().prefetch_related(
-        Prefetch(
-            "amccontract_set__service_schedules",
-            queryset=AMCServiceSchedule.objects.all().order_by("service_date")
-        )
-    )
-
-    final_data = []
-
-    for service in services:
-
-        # 🔹 Get AMC (if exists)
-        amc = service.amccontract_set.first()
-
-        if amc:
-            schedules = amc.service_schedules.all()
-
-            sub_services = [
-                {
-                    "date": s.service_date,
-                    "status": "Completed" if s.is_completed else "Pending",
-                }
-                for s in schedules
-            ]
-        else:
-            sub_services = []
-
-        final_data.append({
-            "service": service,
-            "amc": amc,
-            "sub_services": sub_services
-        })
-
-    return render(request, "bharat.html", {
-        "final_data": final_data
-    })
-    
-    
-    
-    
-    
 
 
 from django.shortcuts import render

@@ -226,7 +226,7 @@
   <body>
     {% include 'sidebar.html' %}
 
-    <div class="container" style="min-height: 100vh; margin-top: 130px">
+    <div class="container-fluid px-4" style="min-height: 100vh; margin-top: 130px">
       <div class="table-wrapper addnewshadow">
         <div
           class="d-flex justify-content-between align-items-center mb-4 mt-3 flex-wrap gap-3"
@@ -351,106 +351,90 @@
         </form>
 
         <div class="table-responsive">
-          <div class="d-flex justify-content-end mb-3">
-            <button
-              type="button"
-              class="btn btn-secondary btn-sm"
-              onclick="toggleSubItems()"
-            >
-              View Sub Item Stock
-            </button>
-          </div>
-          <table class="table table-sm table-bordered table-fixed">
+          <table class="table table-sm table-bordered table-fixed text-center">
             <thead class="thead-light">
               <tr>
-                <th style="width: 50px">Sr</th>
+                <th style="width: 45px">Sr</th>
                 <th
-                  class="sortable {% if filters.sort == 'asc' %}asc{% elif filters.sort == 'desc' %}desc{% endif %}"
+                  class="sortable text-start {% if filters.sort == 'asc' %}asc{% elif filters.sort == 'desc' %}desc{% endif %}"
                   onclick="toggleSort('name')"
+                  style="min-width: 160px;"
                 >
                   Product
                 </th>
-                <th style="width: 100px">Opening</th>
-                <th style="width: 100px">Receipt</th>
-                <th style="width: 100px">Sent</th>
-                <th style="width: 110px">Approved</th>
-                <th style="width: 100px">Reserved</th>
-                <th style="width: 100px">Closing</th>
-                <th style="width: 100px">Available</th>
+                <th style="width: 85px">Opening</th>
+                <th style="width: 85px">Receipt</th>
+                <th style="width: 85px">Sent</th>
+                <th
+                  style="width: 90px"
+                  class="sortable {% if filters.sort == 'closing_asc' %}asc{% elif filters.sort == 'closing_desc' %}desc{% endif %}"
+                  onclick="toggleSort('closing')"
+                >
+                  Closing
+                </th>
+                <th style="width: 95px; background-color: #fef9c3; color: #854d0e;">Rate</th>
+                <th style="width: 115px; background-color: #fef9c3; color: #854d0e;">Opening Amount</th>
+                <th style="width: 115px; background-color: #fef9c3; color: #854d0e;">Receipt Amount</th>
+                <th style="width: 115px; background-color: #fef9c3; color: #854d0e;">Sent Amount</th>
+                <th style="width: 120px; background-color: #fef9c3; color: #854d0e;">Closing Amount</th>
               </tr>
             </thead>
             <tbody>
               {% for r in rows %} 
               <tr>
                 <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
-                <td>{{ r.name }}</td>
+                <td class="text-start fw-semibold">{{ r.name }}</td>
                 <td>{{ r.opening_qty }}</td>
                 <td>{{ r.receipt_qty }}</td>
                 <td>{{ r.sent_qty }}</td>
-                <td>{{ r.approved_qty }}</td>
-                <td>{{ r.reserved_qty }}</td>
-                <td>{{ r.closing_qty }}</td>
-                <td class="text-success">{{ r.available_qty }}</td>
+                <td class="fw-bold">{{ r.closing_qty }}</td>
+                <td style="background-color: #fffbeb;">₹{{ r.rate }}</td>
+                <td style="background-color: #fffbeb;">₹{{ r.opening_amount }}</td>
+                <td style="background-color: #fffbeb;">₹{{ r.receipt_amount }}</td>
+                <td style="background-color: #fffbeb;">₹{{ r.sent_amount }}</td>
+                <td class="text-success fw-bold" style="background-color: #fffbeb;">₹{{ r.closing_amount }}</td>
               </tr>
             {% empty %}
               <tr>
-                <td colspan="9" class="text-center py-5 small-muted">
+                <td colspan="11" class="text-center py-5 small-muted">
                   <i
                     class="fa fa-cubes"
                     style="font-size: 3.5rem; opacity: 0.4"
                   ></i
                   ><br /><br />
-                  No products with available stock found
+                  No products found
                 </td>
               </tr>
               {% endfor %} {% if not rows %}
               <tr>
-                <td colspan="9" class="text-center py-5 small-muted">
+                <td colspan="11" class="text-center py-5 small-muted">
                   <i
                     class="fa fa-cubes"
                     style="font-size: 3.5rem; opacity: 0.4"
                   ></i
                   ><br /><br />
-                  No products with available stock found
+                  No products found
                 </td>
               </tr>
               {% endif %}
             </tbody>
+            {% if rows %}
+            <tfoot style="background-color: #f8fafc; border-top: 2px solid #cbd5e1;">
+              <tr class="fw-bold">
+                <td colspan="2" class="text-end text-uppercase" style="letter-spacing: 0.5px;">Page Total:</td>
+                <td>{{ page_totals.opening_qty|floatformat:3 }}</td>
+                <td>{{ page_totals.receipt_qty|floatformat:3 }}</td>
+                <td>{{ page_totals.sent_qty|floatformat:3 }}</td>
+                <td class="text-primary">{{ page_totals.closing_qty|floatformat:3 }}</td>
+                <td style="background-color: #fef3c7;">—</td>
+                <td style="background-color: #fef3c7;">₹{{ page_totals.opening_amount|floatformat:2 }}</td>
+                <td style="background-color: #fef3c7;">₹{{ page_totals.receipt_amount|floatformat:2 }}</td>
+                <td style="background-color: #fef3c7;">₹{{ page_totals.sent_amount|floatformat:2 }}</td>
+                <td class="text-success fw-bold" style="background-color: #fef3c7;">₹{{ page_totals.closing_amount|floatformat:2 }}</td>
+              </tr>
+            </tfoot>
+            {% endif %}
           </table>
-
-          <div id="subItemTable" style="display: none; margin-top: 20px">
-            <h5 class="text-primary mb-3">Sub Item Stock</h5>
-
-            <table class="table table-sm table-bordered table-fixed">
-              <thead class="thead-light">
-                <tr>
-                  <th style="width: 50px"></th>
-                  <th>Sub Item</th>
-                  <th style="width: 110px">Receipt</th>
-                  <th style="width: 120px">Approved</th>
-                  <th>Closing</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {% for item in sub_item_rows %}
-                <tr>
-                  <td></td>
-                  <td>{{ item.name }}</td>
-                  <td>{{ item.in_qty }}</td>
-                  
-                  <td>{{ item.approved_qty }}</td>
-                  
-                  <td class="text-success">{{ item.available_qty }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="7" class="text-center">No sub item stock found</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
         </div>
 
         {% if paginator.num_pages > 1 %}
@@ -613,10 +597,10 @@
           if (current === "asc") next = "desc";
           else if (current === "desc") next = "";
           else next = "asc";
-        } else if (column === "avail") {
-          if (current === "avail_asc") next = "avail_desc";
-          else if (current === "avail_desc") next = "";
-          else next = "avail_asc";
+        } else if (column === "closing") {
+          if (current === "closing_asc") next = "closing_desc";
+          else if (current === "closing_desc") next = "";
+          else next = "closing_asc";
         }
 
         if (next) {
@@ -626,18 +610,6 @@
         }
 
         window.location.search = urlParams.toString();
-      }
-    </script>
-
-    <script>
-      function toggleSubItems() {
-        const table = document.getElementById("subItemTable");
-
-        if (table.style.display === "none") {
-          table.style.display = "block";
-        } else {
-          table.style.display = "none";
-        }
       }
     </script>
   </body>

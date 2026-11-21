@@ -29,23 +29,7 @@ urlpatterns = [
     # path('approve/<int:id>/', views.approve_service),
     # path('reject/<int:id>/', views.reject_service),
 
-    # path('bharat/', views.bharat_page, name='bharat_page'),
 
-
-
-  
-    # path("bharat/", views.bharat_page, name="bharat_page"),
-    # path("approve/<int:id>/", views.approve_service, name="approve_service"),
-    # path("reject/<int:id>/", views.reject_service, name="reject_service"),
-    
-    
-
-
-
-  # urls.py
-
-
-    path('bharat/', views.bharat_page, name='bharat_page'),
     
     # Main service actions
     path('approve/<int:id>/', views.approve_service, name='approve_service'),
@@ -256,9 +240,6 @@ urlpatterns = [
     path("technician-work-list/export/", views.export_technician_work_list, name="export_technician_work_list"),
     # app/urls.py
     path("api/enquiry/", landing_page_lead_create_api),
-    path('product-items', views.add_product_items, name='product_items'),
-    path('delete-product-item/<int:item_id>/', views.delete_product_item, name='delete_product_item'),
-    path('get_product_items/', views.get_product_items, name='get_product_items'),
     
     path(
         'work-order/<int:service_id>/',

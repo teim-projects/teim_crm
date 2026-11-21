@@ -904,7 +904,6 @@
             <div class="submenu">
                 <ul>
                     <a href="/service_management_create"><li data-link="/service_management_create">Service Management</li></a>
-                    <a href="{% url 'bharat_page' %}"><li data-link="/service">Service Material Issue</li></a>
                     <a href="/display_reschedule"><li data-link="/display_reschedule">Reschedule Log</li></a>
                     <a href="{% url 'site_list' %}"><li data-link="/site-list">Sites</li></a>
                     <a href="/display_allocation"><li data-link="/display_allocation">Allocate Work</li></a>
@@ -938,7 +937,6 @@
                 <ul>
                     <a href="/add_product"><li data-link="/add_product">Add Products</li></a>
                     <a href="/products"><li data-link="/products">All Products</li></a>
-                    <a href="/product-items"><li data-link="/product-items">Product Items</li></a>
                 </ul>
             </div>
         </li>
@@ -1394,7 +1392,6 @@
                 
                 { path: "/display_service_management", main: "Service", sub: "Service Management", subtitle: "Service requests & maintenance" },
                 { path: "/service_management_create", main: "Service", sub: "Service Management", subtitle: "Create service entry" },
-                { path: "/service", main: "Service", sub: "Service Issue", subtitle: "Service material issue" },
                 { path: "/display_reschedule", main: "Service", sub: "Reschedule Log", subtitle: "Manage work reschedule requests" },
                 { path: "/site-list", main: "Service", sub: "Site Directory", subtitle: "Customer service sites" },
                 { path: "/site_list", main: "Service", sub: "Site Directory", subtitle: "Customer service sites" },
@@ -1407,7 +1404,6 @@
                 
                 { path: "/add_product", main: "Products", sub: "Add Products", subtitle: "Create new inventory item" },
                 { path: "/products", main: "Products", sub: "All Products", subtitle: "Stock levels & product catalog" },
-                { path: "/product-items", main: "Products", sub: "Product Items", subtitle: "Item stock & variations" },
                 { path: "/display_inventory", main: "Products", sub: "Inventory Management", subtitle: "Stock levels & inventory" },
                 
                 { path: "/today-work", main: "Workdesk", sub: "Today's Work", subtitle: "Daily tasks & schedules" },

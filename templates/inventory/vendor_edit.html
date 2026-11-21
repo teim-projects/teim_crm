@@ -78,9 +78,7 @@
   <label for="vendor_type">Vendor Type</label>
   <select name="vendor_type" class="form-control" required>
     <option value="">Select Type</option>
-    <option value="product" {% if vendor.vendor_type == 'product' %}selected{% endif %}>Product</option>
-    <option value="sub_item" {% if vendor.vendor_type == 'sub_item' %}selected{% endif %}>Sub Item</option>
-    <option value="both" {% if vendor.vendor_type == 'both' %}selected{% endif %}>Both</option>
+    <option value="product" selected>Product</option>
   </select>
 </div>
 
